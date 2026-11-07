@@ -33,7 +33,7 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - [x] 2.1 Single-instance accessory app shell
 - [ ] 2.2 Module contracts and registry lifecycle
 - [ ] 2.3 ConfigStore read path with live reload
-- [ ] 2.4 Chrome Hologram theme engine
+- [x] 2.4 Chrome Hologram theme engine
 - [ ] 2.5 Notch Host on a physical notch
 - [ ] 2.6 Virtual notch on plain displays
 - [ ] 2.7 Display selection, multi-display and hot-plug
@@ -111,3 +111,4 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - Spike 1.4 plan: run Claude Code headless (`claude -p`) in a scratch project with **project-level** `.claude/settings.json` hooks, so Romain's global Claude Code settings are never touched.
 - 2026-11-07 — Tests run with `swift test --build-system swiftbuild`: the default SwiftPM build system on Swift 6.3 copies `.xcstrings` uncompiled, so catalog lookups return the key. The strict catalog test is kept. CI must use the same flag.
 - 2026-11-07 — Story 1.1 deliberately leaves `CFBundleURLTypes`, `NSServices` and `NSCalendarsFullAccessUsageDescription` out of Info.plist; they arrive with the stories that handle them (12.9, 9.10, 13.1). Ad-hoc signing conflicts with AD-17 "never ad-hoc" until a real identity is wired (Story 6.1).
+- 2026-11-07 — `Package.resolved` files are committed (reproducible builds). Theme TOML lives in `Themes/` with an identical bundled copy under `Packages/VigieUI/Sources/VigieUI/Resources/Themes/`; `Scripts/theme-regen-check.sh` enforces both. Config color keys (`colors.blocked`) → token roles (`status-blocked`) mapping is left to the ConfigStore story (2.3).
