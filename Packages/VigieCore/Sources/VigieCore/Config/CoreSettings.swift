@@ -32,7 +32,7 @@ public enum CoreSettings {
         make("general", "close_on_leave", .bool(default: false)),
         make("general", "hover_delay", .duration(default: .milliseconds(150))),
         make("general", "expand_hotkey", .hotkey(default: "cmd+shift+space")),
-        make("general", "prevent_idle_sleep", .bool(default: false)),
+        make("general", "prevent_idle_sleep", .bool(default: false), help: true),
         make("general", "launch_at_login", .bool(default: false), .local),
         make("general", "tab_order", .list(of: .string, default: [])),
         // [appearance]
@@ -86,8 +86,9 @@ public enum CoreSettings {
         ConfigKeyPath([table, key])
     }
 
+    /// `help: true` reads the description from `config.<table>.<key>.help`.
     private static func make(
-        _ table: String, _ key: String, _ kind: SettingKind, _ scope: SettingScope = .synced
+        _ table: String, _ key: String, _ kind: SettingKind, _ scope: SettingScope = .synced, help: Bool = false
     ) -> CoreSetting {
         CoreSetting(
             path: path(table, key),
@@ -95,7 +96,8 @@ public enum CoreSettings {
                 key: key,
                 label: label("config.\(table).\(key)"),
                 kind: kind,
-                scope: scope
+                scope: scope,
+                help: help ? label("config.\(table).\(key).help") : nil
             )
         )
     }

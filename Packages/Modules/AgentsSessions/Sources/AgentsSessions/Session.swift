@@ -28,6 +28,9 @@ public struct Session: Hashable, Sendable, Identifiable {
     public internal(set) var blockReason: BlockReason?
     /// The agent's message for `needs.input` or `session.error`; set while `blocked` or `failed`.
     public internal(set) var lastMessage: String?
+    /// Why Vigie marked the session failed itself (no `session.error`); set while `failed`. Cleared by the next
+    /// in-order event.
+    public internal(set) var failureReason: FailureReason?
     /// The terminal adapter chosen for this session (Story 5.1, AD-23): the first `matches(env:)`, else the
     /// `terminal` setting when the env names no terminal, else the fallback.
     public internal(set) var terminalAdapterID: TerminalID?
@@ -57,6 +60,7 @@ public struct Session: Hashable, Sendable, Identifiable {
         model: String? = nil,
         blockReason: BlockReason? = nil,
         lastMessage: String? = nil,
+        failureReason: FailureReason? = nil,
         terminalAdapterID: TerminalID? = nil,
         terminalLocator: TerminalLocator? = nil
     ) {
@@ -72,9 +76,16 @@ public struct Session: Hashable, Sendable, Identifiable {
         self.model = model
         self.blockReason = blockReason
         self.lastMessage = lastMessage
+        self.failureReason = failureReason
         self.terminalAdapterID = terminalAdapterID
         self.terminalLocator = terminalLocator
     }
+}
+
+/// Why `agents.sessions` marked a session failed on its own (the agent reported no error).
+public enum FailureReason: String, Hashable, Sendable, Codable {
+    /// The session was working when the Mac slept (Story 4.12, AD-5, A24).
+    case hostSlept = "host_slept"
 }
 
 /// `sessions.json` shape (schema 1): snake_case keys, the session key as its `<adapter>:<native id>` string,
@@ -93,6 +104,7 @@ extension Session: Codable {
         case model
         case blockReason = "block_reason"
         case lastMessage = "last_message"
+        case failureReason = "failure_reason"
         case terminalAdapterID = "terminal_adapter"
         case terminalLocator = "terminal_locator"
     }
@@ -116,6 +128,7 @@ extension Session: Codable {
         model = try container.decodeIfPresent(String.self, forKey: .model)
         blockReason = try container.decodeIfPresent(BlockReason.self, forKey: .blockReason)
         lastMessage = try container.decodeIfPresent(String.self, forKey: .lastMessage)
+        failureReason = try container.decodeIfPresent(FailureReason.self, forKey: .failureReason)
         terminalAdapterID = try container.decodeIfPresent(TerminalID.self, forKey: .terminalAdapterID)
         terminalLocator = try container.decodeIfPresent(TerminalLocator.self, forKey: .terminalLocator)
     }
@@ -134,6 +147,7 @@ extension Session: Codable {
         try container.encodeIfPresent(model, forKey: .model)
         try container.encodeIfPresent(blockReason, forKey: .blockReason)
         try container.encodeIfPresent(lastMessage, forKey: .lastMessage)
+        try container.encodeIfPresent(failureReason, forKey: .failureReason)
         try container.encodeIfPresent(terminalAdapterID, forKey: .terminalAdapterID)
         try container.encodeIfPresent(terminalLocator, forKey: .terminalLocator)
     }

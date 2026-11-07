@@ -70,8 +70,8 @@ public protocol ModuleContextFactory {
 }
 
 /// The production factory: real settings (with a `ConfigStore`), storage, scheduler, event bus, hotkeys,
-/// notifier, activity log, executable resolver, integration installer (AD-22) and host control; the shared
-/// permissions coordinator; stubs for the rest.
+/// notifier, activity log, executable resolver, integration installer (AD-22), power service (Story 4.12) and
+/// host control; the shared permissions coordinator; stubs for the rest.
 public struct CoreModuleContextFactory: ModuleContextFactory {
     public let environment: AppEnvironment
     public let eventBus: InProcessEventBus
@@ -83,6 +83,8 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
     /// The one resolver of the launch, given to every module context. App assembly passes the same instance to
     /// each adapter's `AdapterContextBox` (AD-4, AD-19).
     public let executables: ExecutableResolverImpl
+    /// The launch's power service (keep-awake and sleep/wake), wrapped per module by its tracker.
+    public let power: CorePowerService
     /// `context.host` for a module: a ``CoreHostControl`` bound to the Notch Host through a ``NotchHostLink``.
     public let hostControl: @MainActor @Sendable (ModuleID) -> any HostControl
 
@@ -96,6 +98,8 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
     ///     recording sinks until ConfigStore and the outputs are wired.
     ///   - activityStore: the app-wide activity log store (AD-26); defaults to one for `environment`.
     ///   - executables: the launch's resolver; defaults to one that runs the user's login shell.
+    ///   - power: the launch's power service; defaults to one reading `[general] prevent_idle_sleep` from
+    ///     `configStore` (off without one) and following that key's changes.
     ///   - hostControl: builds `context.host` per module; defaults to a ``CoreHostControl`` on an unbound
     ///     ``NotchHostLink`` (host requests do nothing).
     public init(
@@ -103,6 +107,7 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
         permissions: PermissionsCoordinator? = nil, hotkeyCenter: HotkeyCenter? = nil,
         alertCenter: AlertCenter? = nil, activityStore: ActivityStore? = nil,
         executables: ExecutableResolverImpl? = nil,
+        power: CorePowerService? = nil,
         hostControl: (@MainActor @Sendable (ModuleID) -> any HostControl)? = nil
     ) {
         self.environment = environment
@@ -118,6 +123,7 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
         self.executables =
             executables
             ?? ExecutableResolverImpl(log: Logger(subsystem: environment.logSubsystem, category: "executables"))
+        self.power = power ?? Self.makePower(configStore: configStore)
         self.hostControl =
             hostControl ?? { @MainActor id in CoreHostControl(moduleID: id, link: NotchHostLink()) }
     }
@@ -142,7 +148,7 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
             events: ModuleEventBus(bus: eventBus, tracker: tracker),
             host: hostControl(manifest.id),
             permissions: permissions ?? PermissionsCoordinator(checker: SystemPermissionChecker()),
-            power: StubPowerService(tracker: tracker),
+            power: TrackedPowerService(base: power, tracker: tracker),
             clipboard: StubClipboardService(),
             executables: executables,
             privacy: StubPrivacyService(),
@@ -152,5 +158,23 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
                 environment: environment, configStore: configStore, activity: activity),
             log: log
         )
+    }
+
+    /// A ``CorePowerService`` bound to `[general] prevent_idle_sleep`.
+    static func makePower(configStore: ConfigStore?) -> CorePowerService {
+        let path = CoreSettings.path("general", "prevent_idle_sleep")
+        let shared = configStore?.shared
+        let power = CorePowerService(isEnabled: { shared?.value(at: path)?.typed(as: Bool.self) ?? false })
+        if let configStore {
+            // The store's change feed (not a key observer): one load may change several keys.
+            let changes = configStore.changes
+            Task { [weak power] in
+                for await keys in changes where keys.contains(path) {
+                    guard let power else { return }
+                    power.settingChanged()
+                }
+            }
+        }
+        return power
     }
 }

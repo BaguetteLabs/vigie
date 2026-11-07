@@ -241,6 +241,18 @@
         }
       }
     },
+    "config.general.prevent_idle_sleep.help": {
+      "comment": "Settings description for general.prevent_idle_sleep (Keep awake, PRD FR-19).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "While any agent session is working, Vigie keeps the Mac from going to sleep on its own. This prevents idle sleep only: closing the lid or putting the Mac to sleep by hand is not covered, and a run interrupted that way is marked failed on wake."
+          }
+        }
+      }
+    },
     "config.general.tab_order": {
       "comment": "Settings label for the config key general.tab_order.",
       "extractionState": "manual",

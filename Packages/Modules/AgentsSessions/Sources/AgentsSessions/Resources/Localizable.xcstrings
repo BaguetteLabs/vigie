@@ -648,6 +648,78 @@
           }
         }
       }
+    },
+    "agentsSessions.alert.hostSlept.category" : {
+      "comment" : "Peek kicker category for a session failed because the Mac slept: the kicker reads 'FAILED · HOST SLEPT'.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HOST SLEPT"
+          }
+        }
+      }
+    },
+    "agentsSessions.alert.hostSlept.summary" : {
+      "comment" : "Title of the single wake alert when several working sessions were interrupted by sleep. %ld: the number of sessions (2 or more).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%ld sessions interrupted by sleep"
+          }
+        }
+      }
+    },
+    "agentsSessions.row.hostSlept" : {
+      "comment" : "Status label of an Agents tab row for a session failed because the Mac slept.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "FAILED · HOST SLEPT"
+          }
+        }
+      }
+    },
+    "agentsSessions.row.interrupted" : {
+      "comment" : "Detail line of a session failed because the Mac slept, when its last action is unknown.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Run interrupted by sleep"
+          }
+        }
+      }
+    },
+    "agentsSessions.row.interruptedDuring" : {
+      "comment" : "Detail line (row and alert body) of a session failed because the Mac slept. %@: the interrupted action, e.g. 'Bash'.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Run interrupted during %@"
+          }
+        }
+      }
+    },
+    "agentsSessions.settings.keepAwake" : {
+      "comment" : "Note under Settings › Agents pointing to the core Keep-awake setting (PRD FR-19).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep awake: turn on “Prevent idle sleep while an agent works” in Settings › General. It prevents idle sleep only; closing the lid or putting the Mac to sleep by hand is not covered."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

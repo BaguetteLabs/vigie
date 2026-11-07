@@ -137,6 +137,9 @@ extension AgentsSessionsModule {
             body = SessionRowText.format("agentsSessions.alert.done", agent)
             category = nil
             metrics[Self.workingDurationMetric] = Self.workingDuration(before: session, previous: previous)
+        case .failed where session.failureReason == .hostSlept:
+            body = rowText.interruptedLine(session)
+            category = Self.string("agentsSessions.alert.hostSlept.category")
         case .failed:
             let reason = session.lastMessage ?? Self.string("agentsSessions.alert.failed.unknown")
             body = SessionRowText.format("agentsSessions.alert.failed", agent, reason)
@@ -185,8 +188,13 @@ extension AgentsSessionsModule {
 
     /// Alert action (AD-13, Story 3.3 `AlertActionHandler`): `focus` brings the session's terminal forward, the
     /// same path as the Agents tab. Terminal adapters take no `UserIntent` (activation is their own), so `intent`
-    /// is not used. The focus runs in a task (``alertActionTask``).
+    /// is not used. The focus runs in a task (``alertActionTask``). `open-agents` (the sleep summary, Story
+    /// 4.12) opens the Agents tab, with focus when the action came from the user.
     public func handleAlertAction(_ actionID: String, payload: Data, intent: UserIntent?) {
+        if actionID == Self.openAgentsActionID {
+            host?.openOwnTab(focus: intent)
+            return
+        }
         guard actionID == Self.focusActionID, let key = SessionKey(String(decoding: payload, as: UTF8.self)) else {
             log?.notice("alert action \(actionID, privacy: .public) ignored")
             return

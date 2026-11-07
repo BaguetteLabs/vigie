@@ -68,6 +68,8 @@ public enum SessionReducer {
         }
 
         session.lastEventAt = context.at
+        // An in-order event is the agent speaking again: a host-slept failure no longer applies.
+        session.failureReason = nil
         guard let target = targetStatus(of: event) else {
             sessions[key] = nil
             return .removed(key, last: session.status)
@@ -113,6 +115,28 @@ public enum SessionReducer {
             expired.append(key)
         }
         return expired.sorted { $0.description < $1.description }
+    }
+
+    /// Wake after sleep (Story 4.12, AD-5): each of `keys` that is still `working` becomes `failed` with reason
+    /// `host_slept`, `statusSince = at` (T+ counts from wake). `lastAction` (the interrupted action) and
+    /// `lastEventAt` are kept, so the session's next event applies normally and returns it to its real status.
+    /// Returns one `.status(working → failed)` change per marked session, sorted by key.
+    @discardableResult
+    public static func markHostSlept(
+        keys: some Sequence<SessionKey>, at: Date, in sessions: inout [SessionKey: Session]
+    ) -> [SessionChange] {
+        var changes: [SessionChange] = []
+        for key in Set(keys).sorted(by: { $0.description < $1.description }) {
+            guard var session = sessions[key], session.status == .working else { continue }
+            session.status = .failed
+            session.statusSince = at
+            session.failureReason = .hostSlept
+            session.blockReason = nil
+            session.lastMessage = nil
+            sessions[key] = session
+            changes.append(.status(key, from: .working, to: .failed))
+        }
+        return changes
     }
 
     /// Urgency order (SPEC §7.1, FR34): blocked and failed share the top (most recent `statusSince` first),
@@ -217,6 +241,17 @@ public final class SessionStore {
             generation += 1
         }
         return expired
+    }
+
+    /// Wake after sleep: ``SessionReducer/markHostSlept(keys:at:in:)``. Persisted.
+    @discardableResult
+    public func markHostSlept(_ keys: some Sequence<SessionKey>, at: Date) -> [SessionChange] {
+        let changes = SessionReducer.markHostSlept(keys: keys, at: at, in: &table)
+        if !changes.isEmpty {
+            refresh()
+            generation += 1
+        }
+        return changes
     }
 
     /// The liveness pass (``SessionReducer/reconcile(in:now:failedRetention:isDead:)``); returns the removed keys.

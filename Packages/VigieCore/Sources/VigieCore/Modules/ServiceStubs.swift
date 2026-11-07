@@ -24,14 +24,6 @@ struct UnavailableSecretStore: SecretStore {
     func write(_ value: String?, for key: String) async throws { throw ModuleServiceError.notAvailable }
 }
 
-/// Implemented in Story 4.12. Assertions are tracked but hold nothing.
-struct StubPowerService: PowerService {
-    let tracker: RegistrationTracker
-
-    func preventIdleSleep(reason: String) -> RegistrationToken { tracker.track(RegistrationToken {}) }
-    var sleepWake: AsyncStream<SleepWakeEvent> { AsyncStream { $0.finish() } }
-}
-
 /// Implemented in Story 9.9.
 struct StubClipboardService: ClipboardService {
     func copy(_ text: String, clearAfter: Duration?) {}

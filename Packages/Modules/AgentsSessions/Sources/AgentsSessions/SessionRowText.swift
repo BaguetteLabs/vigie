@@ -21,8 +21,12 @@ public struct SessionRowText: Sendable {
 
     /// `IDLE`, `WORKING · 14M`, `BLOCKED · 12M`; a stale session reads `STALE · 18M`, the time since its
     /// last event.
+    /// A session failed by sleep reads `FAILED · HOST SLEPT` (Story 4.12, UX-DR57).
     public func statusLabel(_ session: Session, now: Date) -> String {
         let status = session.displayStatus(now: now, staleAfter: staleAfter)
+        if status == .failed, session.failureReason == .hostSlept {
+            return Self.format("agentsSessions.row.hostSlept")
+        }
         return StatusLabelFormatter(timeZone: timeZone).label(for: status, elapsed: elapsed(session, status, now))
     }
 
@@ -35,6 +39,15 @@ public struct SessionRowText: Sendable {
             return Self.format("agentsSessions.row.lastEvent", clock)
         }
         return Self.format("agentsSessions.row.lastEventAction", clock, action)
+    }
+
+    /// `Run interrupted during Bash` for a session failed by sleep; `Run interrupted by sleep` without a last
+    /// action (Story 4.12, UX-DR57). The Agents tab row detail and the single wake alert's body.
+    public func interruptedLine(_ session: Session) -> String {
+        guard let action = session.lastAction, !action.isEmpty else {
+            return Self.format("agentsSessions.row.interrupted")
+        }
+        return Self.format("agentsSessions.row.interruptedDuring", action)
     }
 
     /// "vigie, blocked, 2 minutes" (UX-DR63); "vigie, idle"; a stale session reads

@@ -16,6 +16,12 @@ struct AgentIntegrationsView: View {
             ForEach(model.rows) { row in
                 AgentIntegrationRow(row: row, model: model)
             }
+            // Keep-awake is the core `[general] prevent_idle_sleep` key (Story 4.12): modules cannot write core
+            // settings, so the toggle stays in General and this note points to it.
+            Text(verbatim: IntegrationText.string("agentsSessions.settings.keepAwake"))
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .task { await model.refresh() }

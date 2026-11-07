@@ -22,6 +22,9 @@ import os
 /// removed, except failed ones, which stay until ``dismiss(_:)`` or 24 h after entering failed. Sessions the
 /// adapter could not tie to a process (no `agentProcess`) are left to their `session.end`. The same tick
 /// refreshes the derived stale state (`stale_after`) and drops sessions under `ignored_paths`.
+///
+/// Sleep (Story 4.12, `SleepHandling.swift`): keep-awake through `context.power` while any session works;
+/// sessions working when the Mac slept are marked `failed (host_slept)` on wake, before liveness resumes.
 @MainActor @Observable
 public final class AgentsSessionsModule: NotchModule, AlertActionHandler {
     nonisolated static let bundle = LocalizedStringResource.BundleDescription.atURL(Bundle.module.bundleURL)
@@ -129,6 +132,19 @@ public final class AgentsSessionsModule: NotchModule, AlertActionHandler {
     @ObservationIgnored var permissionAlerts: [String: PermissionAlert] = [:]
     /// Sessions whose terminal was chosen before their env arrived; chosen again once it does.
     @ObservationIgnored var unhintedSelections: Set<SessionKey> = []
+    /// `context.power` (Story 4.12).
+    @ObservationIgnored var power: (any PowerService)?
+    /// `context.host`, for the sleep summary's Open Agents action.
+    @ObservationIgnored var host: (any HostControl)?
+    /// The keep-awake request, held while any session works.
+    @ObservationIgnored var keepAwakeToken: RegistrationToken?
+    /// Working sessions noted at `.willSleep`; consumed at `.didWake`.
+    @ObservationIgnored var sleepSnapshot: SleepSnapshot?
+    /// True between `.willSleep` and the end of the wake handling: liveness passes are skipped.
+    @ObservationIgnored var livenessPaused = false
+    /// The open `<n> sessions interrupted by sleep` alert.
+    @ObservationIgnored var sleepSummary: SleepSummaryAlert?
+    @ObservationIgnored var sleepTask: Task<Void, Never>?
     /// Settings › Agents connect flow (Story 4.7); built at start from `context.integrations`.
     public private(set) var integrations: AgentIntegrationsModel?
 
@@ -157,6 +173,8 @@ public final class AgentsSessionsModule: NotchModule, AlertActionHandler {
         activity = context.activity
         notifier = context.notifier
         permissions = context.permissions
+        power = context.power
+        host = context.host
         fallbackTerminalContext = AdapterContextBox(
             settings: DefaultsReadOnlySettings(descriptors: []), secrets: context.secrets,
             executables: context.executables, http: URLSessionHTTPClient(), log: log)
@@ -214,10 +232,21 @@ public final class AgentsSessionsModule: NotchModule, AlertActionHandler {
                 await self?.runLiveness()
             }
         }
+        let sleepWake = context.power.sleepWake
+        sleepTask = Task { [weak self] in
+            for await event in sleepWake {
+                await self?.handleSleepWake(event)
+            }
+        }
         await runLiveness()
     }
 
     public func stop() async {
+        sleepTask?.cancel()
+        sleepTask = nil
+        releaseKeepAwake()
+        sleepSnapshot = nil
+        livenessPaused = false
         eventTask?.cancel()
         eventTask = nil
         readyTask?.cancel()
@@ -230,6 +259,7 @@ public final class AgentsSessionsModule: NotchModule, AlertActionHandler {
         await persister?.write(store.snapshot, generation: store.generation, force: true)
         resolveAllAlerts()
         resolveAllPermissionAlerts()
+        resolveSleepSummary()
         integrations = nil
     }
 
@@ -361,7 +391,9 @@ public final class AgentsSessionsModule: NotchModule, AlertActionHandler {
     }
 
     /// One liveness pass with the processes checked off the main actor; persists any removal.
+    /// Skipped while the Mac sleeps (between `.willSleep` and the wake handling).
     nonisolated func runLiveness(now: Date = Date()) async {
+        guard await !livenessPaused else { return }
         let refs = await processRefs()
         let dead = refs.filter { !liveness.isAlive($0.value) }
         guard let save = await reconcile(now: now, dead: dead), let persister = await persister else { return }
@@ -417,6 +449,8 @@ public final class AgentsSessionsModule: NotchModule, AlertActionHandler {
         let next = SessionReducer.moduleState(statuses: statuses.values)
         if state != next { state = next }
         resolveEndedAlerts()
+        resolveEndedSleepSummary()
+        updateKeepAwake()
     }
 }
 

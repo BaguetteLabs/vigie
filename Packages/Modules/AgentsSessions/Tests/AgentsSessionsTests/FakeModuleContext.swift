@@ -13,15 +13,20 @@ final class FakeModuleContext: ModuleContext, @unchecked Sendable {
     let fakeEvents = FakeEventBus()
     let fakeNotifier: any Notifier
     let fakeIntegrations: any IntegrationInstaller
+    let fakePower: any PowerService
+    let fakeHost: any HostControl
 
     init(
         settings: [String: any SettingValue] = [:], storage: FakeStorage = FakeStorage(),
-        notifier: any Notifier = NoNotifier(), integrations: any IntegrationInstaller = NoIntegrations()
+        notifier: any Notifier = NoNotifier(), integrations: any IntegrationInstaller = NoIntegrations(),
+        power: any PowerService = NoPower(), host: any HostControl = NoHost()
     ) {
         fakeSettings = FakeSettings(values: settings)
         fakeStorage = storage
         fakeNotifier = notifier
         fakeIntegrations = integrations
+        fakePower = power
+        fakeHost = host
     }
 
     var settings: any ModuleSettings { fakeSettings }
@@ -31,9 +36,9 @@ final class FakeModuleContext: ModuleContext, @unchecked Sendable {
     var hotkeys: any HotkeyRegistry { NoHotkeys() }
     var notifier: any Notifier { fakeNotifier }
     var events: any EventBus { fakeEvents }
-    var host: any HostControl { NoHost() }
+    var host: any HostControl { fakeHost }
     var permissions: any PermissionsService { NoPermissions() }
-    var power: any PowerService { NoPower() }
+    var power: any PowerService { fakePower }
     var clipboard: any ClipboardService { NoClipboard() }
     var executables: any ExecutableResolver { NoExecutables() }
     var privacy: any PrivacyService { NoPrivacy() }

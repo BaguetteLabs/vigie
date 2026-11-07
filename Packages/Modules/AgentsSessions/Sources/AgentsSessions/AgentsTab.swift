@@ -44,7 +44,9 @@ extension AgentsSessionsModule {
         let status = session.displayStatus(now: now, staleAfter: text.staleAfter)
         let lastAction =
             status == .failed
-            ? (session.lastMessage ?? text.lastActionLine(session, now: now))
+            ? (session.failureReason == .hostSlept
+                ? text.interruptedLine(session)
+                : (session.lastMessage ?? text.lastActionLine(session, now: now)))
             : text.lastActionLine(session, now: now)
         return SessionRowModel(
             id: session.key.description,
