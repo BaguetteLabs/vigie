@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calendar tab</title>
+<style>
+/* =====================================================================
+   VIGIE · KEY SCREEN · EXPANDED · CALENDAR TAB  (A Chrome Hologram; dark + light)
+   Governing spine sections:
+   - DESIGN.md: Components > Expanded panel, Tab bar, Widget card, Event track
+     (big numeral time, IN 42 MIN in A cyan, 1px now→event track, cyan now dot),
+     Action button; Typography > Big numeral; Colors > Variant accents (cyan =
+     now / today), Contrast; Layout > Containment; Elevation (no glows on light).
+   - EXPERIENCE.md: Information Architecture (other module tabs · Calendar),
+     Component Patterns (Event track; Setup-problem alert = no status glyph,
+     no status hue, opens settings), State Patterns > Surface states (Setup
+     problem: denied permission), Voice and Tone.
+   - .memlog.md (latest): Calendar tab = Itsycal-like month grid left
+     (imports/ref-itsycal-month.png), upcoming list right; click a day = that
+     day + following, max 4-5 events; prev / today / next; no week view.
+   - SPEC.md §7.5 (EventKit, video link joins, calendars to include).
+   ===================================================================== */
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--t-enter:280ms;--t-ambient:6s;--t-work:1.5s;--t-block:1.8s;--t-calm:2.6s;--t-scan:7s}
+body{background:#0B0D10;color:#E6E9ED;font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif;-webkit-font-smoothing:antialiased;padding:36px 24px 80px}
+.page{max-width:1700px;margin:0 auto}
+
+/* ---------- page chrome (neutral, NOT Vigie) ---------- */
+.ph{margin-bottom:34px;padding-bottom:22px;border-bottom:1px solid #1C2229}
+.ph .k{font:500 11px/1 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;color:#8A939C;text-transform:uppercase}
+.ph h1{font:300 34px/1.15 -apple-system,BlinkMacSystemFont,sans-serif;letter-spacing:-.01em;margin:10px 0 18px}
+.ph .lists{display:grid;grid-template-columns:1fr 1fr 1.3fr;gap:28px}
+@media (max-width:1100px){.ph .lists{grid-template-columns:1fr}}
+.ph h3{font:600 11px/1 -apple-system,sans-serif;letter-spacing:.24em;text-transform:uppercase;color:#E6E9ED;margin-bottom:10px}
+.ph ul{list-style:none;display:grid;gap:7px}
+.ph li{font:400 13px/1.5 -apple-system,sans-serif;color:#B4BBC3;padding-left:14px;position:relative}
+.ph li::before{content:"";position:absolute;left:0;top:.62em;width:5px;height:1px;background:#69727B}
+.ph li b{font-weight:600;color:#E6E9ED}
+.ph code{font:500 11.5px ui-monospace,Menlo,monospace;color:#D5DADF}
+.ph .sw{display:inline-block;width:10px;height:10px;border-radius:3px;vertical-align:-1px;margin-right:4px;box-shadow:0 0 0 1px rgba(255,255,255,.2) inset}
+.row-h{display:flex;align-items:baseline;gap:14px;margin:0 0 14px}
+.row-h .n{font:300 26px/1 -apple-system,sans-serif;color:#5C656E}
+.row-h h2{font:600 12px/1 -apple-system,sans-serif;letter-spacing:.28em;text-transform:uppercase}
+.row-h p{margin-left:auto;font:400 12px/1 -apple-system,sans-serif;color:#7D868F}
+.quad{display:grid;grid-template-columns:repeat(2,820px);justify-content:start;gap:26px;margin-bottom:56px}
+@media (max-width:1730px){.quad{grid-template-columns:820px}}
+.col{min-width:0}
+.clab{display:flex;align-items:center;gap:10px;margin-bottom:10px;height:22px}
+.clab .nm{font:500 12px/1 -apple-system,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#D5DADF}
+.mode{font:600 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;padding:4px 7px;border-radius:5px;margin-left:auto}
+.mode.d{background:#22272D;color:#C9CED3}
+.mode.l{background:#E3E5E8;color:#1D2024}
+.note{margin-top:10px;font:400 12px/1.5 -apple-system,sans-serif;color:#A5ADB5;max-width:820px}
+.note b{color:#E6E9ED;font-weight:600}
+.note code{font:500 11px ui-monospace,Menlo,monospace;color:#D5DADF}
+
+/* =====================================================================
+   SHARED BASE · neutral desktop + expanded geometry (from theme-family-4-looks)
+   ===================================================================== */
+.crop{position:relative;overflow:hidden;width:820px;border-radius:12px}
+.stage{width:820px;height:470px;position:relative;overflow:hidden;border-radius:12px;background:linear-gradient(180deg,#3B3E44 0%,#2E3136 100%)}
+.stage.desk-lt{background:linear-gradient(180deg,#DDDFE3 0%,#CDD0D5 100%)}
+.menubar{position:absolute;inset:0 0 auto 0;height:34px;display:flex;justify-content:space-between;align-items:center;padding:0 22px;
+  background:rgba(24,26,30,.72);font:400 13px/1 -apple-system,BlinkMacSystemFont,sans-serif;color:#ECEDEF;z-index:1}
+.menubar .l,.menubar .r{display:flex;gap:18px;align-items:center}
+.batt{width:24px;height:11px;border:1px solid rgba(255,255,255,.6);border-radius:3px;position:relative;padding:1px}
+.batt::before{content:"";display:block;height:100%;width:72%;background:#ECEDEF;border-radius:1px}
+.batt::after{content:"";position:absolute;right:-3px;top:3px;width:2px;height:4px;background:rgba(255,255,255,.6);border-radius:0 1px 1px 0}
+.desk-lt .menubar{background:rgba(250,250,252,.80);color:#1D1D1F;box-shadow:0 .5px 0 rgba(0,0,0,.12)}
+.desk-lt .batt{border-color:rgba(0,0,0,.55)}.desk-lt .batt::before{background:#1D1D1F}.desk-lt .batt::after{background:rgba(0,0,0,.55)}
+
+.island{position:absolute;left:50%;top:0;transform:translateX(-50%);background:#000;z-index:5;overflow:hidden;isolation:isolate}
+.exp{width:720px;height:420px;border-radius:0 0 24px 24px;box-shadow:0 28px 60px rgba(0,0,0,.5)}
+.desk-lt .exp{box-shadow:0 28px 60px rgba(0,0,0,.22),0 2px 8px rgba(0,0,0,.08)}
+.orn{position:absolute;inset:0;pointer-events:none;border-radius:inherit;z-index:0}
+.orn i{position:absolute;display:block}
+.hw{position:absolute;left:50%;top:0;width:196px;height:34px;transform:translateX(-50%);pointer-events:none;z-index:2}
+.hw::after{content:"";position:absolute;left:50%;top:12px;width:7px;height:7px;border-radius:50%;transform:translateX(-50%);
+  background:radial-gradient(circle at 35% 35%,#1e2a3a,#05070a 70%);box-shadow:0 0 0 1px #0d0f13}
+.exp .top{position:relative;z-index:2;height:34px;display:flex;justify-content:space-between;align-items:center;padding:0 20px}
+.tabs{position:relative;z-index:1;display:flex;align-items:center;gap:2px;margin:6px 16px 0;height:30px}
+.tab{height:24px;display:flex;align-items:center;gap:6px;padding:0 12px;white-space:nowrap}
+.card{position:relative;padding:12px 13px;overflow:hidden;min-width:0}
+.ch{display:flex;justify-content:space-between;align-items:center;height:11px;margin-bottom:6px;white-space:nowrap}
+
+/* tab body: the area below the tab bar (top 80 = band 34 + 6 + tabs 30 + 10) */
+.body{position:absolute;left:16px;right:16px;top:80px;bottom:14px;z-index:1;display:grid;gap:10px}
+
+/* standalone inset (a single widget on panel material, for Home widget crops) */
+.inset{position:relative;border-radius:16px;padding:16px;width:fit-content;overflow:hidden}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* =====================================================================
+   SKIN A — CHROME HOLOGRAM (dark tokens; .lt swaps to light tokens)
+   ===================================================================== */
+.dA, .dA .lt .onblack{--platinum:#E8ECF2;--silver:#B4BCC8;--steel:#7A8393;--graphite:#232934;--cy:#A5EEFF;--li:#CDB9FF;--ro:#FFC4E1;
+  --idle:#A6F2D2;--work:#FFD9A0;--done:#8FD3FF;--block:#FF7B8C;--fail:#E58CFF;
+  --iris:linear-gradient(90deg,#A5EEFF,#CDB9FF,#FFC4E1,#E8ECF2,#A5EEFF);--hair:rgba(255,255,255,.07);--hair2:rgba(255,255,255,.04);
+  /* additions for these tabs (see header): metal fills + PLACEHOLDER pace-ahead hue */
+  --metal:linear-gradient(90deg,#B4BCC8,#E8ECF2);--metal2:linear-gradient(90deg,#7A8393,#A3ABB8);
+  --track:rgba(255,255,255,.10);--cardbg:#14181F;
+  --pace:#FF8A3D; /* pace-ahead Ember */
+  /* sample EventKit calendar colours (user-owned data, not Vigie tokens) */
+  --cal1:#7FB2F0;--cal2:#E8A47C;
+}
+.dA .lt{--platinum:#161B24;--silver:#454E5D;--steel:#5D6676;--graphite:#D3D8E0;--cy:#126F8C;--li:#6A4FD0;--ro:#A8346B;
+  --idle:#0E7F57;--work:#985A00;--done:#1D6FC0;--block:#C8243F;--fail:#9B35C4;
+  --iris:linear-gradient(90deg,#3FA3C4,#8A6CE8,#D06A9E,#8A93A2,#3FA3C4);--hair:rgba(22,27,36,.10);--hair2:rgba(22,27,36,.07);
+  --metal:linear-gradient(90deg,#5D6676,#2A313C);--metal2:linear-gradient(90deg,#A3ABB8,#8A93A2);
+  --track:rgba(22,27,36,.12);--cardbg:#FFFFFF;
+  --pace:#B5410A; /* pace-ahead Ember light */
+  --cal1:#2F6DB5;--cal2:#B8582A;
+}
+.dA{
+  --sans:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",sans-serif;--mono:ui-monospace,"SF Mono",Menlo,monospace;
+  font-family:var(--sans);
+  .orn .o1{inset:0;border-radius:inherit;padding:0 1px 1px;background:var(--iris);background-size:300% 100%;
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;
+    animation:a-iris var(--t-ambient) linear infinite}
+  .exp{background:linear-gradient(180deg,#000 0,#000 34px,#070A10 120px,#0A0E16 100%)}
+  .exp .orn .o1{opacity:.35}
+  .exp .orn .o2{left:0;right:0;top:-30%;height:30%;
+    background:linear-gradient(180deg,transparent,rgba(165,238,255,.06) 50%,transparent);animation:a-scan var(--t-scan) ease-in-out infinite}
+  .inset{background:linear-gradient(180deg,#070A10,#0A0E16);box-shadow:0 0 0 1px rgba(255,255,255,.05) inset}
+  .word{font:500 11px/1 var(--sans);letter-spacing:.5em;background:var(--iris);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:a-iris 10s linear infinite}
+  .clock{font:300 11px/1 var(--sans);color:var(--silver);letter-spacing:.12em}
+  .clock b{font-weight:400;color:var(--idle)}
+  .tabs{padding:0 3px;border-radius:999px;background:rgba(255,255,255,.035);box-shadow:0 0 0 1px rgba(255,255,255,.06) inset;width:max-content}
+  .tab{font:500 11px/1 var(--sans);color:var(--steel);border-radius:999px;letter-spacing:.04em}
+  .tab.on{color:var(--platinum);background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.03));box-shadow:0 0 0 1px rgba(232,236,242,.16) inset}
+  .tab .mk{width:5px;height:5px;background:var(--block);transform:rotate(45deg)}
+  .card{border-radius:16px;background:linear-gradient(160deg,rgba(255,255,255,.055),rgba(255,255,255,.015));box-shadow:0 0 0 1px rgba(232,236,242,.08) inset}
+  .card::before{content:"";position:absolute;left:16px;right:16px;top:0;height:1px;background:var(--iris);background-size:300% 100%;opacity:.45;animation:a-iris 12s linear infinite}
+  .ch .t{font:500 9px/1 var(--sans);letter-spacing:.26em;color:var(--silver);text-transform:uppercase}
+  .ch .m{font:400 9px/1 var(--sans);letter-spacing:.14em;color:var(--steel);text-transform:uppercase}
+  .ch .m b{font-weight:500;color:var(--silver)}
+  .ch .m .w{color:var(--work);font-weight:500}
+  .act{height:30px;display:inline-flex;align-items:center;justify-content:space-between;gap:14px;padding:0 14px;white-space:nowrap;
+    font:500 10px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--platinum);border-radius:999px;border:1px solid rgba(232,236,242,.22);background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.01))}
+  .act kbd{font:400 11px var(--sans);letter-spacing:0;text-transform:none;color:var(--silver)}
+  .act.sec{color:var(--silver);border-color:rgba(255,255,255,.10);background:none}
+
+  /* ---------------- A · LIGHT (only on .lt surfaces) ---------------- */
+  .lt{
+    &.exp{background:linear-gradient(180deg,#000 0 34px,#F7F8FB 34px,#EEF1F6 100%)}
+    &.exp .orn .o1{opacity:.7}
+    &.exp .orn .o2{background:linear-gradient(180deg,transparent,rgba(63,163,196,.06) 50%,transparent)}
+    &.inset{background:linear-gradient(180deg,#F7F8FB,#EEF1F6);box-shadow:0 0 0 1px rgba(22,27,36,.06) inset}
+    .tabs{background:rgba(22,27,36,.045);box-shadow:0 0 0 1px rgba(22,27,36,.07) inset}
+    .tab.on{background:#FFFFFF;box-shadow:0 0 0 1px rgba(22,27,36,.10) inset,0 1px 2px rgba(22,27,36,.08)}
+    .card{background:linear-gradient(160deg,#FFFFFF,rgba(255,255,255,.72));box-shadow:0 0 0 1px rgba(22,27,36,.08) inset,0 1px 2px rgba(22,27,36,.04)}
+    .card::before{opacity:.8}
+    .act{border-color:rgba(22,27,36,.20);background:linear-gradient(180deg,#FFFFFF,#EEF1F5);box-shadow:0 1px 1px rgba(22,27,36,.06)}
+    .act.sec{border-color:rgba(22,27,36,.12);background:none;box-shadow:none}
+  }
+}
+@keyframes a-iris{to{background-position:300% 0}}
+@keyframes a-scan{0%,100%{top:-30%}50%{top:100%}}
+@keyframes a-breathe{0%,100%{box-shadow:0 0 0 1px rgba(205,185,255,.45) inset,0 0 0 0 rgba(205,185,255,0)}50%{box-shadow:0 0 0 1px rgba(205,185,255,.45) inset,0 0 0 5px rgba(205,185,255,.08)}}
+
+/* ---------- empty-state block (shared by the three tabs) ---------- */
+.dA .empty{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px;height:100%}
+.dA .empty .ek{font:500 10px/1 var(--sans);letter-spacing:.26em;text-transform:uppercase;color:var(--silver)}
+.dA .empty p{font:400 12px/16px var(--sans);color:var(--steel);max-width:320px}
+.dA .empty .act{margin-top:6px}
+.dA .empty .ring0{width:34px;height:34px;border-radius:50%;box-shadow:0 0 0 1px var(--track) inset;margin-bottom:4px}
+
+/* reduced motion: every loop stops (OS has final say, EXPERIENCE Accessibility Floor) */
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+
+
+/* ---------- Calendar tab ---------- */
+.c-body{grid-template-columns:300px 1fr}
+/* month grid (Itsycal-like structure, Vigie A skin) */
+.dA .mh{display:flex;align-items:center;justify-content:space-between;height:20px}
+.dA .mh h4{font:300 16px/1 var(--sans);color:var(--platinum);letter-spacing:.01em}
+.dA .mh h4 span{color:var(--steel)}
+.dA .nav{display:flex;align-items:center;gap:4px}
+.dA .nav i{width:20px;height:20px;display:grid;place-items:center;border-radius:50%;font:400 11px/1 var(--sans);font-style:normal;color:var(--silver)}
+.dA .nav i.dot::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--steel);opacity:.6}
+.dA .nav i.dot.live{box-shadow:0 0 0 1px var(--cy) inset}
+.dA .nav i.dot.live::before{background:var(--cy);opacity:1;box-shadow:0 0 5px var(--cy)}
+.dA .nav i.hl{box-shadow:0 0 0 1px rgba(232,236,242,.22) inset;color:var(--platinum)}
+.dA .mg{position:relative;display:grid;grid-template-columns:22px repeat(7,36px);margin-top:10px}
+.dA .mg .wd{height:16px;font:500 8px/16px var(--sans);letter-spacing:.16em;color:var(--steel);text-align:center;text-transform:uppercase}
+.dA .mg .wk{height:37px;font:400 9px/26px var(--mono);color:var(--steel);text-align:left;opacity:.8}
+.dA .mg .d{position:relative;height:37px;display:flex;flex-direction:column;align-items:center;padding-top:6px;font:300 13px/16px var(--sans);color:var(--platinum);font-variant-numeric:tabular-nums}
+.dA .mg .d.adj{color:var(--steel);opacity:.55}
+.dA .mg .d .dots{display:flex;gap:3px;height:4px;margin-top:3px}
+.dA .mg .d .dots i{width:4px;height:4px;border-radius:50%}
+.dA .dots i.k1{background:var(--cal1)} .dA .dots i.k2{background:var(--cal2)}
+.dA .mg .d.today::before{content:"";position:absolute;left:4px;right:4px;top:2px;bottom:2px;border-radius:8px;box-shadow:0 0 0 1px var(--cy) inset}
+.dA .mg .d.today{color:var(--cy);font-weight:400}
+.dA .mg .d.sel::after{content:"";position:absolute;left:4px;right:4px;top:2px;bottom:2px;border-radius:8px;background:rgba(232,236,242,.10);box-shadow:0 0 0 1px rgba(232,236,242,.30) inset;z-index:-1}
+.dA .mg .d.sel{font-weight:400;z-index:0}
+.dA .mg svg.mo{position:absolute;left:22px;top:16px;pointer-events:none;overflow:visible}
+.dA .mg svg.mo path{fill:none;stroke:rgba(232,236,242,.28);stroke-width:1;stroke-linejoin:round}
+.dA .cals{display:flex;gap:14px;margin-top:8px;font:500 8px/1 var(--sans);letter-spacing:.2em;color:var(--steel);text-transform:uppercase}
+.dA .cals i{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:6px;vertical-align:0}
+/* upcoming list */
+.dA .dh{display:flex;align-items:center;gap:8px;height:22px;font:500 8px/1 var(--sans);letter-spacing:.22em;color:var(--steel);text-transform:uppercase;white-space:nowrap}
+.dA .dh b{font-weight:500;color:var(--silver)}
+.dA .dh .chipd{margin-left:auto}
+.dA .chipd{display:inline-flex;align-items:center;gap:6px;height:18px;padding:0 8px;border-radius:999px;font:400 10px/1 var(--sans);letter-spacing:0;text-transform:none;color:var(--platinum);white-space:nowrap;
+  background:rgba(255,255,255,.04);box-shadow:0 0 0 1px rgba(232,236,242,.12) inset}
+.dA .chipd small{font:500 7.5px/1 var(--sans);letter-spacing:.18em;color:var(--steel);text-transform:uppercase}
+.dA .chipd i{width:5px;height:5px;border-radius:50%}
+.dA .hero{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:14px;align-items:center;padding:10px 12px 18px;margin:2px -4px 4px;border-radius:12px;
+  background:linear-gradient(90deg,rgba(165,238,255,.08),rgba(165,238,255,.01));box-shadow:0 0 0 1px rgba(165,238,255,.18) inset}
+.dA .when{font:200 38px/34px var(--sans);letter-spacing:-.02em;color:var(--platinum);font-variant-numeric:tabular-nums}
+.dA .hero .etitle{font:400 14px/16px var(--sans);color:var(--platinum);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dA .hero .act{padding:0 12px;gap:10px}
+.dA .hero .when{font-size:34px}
+.dA .hero .rel{margin-top:5px;font:500 9px/10px var(--sans);letter-spacing:.22em;color:var(--cy);text-transform:uppercase}
+.dA .hero .fx{margin-top:5px;font:400 10px/1 var(--mono);color:var(--steel);white-space:nowrap}
+.dA .hero .fx i{display:inline-block;width:5px;height:5px;border-radius:50%;margin:0 5px 0 2px;vertical-align:1px}
+.dA .etrack{position:absolute;left:12px;right:12px;bottom:8px;height:1px;background:rgba(255,255,255,.08)}
+.dA .etrack i{position:absolute;left:0;top:-2px;width:5px;height:5px;border-radius:50%;background:var(--cy);box-shadow:0 0 6px var(--cy)}
+.dA .etrack b{position:absolute;right:0;top:-3px;width:1px;height:7px;background:var(--platinum)}
+.dA .er{display:grid;grid-template-columns:42px 6px 1fr 60px 58px;gap:9px;align-items:center;height:26px;margin:0 -4px;padding:0 4px;border-radius:8px}
+.dA .er+.er{box-shadow:0 -1px 0 var(--hair2)}
+.dA .er .tm{font:300 12px/1 var(--sans);color:var(--platinum);font-variant-numeric:tabular-nums}
+.dA .er .k{width:6px;height:6px;border-radius:50%}
+.dA .er .k.k1{background:var(--cal1)} .dA .er .k.k2{background:var(--cal2)}
+.dA .er .tt{font:400 12px/1 var(--sans);color:var(--platinum);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dA .er .tt small{font:400 10px var(--mono);color:var(--steel);margin-left:6px}
+.dA .er .cl{font:500 8px/1 var(--sans);letter-spacing:.2em;color:var(--steel);text-transform:uppercase}
+.dA .er .rl{font:500 8.5px/1 var(--sans);letter-spacing:.16em;color:var(--silver);text-align:right;text-transform:uppercase;white-space:nowrap}
+.dA .nil{font:400 11px/26px var(--sans);color:var(--steel)}
+.dA .more{position:absolute;left:13px;right:13px;bottom:10px;display:flex;justify-content:space-between;font:500 8px/1 var(--sans);letter-spacing:.18em;color:var(--steel);text-transform:uppercase}
+/* setup problem (permission) — neutral: no status glyph, no status hue */
+.dA .setup{margin:auto;max-width:380px;padding:18px 20px;border-radius:14px;box-shadow:0 0 0 1px rgba(232,236,242,.16) inset;background:rgba(255,255,255,.025);text-align:left}
+.dA .setup .sk{display:flex;align-items:center;gap:8px;font:500 9px/1 var(--sans);letter-spacing:.24em;color:var(--silver);text-transform:uppercase}
+.dA .setup .sk i{width:12px;height:12px;border-radius:3px;box-shadow:0 0 0 1px var(--silver) inset;position:relative}
+.dA .setup .sk i::after{content:"";position:absolute;left:5.5px;top:3px;width:1px;height:6px;background:var(--silver)}
+.dA .setup h4{font:300 17px/20px var(--sans);color:var(--platinum);margin-top:12px}
+.dA .setup p{font:400 12px/16px var(--sans);color:var(--silver);margin-top:8px}
+.dA .setup p code{font:400 10.5px var(--mono);color:var(--platinum)}
+.dA .setup .row{display:flex;gap:8px;margin-top:16px}
+.dA .lt{
+  .mg svg.mo path{stroke:rgba(22,27,36,.30)}
+  .mg .d.sel::after{background:rgba(22,27,36,.06);box-shadow:0 0 0 1px rgba(22,27,36,.28) inset}
+  .nav i.hl{box-shadow:0 0 0 1px rgba(22,27,36,.18) inset}
+  .nav i.dot.live::before{box-shadow:none}
+  .chipd{background:rgba(22,27,36,.03);box-shadow:0 0 0 1px rgba(22,27,36,.12) inset}
+  .hero{background:linear-gradient(90deg,rgba(18,111,140,.07),rgba(18,111,140,0));box-shadow:0 0 0 1px rgba(18,111,140,.24) inset}
+  .etrack{background:rgba(22,27,36,.16)} .etrack i{box-shadow:none}
+  .setup{box-shadow:0 0 0 1px rgba(22,27,36,.14) inset;background:rgba(22,27,36,.02)}
+}
+
+</style></head>
+<body><svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<linearGradient id="metalA" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#B4BCC8"/></linearGradient>
+<linearGradient id="silverA" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#A3ABB8"/><stop offset="1" stop-color="#6E7787"/></linearGradient>
+<linearGradient id="metalAL" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2A313C"/><stop offset="1" stop-color="#5D6676"/></linearGradient>
+<linearGradient id="silverAL" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8A93A2"/><stop offset="1" stop-color="#A3ABB8"/></linearGradient>
+</defs></svg>
+<div class="page">
+<header class="ph"><div class="k">Vigie · key screen · expanded view</div><h1>Calendar tab</h1><div class="lists"><div><h3>Shown</h3><ul><li><b>01</b> Main: an Itsycal-structured month grid (header with ‹ ● ›, weekday initials, ISO week column, per-calendar dots, today outlined in cyan, a line tracing November's days, adjacent-month days dimmed) and the upcoming list (5 events; the next one is a hero with <code>IN 42 MIN</code> and Join call).</li><li><b>02</b> A day clicked (Thu 12): the list starts at that day. The header dot lights up as <b>back to today</b>. Also shown: navigating to December.</li><li><b>03</b> Permission not granted (setup-problem styling) and no events today.</li></ul></div><div><h3>Data</h3><ul><li>Two EventKit calendars: <b>Work</b> and <b>Personal</b>. Dot colours are sample EventKit calendar colours (user data), not Vigie tokens. Time context: Wed 04 Nov 2026 14:48. Weeks start Monday; ISO week numbers.</li></ul></div><div><h3>Composition choices to confirm</h3><ul><li><b>Grid geometry:</b> 300px month card, 36 × 37px day cells, 22px week column. One dot per calendar with events that day, no event count.</li><li><b>Today vs selected:</b> today = cyan 1px rounded outline (A's now colour). Selected day = platinum tint with a hairline. Both show when the selected day is not today.</li><li><b>Today dot:</b> dim when today is in view and selected. Cyan and lit when you can jump back (another day selected or another month shown).</li><li><b>Month outline:</b> a 1px platinum line at 28% traces the month's days, inside the card.</li><li><b>Upcoming list:</b> grouped by day headers. The next event is a hero row (big numeral, cyan countdown, now→event track, <code>JOIN CALL ↵</code> only when there is a video link). Other rows: time · calendar dot · title (+ video tag) · calendar · relative time. All-day events show as a chip on their day header. 5 events max, then <code>+N LATER</code>.</li><li><b>Month navigation</b> (‹ ›) changes only the grid. The list keeps its selected day until a day is clicked.</li><li><b>Calendar colours:</b> uses the EventKit colours for dots, as the user asked. They may clash with status hues; a later option could map calendars to metal tones.</li><li><b>Permission state:</b> an in-tab setup card with a neutral outline, an <code>i</code>-square mark and two buttons. Must match the setup-problem alert in <code>key-alert-variants.html</code>.</li><li><b>No events today:</b> the grid stays, with no dot on today. The list shows <code>NO EVENTS TODAY</code>, then the following days.</li></ul></div></div></header>
+<div class="row-h"><span class="n">01</span><h2>Calendar · main state</h2><p>720 × 420 · A Chrome Hologram · today selected</p></div><div class="quad"><div class="col dA"><div class="clab"><span class="nm">A · Chrome Hologram</span><span class="mode d">Dark</span></div><div class="crop"><div class="stage"><div class="menubar"><div class="l"><span>Window</span><span>Help</span></div><div class="r"><span class="batt"></span><span>14:48</span></div></div><div class="island exp">
+  <div class="orn"><i class="o1"></i><i class="o2"></i></div>
+  <div class="top onblack"><span class="word">VIGIE</span><span class="clock"><b>●</b> Online · 14:48 · Wed 04 Nov</span></div>
+  <div class="hw"></div>
+  <div class="tabs"><span class="tab">Home</span><span class="tab">Agents <span class="mk"></span></span><span class="tab">Usage</span><span class="tab">Shelf</span><span class="tab on">Calendar</span><span class="tab">GitHub PRs</span></div>
+  <div class="body c-body"><div class="card"><div class="mh"><h4>November <span>2026</span></h4><div class="nav"><i>‹</i><i class="dot"></i><i class="">›</i></div></div>
+      <div class="mg"><span class="wd"></span><span class="wd">M</span><span class="wd">T</span><span class="wd">W</span><span class="wd">T</span><span class="wd">F</span><span class="wd">S</span><span class="wd">S</span><span class="wk">44</span><span class="d adj">26<span class="dots"></span></span><span class="d adj">27<span class="dots"></span></span><span class="d adj">28<span class="dots"></span></span><span class="d adj">29<span class="dots"><i class="k2"></i></span></span><span class="d adj">30<span class="dots"><i class="k1"></i><i class="k2"></i></span></span><span class="d adj">31<span class="dots"></span></span><span class="d">1<span class="dots"></span></span><span class="wk">45</span><span class="d">2<span class="dots"><i class="k1"></i><i class="k2"></i></span></span><span class="d">3<span class="dots"><i class="k1"></i></span></span><span class="d today">4<span class="dots"><i class="k1"></i><i class="k2"></i></span></span><span class="d">5<span class="dots"><i class="k1"></i></span></span><span class="d">6<span class="dots"><i class="k1"></i><i class="k2"></i></span></span><span class="d">7<span class="dots"></span></span><span class="d">8<span class="dots"></span></span><span class="wk">46</span><span class="d">9<span class="dots"><i class="k1"></i></span></span><span class="d">10<span class="dots"><i class="k1"></i></span></span><span class="d">11<span class="dots"><i class="k2"></i></span></span><span class="d">12<span class="dots"><i class="k1"></i><i class="k2"></i></span></span><span class="d">13<span class="dots"><i class="k1"></i></span></span><span class="d">14<span class="dots"><i class="k2"></i></span></span><span class="d">15<span class="dots"></span></span><span class="wk">47</span><span class="d">16<span class="dots"><i class="k1"></i></span></span><span class="d">17<span class="dots"><i class="k1"></i></span></span><span class="d">18<span class="dots"><i class="k1"></i></span></span><span class="d">19<span class="dots"><i class="k1"></i><i class="k2"></i></span></span><span class="d">20<span class="dots"><i class="k1"></i></span></span><span class="d">21<span class="dots"><i class="k2"></i></span></span><span class="d">22<span class="dots"></span></span><span class="wk">48</span><span class="d">23<span class="dots"><i class="k1"></i></span></span><span class="d">24<span class="dots"><i class="k1"></i></span></span><span class="d">25<span class="dots"><i class="k2"></i></span></span><span class="d">26<span class="dots"><i class="k1"></i></span></span><span class="d">27<span class="dots"><i class="k1"></i></span></span><span class="d">28<span class="dots"></span></span><span class="d">29<span class="dots"></span></span><span class="wk">49</span><span class="d">30<span class="dots"><i class="k1"></i></span></span><span class="d adj">1<span class="dots"><i class="k1"></i></span></span><span class="d adj">2<span class="dots"><i class="k1"></i></span></span><span class="d adj">3<span class="dots"><i class="k1"></i><i class="k2"></i></span></span><span class="d adj">4<span class="dots"><i class="k1"></i></span></span><span class="d adj">5<span class="dots"></span></span><span class="d adj">6<span class="dots"></span></span><svg class="mo" width="252" height="222"><path d="M217.5 1.5 L250.5 1.5 L250.5 185.0 L34.5 185.0 L34.5 220.5 L1.5 220.5 L1.5 37.0 L217.5 37.0 Z"/></svg></div>
+      <div class="cals"><span><i style="background:var(--cal1)"></i>Work</span><span><i style="background:var(--cal2)"></i>Personal</span></div></div><div class="card"><div class="ch"><span class="t">Upcoming</span><span class="m">From <b>today</b> · 5 shown</span></div>
+      <div class="dh"><b>Today</b> · Wed 04 Nov<span class="chipd"><i style="background:var(--cal1)"></i>v0.3 release week <small>All day</small></span></div>
+      <div class="hero"><span class="when">15:30</span><div><div class="etitle">Design review</div><div class="rel">In 42 min</div>
+      <div class="fx">15:30–16:15 · Meet<i style="background:var(--cal1)"></i>Work</div></div><span class="act">Join call <kbd>↵</kbd></span>
+      <div class="etrack"><i></i><b></b></div></div>
+      <div class="er"><span class="tm">17:00</span><i class="k k2"></i><span class="tt">Dentist</span><span class="cl">Personal</span><span class="rl">In 2h12</span></div><div class="er"><span class="tm">18:30</span><i class="k k2"></i><span class="tt">Climbing</span><span class="cl">Personal</span><span class="rl">In 3h42</span></div>
+      <div class="dh"><b>Thu 05 Nov</b> · Tomorrow</div>
+      <div class="er"><span class="tm">09:30</span><i class="k k1"></i><span class="tt">Standup<small>Meet</small></span><span class="cl">Work</span><span class="rl">Thu</span></div><div class="er"><span class="tm">14:00</span><i class="k k1"></i><span class="tt">Vendor call · Stripe<small>Zoom</small></span><span class="cl">Work</span><span class="rl">Thu</span></div>
+      <div class="more"><span>+4 later this week</span><span>Scroll</span></div></div></div>
+</div></div></div><div class="note">Today (4) is outlined in cyan. The list runs from now: <b>Design review · 15:30 · in 42 min</b> as the hero, then the rest of today and tomorrow.</div></div><div class="col dA"><div class="clab"><span class="nm">A · Chrome Hologram</span><span class="mode l">Light</span></div><div class="crop"><div class="stage desk-lt"><div class="menubar"><div class="l"><span>Window</span><span>Help</span></div><div class="r"><span class="batt"></span><span>14:48</span></div></div><div class="island exp lt">
+  <div class="orn"><i class="o1"></i><i class="o2"></i></div>
+  <div class="top onblack"><span class="word">VIGIE</span><span class="clock"><b>●</b> Online · 14:48 · Wed 04 Nov</span></div>
+  <div class="hw"></div>
+  <div class="tabs"><span class="tab">Home</span><span class="tab">Agents <span class="mk"></span></span><span class="tab">Usage</span><span class="tab">Shelf</span><span class="tab on">Calendar</span><span class="tab">GitHub PRs</span></div>
+  <div class="body c-body"><div class="card"><div class="mh"><h4>November <span>2026</span></h4><div class="nav"><i>‹</i><i class="dot"></i><i class="">›</i></div></div>
+      <div class="mg"><span class="wd"></span><span class="wd">M</span><span class="wd">T</span><span class="wd">W</span><span class="wd">T</span><span class="wd">F</span><span class="wd">S</span><span class="wd">S</span><span class="wk">44</span><span class="d adj">26<span class="dots"></span></span><span class="d adj">27<span class="dots"></span></span><span class="d adj">28<span class="dots"></span></span><span class="d adj">29<span class="dots"><i class="k2"></i></span></span><span class="d adj">30<span class="dots"><i class="k1"></i><i class="k2"></i></span></span><span class="d adj">31<span class="dots"></span></span><span class="d">1<span class="dots"></span></span><span class="wk">45</span><span class="d">2<span class="dots"><i class="k1"></i><i class="k2"></i></span></span><span class="d">3<span class="dots"><i class="k1"></i></span></span><span class="d today">4<span class="dots"><i class="k1"></i><i class="k2"></i></span></span><span class="d">5<span class="dots"><i class="k1"></i></span></span><span class="d">6<span class="dots"><i class="k1"></i><i class="k2"></i></span></span><span class="d">7<span class="dots"></span></span><span class="d">8<span class="dots"></span></span><span class="wk">46</span><span class="d">9<span class="dots"><i class="k1"></i></span></span><span class="d">10<span class="dots"><i class="k1"></i></span></span><span class="d">11<span class="dots"><i class="k2"></i></span></span><span class="d">12<span class="dots"><i class="k1"></i><i class="k2"></i></span></span><span class="d">13<span class="dots"><i class="k1"></i></span></span><span class="d">14<span class="dots"><i class="k2"></i></span></span><span class="d">15<span class="dots"></span></span><span class="wk">47</span><span class="d">16<span class="dots"><i class="k1"></i></span></span><span class="d">17<span class="dots"><i class="k1"></i></span></span><span class="d">18<span class="dots"><i class="k1"></i></span></span><span class="d">19<span class="dots"><i class="k1"></i><i class="k2"></i></span></span><span class="d">20<span class="dots"><i class="k1"></i></span></span><span class="d">21<span class="dots"><i class="k2"></i></span></span><span class="d">22<span class="dots"></span></span><span class="wk">48</span><span class="d">23<span class="dots"><i class="k1"></i></span></span><span class="d">24<span class="dots"><i class="k1"></i></span></span><span class="d">25<span class="dots"><i class="k2"></i></span></span><span class="d">26<span class="dots"><i class="k1"></i></span></span><span class="d">27<span class="dots"><i class="k1"></i></span></span><span class="d">28<span class="dots"></span></span><span class="d">29<span class="dots"></span></span><span class="wk">49</span><span class="d">30<span class="dots"><i class="k1"></i></span></span><span class="d adj">1<span class="dots"><i class="k1"></i></span></span><span class="d adj">2<span class="dots"><i class="k1"></i></span></span><span class="d adj">3<span class="dots"><i class="k1"></i><i class="k2"></i></span></span><span class="d adj">4<span class="dots"><i class="k1"></i></span></span><span class="d adj">5<span class="dots"></span></span><span class="d adj">6<span class="dots"></span></span><svg class="mo" width="252" height="222"><path d="M217.5 1.5 L250.5 1.5 L250.5 185.0 L34.5 185.0 L34.5 220.5 L1.5 220.5 L1.5 37.0 L217.5 37.0 Z"/></svg></div>
+      <div class="cals"><span><i style="background:var(--cal1)"></i>Work</span><span><i style="background:var(--cal2)"></i>Personal</span></div></div><div class="card"><div class="ch"><span class="t">Upcoming</span><span class="m">From <b>today</b> · 5 shown</span></div>
+      <div class="dh"><b>Today</b> · Wed 04 Nov<span class="chipd"><i style="background:var(--cal1)"></i>v0.3 release week <small>All day</small></span></div>
+      <div class="hero"><span class="when">15:30</span><div><div class="etitle">Design review</div><div class="rel">In 42 min</div>
+      <div class="fx">15:30–16:15 · Meet<i style="background:var(--cal1)"></i>Work</div></div><span class="act">Join call <kbd>↵</kbd></span>
+      <div class="etrack"><i></i><b></b></div></div>
+      <div class="er"><span class="tm">17:00</span><i class="k k2"></i><span class="tt">Dentist</span><span class="cl">Personal</span><span class="rl">In 2h12</span></div><div class="er"><span class="tm">18:30</span><i class="k k2"></i><span class="tt">Climbing</span><span class="cl">Personal</span><span class="rl">In 3h42</span></div>
+      <div class="dh"><b>Thu 05 Nov</b> · Tomorrow</div>
+      <div class="er"><span class="tm">09:30</span><i class="k k1"></i><span class="tt">Standup<small>Meet</small></span><span class="cl">Work</span><span class="rl">Thu</span></div><div class="er"><span class="tm">14:00</span><i class="k k1"></i><span class="tt">Vendor call · Stripe<small>Zoom</small></span><span class="cl">Work</span><span class="rl">Thu</span></div>
+      <div class="more"><span>+4 later this week</span><span>Scroll</span></div></div></div>
+</div></div></div><div class="note">Light: cyan becomes the deeper <code>#126F8C</code>, and the calendar dots use darker sample colours. No glows.</div></div></div><div class="row-h"><span class="n">02</span><h2>Calendar · day clicked + next month</h2><p>Thu 12 selected · December via ›</p></div><div class="quad"><div class="col dA"><div class="clab"><span class="nm">Day clicked · Thu 12</span><span class="mode d">Dark</span></div><div class="crop"><div class="stage"><div class="menubar"><div class="l"><span>Window</span><span>Help</span></div><div class="r"><span class="batt"></span><span>14:48</span></div></div><div class="island exp">
+  <div class="orn"><i class="o1"></i><i class="o2"></i></div>
+  <div class="top onblack"><span class="word">VIGIE</span><span class="clock"><b>●</b> Online · 14:48 · Wed 04 Nov</span></div>
+  <div class="hw"></div>
+  <div class="tabs"><span class="tab">Home</span><span class="tab">Agents <span class="mk"></span></span><span class="tab">Usage</span><span class="tab">Shelf</span><span class="tab on">Calendar</span><span class="tab">GitHub PRs</span></div>
+  <div class="body c-body"><div class="card"><div class="mh"><h4>November <span>2026</span></h4><div class="nav"><i>‹</i><i class="dot live"></i><i class="">›</i></div></div>
+      <div class="mg"><span class="wd"></span><span class="wd">M</span><span class="wd">T</span><span class="wd">W</span><span class="wd">T</span><span class="wd">F</span><span class="wd">S</span><span class="wd">S</span><span class="wk">44</span><span class="d adj">26<span class="dots"></span></span><span class="d adj">27<span class="dots"></span></span><span class="d adj">28<span class="dots"></span></span><span class="d adj">29<span class="dots"><i class="k2"></i></span></span><span class="d adj">30<span class="dots"><i class="k1"></i><i class="k2"></i></span></span><span class="d adj">31<span class="dots"></span></span><span class="d">1<span class="dots"></span></span><span class="wk">45</span><span class="d">2<span class="dots"><i class="k1"></i><i class="k2"></i></span></span><span class="d">3<span class="dots"><i class="k1"></i></span></span><span class="d today">4<span class="dots"><i class="k1"></i><i class="k2"></i></span></span><span class="d">5<span class="dots"><i class="k1"></i></span></span><span class="d">6<span class="dots"><i class="k1"></i><i class="k2"></i></span></span><span class="d">7<span class="dots"></span></span><span class="d">8<span class="dots"></span></span><span class="wk">46</span><span class="d">9<span class="dots"><i class="k1"></i></span></span><span class="d">10<span class="dots"><i class="k1"></i></span></span><span class="d">11<span class="dots"><i class="k2"></i></span></span><span class="d sel">12<span class="dots"><i class="k1"></i><i class="k2"></i></span></span><span class="d">13<span class="dots"><i class="k1"></i></span></span><span class="d">14<span class="dots"><i class="k2"></i></span></span><span class="d">15<span class="dots"></span></span><span class="wk">47</span><span class="d">16<span class="dots"><i class="k1"></i></span></span><span class="d">17<span class="dots"><i class="k1"></i></span></span><span class="d">18<span class="dots"><i class="k1"></i></span></span><span class="d">19<span class="dots"><i class="k1"></i><i class="k2"></i></span></span><span class="d">20<span class="dots"><i class="k1"></i></span></span><span class="d">21<span class="dots"><i class="k2"></i></span></span><span class="d">22<span class="dots"></span></span><span class="wk">48</span><span class="d">23<span class="dots"><i class="k1"></i></span></span><span class="d">24<span class="dots"><i class="k1"></i></span></span><span class="d">25<span class="dots"><i class="k2"></i></span></span><span class="d">26<span class="dots"><i class="k1"></i></span></span><span class="d">27<span class="dots"><i class="k1"></i></span></span><span class="d">28<span class="dots"></span></span><span class="d">29<span class="dots"></span></span><span class="wk">49</span><span class="d">30<span class="dots"><i class="k1"></i></span></span><span class="d adj">1<span class="dots"><i class="k1"></i></span></span><span class="d adj">2<span class="dots"><i class="k1"></i></span></span><span class="d adj">3<span class="dots"><i class="k1"></i><i class="k2"></i></span></span><span class="d adj">4<span class="dots"><i class="k1"></i></span></span><span class="d adj">5<span class="dots"></span></span><span class="d adj">6<span class="dots"></span></span><svg class="mo" width="252" height="222"><path d="M217.5 1.5 L250.5 1.5 L250.5 185.0 L34.5 185.0 L34.5 220.5 L1.5 220.5 L1.5 37.0 L217.5 37.0 Z"/></svg></div>
+      <div class="cals"><span><i style="background:var(--cal1)"></i>Work</span><span><i style="background:var(--cal2)"></i>Personal</span></div></div><div class="card"><div class="ch"><span class="t">Upcoming</span><span class="m">From <b>Thu 12 Nov</b> · 5 shown</span></div>
+      <div class="dh"><b>Thu 12 Nov</b> · in 8 days</div>
+      <div class="er"><span class="tm">10:00</span><i class="k k1"></i><span class="tt">Sprint planning<small>Meet</small></span><span class="cl">Work</span><span class="rl">In 8d</span></div><div class="er"><span class="tm">19:30</span><i class="k k2"></i><span class="tt">Dinner · Marc</span><span class="cl">Personal</span><span class="rl">In 8d</span></div>
+      <div class="dh"><b>Fri 13 Nov</b></div>
+      <div class="er"><span class="tm">09:30</span><i class="k k1"></i><span class="tt">Standup<small>Meet</small></span><span class="cl">Work</span><span class="rl">In 9d</span></div><div class="er"><span class="tm">16:00</span><i class="k k1"></i><span class="tt">Retro · v0.3</span><span class="cl">Work</span><span class="rl">In 9d</span></div>
+      <div class="dh"><b>Sat 14 Nov</b></div>
+      <div class="er"><span class="tm">11:00</span><i class="k k2"></i><span class="tt">Climbing</span><span class="cl">Personal</span><span class="rl">In 10d</span></div>
+      <div class="more"><span>● in header · back to today</span><span>Scroll</span></div></div></div>
+</div></div></div><div class="note">The list starts on Thu 12 and shows 5 events over 3 days. The lit cyan header dot returns to today. Today keeps its outline.</div></div><div class="col dA"><div class="clab"><span class="nm">Next month · December</span><span class="mode d">Dark</span></div><div class="crop"><div class="stage"><div class="menubar"><div class="l"><span>Window</span><span>Help</span></div><div class="r"><span class="batt"></span><span>14:48</span></div></div><div class="island exp">
+  <div class="orn"><i class="o1"></i><i class="o2"></i></div>
+  <div class="top onblack"><span class="word">VIGIE</span><span class="clock"><b>●</b> Online · 14:48 · Wed 04 Nov</span></div>
+  <div class="hw"></div>
+  <div class="tabs"><span class="tab">Home</span><span class="tab">Agents <span class="mk"></span></span><span class="tab">Usage</span><span class="tab">Shelf</span><span class="tab on">Calendar</span><span class="tab">GitHub PRs</span></div>
+  <div class="body c-body"><div class="card"><div class="mh"><h4>December <span>2026</span></h4><div class="nav"><i>‹</i><i class="dot live"></i><i class="hl">›</i></div></div>
+      <div class="mg"><span class="wd"></span><span class="wd">M</span><span class="wd">T</span><span class="wd">W</span><span class="wd">T</span><span class="wd">F</span><span class="wd">S</span><span class="wd">S</span><span class="wk">49</span><span class="d adj">30<span class="dots"><i class="k1"></i></span></span><span class="d">1<span class="dots"><i class="k1"></i></span></span><span class="d">2<span class="dots"><i class="k1"></i></span></span><span class="d">3<span class="dots"><i class="k1"></i><i class="k2"></i></span></span><span class="d">4<span class="dots"><i class="k1"></i></span></span><span class="d">5<span class="dots"></span></span><span class="d">6<span class="dots"></span></span><span class="wk">50</span><span class="d">7<span class="dots"></span></span><span class="d">8<span class="dots"><i class="k1"></i></span></span><span class="d">9<span class="dots"><i class="k1"></i></span></span><span class="d">10<span class="dots"><i class="k2"></i></span></span><span class="d">11<span class="dots"><i class="k1"></i></span></span><span class="d">12<span class="dots"></span></span><span class="d">13<span class="dots"></span></span><span class="wk">51</span><span class="d">14<span class="dots"></span></span><span class="d">15<span class="dots"><i class="k1"></i></span></span><span class="d">16<span class="dots"><i class="k1"></i></span></span><span class="d">17<span class="dots"></span></span><span class="d">18<span class="dots"><i class="k1"></i><i class="k2"></i></span></span><span class="d">19<span class="dots"><i class="k2"></i></span></span><span class="d">20<span class="dots"></span></span><span class="wk">52</span><span class="d">21<span class="dots"></span></span><span class="d">22<span class="dots"></span></span><span class="d">23<span class="dots"></span></span><span class="d">24<span class="dots"><i class="k2"></i></span></span><span class="d">25<span class="dots"><i class="k2"></i></span></span><span class="d">26<span class="dots"></span></span><span class="d">27<span class="dots"></span></span><span class="wk">53</span><span class="d">28<span class="dots"></span></span><span class="d">29<span class="dots"></span></span><span class="d">30<span class="dots"></span></span><span class="d">31<span class="dots"><i class="k2"></i></span></span><span class="d adj">1<span class="dots"></span></span><span class="d adj">2<span class="dots"></span></span><span class="d adj">3<span class="dots"></span></span><span class="wk">1</span><span class="d adj">4<span class="dots"></span></span><span class="d adj">5<span class="dots"></span></span><span class="d adj">6<span class="dots"></span></span><span class="d adj">7<span class="dots"></span></span><span class="d adj">8<span class="dots"></span></span><span class="d adj">9<span class="dots"></span></span><span class="d adj">10<span class="dots"></span></span><svg class="mo" width="252" height="222"><path d="M37.5 1.5 L250.5 1.5 L250.5 148.0 L142.5 148.0 L142.5 183.5 L1.5 183.5 L1.5 37.0 L37.5 37.0 Z"/></svg></div>
+      <div class="cals"><span><i style="background:var(--cal1)"></i>Work</span><span><i style="background:var(--cal2)"></i>Personal</span></div></div><div class="card"><div class="ch"><span class="t">Upcoming</span><span class="m">From <b>today</b> · 5 shown</span></div>
+      <div class="dh"><b>Today</b> · Wed 04 Nov<span class="chipd"><i style="background:var(--cal1)"></i>v0.3 release week <small>All day</small></span></div>
+      <div class="hero"><span class="when">15:30</span><div><div class="etitle">Design review</div><div class="rel">In 42 min</div>
+      <div class="fx">15:30–16:15 · Meet<i style="background:var(--cal1)"></i>Work</div></div><span class="act">Join call <kbd>↵</kbd></span>
+      <div class="etrack"><i></i><b></b></div></div>
+      <div class="er"><span class="tm">17:00</span><i class="k k2"></i><span class="tt">Dentist</span><span class="cl">Personal</span><span class="rl">In 2h12</span></div><div class="er"><span class="tm">18:30</span><i class="k k2"></i><span class="tt">Climbing</span><span class="cl">Personal</span><span class="rl">In 3h42</span></div>
+      <div class="dh"><b>Thu 05 Nov</b> · Tomorrow</div>
+      <div class="er"><span class="tm">09:30</span><i class="k k1"></i><span class="tt">Standup<small>Meet</small></span><span class="cl">Work</span><span class="rl">Thu</span></div><div class="er"><span class="tm">14:00</span><i class="k k1"></i><span class="tt">Vendor call · Stripe<small>Zoom</small></span><span class="cl">Work</span><span class="rl">Thu</span></div>
+      <div class="more"><span>+4 later this week</span><span>Scroll</span></div></div></div>
+</div></div></div><div class="note">After ›: December's outline starts on Tue 01. Nov 30 and Jan 1–10 are dimmed. The dot is lit (back to today) and the list is unchanged.</div></div></div><div class="row-h"><span class="n">03</span><h2>Calendar · permission + empty</h2><p>Setup problem · no events today</p></div><div class="quad"><div class="col dA"><div class="clab"><span class="nm">Permission not granted · setup problem</span><span class="mode d">Dark</span></div><div class="crop"><div class="stage"><div class="menubar"><div class="l"><span>Window</span><span>Help</span></div><div class="r"><span class="batt"></span><span>14:48</span></div></div><div class="island exp">
+  <div class="orn"><i class="o1"></i><i class="o2"></i></div>
+  <div class="top onblack"><span class="word">VIGIE</span><span class="clock"><b>●</b> Online · 14:48 · Wed 04 Nov</span></div>
+  <div class="hw"></div>
+  <div class="tabs"><span class="tab">Home</span><span class="tab">Agents <span class="mk"></span></span><span class="tab">Usage</span><span class="tab">Shelf</span><span class="tab on">Calendar</span><span class="tab">GitHub PRs</span></div>
+  <div class="body" style="grid-template-columns:1fr"><div class="card" style="display:flex"><div class="setup">
+      <div class="sk"><i></i>Setup · Calendar access</div>
+      <h4>Vigie can't read your calendars</h4>
+      <p>Calendar access was not granted. Allow it in <code>System Settings › Privacy &amp; Security › Calendars</code>. Vigie only reads events.</p>
+      <div class="row"><span class="act">Open System Settings</span><span class="act sec">Calendar settings</span></div>
+    </div></div></div>
+</div></div></div><div class="note">Neutral setup styling, with no status glyph or status hue (EXPERIENCE Setup-problem alert). [ASSUMPTION] copy.</div></div><div class="col dA"><div class="clab"><span class="nm">Empty · no events today</span><span class="mode d">Dark</span></div><div class="crop"><div class="stage"><div class="menubar"><div class="l"><span>Window</span><span>Help</span></div><div class="r"><span class="batt"></span><span>14:48</span></div></div><div class="island exp">
+  <div class="orn"><i class="o1"></i><i class="o2"></i></div>
+  <div class="top onblack"><span class="word">VIGIE</span><span class="clock"><b>●</b> Online · 14:48 · Wed 04 Nov</span></div>
+  <div class="hw"></div>
+  <div class="tabs"><span class="tab">Home</span><span class="tab">Agents <span class="mk"></span></span><span class="tab">Usage</span><span class="tab">Shelf</span><span class="tab on">Calendar</span><span class="tab">GitHub PRs</span></div>
+  <div class="body c-body"><div class="card"><div class="mh"><h4>November <span>2026</span></h4><div class="nav"><i>‹</i><i class="dot"></i><i class="">›</i></div></div>
+      <div class="mg"><span class="wd"></span><span class="wd">M</span><span class="wd">T</span><span class="wd">W</span><span class="wd">T</span><span class="wd">F</span><span class="wd">S</span><span class="wd">S</span><span class="wk">44</span><span class="d adj">26<span class="dots"></span></span><span class="d adj">27<span class="dots"></span></span><span class="d adj">28<span class="dots"></span></span><span class="d adj">29<span class="dots"><i class="k2"></i></span></span><span class="d adj">30<span class="dots"><i class="k1"></i><i class="k2"></i></span></span><span class="d adj">31<span class="dots"></span></span><span class="d">1<span class="dots"></span></span><span class="wk">45</span><span class="d">2<span class="dots"><i class="k1"></i><i class="k2"></i></span></span><span class="d">3<span class="dots"><i class="k1"></i></span></span><span class="d today">4<span class="dots"></span></span><span class="d">5<span class="dots"><i class="k1"></i></span></span><span class="d">6<span class="dots"><i class="k1"></i><i class="k2"></i></span></span><span class="d">7<span class="dots"></span></span><span class="d">8<span class="dots"></span></span><span class="wk">46</span><span class="d">9<span class="dots"><i class="k1"></i></span></span><span class="d">10<span class="dots"><i class="k1"></i></span></span><span class="d">11<span class="dots"><i class="k2"></i></span></span><span class="d">12<span class="dots"><i class="k1"></i><i class="k2"></i></span></span><span class="d">13<span class="dots"><i class="k1"></i></span></span><span class="d">14<span class="dots"><i class="k2"></i></span></span><span class="d">15<span class="dots"></span></span><span class="wk">47</span><span class="d">16<span class="dots"><i class="k1"></i></span></span><span class="d">17<span class="dots"><i class="k1"></i></span></span><span class="d">18<span class="dots"><i class="k1"></i></span></span><span class="d">19<span class="dots"><i class="k1"></i><i class="k2"></i></span></span><span class="d">20<span class="dots"><i class="k1"></i></span></span><span class="d">21<span class="dots"><i class="k2"></i></span></span><span class="d">22<span class="dots"></span></span><span class="wk">48</span><span class="d">23<span class="dots"><i class="k1"></i></span></span><span class="d">24<span class="dots"><i class="k1"></i></span></span><span class="d">25<span class="dots"><i class="k2"></i></span></span><span class="d">26<span class="dots"><i class="k1"></i></span></span><span class="d">27<span class="dots"><i class="k1"></i></span></span><span class="d">28<span class="dots"></span></span><span class="d">29<span class="dots"></span></span><span class="wk">49</span><span class="d">30<span class="dots"><i class="k1"></i></span></span><span class="d adj">1<span class="dots"><i class="k1"></i></span></span><span class="d adj">2<span class="dots"><i class="k1"></i></span></span><span class="d adj">3<span class="dots"><i class="k1"></i><i class="k2"></i></span></span><span class="d adj">4<span class="dots"><i class="k1"></i></span></span><span class="d adj">5<span class="dots"></span></span><span class="d adj">6<span class="dots"></span></span><svg class="mo" width="252" height="222"><path d="M217.5 1.5 L250.5 1.5 L250.5 185.0 L34.5 185.0 L34.5 220.5 L1.5 220.5 L1.5 37.0 L217.5 37.0 Z"/></svg></div>
+      <div class="cals"><span><i style="background:var(--cal1)"></i>Work</span><span><i style="background:var(--cal2)"></i>Personal</span></div></div><div class="card"><div class="ch"><span class="t">Upcoming</span><span class="m">From <b>today</b></span></div>
+      <div class="dh"><b>Today</b> · Wed 04 Nov</div>
+      <div class="empty" style="height:118px"><div class="ek">No events today</div><p>Nothing left on Work or Personal today.</p></div>
+      <div class="dh"><b>Thu 05 Nov</b> · Tomorrow</div>
+      <div class="er"><span class="tm">09:30</span><i class="k k1"></i><span class="tt">Standup<small>Meet</small></span><span class="cl">Work</span><span class="rl">Thu</span></div><div class="er"><span class="tm">14:00</span><i class="k k1"></i><span class="tt">Vendor call · Stripe<small>Zoom</small></span><span class="cl">Work</span><span class="rl">Thu</span></div></div></div>
+</div></div></div><div class="note">[ASSUMPTION] copy. Today has no dot. The list moves on to tomorrow.</div></div></div>
+</div></body></html>

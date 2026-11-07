@@ -1,0 +1,638 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Closed Notch States</title>
+<style>
+/* =====================================================================
+   VIGIE · KEY SCREEN · CLOSED NOTCH STATES
+   Governing spine sections:
+   - EXPERIENCE.md: Information Architecture (closed notch left/right wing, drop zones);
+     Component Patterns (Closed island, Quota dial, Readout, Status glyph, Overflow count,
+     Drop zone); State Patterns > Session states (priority) and Surface states (Nothing
+     running, No agent connected, Pace ahead, Window absent, Overflow); Interaction
+     Primitives (Hover on closed notch, Drag a file, ⌥ while dropping); Presence Levels;
+     Key Flows 1 (steps 1-4) and 4 (steps 1-2, 5).
+   - DESIGN.md: Colors (status, variant accents, hardware island always black);
+     Typography (closed-notch value/label); Layout > Geometry, Information placement,
+     Containment, Presence levels; Components > Closed island, Quota dial, Readout,
+     Status glyph, Overflow count, Drop zone.
+   Base CSS (shared geometry + A/C skins) is copied verbatim from
+   .working/theme-family-4-looks.html so these mocks match the visual baseline.
+   Overrides from .memlog.md (latest wins): peek dwell 5 s; right wing shows only
+   "+X" overflow (no total count, no "N ALERTS" label); 2+ providers: one ring each
+   (5h, or weekly if no 5h) with the name stacked under it; pace colours final and
+   user-configurable: A on pace = theme metal, ahead = Ember #FF8A3D; C inverted,
+   on pace = Volt #C2EA3E, ahead = gold metal.
+   STRICT CONTAINMENT: every Vigie pixel is inside .island (overflow hidden). Cursor,
+   drag ghost, menu bar and desktop are macOS page chrome, not Vigie.
+   ===================================================================== */
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--z:1;--t-enter:280ms;--t-ambient:6s;--t-work:1.5s;--t-block:1.8s;--t-calm:2.6s;--t-dwell:5s;--t-scan:7s;--t-bezel:14s}
+body{background:#0B0D10;color:#E6E9ED;font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif;-webkit-font-smoothing:antialiased;padding:36px 28px 80px}
+.page{max-width:1440px;margin:0 auto}
+.ph{margin-bottom:30px;padding-bottom:22px;border-bottom:1px solid #1C2229}
+.ph .k{font:500 11px/1 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;color:#8A939C;text-transform:uppercase}
+.ph h1{font:300 32px/1.15 -apple-system,BlinkMacSystemFont,sans-serif;letter-spacing:-.01em;margin:10px 0 14px}
+.ph p{font:400 13px/1.55 -apple-system,sans-serif;color:#A5ADB5;max-width:980px}
+.ph p b{color:#E6E9ED;font-weight:600}
+.ph code,.cap2 code,.note code{font:500 11px ui-monospace,Menlo,monospace;color:#C9CED3}
+.colh{display:grid;grid-template-columns:760px 1fr;gap:28px;margin:0 0 10px;position:sticky;top:0;background:#0B0D10;z-index:20;padding:10px 0}
+.colh span{font:600 10px/1 ui-monospace,Menlo,monospace;letter-spacing:.18em;text-transform:uppercase;color:#8A939C}
+.colh b{font:200 18px/1 -apple-system,sans-serif;letter-spacing:0;text-transform:none;color:#E6E9ED;margin-right:10px}
+.st-row{border-top:1px solid #1C2229;padding:22px 0 30px}
+.st-h{display:flex;align-items:baseline;gap:14px;margin-bottom:6px;flex-wrap:wrap}
+.st-h .n{font:300 26px/1 -apple-system,sans-serif;color:#5C656E;width:26px}
+.st-h h2{font:600 12px/1 -apple-system,sans-serif;letter-spacing:.24em;text-transform:uppercase}
+.st-h .sn{font:500 11px/1 ui-monospace,Menlo,monospace;color:#0B0D10;background:#C9CED3;border-radius:4px;padding:3px 6px}
+.st-h .sn.alt{background:#2A3036;color:#C9CED3}
+.st-cap{font:400 12.5px/1.5 -apple-system,sans-serif;color:#A5ADB5;margin:0 0 14px 40px;max-width:1100px}
+.st-cap b{color:#E6E9ED;font-weight:600}
+.pair{display:grid;grid-template-columns:760px 1fr;gap:28px;align-items:start;margin-left:0}
+@media (max-width:1400px){.pair,.colh{grid-template-columns:1fr}.colh span:last-child{display:none}}
+.fr{margin-bottom:12px}
+.cap2{font:400 11px/1.4 -apple-system,sans-serif;color:#8A939C;margin:0 0 6px}
+.cap2 b{color:#D5DADF;font-weight:600}
+.note{margin-top:6px;font:400 11.5px/1.5 -apple-system,sans-serif;color:#8A939C;max-width:740px}
+.note b{color:#D5DADF}
+.cmp .stage{zoom:.8}
+.cmp .cap2{font-size:10.5px}
+.intro{display:inline-block;font:600 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.12em;color:#0B0D10;background:#F2D48A;border-radius:3px;padding:3px 5px;margin-left:6px;vertical-align:1px}
+
+.crop{position:relative;overflow:hidden;width:fit-content;max-width:100%;border-radius:12px}
+.stage{zoom:var(--z);width:820px;position:relative;overflow:hidden;border-radius:12px;background:linear-gradient(180deg,#3B3E44 0%,#2E3136 100%)}
+.stage.desk-lt{background:linear-gradient(180deg,#DDDFE3 0%,#CDD0D5 100%)}
+.menubar{position:absolute;inset:0 0 auto 0;height:34px;display:flex;justify-content:space-between;align-items:center;padding:0 22px;
+  background:rgba(24,26,30,.72);font:400 13px/1 -apple-system,BlinkMacSystemFont,sans-serif;color:#ECEDEF;z-index:1}
+.menubar .l,.menubar .r{display:flex;gap:18px;align-items:center}
+.batt{width:24px;height:11px;border:1px solid rgba(255,255,255,.6);border-radius:3px;position:relative;padding:1px}
+.batt::before{content:"";display:block;height:100%;width:72%;background:#ECEDEF;border-radius:1px}
+.batt::after{content:"";position:absolute;right:-3px;top:3px;width:2px;height:4px;background:rgba(255,255,255,.6);border-radius:0 1px 1px 0}
+.desk-lt .menubar{background:rgba(250,250,252,.80);color:#1D1D1F;box-shadow:0 .5px 0 rgba(0,0,0,.12)}
+.desk-lt .batt{border-color:rgba(0,0,0,.55)}.desk-lt .batt::before{background:#1D1D1F}.desk-lt .batt::after{background:rgba(0,0,0,.55)}
+
+.island{position:absolute;left:50%;top:0;transform:translateX(-50%);background:#000;z-index:5;overflow:hidden;isolation:isolate}
+.closed{width:540px;height:34px;border-radius:0 0 14px 14px;display:flex;justify-content:space-between;align-items:center;padding:0 16px}
+.peek{width:700px;height:150px;border-radius:0 0 22px 22px;box-shadow:0 18px 40px rgba(0,0,0,.45)}
+.exp{width:720px;height:420px;border-radius:0 0 24px 24px;box-shadow:0 28px 60px rgba(0,0,0,.5)}
+.desk-lt .peek{box-shadow:0 18px 40px rgba(0,0,0,.20),0 2px 6px rgba(0,0,0,.08)}
+.desk-lt .exp{box-shadow:0 28px 60px rgba(0,0,0,.22),0 2px 8px rgba(0,0,0,.08)}
+.orn{position:absolute;inset:0;pointer-events:none;border-radius:inherit;z-index:0}
+.orn i{position:absolute;display:block}
+.hw{position:absolute;left:50%;top:0;width:196px;height:34px;transform:translateX(-50%);pointer-events:none;z-index:2}
+.hw::after{content:"";position:absolute;left:50%;top:12px;width:7px;height:7px;border-radius:50%;transform:translateX(-50%);
+  background:radial-gradient(circle at 35% 35%,#1e2a3a,#05070a 70%);box-shadow:0 0 0 1px #0d0f13}
+/* the black hardware band every light panel keeps at its top */
+.band{position:absolute;left:0;right:0;top:0;height:34px;background:#000;z-index:1}
+
+.wing{position:relative;z-index:1;display:flex;align-items:center;gap:9px;height:100%}
+.dial{width:24px;height:24px;flex:none;display:block}
+.dial svg{display:block;overflow:visible}
+.dial .bz{transform-origin:12px 12px}
+.rd{display:flex;flex-direction:column;gap:3px;width:84px}
+.rd.r{align-items:flex-end;text-align:right}
+.rd .v{height:13px;line-height:13px;white-space:nowrap}
+.rd .k{height:8px;line-height:8px;white-space:nowrap}
+.glyphs{display:flex;gap:7px;align-items:center}
+.s{position:relative;width:16px;height:16px;flex:none;display:inline-block}
+.s.lg{width:26px;height:26px}
+
+.pk{position:absolute;left:26px;right:26px;top:36px;height:84px;display:grid;grid-template-columns:44px 1fr 176px;gap:18px;align-items:center;z-index:1}
+.bc{width:44px;height:44px;display:grid;place-items:center;position:relative}
+.kick{height:10px;line-height:10px;margin-bottom:8px;white-space:nowrap}
+.ttl{height:20px;line-height:20px;white-space:nowrap}
+.det{height:16px;line-height:16px;margin-top:6px;white-space:nowrap}
+.acts{display:flex;flex-direction:column;gap:8px}
+.act{height:30px;display:flex;align-items:center;justify-content:space-between;padding:0 13px;white-space:nowrap}
+.timer{position:absolute;left:26px;right:26px;bottom:12px;height:3px;z-index:1}
+.timer::after{content:"";position:absolute;transform-origin:left;animation:drain var(--t-dwell) linear infinite}
+
+.exp .top{position:relative;z-index:2;height:34px;display:flex;justify-content:space-between;align-items:center;padding:0 20px}
+.tabs{position:relative;z-index:1;display:flex;align-items:center;gap:2px;margin:6px 16px 0;height:30px}
+.tab{height:24px;display:flex;align-items:center;gap:6px;padding:0 12px;white-space:nowrap}
+.grid{position:relative;z-index:1;display:grid;grid-template-columns:1.2fr 1.2fr 1.1fr;grid-template-rows:162px 138px;gap:10px;padding:12px 16px 14px}
+.card{position:relative;padding:12px 13px;overflow:hidden}
+.card.span2{grid-column:span 2}
+.ch{display:flex;justify-content:space-between;align-items:center;height:11px;margin-bottom:6px}
+.sr{display:grid;grid-template-columns:18px 92px 1fr 64px;align-items:center;gap:10px;height:30px;margin:0 -8px;padding:0 8px}
+.sr .pj,.sr .pj em{display:block;white-space:nowrap}
+.sr .st{text-align:right}
+.sr .st small{display:block}
+.usage{display:flex;gap:14px;align-items:center;height:72px}
+.usage svg{flex:none;overflow:visible}
+.usage .bz{transform-origin:36px 36px}
+.uread{display:flex;flex-direction:column;gap:12px;flex:1;min-width:0}
+.uread div{display:flex;justify-content:space-between;align-items:baseline}
+.codex{margin-top:14px}
+.codex .lbl{display:flex;justify-content:space-between;align-items:baseline;height:12px}
+.meter{position:relative;height:6px;margin-top:7px}
+.zones{display:grid;grid-template-columns:1fr 70px;gap:8px;height:96px}
+.zone{position:relative;padding:9px 10px;overflow:hidden}
+.zone.ask{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:7px;text-align:center}
+.file{display:flex;align-items:center;gap:8px;height:22px;white-space:nowrap}
+.plus{width:22px;height:22px;display:grid;place-items:center;position:relative}
+.when,.big{height:34px;line-height:34px}
+.title{margin-top:9px;height:14px;line-height:14px}
+.rel{margin-top:7px;height:10px;line-height:10px}
+.track{position:absolute;left:13px;right:13px;bottom:16px;height:1px}
+.track i,.track b{position:absolute;display:block}
+.seg{position:relative;display:flex;gap:4px;margin-top:18px;height:6px}
+.seg i{flex:1;position:relative}
+.cap{display:flex;justify-content:space-between;margin-top:9px;height:8px;line-height:8px}
+
+/* legend (status system) — sits on a Vigie panel surface */
+.lgstage{padding:16px}
+.lgpanel{border-radius:18px;padding:12px;display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.lgc{position:relative;padding:12px 11px;min-height:212px}
+.lgc .h{display:flex;align-items:center;gap:9px;height:26px}
+.lgc code{display:block;margin:8px 0 8px}
+.lgc p{min-height:5.8em}
+.lgc dd{min-height:1.3em}
+.lgc dl{display:grid;grid-template-columns:44px 1fr;gap:5px 6px;margin-top:9px}
+.chipi{display:inline-flex;align-items:center;gap:6px;background:#000;border-radius:0 0 7px 7px;padding:3px 7px 4px}
+
+@keyframes drain{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* failed: a short double stutter, same 1.8 s period as blocked (equal priority) */
+@keyframes stutter{0%,22%,100%{opacity:1}5%{opacity:.15}9%{opacity:1}13%{opacity:.15}17%{opacity:1}}
+.s.fail{animation:stutter var(--t-block) linear infinite}
+
+/* =====================================================================
+   SKIN A — CHROME HOLOGRAM
+   ===================================================================== */
+.dA, .dA .lt .onblack{--platinum:#E8ECF2;--silver:#B4BCC8;--steel:#7A8393;--graphite:#232934;--cy:#A5EEFF;--li:#CDB9FF;--ro:#FFC4E1;--idle:#A6F2D2;--work:#FFD9A0;--done:#8FD3FF;--block:#FF7B8C;--fail:#E58CFF;--iris:linear-gradient(90deg,#A5EEFF,#CDB9FF,#FFC4E1,#E8ECF2,#A5EEFF);--hair:rgba(255,255,255,.07);--hair2:rgba(255,255,255,.04);}
+.dA .lt{--platinum:#161B24;--silver:#454E5D;--steel:#5D6676;--graphite:#D3D8E0;--cy:#126F8C;--li:#6A4FD0;--ro:#A8346B;--idle:#0E7F57;--work:#985A00;--done:#1D6FC0;--block:#C8243F;--fail:#9B35C4;--iris:linear-gradient(90deg,#3FA3C4,#8A6CE8,#D06A9E,#8A93A2,#3FA3C4);--hair:rgba(22,27,36,.10);--hair2:rgba(22,27,36,.07);}
+.dA{
+  --sans:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",sans-serif;--mono:ui-monospace,"SF Mono",Menlo,monospace;
+  font-family:var(--sans);
+
+  .clab .nm{font:200 22px/1 var(--sans);background:linear-gradient(90deg,#A5EEFF,#CDB9FF,#FFC4E1,#E8ECF2,#A5EEFF);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:a-iris 14s linear infinite}
+
+  .orn{background:radial-gradient(70% 120% at 50% 150%,rgba(205,185,255,.16),transparent 70%)}
+  .orn .o1{inset:0;border-radius:inherit;padding:0 1px 1px;background:var(--iris);background-size:300% 100%;opacity:.85;
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;
+    animation:a-iris var(--t-ambient) linear infinite}
+  .orn .o2{top:0;bottom:0;width:140px;left:-140px;
+    background:linear-gradient(100deg,transparent 20%,rgba(205,185,255,.10) 42%,rgba(232,240,255,.20) 50%,rgba(165,238,255,.10) 58%,transparent 80%);
+    animation:a-shimmer var(--t-ambient) cubic-bezier(.5,0,.3,1) infinite}
+  .peek .orn{background:radial-gradient(60% 90% at 50% 130%,rgba(255,123,140,.14),transparent 70%)}
+  .peek .orn .o1{background:linear-gradient(90deg,var(--block),var(--ro) 50%,var(--block));background-size:200% 100%;opacity:1;animation:a-iris var(--t-block) linear infinite}
+  .exp{background:linear-gradient(180deg,#000 0,#000 34px,#070A10 120px,#0A0E16 100%)}
+  .exp .orn{background:none}
+  .exp .orn .o1{opacity:.35}
+  .exp .orn .o2{left:0;right:0;width:auto;top:-30%;bottom:auto;height:30%;
+    background:linear-gradient(180deg,transparent,rgba(165,238,255,.06) 50%,transparent);animation:a-scan var(--t-scan) ease-in-out infinite}
+
+  .dial .tr{stroke:rgba(255,255,255,.1)}
+  .dial .ar{stroke:url(#irisA)}
+  .rd .v{font:300 14px/13px var(--sans);color:var(--platinum);font-variant-numeric:tabular-nums}
+  .rd .v em{font-style:normal}
+  .rd .v small{font-size:9px;color:var(--silver);margin-left:1px}
+  .rd .k{font:500 7.5px/8px var(--sans);letter-spacing:.24em;text-transform:uppercase;color:var(--steel)}
+  .rd .k.alert{color:var(--block)}
+
+  /* status glyphs — shape-coded, 16 px slot */
+  .s.idle::before{content:"";position:absolute;inset:2px;border-radius:50%;border:1.5px solid var(--idle);box-shadow:0 0 6px rgba(166,242,210,.35)}
+  .s.work::before{content:"";position:absolute;inset:2px;border-radius:50%;border:1.5px solid color-mix(in srgb,var(--work) 18%,transparent);border-top-color:var(--work);border-right-color:var(--work);animation:spin var(--t-work) linear infinite}
+  .s.done::before{content:"";position:absolute;inset:1px;border-radius:50%;background:color-mix(in srgb,var(--done) 22%,transparent);box-shadow:0 0 0 1.5px var(--done) inset}
+  .s.done::after{content:"";position:absolute;left:5.6px;top:3.6px;width:3.6px;height:6.6px;border:solid var(--done);border-width:0 1.6px 1.6px 0;transform:rotate(45deg)}
+  .s.block::before{content:"";position:absolute;inset:4px;background:var(--block);transform:rotate(45deg);border-radius:1.5px;box-shadow:0 0 8px rgba(255,123,140,.7)}
+  .s.block::after{content:"";position:absolute;inset:2px;border:1px solid var(--block);transform:rotate(45deg);border-radius:2px;animation:a-ripple var(--t-block) ease-out infinite}
+  .s.fail::before,.s.fail::after{content:"";position:absolute;left:50%;top:50%;width:14px;height:2.2px;margin:-1.1px 0 0 -7px;border-radius:2px;background:var(--fail);box-shadow:0 0 7px rgba(229,140,255,.6);transform:rotate(45deg)}
+  .s.fail::after{transform:rotate(-45deg)}
+  .s.lg.idle::before,.s.lg.work::before{inset:4px}
+  .s.lg.done::before{inset:3px}
+  .s.lg.done::after{left:9.6px;top:6.6px;width:5.4px;height:10px;border-width:0 2px 2px 0}
+  .s.lg.block::before{inset:7px}
+  .s.lg.block::after{inset:5px}
+  .s.lg.fail::before,.s.lg.fail::after{width:20px;height:3px;margin:-1.5px 0 0 -10px}
+
+  .bc{border-radius:50%;background:radial-gradient(circle,rgba(255,123,140,.18),transparent 70%);box-shadow:0 0 0 1px rgba(255,123,140,.25) inset}
+  .kick{font:500 9px/10px var(--sans);letter-spacing:.24em;text-transform:uppercase;color:var(--block)}
+  .kick .t{color:var(--steel);margin-left:6px}
+  .ttl{font:300 19px/20px var(--sans);color:var(--platinum)}
+  .ttl span{color:var(--steel)}
+  .det{font:400 12px/16px var(--sans);color:var(--silver)}
+  .det code{font:500 11px var(--mono);color:var(--ro);background:rgba(255,196,225,.07);padding:2px 6px;border-radius:5px;margin-left:4px}
+  .act{font:500 10px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--platinum);border-radius:999px;border:1px solid rgba(232,236,242,.22);background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.01))}
+  .act kbd{font:400 11px var(--sans);letter-spacing:0;text-transform:none;color:var(--silver)}
+  .act:not(.pri){color:var(--steel);border-color:rgba(255,255,255,.08);background:none}
+  .timer{background:linear-gradient(var(--hair),var(--hair)) 0 1px/100% 1px no-repeat}
+  .timer::after{left:0;right:0;top:1px;height:1px;background:linear-gradient(90deg,var(--block),var(--ro))}
+
+  .word{font:500 11px/1 var(--sans);letter-spacing:.5em;background:var(--iris);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:a-iris 10s linear infinite}
+  .clock{font:300 11px/1 var(--sans);color:var(--silver);letter-spacing:.12em}
+  .clock b{font-weight:400;color:var(--idle)}
+  .tabs{padding:0 3px;border-radius:999px;background:rgba(255,255,255,.035);box-shadow:0 0 0 1px rgba(255,255,255,.06) inset;width:max-content}
+  .tab{font:500 11px/1 var(--sans);color:var(--steel);border-radius:999px;letter-spacing:.04em}
+  .tab.on{color:var(--platinum);background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.03));box-shadow:0 0 0 1px rgba(232,236,242,.16) inset}
+  .tab .mk{width:5px;height:5px;background:var(--block);transform:rotate(45deg)}
+  .card{border-radius:16px;background:linear-gradient(160deg,rgba(255,255,255,.055),rgba(255,255,255,.015));box-shadow:0 0 0 1px rgba(232,236,242,.08) inset}
+  .card::before{content:"";position:absolute;left:16px;right:16px;top:0;height:1px;background:var(--iris);background-size:300% 100%;opacity:.45;animation:a-iris 12s linear infinite}
+  .ch .t{font:500 9px/1 var(--sans);letter-spacing:.26em;color:var(--silver);text-transform:uppercase}
+  .ch .m{font:400 9px/1 var(--sans);letter-spacing:.14em;color:var(--steel);text-transform:uppercase}
+  .sr{border-radius:10px}
+  .sr+.sr{box-shadow:0 -1px 0 var(--hair2)}
+  .sr.hot{background:linear-gradient(90deg,rgba(255,123,140,.10),rgba(255,123,140,0));box-shadow:0 0 0 1px rgba(255,123,140,.18) inset}
+  .sr.hot.fl{background:linear-gradient(90deg,rgba(229,140,255,.10),rgba(229,140,255,0));box-shadow:0 0 0 1px rgba(229,140,255,.18) inset}
+  .sr .ag{font:400 11px/1 var(--sans);color:var(--silver)}
+  .sr .pj{font:400 13px/1 var(--sans);color:var(--platinum)}
+  .sr .pj span{color:var(--steel)}
+  .sr .pj em{font:400 10px/1 var(--mono);color:var(--steel);font-style:normal;margin-top:4px}
+  .sr .st{font:500 9px/1 var(--sans);letter-spacing:.2em;text-transform:uppercase}
+  .st.block{color:var(--block)}.st.work{color:var(--work)}.st.idle{color:var(--idle)}.st.done{color:var(--done)}.st.fail{color:var(--fail)}
+  .sr .st small{font:300 12px/1 var(--sans);letter-spacing:0;color:var(--platinum);margin-top:4px;text-transform:none}
+  .usage .bz{stroke:none}
+  .usage .t1{stroke:var(--hair)}.usage .a1{stroke:url(#irisA)}
+  .usage .t2{stroke:var(--hair)}.usage .a2{stroke:url(#silverA)}
+  .usage text{fill:var(--platinum);font-family:-apple-system,"Helvetica Neue",sans-serif;font-weight:200}
+  .uread div,.codex .lbl{font:400 8px/1 var(--sans);letter-spacing:.16em;color:var(--steel);text-transform:uppercase}
+  .uread b,.codex b{font:300 14px/1 var(--sans);color:var(--platinum);letter-spacing:0}
+  .meter{background:linear-gradient(var(--hair),var(--hair)) 0 2px/100% 2px no-repeat}
+  .meter i{position:absolute;left:0;top:2px;height:2px;border-radius:2px;background:var(--iris);background-size:300% 100%;animation:a-iris var(--t-ambient) linear infinite}
+  .meter b{display:none}
+  .zone{border-radius:13px}
+  .zone.stash{background:rgba(255,255,255,.03);box-shadow:0 0 0 1px rgba(255,255,255,.07) inset}
+  .zone.ask{border:1px dashed rgba(205,185,255,.35);background:radial-gradient(circle at 50% 40%,rgba(205,185,255,.10),transparent 70%)}
+  .zone .zl{font:500 8px/1 var(--sans);letter-spacing:.24em;color:var(--steel);text-transform:uppercase;margin-bottom:6px}
+  .file{font:400 10px/1 var(--sans);color:var(--platinum)}
+  .file i{width:13px;height:16px;border-radius:3px;border:1px solid rgba(232,236,242,.3);background:linear-gradient(160deg,rgba(255,255,255,.12),transparent);flex:none}
+  .plus{border-radius:50%;box-shadow:0 0 0 1px rgba(205,185,255,.45) inset;font:200 17px/1 var(--sans);color:var(--li);animation:a-breathe var(--t-calm) ease-in-out infinite}
+  .zone.ask b{font:500 9px/1 var(--sans);letter-spacing:.22em;color:var(--li)}
+  .zone.ask span{font:300 9px/1.3 var(--sans);color:var(--steel)}
+  .when,.big{font:200 38px/34px var(--sans);letter-spacing:-.02em;color:var(--platinum)}
+  .big small{font:300 11px var(--sans);color:var(--steel);letter-spacing:.14em;margin-left:6px;text-transform:uppercase}
+  .title{font:400 13px/14px var(--sans);color:var(--platinum)}
+  .rel{font:500 9px/10px var(--sans);letter-spacing:.22em;color:var(--cy);text-transform:uppercase}
+  .track{background:rgba(255,255,255,.08)}
+  .track i{top:-2px;width:5px;height:5px;border-radius:50%;background:var(--cy);box-shadow:0 0 6px var(--cy)}
+  .track b{right:0;top:-3px;width:1px;height:7px;background:var(--platinum)}
+  .seg i{border-radius:3px;background:var(--hair)}
+  .seg i.on{background:linear-gradient(90deg,#E8ECF2,#B4BCC8)}
+  .seg i.warn{box-shadow:0 0 0 1px color-mix(in srgb,var(--work) 60%,transparent) inset}
+  .cap{font:500 8px/8px var(--sans);letter-spacing:.2em;color:var(--steel);text-transform:uppercase}
+  .cap em{font-style:normal;color:var(--work)}
+
+  .lgpanel{background:linear-gradient(180deg,#070A10,#0A0E16);box-shadow:0 0 0 1px rgba(255,255,255,.05) inset}
+  .lgc{border-radius:14px;background:linear-gradient(160deg,rgba(255,255,255,.05),rgba(255,255,255,.012));box-shadow:0 0 0 1px rgba(255,255,255,.07) inset}
+  .lgc h4{font:500 10px/1 var(--sans);letter-spacing:.24em;text-transform:uppercase}
+  .lgc code{font:500 9.5px var(--mono);color:var(--steel)}
+  .lgc p{font:300 11.5px/1.45 var(--sans);color:var(--silver)}
+  .lgc dl{font:400 10.5px/1.3 var(--sans)}
+  .lgc dt{color:var(--steel);letter-spacing:.14em;text-transform:uppercase;font-size:8px;padding-top:2px}
+  .lgc dd{color:var(--platinum)}
+
+  /* ---------------- A · LIGHT overrides (only on .lt surfaces) ---------------- */
+  .lt{
+    /* virtual notch (menu_bar style) + panel bodies: pearl glass */
+    &.closed.vn{background:linear-gradient(180deg,#F8F9FB,#ECEFF4)}
+    &.peek{background:linear-gradient(180deg,#000 0 34px,#F7F8FB 34px,#F1F3F8 100%)}
+    &.exp{background:linear-gradient(180deg,#000 0 34px,#F7F8FB 34px,#EEF1F6 100%)}
+    .orn{background:radial-gradient(70% 120% at 50% 150%,rgba(138,108,232,.10),transparent 70%)}
+    .orn .o1{opacity:.9}
+    .orn .o2{background:linear-gradient(100deg,transparent 20%,rgba(255,255,255,.55) 45%,rgba(255,255,255,.95) 50%,rgba(255,255,255,.55) 55%,transparent 80%)}
+    &.peek .orn{background:radial-gradient(60% 90% at 50% 130%,rgba(200,36,63,.09),transparent 70%)}
+    &.exp .orn .o1{opacity:.7}
+    &.exp .orn .o2{background:linear-gradient(180deg,transparent,rgba(63,163,196,.06) 50%,transparent)}
+    .dial .tr{stroke:rgba(22,27,36,.12)}
+    .dial .ar,.usage .a1{stroke:url(#irisAL)}
+    .usage .a2{stroke:url(#silverAL)}
+    /* no glows on light: halos read as smudges; shapes + contrast carry status */
+    .s.idle::before,.s.block::before,.s.fail::before,.s.fail::after{box-shadow:none}
+    .bc{background:radial-gradient(circle,rgba(200,36,63,.12),transparent 70%);box-shadow:0 0 0 1px rgba(200,36,63,.30) inset}
+    .det code{background:rgba(168,52,107,.08)}
+    .act{border-color:rgba(22,27,36,.20);background:linear-gradient(180deg,#FFFFFF,#EEF1F5);box-shadow:0 1px 1px rgba(22,27,36,.06)}
+    .act:not(.pri){border-color:rgba(22,27,36,.12);background:none;box-shadow:none}
+    .tabs{background:rgba(22,27,36,.045);box-shadow:0 0 0 1px rgba(22,27,36,.07) inset}
+    .tab.on{background:#FFFFFF;box-shadow:0 0 0 1px rgba(22,27,36,.10) inset,0 1px 2px rgba(22,27,36,.08)}
+    .card{background:linear-gradient(160deg,#FFFFFF,rgba(255,255,255,.72));box-shadow:0 0 0 1px rgba(22,27,36,.08) inset,0 1px 2px rgba(22,27,36,.04)}
+    .card::before{opacity:.8}
+    .sr.hot{background:linear-gradient(90deg,rgba(200,36,63,.08),rgba(200,36,63,0));box-shadow:0 0 0 1px rgba(200,36,63,.20) inset}
+    .sr.hot.fl{background:linear-gradient(90deg,rgba(155,53,196,.08),rgba(155,53,196,0));box-shadow:0 0 0 1px rgba(155,53,196,.20) inset}
+    .zone.stash{background:rgba(22,27,36,.03);box-shadow:0 0 0 1px rgba(22,27,36,.08) inset}
+    .zone.ask{border-color:rgba(106,79,208,.45);background:radial-gradient(circle at 50% 40%,rgba(106,79,208,.08),transparent 70%)}
+    .file i{border-color:rgba(22,27,36,.35);background:linear-gradient(160deg,#FFFFFF,#E6E9EF)}
+    .plus{box-shadow:0 0 0 1px rgba(106,79,208,.55) inset;animation:none}
+    .track{background:rgba(22,27,36,.16)}
+    .track i{box-shadow:none}
+    .seg i.on{background:linear-gradient(90deg,#454E5D,#8A93A2)}
+    &.lgpanel{background:linear-gradient(180deg,#F7F8FB,#EEF1F6);box-shadow:0 0 0 1px rgba(22,27,36,.06) inset,0 10px 30px rgba(0,0,0,.12)}
+    .lgc{background:linear-gradient(160deg,#FFFFFF,rgba(255,255,255,.7));box-shadow:0 0 0 1px rgba(22,27,36,.08) inset}
+  }
+}
+@keyframes a-iris{to{background-position:300% 0}}
+@keyframes a-shimmer{0%{left:-140px}55%,100%{left:100%}}
+@keyframes a-scan{0%,100%{top:-30%}50%{top:100%}}
+@keyframes a-ripple{0%{opacity:.9;transform:rotate(45deg) scale(.7)}100%{opacity:0;transform:rotate(45deg) scale(1.7)}}
+@keyframes a-breathe{0%,100%{box-shadow:0 0 0 1px rgba(205,185,255,.45) inset,0 0 0 0 rgba(205,185,255,0)}50%{box-shadow:0 0 0 1px rgba(205,185,255,.45) inset,0 0 0 5px rgba(205,185,255,.08)}}
+
+/* =====================================================================
+   SKIN C — TWIN METAL TACTICAL
+   ===================================================================== */
+.dC, .dC .lt .onblack{--white:#F2F4F5;--silver:#C9CED3;--steel:#7C858C;--gun:#2A3136;--struct:#C9CED3;--gold:#D8B45C;--goldhi:#F2D48A;--idle:#6FD39A;--work:#F0A43C;--done:#4FB8FF;--block:#FF4F4F;--fail:#D85CFF;--corner:var(--struct);--hl:rgba(201,206,211,.16);}
+.dC .lt{--white:#14181B;--silver:#3A434A;--steel:#535C63;--gun:#C3C8CC;--struct:#5A636A;--gold:#A07418;--goldhi:#765709;--idle:#12703F;--work:#985200;--done:#1462AE;--block:#BE1A1A;--fail:#8E2A9E;--corner:var(--struct);--hl:rgba(58,67,74,.26);}
+.dC{
+  --cond:"Avenir Next Condensed","DIN Condensed","Helvetica Neue",-apple-system,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,monospace;--sans:-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif;
+  font-family:var(--sans);
+
+  .clab .nm{font:600 20px/1 var(--cond);letter-spacing:.08em;text-transform:uppercase;color:#F2F4F5}
+  .clab .nm span{color:#D8B45C}
+
+  .orn{box-shadow:inset 1px 0 0 var(--hl),inset -1px 0 0 var(--hl),inset 0 -1px 0 var(--hl);
+    background:
+     linear-gradient(var(--corner),var(--corner)) 7px calc(100% - 5px)/8px 1px no-repeat,
+     linear-gradient(var(--corner),var(--corner)) 7px calc(100% - 12px)/1px 8px no-repeat,
+     linear-gradient(var(--corner),var(--corner)) calc(100% - 7px) calc(100% - 5px)/8px 1px no-repeat,
+     linear-gradient(var(--corner),var(--corner)) calc(100% - 7px) calc(100% - 12px)/1px 8px no-repeat}
+  .closed .orn{background-size:6px 1px,1px 6px,6px 1px,1px 6px;
+    background-position:8px calc(100% - 6px),8px calc(100% - 6px),calc(100% - 8px) calc(100% - 6px),calc(100% - 8px) calc(100% - 6px)}
+  .orn .o1{left:24px;right:24px;bottom:2px;height:3px;opacity:.35;background:repeating-linear-gradient(90deg,var(--struct) 0 1px,transparent 1px 6px)}
+  .orn .o2{bottom:2px;height:1px;width:28px;left:24px;background:linear-gradient(90deg,transparent,var(--goldhi));box-shadow:0 0 4px var(--gold);animation:c-tracer var(--t-ambient) linear infinite}
+  .peek .orn{--corner:var(--block);--hl:color-mix(in srgb,var(--block) 32%,transparent);
+    background-size:10px 1px,1px 10px,10px 1px,1px 10px;
+    background-position:8px calc(100% - 8px),8px calc(100% - 8px),calc(100% - 8px) calc(100% - 8px),calc(100% - 8px) calc(100% - 8px)}
+  .peek .orn .o1,.peek .orn .o2{display:none}
+  .exp{background:linear-gradient(180deg,#000 0 34px,#0A0E11 34px)}
+  .exp .orn{background-size:14px 1px,1px 14px,14px 1px,1px 14px;
+    background-position:8px calc(100% - 8px),8px calc(100% - 8px),calc(100% - 8px) calc(100% - 8px),calc(100% - 8px) calc(100% - 8px);opacity:.6}
+  .exp .orn .o1,.exp .orn .o2{display:none}
+
+  .dial .bz{stroke:var(--steel);stroke-dasharray:.7 2.2;animation:spin var(--t-bezel) linear infinite}
+  .dial .tr{stroke:var(--gun)}
+  .dial .ar{stroke:var(--gold)}
+  .rd .v{font:500 13px/13px var(--mono);color:var(--white)}
+  .rd .v em{font-style:normal;color:var(--gold)}
+  .rd .v small{font-size:9px;color:var(--steel)}
+  .rd .k{font:600 8px/8px var(--cond);letter-spacing:.2em;color:var(--steel);text-transform:uppercase}
+  .rd .k.alert{color:var(--block)}
+
+  /* status glyphs — instrument set */
+  .s.idle{border:1px solid color-mix(in srgb,var(--idle) 55%,transparent);border-radius:50%}
+  .s.idle::after{content:"";position:absolute;inset:4px;border-radius:50%;background:var(--idle)}
+  .s.work::before{content:"";position:absolute;inset:0;border-radius:50%;background:repeating-conic-gradient(var(--work) 0 6deg,transparent 6deg 30deg);
+    -webkit-mask:radial-gradient(circle,transparent 5.5px,#000 6px);mask:radial-gradient(circle,transparent 5.5px,#000 6px);animation:spin var(--t-work) linear infinite}
+  .s.work::after{content:"";position:absolute;left:5px;top:4.5px;border-left:7px solid var(--work);border-top:3.5px solid transparent;border-bottom:3.5px solid transparent}
+  .s.done{border:1px solid color-mix(in srgb,var(--done) 60%,transparent);border-radius:50%}
+  .s.done::after{content:"";position:absolute;left:5px;top:2.6px;width:3.6px;height:6.8px;border:solid var(--done);border-width:0 1.8px 1.8px 0;transform:rotate(45deg)}
+  .s.block::after{content:"";position:absolute;inset:5px;background:var(--block);box-shadow:0 0 6px color-mix(in srgb,var(--block) 60%,transparent)}
+  .s.block::before{content:"";position:absolute;inset:0;opacity:.75;
+    background:
+     linear-gradient(var(--block),var(--block)) 0 0/4px 1px no-repeat,linear-gradient(var(--block),var(--block)) 0 0/1px 4px no-repeat,
+     linear-gradient(var(--block),var(--block)) 100% 0/4px 1px no-repeat,linear-gradient(var(--block),var(--block)) 100% 0/1px 4px no-repeat,
+     linear-gradient(var(--block),var(--block)) 0 100%/4px 1px no-repeat,linear-gradient(var(--block),var(--block)) 0 100%/1px 4px no-repeat,
+     linear-gradient(var(--block),var(--block)) 100% 100%/4px 1px no-repeat,linear-gradient(var(--block),var(--block)) 100% 100%/1px 4px no-repeat;
+    animation:c-breathe var(--t-block) ease-in-out infinite}
+  /* failed: crossed-out panel — square frame with an X */
+  .s.fail{border:1.5px solid var(--fail)}
+  .s.fail::before,.s.fail::after{content:"";position:absolute;left:50%;top:50%;width:12px;height:1.6px;margin:-.8px 0 0 -6px;background:var(--fail);transform:rotate(45deg)}
+  .s.fail::after{transform:rotate(-45deg)}
+  .s.lg.idle::after{inset:7px}
+  .s.lg.done::after{left:8.6px;top:5px;width:5.6px;height:10.5px;border-width:0 2.2px 2.2px 0}
+  .s.lg.block::after{inset:8px}
+  .s.lg.work::before{-webkit-mask:radial-gradient(circle,transparent 9.5px,#000 10px);mask:radial-gradient(circle,transparent 9.5px,#000 10px)}
+  .s.lg.work::after{left:9px;top:7.5px;border-left-width:10px;border-top-width:5.5px;border-bottom-width:5.5px}
+  .s.lg.fail{border-width:2px}
+  .s.lg.fail::before,.s.lg.fail::after{width:20px;height:2.2px;margin:-1.1px 0 0 -10px}
+
+  .bc{background:color-mix(in srgb,var(--block) 6%,transparent)}
+  .bc::before{content:"";position:absolute;inset:0;opacity:.55;
+    background:
+     linear-gradient(var(--block),var(--block)) 0 0/8px 1px no-repeat,linear-gradient(var(--block),var(--block)) 0 0/1px 8px no-repeat,
+     linear-gradient(var(--block),var(--block)) 100% 0/8px 1px no-repeat,linear-gradient(var(--block),var(--block)) 100% 0/1px 8px no-repeat,
+     linear-gradient(var(--block),var(--block)) 0 100%/8px 1px no-repeat,linear-gradient(var(--block),var(--block)) 0 100%/1px 8px no-repeat,
+     linear-gradient(var(--block),var(--block)) 100% 100%/8px 1px no-repeat,linear-gradient(var(--block),var(--block)) 100% 100%/1px 8px no-repeat}
+  .kick{font:600 11px/10px var(--cond);letter-spacing:.24em;text-transform:uppercase;color:var(--block)}
+  .kick .t{color:var(--steel);font:500 9px/10px var(--mono);letter-spacing:.12em;margin-left:8px}
+  .ttl{font:500 15px/20px var(--mono);color:var(--white)}
+  .ttl span{color:var(--steel)}
+  .det{font:600 10px/16px var(--cond);letter-spacing:.18em;text-transform:uppercase;color:var(--steel)}
+  .det code{font:400 11px var(--mono);letter-spacing:0;text-transform:none;color:var(--goldhi);margin-left:6px}
+  .act{font:600 11px/1 var(--cond);letter-spacing:.18em;text-transform:uppercase;color:var(--white);box-shadow:0 0 0 1px color-mix(in srgb,var(--struct) 30%,transparent) inset}
+  .act kbd{font:500 10px/1 var(--mono);color:var(--steel)}
+  .act.pri{box-shadow:0 0 0 1px var(--gold) inset;color:var(--goldhi);background:linear-gradient(90deg,color-mix(in srgb,var(--gold) 16%,transparent),color-mix(in srgb,var(--gold) 3%,transparent))}
+  .act.pri kbd{color:var(--goldhi)}
+  .timer{background:repeating-linear-gradient(90deg,color-mix(in srgb,var(--struct) 18%,transparent) 0 1px,transparent 1px 6px)}
+  .timer::after{left:0;right:0;top:1px;height:1px;background:var(--block)}
+
+  .word{font:600 13px/1 var(--cond);letter-spacing:.32em;color:var(--white)}
+  .word::after{content:" ·";color:var(--gold)}
+  .clock{font:500 9px/1 var(--mono);letter-spacing:.12em;color:var(--steel);text-transform:uppercase}
+  .clock b{color:var(--idle);font-weight:500}
+  .tabs{box-shadow:0 1px 0 var(--gun);margin-left:16px;margin-right:16px}
+  .tab{font:600 11px/1 var(--cond);letter-spacing:.18em;text-transform:uppercase;color:var(--steel);position:relative;height:30px}
+  .tab.on{color:var(--goldhi)}
+  .tab.on::after{content:"";position:absolute;left:8px;right:8px;bottom:0;height:2px;background:var(--gold)}
+  .tab .mk{display:inline-block;width:5px;height:5px;background:var(--block);box-shadow:0 0 0 2px color-mix(in srgb,var(--block) 25%,transparent)}
+  .card{background:linear-gradient(180deg,rgba(201,206,211,.035),rgba(201,206,211,.01))}
+  .card::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.38;
+    background:
+     linear-gradient(var(--struct),var(--struct)) 0 0/7px 1px no-repeat,linear-gradient(var(--struct),var(--struct)) 0 0/1px 7px no-repeat,
+     linear-gradient(var(--struct),var(--struct)) 100% 0/7px 1px no-repeat,linear-gradient(var(--struct),var(--struct)) 100% 0/1px 7px no-repeat,
+     linear-gradient(var(--struct),var(--struct)) 0 100%/7px 1px no-repeat,linear-gradient(var(--struct),var(--struct)) 0 100%/1px 7px no-repeat,
+     linear-gradient(var(--struct),var(--struct)) 100% 100%/7px 1px no-repeat,linear-gradient(var(--struct),var(--struct)) 100% 100%/1px 7px no-repeat}
+  .ch .t{font:600 11px/1 var(--cond);letter-spacing:.22em;text-transform:uppercase;color:var(--white)}
+  .ch .m{font:500 8.5px/1 var(--mono);letter-spacing:.1em;color:var(--steel);text-transform:uppercase}
+  .sr{box-shadow:0 -1px 0 color-mix(in srgb,var(--struct) 8%,transparent)}
+  .sr.hot{background:linear-gradient(90deg,color-mix(in srgb,var(--block) 10%,transparent),transparent 70%);box-shadow:2px 0 0 var(--block) inset}
+  .sr.hot.fl{background:linear-gradient(90deg,color-mix(in srgb,var(--fail) 10%,transparent),transparent 70%);box-shadow:2px 0 0 var(--fail) inset}
+  .sr .ag{font:500 11px/1 var(--sans);color:var(--silver)}
+  .sr .pj{font:500 12px/1 var(--mono);color:var(--white)}
+  .sr .pj span{color:var(--steel)}
+  .sr .pj em{font:400 9px/1 var(--mono);font-style:normal;color:var(--steel);margin-top:4px}
+  .sr .st{font:600 10px/1 var(--cond);letter-spacing:.2em;text-transform:uppercase}
+  .st.idle{color:var(--idle)}.st.work{color:var(--work)}.st.block{color:var(--block)}.st.done{color:var(--done)}.st.fail{color:var(--fail)}
+  .sr .st small{font:500 11px/1 var(--mono);letter-spacing:0;color:var(--white);margin-top:4px}
+  .usage .bz{stroke:var(--struct);stroke-width:4;stroke-dasharray:.9 4.75;opacity:.45;animation:spin 30s linear infinite}
+  .usage .t1,.usage .t2{stroke:var(--gun)}.usage .a1{stroke:var(--gold)}.usage .a2{stroke:var(--struct)}
+  .usage text{fill:var(--goldhi);font-family:ui-monospace,Menlo,monospace;font-weight:400;font-size:15px}
+  .uread div,.codex .lbl{font:600 9px/1 var(--cond);letter-spacing:.2em;color:var(--steel);text-transform:uppercase}
+  .uread b,.codex b{font:500 12px/1 var(--mono);color:var(--white);letter-spacing:0}
+  .uread div:first-child b{color:var(--goldhi)}
+  .meter{border-bottom:1px solid var(--struct);background:repeating-linear-gradient(90deg,color-mix(in srgb,var(--struct) 55%,transparent) 0 1px,transparent 1px 10px) bottom/100% 4px no-repeat}
+  .meter i{position:absolute;left:0;bottom:1px;height:2px;background:linear-gradient(90deg,var(--silver),var(--white))}
+  .meter b{display:block;position:absolute;bottom:-2px;width:6px;height:6px;margin-left:-3px;background:var(--gold);transform:rotate(45deg)}
+  .zone.stash{padding-left:2px;padding-right:2px}
+  .zone .zl{font:600 9px/1 var(--cond);letter-spacing:.2em;color:var(--steel);text-transform:uppercase;margin-bottom:6px}
+  .file{font:400 10.5px/1 var(--mono);color:var(--white);box-shadow:0 1px 0 color-mix(in srgb,var(--struct) 8%,transparent)}
+  .file i{width:6px;height:6px;margin:0 3px;border:1px solid var(--struct);transform:rotate(45deg);flex:none}
+  .zone.ask{border:1px dashed color-mix(in srgb,var(--gold) 55%,transparent)}
+  .plus{border-radius:50%;box-shadow:0 0 0 1px var(--gold) inset;font:300 15px/1 var(--mono);color:var(--goldhi)}
+  .zone.ask b{font:600 10px/1 var(--cond);letter-spacing:.2em;color:var(--goldhi)}
+  .zone.ask span{font:400 8px/1.2 var(--mono);color:var(--steel)}
+  .when,.big{font:500 32px/34px var(--mono);letter-spacing:-.02em;color:var(--white)}
+  .big small{font:600 11px var(--cond);letter-spacing:.2em;color:var(--steel);margin-left:6px;text-transform:uppercase}
+  .title{font:600 13px/14px var(--cond);letter-spacing:.14em;text-transform:uppercase;color:var(--silver)}
+  .rel{font:500 9px/10px var(--mono);letter-spacing:.1em;color:var(--goldhi);text-transform:uppercase}
+  .track{background:var(--struct)}
+  .track::before{content:"";position:absolute;left:0;right:0;bottom:1px;height:4px;background:repeating-linear-gradient(90deg,color-mix(in srgb,var(--struct) 50%,transparent) 0 1px,transparent 1px 10px)}
+  .track i{top:-3px;width:7px;height:7px;margin-left:-3px;background:var(--gold);transform:rotate(45deg)}
+  .track b{right:0;top:-6px;width:1px;height:13px;background:var(--white)}
+  .seg i{background:color-mix(in srgb,var(--struct) 8%,transparent);box-shadow:0 1px 0 var(--struct)}
+  .seg i.on{background:linear-gradient(90deg,var(--silver),var(--white))}
+  .seg i.warn{box-shadow:0 0 0 1px var(--work) inset}
+  .cap{font:500 8px/8px var(--mono);color:var(--steel);text-transform:uppercase}
+  .cap em{font-style:normal;color:var(--work)}
+
+  .lgpanel{background:#0A0E11;box-shadow:inset 0 0 0 1px rgba(201,206,211,.10)}
+  .lgc{background:color-mix(in srgb,var(--struct) 3%,transparent)}
+  .lgc::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;
+    background:
+     linear-gradient(var(--struct),var(--struct)) 0 0/10px 1px no-repeat,linear-gradient(var(--struct),var(--struct)) 0 0/1px 10px no-repeat,
+     linear-gradient(var(--struct),var(--struct)) 100% 100%/10px 1px no-repeat,linear-gradient(var(--struct),var(--struct)) 100% 100%/1px 10px no-repeat}
+  .lgc h4{font:600 13px/1 var(--cond);letter-spacing:.18em;text-transform:uppercase}
+  .lgc code{font:500 9.5px var(--mono);color:var(--steel)}
+  .lgc p{font:400 11.5px/1.45 var(--sans);color:var(--silver)}
+  .lgc dl{font:400 10px/1.3 var(--mono)}
+  .lgc dt{font:600 9px/1.3 var(--cond);letter-spacing:.14em;color:var(--steel);text-transform:uppercase}
+  .lgc dd{color:var(--white)}
+
+  /* ---------------- C · LIGHT overrides: brushed aluminium + graphite structure + deep gold ---------------- */
+  .lt{
+    &.closed.vn{background:linear-gradient(180deg,#F1F3F4,#E3E6E8)}
+    &.peek{background:linear-gradient(180deg,#000 0 34px,#ECEEF0 34px,#E4E7E9 100%)}
+    &.exp{background:linear-gradient(180deg,#000 0 34px,#E9ECEE 34px,#E3E6E8 100%)}
+    &.exp .orn{opacity:.9}
+    .orn .o1{opacity:.55}
+    .orn .o2{box-shadow:none}
+    .s.block::after{box-shadow:none}
+    .card{background:linear-gradient(180deg,#F4F6F7,#EEF0F2);box-shadow:inset 0 0 0 1px rgba(58,67,74,.10),0 1px 0 rgba(255,255,255,.8)}
+    .card::before{opacity:.75}
+    &.lgpanel{background:#E6E9EB;box-shadow:inset 0 0 0 1px rgba(58,67,74,.14),0 10px 30px rgba(0,0,0,.12)}
+    .lgc{background:#F3F5F6}
+  }
+}
+@keyframes c-tracer{0%{left:24px;opacity:0}8%{opacity:1}60%{left:calc(100% - 52px);opacity:1}66%,100%{left:calc(100% - 52px);opacity:0}}
+@keyframes c-breathe{0%,100%{inset:0;opacity:.75}50%{inset:-1.5px;opacity:.4}}
+
+
+/* =====================================================================
+   ADDITIONS FOR THIS SHEET (all inside .island)
+   ===================================================================== */
+.stage{width:760px}
+.menubar .l{visibility:hidden}
+.wing.L{gap:12px}
+.wing.R{gap:9px}
+/* compact per-provider readout (2+ providers share the 156px wing) */
+.pv{display:flex;align-items:center;gap:6px}
+.rd.c{width:auto}
+.rd.solo{width:auto;justify-content:center}
+/* nested dial: weekly outer ring (A silver, C struct) */
+.dA .dial .ar2{stroke:url(#silverA)}
+.dC .dial .ar2{stroke:var(--struct)}
+.dC .dial .bz{stroke-dasharray:.6 2.3}
+/* pace marker: elapsed-time tick with a 1px black keyline so it reads over any arc */
+.dial .pmk{stroke:#000}
+.dA .dial .pm{stroke:var(--platinum)}
+.dC .dial .pm{stroke:var(--goldhi)}
+/* pace colours (final, user-configurable): A on = metal, ahead = Ember; C inverted: on = Volt, ahead = gold */
+.dA{--pace-ahead:#FF8A3D}
+.dC{--pace-on:#C2EA3E;--pace-ahead:var(--gold)}
+.dA .dial.ahead .ar.pc{stroke:var(--pace-ahead)}
+.dC .dial.onp .ar.pc{stroke:var(--pace-on)}
+.dC .dial.ahead .ar.pc{stroke:var(--pace-ahead)}
+/* stacked provider readout: ring with value inside, name under it */
+.pv.st{flex-direction:column;align-items:center;justify-content:center;gap:1px;height:100%}
+.dC .pv.st{justify-content:flex-start;padding-top:1px}
+/* C: with stacked names, bottom ruler and gold tracer start at the hardware cut-out, clear of the name area */
+.dC .closed:has(.pv.st) .orn .o1{left:180px}
+.dC .closed:has(.pv.st) .orn .o2{left:180px;animation-name:c-tracer-mp}
+@keyframes c-tracer-mp{0%{left:180px;opacity:0}8%{opacity:1}60%{left:calc(100% - 52px);opacity:1}66%,100%{left:calc(100% - 52px);opacity:0}}
+.pv.st .ring{position:relative;display:block;width:23px;height:23px;flex:none}
+.pv.st .ring .dial{width:23px;height:23px}
+.pv.st .dv{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-style:normal;font-variant-numeric:tabular-nums}
+.pv.st .pn{display:block;height:7px;line-height:7px;white-space:nowrap;text-transform:uppercase}
+.dA .pv.st .dv{font:500 7px/1 var(--sans);color:var(--platinum)}
+.dC .pv.st .dv{font:600 7px/1 var(--mono);color:var(--white)}
+.dA .pv.st .pn{font:500 6.5px/7px var(--sans);letter-spacing:.2em;color:var(--silver)}
+.dC .pv.st .pn{font:600 7.5px/7px var(--cond);letter-spacing:.16em;color:var(--silver)}
+/* overflow +N: readout-label style, ink-3 */
+.ovf{white-space:nowrap}
+.dA .ovf{font:500 7.5px/8px var(--sans);letter-spacing:.24em;color:var(--steel)}
+.dC .ovf{font:600 8px/8px var(--cond);letter-spacing:.2em;color:var(--steel)}
+/* empty-state readout: label only */
+.rd .k.empty{color:var(--steel)}
+
+/* hover reaction (inside the island only): rim to full, interior lifts, one shimmer/tracer pass */
+.dA .hov .orn{background:radial-gradient(80% 160% at 50% 140%,rgba(205,185,255,.26),transparent 72%)}
+.dA .hov .orn .o1{opacity:1;padding:0 1.5px 1.5px}
+.dA .hov .wing{filter:brightness(1.12)}
+.dC .hov .orn{--hl:rgba(201,206,211,.34);--corner:#F2F4F5}
+.dC .hov .orn .o1{opacity:.6}
+.dC .hov .wing{filter:brightness(1.12)}
+
+/* drop zones on the closed island (during a file drag from any app) */
+.closed.drag{padding:0 8px}
+.closed.drag .wing{width:164px}
+.dzone{position:relative;height:26px;width:100%;display:flex;align-items:center;gap:7px;padding:0 10px;white-space:nowrap}
+.dzone .zl{margin:0}
+.dzone .hint{margin-left:auto;white-space:nowrap}
+.dzone .plus{width:16px;height:16px;flex:none;font-size:13px}
+.dzone .fi{width:10px;height:13px;flex:none}
+.dA .dzone{border-radius:13px}
+.dA .dzone.stash{background:rgba(255,255,255,.03);box-shadow:0 0 0 1px rgba(255,255,255,.07) inset}
+.dA .dzone.stash .fi{border-radius:2.5px;border:1px solid rgba(232,236,242,.3);background:linear-gradient(160deg,rgba(255,255,255,.12),transparent)}
+.dA .dzone.ask{border:1px dashed rgba(205,185,255,.35);background:radial-gradient(circle at 30% 50%,rgba(205,185,255,.10),transparent 70%)}
+.dA .dzone .zl{font:500 8px/1 var(--sans);letter-spacing:.24em;color:var(--steel);text-transform:uppercase}
+.dA .dzone.ask .zl{color:var(--li);font-size:9px;letter-spacing:.22em}
+.dA .dzone .hint{font:500 7.5px/1 var(--sans);letter-spacing:.2em;color:var(--steel);text-transform:uppercase}
+.dA .dzone.on{border-style:solid;border-color:rgba(205,185,255,.75);background:radial-gradient(circle at 30% 50%,rgba(205,185,255,.20),transparent 75%)}
+.dA .dzone.on .hint{color:var(--li)}
+.dC .dzone.stash{box-shadow:0 0 0 1px color-mix(in srgb,var(--struct) 22%,transparent) inset}
+.dC .dzone.stash .fi{width:6px;height:6px;margin:0 2px;border:1px solid var(--struct);transform:rotate(45deg)}
+.dC .dzone.ask{border:1px dashed color-mix(in srgb,var(--gold) 55%,transparent)}
+.dC .dzone .zl{font:600 9px/1 var(--cond);letter-spacing:.2em;color:var(--steel);text-transform:uppercase}
+.dC .dzone.ask .zl{color:var(--goldhi);font-size:10px}
+.dC .dzone .hint{font:500 8px/1 var(--mono);letter-spacing:.06em;color:var(--steel);text-transform:uppercase}
+.dC .dzone.on{border-style:solid;border-color:var(--gold);background:linear-gradient(90deg,color-mix(in srgb,var(--gold) 16%,transparent),color-mix(in srgb,var(--gold) 3%,transparent))}
+.dC .dzone.on .hint{color:var(--goldhi)}
+
+/* calm presence (from compare-a-vs-c-v3.html) */
+.dA .calm .orn .o1{animation:none;background:rgba(232,236,242,.35)}
+.dA .calm .orn .o2{display:none}
+.dA .calm .orn{background:none}
+.dA .calm .s.work::before{animation:none}
+.dA .calm .s.block::after{animation:a-calmpulse var(--t-calm) ease-in-out infinite}
+.dA .calm .s.fail{animation:none}
+.dA .calm .dial .ar.pc{stroke:#B4BCC8}
+.dC .calm .orn{--corner:rgba(201,206,211,.5)}
+.dC .calm .orn .o1{opacity:.28}
+.dC .calm .orn .o2{display:none}
+.dC .calm .dial .bz{animation:none}
+.dC .calm .dial .ar.pc{stroke:#C9CED3}
+.dA .calm .dial.onp .ar.pc{stroke:#B4BCC8}
+.dC .calm .rd .v em{color:var(--white)}
+.dC .calm .s.work::before{animation:none}
+.dC .calm .s.block::before{animation:none;opacity:.75}
+.dC .calm .s.block::after{animation:c-pulse var(--t-calm) ease-in-out infinite}
+.dC .calm .s.fail{animation:none}
+@keyframes a-calmpulse{0%,100%{opacity:0;transform:rotate(45deg) scale(1)}50%{opacity:.9;transform:rotate(45deg) scale(1.45)}}
+@keyframes c-pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,79,79,0)}50%{box-shadow:0 0 0 3px rgba(255,79,79,.35)}}
+
+/* page chrome: macOS cursor and drag ghost (NOT Vigie) */
+.chrome-cur,.chrome-drag{position:absolute;z-index:30;pointer-events:none}
+.chrome-drag .gh{position:absolute;left:12px;top:14px;display:flex;align-items:center;gap:6px;padding:4px 8px 4px 5px;border-radius:6px;background:rgba(240,242,245,.85);color:#1D1D1F;font:400 11px/1 -apple-system,sans-serif;white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,.35);opacity:.92}
+.chrome-drag .gh i{width:14px;height:17px;border-radius:2px;background:linear-gradient(180deg,#fff,#d9dde3);box-shadow:0 0 0 1px rgba(0,0,0,.25) inset}
+.chrome-drag .optk{position:absolute;left:-22px;top:2px;font:500 11px/1 -apple-system,sans-serif;color:#1D1D1F;background:#ECEDEF;border-radius:4px;padding:3px 5px;box-shadow:0 1px 0 rgba(0,0,0,.4)}
+.chrome-cur svg,.chrome-drag svg{display:block}
+
+/* pace candidate cards (page chrome; magnified dials are review aids, not on screen) */
+.pcards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:6px}
+.pc{border:1px solid #1F252C;border-radius:10px;background:#000;padding:10px 10px 9px}
+.pc .mag{display:flex;justify-content:center;padding:4px 0 8px}
+.pc .mag .dial{width:96px;height:96px}
+.pc h4{font:600 10px/1 -apple-system,sans-serif;letter-spacing:.18em;text-transform:uppercase;color:#E6E9ED;display:flex;align-items:center;gap:7px;margin-bottom:6px}
+.pc h4 i{width:12px;height:12px;border-radius:3px;flex:none;box-shadow:0 0 0 1px rgba(255,255,255,.18) inset}
+.pc code{font:500 10px ui-monospace,Menlo,monospace;color:#C9CED3;margin-left:auto;letter-spacing:0}
+.pc p{font:400 10.5px/1.45 -apple-system,sans-serif;color:#8A939C}
+.pcards{grid-template-columns:repeat(2,1fr)}
+.pc .cfg{font:500 8.5px/1 ui-monospace,Menlo,monospace;letter-spacing:.08em;color:#8A939C;text-transform:none}
+.hues{display:flex;gap:4px;margin-top:7px;flex-wrap:wrap}
+.hues span{font:500 8.5px/1 ui-monospace,Menlo,monospace;color:#8A939C;display:flex;align-items:center;gap:3px}
+.hues span i{width:8px;height:8px;border-radius:2px}
+
+
+
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style></head>
+<body><svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<linearGradient id="irisA" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#A5EEFF"/><stop offset=".5" stop-color="#CDB9FF"/><stop offset="1" stop-color="#FFC4E1"/></linearGradient>
+<linearGradient id="silverA" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#8A93A2"/></linearGradient>
+</defs></svg><div class="page"><header class="ph"><div class="k">Vigie · key screen · closed notch states</div><h1>Closed notch — state sheet</h1><p>Hardware notch on a dark menu bar, island 540 × 34 with the 196 px hardware cut-out in the middle. <b>A-dark</b> (Chrome Hologram, default) at 1:1 on the left; <b>C-dark</b> (Twin Metal Tactical) as a compact 80 % column on the right. The island always renders with dark tokens, so these frames also stand for the light looks on a hardware notch. Nothing is drawn outside the island; cursor and drag ghost are macOS.</p></header><div class="colh"><span><b>A · Chrome Hologram</b>dark · 1:1</span><span><b>C · Twin Metal Tactical</b>dark · compact 80 %</span></div><section class="st-row"><div class="st-h"><span class="n">a</span><h2>No agent connected</h2><span class="sn">Surface states · No agent connected</span></div><p class="st-cap">Right after install, before any adapter is set up. Left wing stays black (no provider, so no quota). Right wing carries the label only; a click opens the expanded empty state that leads to Settings › Agents.</p><div class="pair"><div class="col dA"><div class="fr"><div class="cap2"><b>A-dark</b> · hardware notch</div><div class="crop"><div class="stage " style="height:58px"><div class="menubar"><div class="l"><span>Help</span></div><div class="r"><span class="batt"></span><span>14:48</span></div></div><div class="island closed "><div class="orn"><i class="o1"></i><i class="o2"></i></div><div class="wing L"></div><div class="wing R"><span class="rd r solo"><span class="k empty">No agent connected</span></span></div><div class="hw"></div></div></div></div></div></div><div class="col dC cmp"><div class="fr"><div class="cap2"><b>C-dark</b></div><div class="crop"><div class="stage " style="height:58px"><div class="menubar"><div class="l"><span>Help</span></div><div class="r"><span class="batt"></span><span>14:48</span></div></div><div class="island closed "><div class="orn"><i class="o1"></i><i class="o2"></i></div><div class="wing L"></div><div class="wing R"><span class="rd r solo"><span class="k empty">No agent connected</span></span></div><div class="hw"></div></div></div></div></div></div></div></section><section class="st-row"><div class="st-h"><span class="n">b</span><h2>Connected · nothing running</h2><span class="sn">Surface states · Nothing running</span></div><p class="st-cap">Agents are connected but no session runs. Quota rings stay (providers are known); the right wing shows a different label from (a), so the two empty states never look alike.</p><div class="pair"><div class="col dA"><div class="fr"><div class="cap2"><b>A-dark</b></div><div class="crop"><div class="stage " style="height:58px"><div class="menubar"><div class="l"><span>Help</span></div><div class="r"><span class="batt"></span><span>14:48</span></div></div><div class="island closed "><div class="orn"><i class="o1"></i><i class="o2"></i></div><div class="wing L"><span class="pv st"><span class="ring"><span class="dial onp"><svg width="23" height="23" viewBox="0 0 24 24"><circle class="bz" cx="12" cy="12" r="11.6" fill="none" stroke-width=".8"/><circle class="tr" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3"/><circle class="ar2" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3" stroke-linecap="round" stroke-dasharray="23.88 62.83" transform="rotate(-90 12 12)"/><circle class="tr" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5"/><circle class="ar pc" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="21.11 43.98" transform="rotate(-90 12 12)"/><line class="pmk" x1="8.65" y1="16.61" x2="7.06" y2="18.80" stroke-width="2.8" stroke-linecap="round"/><line class="pm" x1="8.65" y1="16.61" x2="7.06" y2="18.80" stroke-width="1.2" stroke-linecap="round"/></svg></span><b class="dv">48</b></span><span class="pn">Claude</span></span><span class="pv st"><span class="ring"><span class="dial onp"><svg width="23" height="23" viewBox="0 0 24 24"><circle class="bz" cx="12" cy="12" r="11.6" fill="none" stroke-width=".8"/><circle class="tr" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3"/><circle class="ar2" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3" stroke-linecap="round" stroke-dasharray="13.82 62.83" transform="rotate(-90 12 12)"/><circle class="tr" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5"/><circle class="ar pc" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="13.63 43.98" transform="rotate(-90 12 12)"/><line class="pmk" x1="13.76" y1="17.42" x2="14.60" y2="19.99" stroke-width="2.8" stroke-linecap="round"/><line class="pm" x1="13.76" y1="17.42" x2="14.60" y2="19.99" stroke-width="1.2" stroke-linecap="round"/></svg></span><b class="dv">31</b></span><span class="pn">Codex</span></span></div><div class="wing R"><span class="rd r solo"><span class="k empty">No active sessions</span></span></div><div class="hw"></div></div></div></div></div></div><div class="col dC cmp"><div class="fr"><div class="cap2"><b>C-dark</b></div><div class="crop"><div class="stage " style="height:58px"><div class="menubar"><div class="l"><span>Help</span></div><div class="r"><span class="batt"></span><span>14:48</span></div></div><div class="island closed "><div class="orn"><i class="o1"></i><i class="o2"></i></div><div class="wing L"><span class="pv st"><span class="ring"><span class="dial onp"><svg width="23" height="23" viewBox="0 0 24 24"><circle class="bz" cx="12" cy="12" r="11.6" fill="none" stroke-width=".8"/><circle class="tr" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3"/><circle class="ar2" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3" stroke-linecap="round" stroke-dasharray="23.88 62.83" transform="rotate(-90 12 12)"/><circle class="tr" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5"/><circle class="ar pc" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="21.11 43.98" transform="rotate(-90 12 12)"/><line class="pmk" x1="8.65" y1="16.61" x2="7.06" y2="18.80" stroke-width="2.8" stroke-linecap="round"/><line class="pm" x1="8.65" y1="16.61" x2="7.06" y2="18.80" stroke-width="1.2" stroke-linecap="round"/></svg></span><b class="dv">48</b></span><span class="pn">Claude</span></span><span class="pv st"><span class="ring"><span class="dial onp"><svg width="23" height="23" viewBox="0 0 24 24"><circle class="bz" cx="12" cy="12" r="11.6" fill="none" stroke-width=".8"/><circle class="tr" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3"/><circle class="ar2" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3" stroke-linecap="round" stroke-dasharray="13.82 62.83" transform="rotate(-90 12 12)"/><circle class="tr" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5"/><circle class="ar pc" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="13.63 43.98" transform="rotate(-90 12 12)"/><line class="pmk" x1="13.76" y1="17.42" x2="14.60" y2="19.99" stroke-width="2.8" stroke-linecap="round"/><line class="pm" x1="13.76" y1="17.42" x2="14.60" y2="19.99" stroke-width="1.2" stroke-linecap="round"/></svg></span><b class="dv">31</b></span><span class="pn">Codex</span></span></div><div class="wing R"><span class="rd r solo"><span class="k empty">No active sessions</span></span></div><div class="hw"></div></div></div></div></div></div></div></section><section class="st-row"><div class="st-h"><span class="n">c</span><h2>Normal · two providers, five sessions</h2><span class="sn">Closed island</span><span class="sn alt">Overflow</span></div><p class="st-cap">Left: one ring per provider, nested when two quotas are tracked (5h inside, weekly outside), even with several providers. The value inside is the 5h value (weekly when the plan has no 5h); the provider name sits in small caps under the ring to save horizontal space. Claude 5h 48 % / week 38 % (pace tick at 60 % elapsed: on pace), Codex 5h 31 % / week 22 % (45 % elapsed: on pace). Right: three glyphs (done, working, working), done nearest the notch, then <b>+2</b> for the other two working sessions. No total count.</p><div class="pair"><div class="col dA"><div class="fr"><div class="cap2"><b>A-dark</b> · Flow 1 steps 1–3</div><div class="crop"><div class="stage " style="height:58px"><div class="menubar"><div class="l"><span>Help</span></div><div class="r"><span class="batt"></span><span>14:48</span></div></div><div class="island closed "><div class="orn"><i class="o1"></i><i class="o2"></i></div><div class="wing L"><span class="pv st"><span class="ring"><span class="dial onp"><svg width="23" height="23" viewBox="0 0 24 24"><circle class="bz" cx="12" cy="12" r="11.6" fill="none" stroke-width=".8"/><circle class="tr" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3"/><circle class="ar2" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3" stroke-linecap="round" stroke-dasharray="23.88 62.83" transform="rotate(-90 12 12)"/><circle class="tr" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5"/><circle class="ar pc" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="21.11 43.98" transform="rotate(-90 12 12)"/><line class="pmk" x1="8.65" y1="16.61" x2="7.06" y2="18.80" stroke-width="2.8" stroke-linecap="round"/><line class="pm" x1="8.65" y1="16.61" x2="7.06" y2="18.80" stroke-width="1.2" stroke-linecap="round"/></svg></span><b class="dv">48</b></span><span class="pn">Claude</span></span><span class="pv st"><span class="ring"><span class="dial onp"><svg width="23" height="23" viewBox="0 0 24 24"><circle class="bz" cx="12" cy="12" r="11.6" fill="none" stroke-width=".8"/><circle class="tr" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3"/><circle class="ar2" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3" stroke-linecap="round" stroke-dasharray="13.82 62.83" transform="rotate(-90 12 12)"/><circle class="tr" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5"/><circle class="ar pc" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="13.63 43.98" transform="rotate(-90 12 12)"/><line class="pmk" x1="13.76" y1="17.42" x2="14.60" y2="19.99" stroke-width="2.8" stroke-linecap="round"/><line class="pm" x1="13.76" y1="17.42" x2="14.60" y2="19.99" stroke-width="1.2" stroke-linecap="round"/></svg></span><b class="dv">31</b></span><span class="pn">Codex</span></span></div><div class="wing R"><span class="glyphs"><i class="s done"></i><i class="s work"></i><i class="s work"></i></span><span class="ovf">+2</span></div><div class="hw"></div></div></div></div></div></div><div class="col dC cmp"><div class="fr"><div class="cap2"><b>C-dark</b></div><div class="crop"><div class="stage " style="height:58px"><div class="menubar"><div class="l"><span>Help</span></div><div class="r"><span class="batt"></span><span>14:48</span></div></div><div class="island closed "><div class="orn"><i class="o1"></i><i class="o2"></i></div><div class="wing L"><span class="pv st"><span class="ring"><span class="dial onp"><svg width="23" height="23" viewBox="0 0 24 24"><circle class="bz" cx="12" cy="12" r="11.6" fill="none" stroke-width=".8"/><circle class="tr" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3"/><circle class="ar2" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3" stroke-linecap="round" stroke-dasharray="23.88 62.83" transform="rotate(-90 12 12)"/><circle class="tr" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5"/><circle class="ar pc" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="21.11 43.98" transform="rotate(-90 12 12)"/><line class="pmk" x1="8.65" y1="16.61" x2="7.06" y2="18.80" stroke-width="2.8" stroke-linecap="round"/><line class="pm" x1="8.65" y1="16.61" x2="7.06" y2="18.80" stroke-width="1.2" stroke-linecap="round"/></svg></span><b class="dv">48</b></span><span class="pn">Claude</span></span><span class="pv st"><span class="ring"><span class="dial onp"><svg width="23" height="23" viewBox="0 0 24 24"><circle class="bz" cx="12" cy="12" r="11.6" fill="none" stroke-width=".8"/><circle class="tr" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3"/><circle class="ar2" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3" stroke-linecap="round" stroke-dasharray="13.82 62.83" transform="rotate(-90 12 12)"/><circle class="tr" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5"/><circle class="ar pc" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="13.63 43.98" transform="rotate(-90 12 12)"/><line class="pmk" x1="13.76" y1="17.42" x2="14.60" y2="19.99" stroke-width="2.8" stroke-linecap="round"/><line class="pm" x1="13.76" y1="17.42" x2="14.60" y2="19.99" stroke-width="1.2" stroke-linecap="round"/></svg></span><b class="dv">31</b></span><span class="pn">Codex</span></span></div><div class="wing R"><span class="glyphs"><i class="s done"></i><i class="s work"></i><i class="s work"></i></span><span class="ovf">+2</span></div><div class="hw"></div></div></div></div></div></div></div></section><section class="st-row"><div class="st-h"><span class="n">d</span><h2>Hover reaction</h2><span class="sn">Interaction Primitives · Hover on closed notch</span></div><p class="st-cap">Pointer over the island. Small reaction drawn inside the outline only: A, the iris rim goes to full strength and the interior lifts; C, hairline and corner marks brighten and the gold tracer runs. Does not open; a click opens Home. Enters over 280 ms (<code>motion.enter</code>).</p><div class="pair"><div class="col dA"><div class="fr"><div class="cap2"><b>A-dark</b> · hover (static capture of the end state)</div><div class="crop"><div class="stage " style="height:58px"><div class="menubar"><div class="l"><span>Help</span></div><div class="r"><span class="batt"></span><span>14:48</span></div></div><div class="island closed hov"><div class="orn"><i class="o1"></i><i class="o2"></i></div><div class="wing L"><span class="pv st"><span class="ring"><span class="dial onp"><svg width="23" height="23" viewBox="0 0 24 24"><circle class="bz" cx="12" cy="12" r="11.6" fill="none" stroke-width=".8"/><circle class="tr" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3"/><circle class="ar2" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3" stroke-linecap="round" stroke-dasharray="23.88 62.83" transform="rotate(-90 12 12)"/><circle class="tr" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5"/><circle class="ar pc" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="21.11 43.98" transform="rotate(-90 12 12)"/><line class="pmk" x1="8.65" y1="16.61" x2="7.06" y2="18.80" stroke-width="2.8" stroke-linecap="round"/><line class="pm" x1="8.65" y1="16.61" x2="7.06" y2="18.80" stroke-width="1.2" stroke-linecap="round"/></svg></span><b class="dv">48</b></span><span class="pn">Claude</span></span><span class="pv st"><span class="ring"><span class="dial onp"><svg width="23" height="23" viewBox="0 0 24 24"><circle class="bz" cx="12" cy="12" r="11.6" fill="none" stroke-width=".8"/><circle class="tr" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3"/><circle class="ar2" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3" stroke-linecap="round" stroke-dasharray="13.82 62.83" transform="rotate(-90 12 12)"/><circle class="tr" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5"/><circle class="ar pc" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="13.63 43.98" transform="rotate(-90 12 12)"/><line class="pmk" x1="13.76" y1="17.42" x2="14.60" y2="19.99" stroke-width="2.8" stroke-linecap="round"/><line class="pm" x1="13.76" y1="17.42" x2="14.60" y2="19.99" stroke-width="1.2" stroke-linecap="round"/></svg></span><b class="dv">31</b></span><span class="pn">Codex</span></span></div><div class="wing R"><span class="glyphs"><i class="s done"></i><i class="s work"></i><i class="s work"></i></span><span class="ovf">+2</span></div><div class="hw"></div></div><span class="chrome-cur" style="left:470px;top:18px"><svg class="cur" width="14" height="20" viewBox="0 0 14 20" aria-hidden="true"><path d="M1 1 L1 16 L4.6 12.6 L7.2 18.6 L9.6 17.6 L7 11.8 L12 11.8 Z" fill="#fff" stroke="#000" stroke-width="1.1" stroke-linejoin="round"/></svg></span></div></div></div></div><div class="col dC cmp"><div class="fr"><div class="cap2"><b>C-dark</b></div><div class="crop"><div class="stage " style="height:58px"><div class="menubar"><div class="l"><span>Help</span></div><div class="r"><span class="batt"></span><span>14:48</span></div></div><div class="island closed hov"><div class="orn"><i class="o1"></i><i class="o2"></i></div><div class="wing L"><span class="pv st"><span class="ring"><span class="dial onp"><svg width="23" height="23" viewBox="0 0 24 24"><circle class="bz" cx="12" cy="12" r="11.6" fill="none" stroke-width=".8"/><circle class="tr" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3"/><circle class="ar2" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3" stroke-linecap="round" stroke-dasharray="23.88 62.83" transform="rotate(-90 12 12)"/><circle class="tr" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5"/><circle class="ar pc" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="21.11 43.98" transform="rotate(-90 12 12)"/><line class="pmk" x1="8.65" y1="16.61" x2="7.06" y2="18.80" stroke-width="2.8" stroke-linecap="round"/><line class="pm" x1="8.65" y1="16.61" x2="7.06" y2="18.80" stroke-width="1.2" stroke-linecap="round"/></svg></span><b class="dv">48</b></span><span class="pn">Claude</span></span><span class="pv st"><span class="ring"><span class="dial onp"><svg width="23" height="23" viewBox="0 0 24 24"><circle class="bz" cx="12" cy="12" r="11.6" fill="none" stroke-width=".8"/><circle class="tr" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3"/><circle class="ar2" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3" stroke-linecap="round" stroke-dasharray="13.82 62.83" transform="rotate(-90 12 12)"/><circle class="tr" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5"/><circle class="ar pc" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="13.63 43.98" transform="rotate(-90 12 12)"/><line class="pmk" x1="13.76" y1="17.42" x2="14.60" y2="19.99" stroke-width="2.8" stroke-linecap="round"/><line class="pm" x1="13.76" y1="17.42" x2="14.60" y2="19.99" stroke-width="1.2" stroke-linecap="round"/></svg></span><b class="dv">31</b></span><span class="pn">Codex</span></span></div><div class="wing R"><span class="glyphs"><i class="s done"></i><i class="s work"></i><i class="s work"></i></span><span class="ovf">+2</span></div><div class="hw"></div></div><span class="chrome-cur" style="left:470px;top:18px"><svg class="cur" width="14" height="20" viewBox="0 0 14 20" aria-hidden="true"><path d="M1 1 L1 16 L4.6 12.6 L7.2 18.6 L9.6 17.6 L7 11.8 L12 11.8 Z" fill="#fff" stroke="#000" stroke-width="1.1" stroke-linejoin="round"/></svg></span></div></div></div></div></div></section><section class="st-row"><div class="st-h"><span class="n">e</span><h2>File drag from another app</h2><span class="sn">Drop zone</span><span class="sn alt">Interaction Primitives · Drag a file / ⌥ while dropping</span></div><p class="st-cap">A drag starts in the browser or Finder: the closed island swaps its wings for two targets, <b>Stash</b> (left) and <b>Ask AI</b> (right). The drop lands on the closed island. Over Ask AI with ⌥ held, the hint lights up: the alternate-folder setting will be used. Cursor and drag ghost are macOS, not Vigie.</p><div class="pair"><div class="col dA"><div class="fr"><div class="cap2"><b>A-dark</b> · drag started</div><div class="crop"><div class="stage " style="height:96px"><div class="menubar"><div class="l"><span>Help</span></div><div class="r"><span class="batt"></span><span>14:48</span></div></div><div class="island closed drag"><div class="orn"><i class="o1"></i><i class="o2"></i></div><div class="wing L"><span class="dzone stash"><i class="fi"></i><span class="zl">Stash</span></span></div><div class="wing R"><span class="dzone ask"><span class="plus">+</span><span class="zl">Ask AI</span><span class="hint">⌥ alt folder</span></span></div><div class="hw"></div></div><span class="chrome-drag" style="left:250px;top:50px"><span class="gh"><i></i>server-2026-11-04.log</span><svg class="cur" width="14" height="20" viewBox="0 0 14 20" aria-hidden="true"><path d="M1 1 L1 16 L4.6 12.6 L7.2 18.6 L9.6 17.6 L7 11.8 L12 11.8 Z" fill="#fff" stroke="#000" stroke-width="1.1" stroke-linejoin="round"/></svg></span></div></div></div><div class="fr"><div class="cap2"><b>A-dark</b> · over Ask AI, ⌥ held</div><div class="crop"><div class="stage " style="height:96px"><div class="menubar"><div class="l"><span>Help</span></div><div class="r"><span class="batt"></span><span>14:48</span></div></div><div class="island closed drag"><div class="orn"><i class="o1"></i><i class="o2"></i></div><div class="wing L"><span class="dzone stash"><i class="fi"></i><span class="zl">Stash</span></span></div><div class="wing R"><span class="dzone ask on"><span class="plus">+</span><span class="zl">Ask AI</span><span class="hint">Alt folder</span></span></div><div class="hw"></div></div><span class="chrome-drag" style="left:500px;top:14px"><span class="gh"><i></i>server-2026-11-04.log</span><b class="optk">⌥</b><svg class="cur" width="14" height="20" viewBox="0 0 14 20" aria-hidden="true"><path d="M1 1 L1 16 L4.6 12.6 L7.2 18.6 L9.6 17.6 L7 11.8 L12 11.8 Z" fill="#fff" stroke="#000" stroke-width="1.1" stroke-linejoin="round"/></svg></span></div></div></div></div><div class="col dC cmp"><div class="fr"><div class="cap2"><b>C-dark</b> · drag started</div><div class="crop"><div class="stage " style="height:96px"><div class="menubar"><div class="l"><span>Help</span></div><div class="r"><span class="batt"></span><span>14:48</span></div></div><div class="island closed drag"><div class="orn"><i class="o1"></i><i class="o2"></i></div><div class="wing L"><span class="dzone stash"><i class="fi"></i><span class="zl">Stash</span></span></div><div class="wing R"><span class="dzone ask"><span class="plus">+</span><span class="zl">Ask AI</span><span class="hint">⌥ alt folder</span></span></div><div class="hw"></div></div><span class="chrome-drag" style="left:250px;top:50px"><span class="gh"><i></i>server-2026-11-04.log</span><svg class="cur" width="14" height="20" viewBox="0 0 14 20" aria-hidden="true"><path d="M1 1 L1 16 L4.6 12.6 L7.2 18.6 L9.6 17.6 L7 11.8 L12 11.8 Z" fill="#fff" stroke="#000" stroke-width="1.1" stroke-linejoin="round"/></svg></span></div></div></div><div class="fr"><div class="cap2"><b>C-dark</b> · over Ask AI, ⌥ held</div><div class="crop"><div class="stage " style="height:96px"><div class="menubar"><div class="l"><span>Help</span></div><div class="r"><span class="batt"></span><span>14:48</span></div></div><div class="island closed drag"><div class="orn"><i class="o1"></i><i class="o2"></i></div><div class="wing L"><span class="dzone stash"><i class="fi"></i><span class="zl">Stash</span></span></div><div class="wing R"><span class="dzone ask on"><span class="plus">+</span><span class="zl">Ask AI</span><span class="hint">Alt folder</span></span></div><div class="hw"></div></div><span class="chrome-drag" style="left:500px;top:14px"><span class="gh"><i></i>server-2026-11-04.log</span><b class="optk">⌥</b><svg class="cur" width="14" height="20" viewBox="0 0 14 20" aria-hidden="true"><path d="M1 1 L1 16 L4.6 12.6 L7.2 18.6 L9.6 17.6 L7 11.8 L12 11.8 Z" fill="#fff" stroke="#000" stroke-width="1.1" stroke-linejoin="round"/></svg></span></div></div></div></div></div></section><section class="st-row"><div class="st-h"><span class="n">f</span><h2>Pace marker on the ring</h2><span class="sn">Surface states · Pace ahead</span><span class="sn alt">Quota dial</span></div><p class="st-cap">The tick marks elapsed time in the paced window (5h, or weekly when there is no 5h). Final colours, <b>user-configurable</b>: <b>A</b> on pace keeps the theme metal, ahead of pace turns <b>Ember</b> <code>#FF8A3D</code>. <b>C</b> is inverted: on pace is <b>Volt</b> <code>#C2EA3E</code> (green = OK), ahead of pace falls back to C's <b>gold metal</b> (orange-ish = warning). The island always uses dark tokens, so these values apply to the closed notch in all four looks.</p><div class="pair"><div class="col dA"><div class="fr"><div class="cap2"><b>On pace</b> · Claude 48 % used, 60 % of the 5h window elapsed · arc in <b>Theme metal</b></div><div class="crop"><div class="stage " style="height:58px"><div class="menubar"><div class="l"><span>Help</span></div><div class="r"><span class="batt"></span><span>14:48</span></div></div><div class="island closed "><div class="orn"><i class="o1"></i><i class="o2"></i></div><div class="wing L"><span class="pv st"><span class="ring"><span class="dial onp"><svg width="23" height="23" viewBox="0 0 24 24"><circle class="bz" cx="12" cy="12" r="11.6" fill="none" stroke-width=".8"/><circle class="tr" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3"/><circle class="ar2" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3" stroke-linecap="round" stroke-dasharray="23.88 62.83" transform="rotate(-90 12 12)"/><circle class="tr" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5"/><circle class="ar pc" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="21.11 43.98" transform="rotate(-90 12 12)"/><line class="pmk" x1="8.65" y1="16.61" x2="7.06" y2="18.80" stroke-width="2.8" stroke-linecap="round"/><line class="pm" x1="8.65" y1="16.61" x2="7.06" y2="18.80" stroke-width="1.2" stroke-linecap="round"/></svg></span><b class="dv">48</b></span><span class="pn">Claude</span></span><span class="pv st"><span class="ring"><span class="dial onp"><svg width="23" height="23" viewBox="0 0 24 24"><circle class="bz" cx="12" cy="12" r="11.6" fill="none" stroke-width=".8"/><circle class="tr" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3"/><circle class="ar2" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3" stroke-linecap="round" stroke-dasharray="13.82 62.83" transform="rotate(-90 12 12)"/><circle class="tr" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5"/><circle class="ar pc" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="13.63 43.98" transform="rotate(-90 12 12)"/><line class="pmk" x1="13.76" y1="17.42" x2="14.60" y2="19.99" stroke-width="2.8" stroke-linecap="round"/><line class="pm" x1="13.76" y1="17.42" x2="14.60" y2="19.99" stroke-width="1.2" stroke-linecap="round"/></svg></span><b class="dv">31</b></span><span class="pn">Codex</span></span></div><div class="wing R"><span class="glyphs"><i class="s done"></i><i class="s work"></i><i class="s work"></i></span><span class="ovf">+2</span></div><div class="hw"></div></div></div></div></div><div class="fr"><div class="cap2"><b>Ahead of pace</b> · Claude 74 % used, 50 % elapsed · arc in <b>Ember</b></div><div class="crop"><div class="stage " style="height:58px"><div class="menubar"><div class="l"><span>Help</span></div><div class="r"><span class="batt"></span><span>14:48</span></div></div><div class="island closed "><div class="orn"><i class="o1"></i><i class="o2"></i></div><div class="wing L"><span class="pv st"><span class="ring"><span class="dial ahead"><svg width="23" height="23" viewBox="0 0 24 24"><circle class="bz" cx="12" cy="12" r="11.6" fill="none" stroke-width=".8"/><circle class="tr" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3"/><circle class="ar2" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3" stroke-linecap="round" stroke-dasharray="32.67 62.83" transform="rotate(-90 12 12)"/><circle class="tr" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5"/><circle class="ar pc" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="32.55 43.98" transform="rotate(-90 12 12)"/><line class="pmk" x1="12.00" y1="17.70" x2="12.00" y2="20.40" stroke-width="2.8" stroke-linecap="round"/><line class="pm" x1="12.00" y1="17.70" x2="12.00" y2="20.40" stroke-width="1.2" stroke-linecap="round"/></svg></span><b class="dv">74</b></span><span class="pn">Claude</span></span><span class="pv st"><span class="ring"><span class="dial onp"><svg width="23" height="23" viewBox="0 0 24 24"><circle class="bz" cx="12" cy="12" r="11.6" fill="none" stroke-width=".8"/><circle class="tr" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3"/><circle class="ar2" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3" stroke-linecap="round" stroke-dasharray="13.82 62.83" transform="rotate(-90 12 12)"/><circle class="tr" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5"/><circle class="ar pc" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="13.63 43.98" transform="rotate(-90 12 12)"/><line class="pmk" x1="13.76" y1="17.42" x2="14.60" y2="19.99" stroke-width="2.8" stroke-linecap="round"/><line class="pm" x1="13.76" y1="17.42" x2="14.60" y2="19.99" stroke-width="1.2" stroke-linecap="round"/></svg></span><b class="dv">31</b></span><span class="pn">Codex</span></span></div><div class="wing R"><span class="glyphs"><i class="s done"></i><i class="s work"></i><i class="s work"></i></span><span class="ovf">+2</span></div><div class="hw"></div></div></div></div></div><div class="cap2"><b>Magnified 4× for review</b> (not on screen) · final pace colours, <b>user-configurable</b> · status hues for reference:</div><div class="hues"><span><i style="background:#A6F2D2"></i>idle</span><span><i style="background:#FFD9A0"></i>working</span><span><i style="background:#8FD3FF"></i>done</span><span><i style="background:#FF7B8C"></i>blocked</span><span><i style="background:#E58CFF"></i>failed</span></div><div class="pcards"><div class="pc"><div class="mag"><span class="dial onp"><svg width="96" height="96" viewBox="0 0 24 24"><circle class="bz" cx="12" cy="12" r="11.6" fill="none" stroke-width=".8"/><circle class="tr" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3"/><circle class="ar2" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3" stroke-linecap="round" stroke-dasharray="23.88 62.83" transform="rotate(-90 12 12)"/><circle class="tr" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5"/><circle class="ar pc" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="21.11 43.98" transform="rotate(-90 12 12)"/><line class="pmk" x1="8.65" y1="16.61" x2="7.06" y2="18.80" stroke-width="2.8" stroke-linecap="round"/><line class="pm" x1="8.65" y1="16.61" x2="7.06" y2="18.80" stroke-width="1.2" stroke-linecap="round"/></svg></span></div><h4><i style="background:linear-gradient(135deg,#A5EEFF,#CDB9FF,#FFC4E1)"></i>On pace · Theme metal<code>iris gradient</code></h4><p>Arc ends before the tick. Fill stays the theme metal (iris gradient).</p><p><span class="cfg">user-configurable</span></p></div><div class="pc"><div class="mag"><span class="dial ahead"><svg width="96" height="96" viewBox="0 0 24 24"><circle class="bz" cx="12" cy="12" r="11.6" fill="none" stroke-width=".8"/><circle class="tr" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3"/><circle class="ar2" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3" stroke-linecap="round" stroke-dasharray="32.67 62.83" transform="rotate(-90 12 12)"/><circle class="tr" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5"/><circle class="ar pc" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="32.55 43.98" transform="rotate(-90 12 12)"/><line class="pmk" x1="12.00" y1="17.70" x2="12.00" y2="20.40" stroke-width="2.8" stroke-linecap="round"/><line class="pm" x1="12.00" y1="17.70" x2="12.00" y2="20.40" stroke-width="1.2" stroke-linecap="round"/></svg></span></div><h4><i style="background:#FF8A3D"></i>Ahead of pace · Ember<code>#FF8A3D</code></h4><p>Arc runs past the tick. ΔE00 ≥ 22.3 from every A status hue (nearest: working 22.3) · 9.0:1 on the black island.</p><p><span class="cfg">user-configurable</span></p></div></div></div><div class="col dC cmp"><div class="fr"><div class="cap2"><b>On pace</b> · Claude 48 % used, 60 % of the 5h window elapsed · arc in <b>Volt</b></div><div class="crop"><div class="stage " style="height:58px"><div class="menubar"><div class="l"><span>Help</span></div><div class="r"><span class="batt"></span><span>14:48</span></div></div><div class="island closed "><div class="orn"><i class="o1"></i><i class="o2"></i></div><div class="wing L"><span class="pv st"><span class="ring"><span class="dial onp"><svg width="23" height="23" viewBox="0 0 24 24"><circle class="bz" cx="12" cy="12" r="11.6" fill="none" stroke-width=".8"/><circle class="tr" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3"/><circle class="ar2" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3" stroke-linecap="round" stroke-dasharray="23.88 62.83" transform="rotate(-90 12 12)"/><circle class="tr" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5"/><circle class="ar pc" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="21.11 43.98" transform="rotate(-90 12 12)"/><line class="pmk" x1="8.65" y1="16.61" x2="7.06" y2="18.80" stroke-width="2.8" stroke-linecap="round"/><line class="pm" x1="8.65" y1="16.61" x2="7.06" y2="18.80" stroke-width="1.2" stroke-linecap="round"/></svg></span><b class="dv">48</b></span><span class="pn">Claude</span></span><span class="pv st"><span class="ring"><span class="dial onp"><svg width="23" height="23" viewBox="0 0 24 24"><circle class="bz" cx="12" cy="12" r="11.6" fill="none" stroke-width=".8"/><circle class="tr" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3"/><circle class="ar2" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3" stroke-linecap="round" stroke-dasharray="13.82 62.83" transform="rotate(-90 12 12)"/><circle class="tr" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5"/><circle class="ar pc" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="13.63 43.98" transform="rotate(-90 12 12)"/><line class="pmk" x1="13.76" y1="17.42" x2="14.60" y2="19.99" stroke-width="2.8" stroke-linecap="round"/><line class="pm" x1="13.76" y1="17.42" x2="14.60" y2="19.99" stroke-width="1.2" stroke-linecap="round"/></svg></span><b class="dv">31</b></span><span class="pn">Codex</span></span></div><div class="wing R"><span class="glyphs"><i class="s done"></i><i class="s work"></i><i class="s work"></i></span><span class="ovf">+2</span></div><div class="hw"></div></div></div></div></div><div class="fr"><div class="cap2"><b>Ahead of pace</b> · Claude 74 % used, 50 % elapsed · arc in <b>Gold metal</b></div><div class="crop"><div class="stage " style="height:58px"><div class="menubar"><div class="l"><span>Help</span></div><div class="r"><span class="batt"></span><span>14:48</span></div></div><div class="island closed "><div class="orn"><i class="o1"></i><i class="o2"></i></div><div class="wing L"><span class="pv st"><span class="ring"><span class="dial ahead"><svg width="23" height="23" viewBox="0 0 24 24"><circle class="bz" cx="12" cy="12" r="11.6" fill="none" stroke-width=".8"/><circle class="tr" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3"/><circle class="ar2" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3" stroke-linecap="round" stroke-dasharray="32.67 62.83" transform="rotate(-90 12 12)"/><circle class="tr" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5"/><circle class="ar pc" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="32.55 43.98" transform="rotate(-90 12 12)"/><line class="pmk" x1="12.00" y1="17.70" x2="12.00" y2="20.40" stroke-width="2.8" stroke-linecap="round"/><line class="pm" x1="12.00" y1="17.70" x2="12.00" y2="20.40" stroke-width="1.2" stroke-linecap="round"/></svg></span><b class="dv">74</b></span><span class="pn">Claude</span></span><span class="pv st"><span class="ring"><span class="dial onp"><svg width="23" height="23" viewBox="0 0 24 24"><circle class="bz" cx="12" cy="12" r="11.6" fill="none" stroke-width=".8"/><circle class="tr" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3"/><circle class="ar2" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3" stroke-linecap="round" stroke-dasharray="13.82 62.83" transform="rotate(-90 12 12)"/><circle class="tr" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5"/><circle class="ar pc" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="13.63 43.98" transform="rotate(-90 12 12)"/><line class="pmk" x1="13.76" y1="17.42" x2="14.60" y2="19.99" stroke-width="2.8" stroke-linecap="round"/><line class="pm" x1="13.76" y1="17.42" x2="14.60" y2="19.99" stroke-width="1.2" stroke-linecap="round"/></svg></span><b class="dv">31</b></span><span class="pn">Codex</span></span></div><div class="wing R"><span class="glyphs"><i class="s done"></i><i class="s work"></i><i class="s work"></i></span><span class="ovf">+2</span></div><div class="hw"></div></div></div></div></div><div class="cap2"><b>Magnified 4× for review</b> (not on screen) · final pace colours, <b>user-configurable</b> · status hues for reference:</div><div class="hues"><span><i style="background:#6FD39A"></i>idle</span><span><i style="background:#F0A43C"></i>working</span><span><i style="background:#4FB8FF"></i>done</span><span><i style="background:#FF4F4F"></i>blocked</span><span><i style="background:#D85CFF"></i>failed</span></div><div class="pcards"><div class="pc"><div class="mag"><span class="dial onp"><svg width="96" height="96" viewBox="0 0 24 24"><circle class="bz" cx="12" cy="12" r="11.6" fill="none" stroke-width=".8"/><circle class="tr" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3"/><circle class="ar2" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3" stroke-linecap="round" stroke-dasharray="23.88 62.83" transform="rotate(-90 12 12)"/><circle class="tr" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5"/><circle class="ar pc" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="21.11 43.98" transform="rotate(-90 12 12)"/><line class="pmk" x1="8.65" y1="16.61" x2="7.06" y2="18.80" stroke-width="2.8" stroke-linecap="round"/><line class="pm" x1="8.65" y1="16.61" x2="7.06" y2="18.80" stroke-width="1.2" stroke-linecap="round"/></svg></span></div><h4><i style="background:#C2EA3E"></i>On pace · Volt<code>#C2EA3E</code></h4><p>Inverted for C: green reads as OK. Arc ends before the tick · 15.1:1 on black.</p><p><span class="cfg">user-configurable</span></p></div><div class="pc"><div class="mag"><span class="dial ahead"><svg width="96" height="96" viewBox="0 0 24 24"><circle class="bz" cx="12" cy="12" r="11.6" fill="none" stroke-width=".8"/><circle class="tr" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3"/><circle class="ar2" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3" stroke-linecap="round" stroke-dasharray="32.67 62.83" transform="rotate(-90 12 12)"/><circle class="tr" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5"/><circle class="ar pc" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="32.55 43.98" transform="rotate(-90 12 12)"/><line class="pmk" x1="12.00" y1="17.70" x2="12.00" y2="20.40" stroke-width="2.8" stroke-linecap="round"/><line class="pm" x1="12.00" y1="17.70" x2="12.00" y2="20.40" stroke-width="1.2" stroke-linecap="round"/></svg></span></div><h4><i style="background:#D8B45C"></i>Ahead of pace · Gold metal<code>#D8B45C</code></h4><p>Arc runs past the tick and falls back to C's gold metal (orange-ish reads as warning).</p><p><span class="cfg">user-configurable</span></p></div></div></div></div></section><section class="st-row"><div class="st-h"><span class="n">g</span><h2>Plan without a 5h window</h2><span class="sn">Surface states · Window absent</span></div><p class="st-cap">Claude Ultra plan: no 5h window, so the dial shows the weekly ring alone at single-ring size, in the primary metal fill, and the pace tick moves to the weekly window. No empty inner ring.</p><div class="pair"><div class="col dA"><div class="fr"><div class="cap2"><b>A-dark</b> · Claude only</div><div class="crop"><div class="stage " style="height:58px"><div class="menubar"><div class="l"><span>Help</span></div><div class="r"><span class="batt"></span><span>14:48</span></div></div><div class="island closed "><div class="orn"><i class="o1"></i><i class="o2"></i></div><div class="wing L"><span class="pv"><span class="dial onp"><svg width="24" height="24" viewBox="0 0 24 24"><circle class="bz" cx="12" cy="12" r="11.2" fill="none" stroke-width="1.4"/><circle class="tr" cx="12" cy="12" r="7.5" fill="none" stroke-width="1.6"/><circle class="ar pc" cx="12" cy="12" r="7.5" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="17.91 47.12" transform="rotate(-90 12 12)"/><line class="pmk" x1="10.39" y1="16.95" x2="8.97" y2="21.32" stroke-width="2.8" stroke-linecap="round"/><line class="pm" x1="10.39" y1="16.95" x2="8.97" y2="21.32" stroke-width="1.2" stroke-linecap="round"/></svg></span><span class="rd c"><span class="v"><em>38</em><small>%</small></span><span class="k">Claude · week</span></span></span></div><div class="wing R"><span class="glyphs"><i class="s done"></i><i class="s work"></i><i class="s work"></i></span><span class="ovf">+2</span></div><div class="hw"></div></div></div></div></div></div><div class="col dC cmp"><div class="fr"><div class="cap2"><b>C-dark</b></div><div class="crop"><div class="stage " style="height:58px"><div class="menubar"><div class="l"><span>Help</span></div><div class="r"><span class="batt"></span><span>14:48</span></div></div><div class="island closed "><div class="orn"><i class="o1"></i><i class="o2"></i></div><div class="wing L"><span class="pv"><span class="dial onp"><svg width="24" height="24" viewBox="0 0 24 24"><circle class="bz" cx="12" cy="12" r="11.2" fill="none" stroke-width="1.4"/><circle class="tr" cx="12" cy="12" r="7.5" fill="none" stroke-width="1.6"/><circle class="ar pc" cx="12" cy="12" r="7.5" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="17.91 47.12" transform="rotate(-90 12 12)"/><line class="pmk" x1="10.39" y1="16.95" x2="8.97" y2="21.32" stroke-width="2.8" stroke-linecap="round"/><line class="pm" x1="10.39" y1="16.95" x2="8.97" y2="21.32" stroke-width="1.2" stroke-linecap="round"/></svg></span><span class="rd c"><span class="v"><em>38</em><small>%</small></span><span class="k">Claude · week</span></span></span></div><div class="wing R"><span class="glyphs"><i class="s done"></i><i class="s work"></i><i class="s work"></i></span><span class="ovf">+2</span></div><div class="hw"></div></div></div></div></div></div></div></section><section class="st-row"><div class="st-h"><span class="n">h</span><h2>Blocked + failed share top priority</h2><span class="sn">Session states · blocked / failed</span><span class="sn alt">Priority</span></div><p class="st-cap">14:31 <code>vigie / api-refactor</code> turns blocked and takes the slot nearest the notch. 14:36 <code>infra / backup</code> fails: most recent wins, so failed goes nearest the notch, blocked next, and a working session drops into <b>+3</b>. Overflow never hides a blocked or failed session. No alert-count label: the glyphs and <b>+X</b> carry it.</p><div class="pair"><div class="col dA"><div class="fr"><div class="cap2"><b>A-dark</b> · 14:31 · blocked arrives</div><div class="crop"><div class="stage " style="height:58px"><div class="menubar"><div class="l"><span>Help</span></div><div class="r"><span class="batt"></span><span>14:48</span></div></div><div class="island closed "><div class="orn"><i class="o1"></i><i class="o2"></i></div><div class="wing L"><span class="pv st"><span class="ring"><span class="dial onp"><svg width="23" height="23" viewBox="0 0 24 24"><circle class="bz" cx="12" cy="12" r="11.6" fill="none" stroke-width=".8"/><circle class="tr" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3"/><circle class="ar2" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3" stroke-linecap="round" stroke-dasharray="23.88 62.83" transform="rotate(-90 12 12)"/><circle class="tr" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5"/><circle class="ar pc" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="21.11 43.98" transform="rotate(-90 12 12)"/><line class="pmk" x1="8.65" y1="16.61" x2="7.06" y2="18.80" stroke-width="2.8" stroke-linecap="round"/><line class="pm" x1="8.65" y1="16.61" x2="7.06" y2="18.80" stroke-width="1.2" stroke-linecap="round"/></svg></span><b class="dv">48</b></span><span class="pn">Claude</span></span><span class="pv st"><span class="ring"><span class="dial onp"><svg width="23" height="23" viewBox="0 0 24 24"><circle class="bz" cx="12" cy="12" r="11.6" fill="none" stroke-width=".8"/><circle class="tr" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3"/><circle class="ar2" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3" stroke-linecap="round" stroke-dasharray="13.82 62.83" transform="rotate(-90 12 12)"/><circle class="tr" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5"/><circle class="ar pc" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="13.63 43.98" transform="rotate(-90 12 12)"/><line class="pmk" x1="13.76" y1="17.42" x2="14.60" y2="19.99" stroke-width="2.8" stroke-linecap="round"/><line class="pm" x1="13.76" y1="17.42" x2="14.60" y2="19.99" stroke-width="1.2" stroke-linecap="round"/></svg></span><b class="dv">31</b></span><span class="pn">Codex</span></span></div><div class="wing R"><span class="glyphs"><i class="s block"></i><i class="s done"></i><i class="s work"></i></span><span class="ovf">+2</span></div><div class="hw"></div></div></div></div></div><div class="fr"><div class="cap2"><b>A-dark</b> · 14:36 · failed arrives (most recent first)</div><div class="crop"><div class="stage " style="height:58px"><div class="menubar"><div class="l"><span>Help</span></div><div class="r"><span class="batt"></span><span>14:48</span></div></div><div class="island closed "><div class="orn"><i class="o1"></i><i class="o2"></i></div><div class="wing L"><span class="pv st"><span class="ring"><span class="dial onp"><svg width="23" height="23" viewBox="0 0 24 24"><circle class="bz" cx="12" cy="12" r="11.6" fill="none" stroke-width=".8"/><circle class="tr" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3"/><circle class="ar2" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3" stroke-linecap="round" stroke-dasharray="23.88 62.83" transform="rotate(-90 12 12)"/><circle class="tr" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5"/><circle class="ar pc" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="21.11 43.98" transform="rotate(-90 12 12)"/><line class="pmk" x1="8.65" y1="16.61" x2="7.06" y2="18.80" stroke-width="2.8" stroke-linecap="round"/><line class="pm" x1="8.65" y1="16.61" x2="7.06" y2="18.80" stroke-width="1.2" stroke-linecap="round"/></svg></span><b class="dv">48</b></span><span class="pn">Claude</span></span><span class="pv st"><span class="ring"><span class="dial onp"><svg width="23" height="23" viewBox="0 0 24 24"><circle class="bz" cx="12" cy="12" r="11.6" fill="none" stroke-width=".8"/><circle class="tr" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3"/><circle class="ar2" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3" stroke-linecap="round" stroke-dasharray="13.82 62.83" transform="rotate(-90 12 12)"/><circle class="tr" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5"/><circle class="ar pc" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="13.63 43.98" transform="rotate(-90 12 12)"/><line class="pmk" x1="13.76" y1="17.42" x2="14.60" y2="19.99" stroke-width="2.8" stroke-linecap="round"/><line class="pm" x1="13.76" y1="17.42" x2="14.60" y2="19.99" stroke-width="1.2" stroke-linecap="round"/></svg></span><b class="dv">31</b></span><span class="pn">Codex</span></span></div><div class="wing R"><span class="glyphs"><i class="s fail"></i><i class="s block"></i><i class="s done"></i></span><span class="ovf">+3</span></div><div class="hw"></div></div></div></div></div></div><div class="col dC cmp"><div class="fr"><div class="cap2"><b>C-dark</b> · 14:31</div><div class="crop"><div class="stage " style="height:58px"><div class="menubar"><div class="l"><span>Help</span></div><div class="r"><span class="batt"></span><span>14:48</span></div></div><div class="island closed "><div class="orn"><i class="o1"></i><i class="o2"></i></div><div class="wing L"><span class="pv st"><span class="ring"><span class="dial onp"><svg width="23" height="23" viewBox="0 0 24 24"><circle class="bz" cx="12" cy="12" r="11.6" fill="none" stroke-width=".8"/><circle class="tr" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3"/><circle class="ar2" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3" stroke-linecap="round" stroke-dasharray="23.88 62.83" transform="rotate(-90 12 12)"/><circle class="tr" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5"/><circle class="ar pc" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="21.11 43.98" transform="rotate(-90 12 12)"/><line class="pmk" x1="8.65" y1="16.61" x2="7.06" y2="18.80" stroke-width="2.8" stroke-linecap="round"/><line class="pm" x1="8.65" y1="16.61" x2="7.06" y2="18.80" stroke-width="1.2" stroke-linecap="round"/></svg></span><b class="dv">48</b></span><span class="pn">Claude</span></span><span class="pv st"><span class="ring"><span class="dial onp"><svg width="23" height="23" viewBox="0 0 24 24"><circle class="bz" cx="12" cy="12" r="11.6" fill="none" stroke-width=".8"/><circle class="tr" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3"/><circle class="ar2" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3" stroke-linecap="round" stroke-dasharray="13.82 62.83" transform="rotate(-90 12 12)"/><circle class="tr" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5"/><circle class="ar pc" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="13.63 43.98" transform="rotate(-90 12 12)"/><line class="pmk" x1="13.76" y1="17.42" x2="14.60" y2="19.99" stroke-width="2.8" stroke-linecap="round"/><line class="pm" x1="13.76" y1="17.42" x2="14.60" y2="19.99" stroke-width="1.2" stroke-linecap="round"/></svg></span><b class="dv">31</b></span><span class="pn">Codex</span></span></div><div class="wing R"><span class="glyphs"><i class="s block"></i><i class="s done"></i><i class="s work"></i></span><span class="ovf">+2</span></div><div class="hw"></div></div></div></div></div><div class="fr"><div class="cap2"><b>C-dark</b> · 14:36</div><div class="crop"><div class="stage " style="height:58px"><div class="menubar"><div class="l"><span>Help</span></div><div class="r"><span class="batt"></span><span>14:48</span></div></div><div class="island closed "><div class="orn"><i class="o1"></i><i class="o2"></i></div><div class="wing L"><span class="pv st"><span class="ring"><span class="dial onp"><svg width="23" height="23" viewBox="0 0 24 24"><circle class="bz" cx="12" cy="12" r="11.6" fill="none" stroke-width=".8"/><circle class="tr" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3"/><circle class="ar2" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3" stroke-linecap="round" stroke-dasharray="23.88 62.83" transform="rotate(-90 12 12)"/><circle class="tr" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5"/><circle class="ar pc" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="21.11 43.98" transform="rotate(-90 12 12)"/><line class="pmk" x1="8.65" y1="16.61" x2="7.06" y2="18.80" stroke-width="2.8" stroke-linecap="round"/><line class="pm" x1="8.65" y1="16.61" x2="7.06" y2="18.80" stroke-width="1.2" stroke-linecap="round"/></svg></span><b class="dv">48</b></span><span class="pn">Claude</span></span><span class="pv st"><span class="ring"><span class="dial onp"><svg width="23" height="23" viewBox="0 0 24 24"><circle class="bz" cx="12" cy="12" r="11.6" fill="none" stroke-width=".8"/><circle class="tr" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3"/><circle class="ar2" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3" stroke-linecap="round" stroke-dasharray="13.82 62.83" transform="rotate(-90 12 12)"/><circle class="tr" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5"/><circle class="ar pc" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="13.63 43.98" transform="rotate(-90 12 12)"/><line class="pmk" x1="13.76" y1="17.42" x2="14.60" y2="19.99" stroke-width="2.8" stroke-linecap="round"/><line class="pm" x1="13.76" y1="17.42" x2="14.60" y2="19.99" stroke-width="1.2" stroke-linecap="round"/></svg></span><b class="dv">31</b></span><span class="pn">Codex</span></span></div><div class="wing R"><span class="glyphs"><i class="s fail"></i><i class="s block"></i><i class="s done"></i></span><span class="ovf">+3</span></div><div class="hw"></div></div></div></div></div></div></div></section><section class="st-row"><div class="st-h"><span class="n">i</span><h2>Calm presence</h2><span class="sn">Presence Levels · Calm (lowest)</span></div><p class="st-cap">Lowest presence level (also forced by macOS Reduce motion). No shimmer, rim slide, tracer or turning bezel; working arc frozen; quota arcs step back to flat silver. Only the blocked glyph pulses, once every 2.6 s. With nothing blocked or failed, the notch is perfectly still.</p><div class="pair"><div class="col dA"><div class="fr"><div class="cap2"><b>A-dark</b> · calm</div><div class="crop"><div class="stage calm" style="height:58px"><div class="menubar"><div class="l"><span>Help</span></div><div class="r"><span class="batt"></span><span>14:48</span></div></div><div class="island closed calm"><div class="orn"><i class="o1"></i><i class="o2"></i></div><div class="wing L"><span class="pv st"><span class="ring"><span class="dial onp"><svg width="23" height="23" viewBox="0 0 24 24"><circle class="bz" cx="12" cy="12" r="11.6" fill="none" stroke-width=".8"/><circle class="tr" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3"/><circle class="ar2" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3" stroke-linecap="round" stroke-dasharray="23.88 62.83" transform="rotate(-90 12 12)"/><circle class="tr" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5"/><circle class="ar pc" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="21.11 43.98" transform="rotate(-90 12 12)"/><line class="pmk" x1="8.65" y1="16.61" x2="7.06" y2="18.80" stroke-width="2.8" stroke-linecap="round"/><line class="pm" x1="8.65" y1="16.61" x2="7.06" y2="18.80" stroke-width="1.2" stroke-linecap="round"/></svg></span><b class="dv">48</b></span><span class="pn">Claude</span></span><span class="pv st"><span class="ring"><span class="dial onp"><svg width="23" height="23" viewBox="0 0 24 24"><circle class="bz" cx="12" cy="12" r="11.6" fill="none" stroke-width=".8"/><circle class="tr" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3"/><circle class="ar2" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3" stroke-linecap="round" stroke-dasharray="13.82 62.83" transform="rotate(-90 12 12)"/><circle class="tr" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5"/><circle class="ar pc" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="13.63 43.98" transform="rotate(-90 12 12)"/><line class="pmk" x1="13.76" y1="17.42" x2="14.60" y2="19.99" stroke-width="2.8" stroke-linecap="round"/><line class="pm" x1="13.76" y1="17.42" x2="14.60" y2="19.99" stroke-width="1.2" stroke-linecap="round"/></svg></span><b class="dv">31</b></span><span class="pn">Codex</span></span></div><div class="wing R"><span class="glyphs"><i class="s block"></i><i class="s work"></i><i class="s idle"></i></span><span class="ovf">+2</span></div><div class="hw"></div></div></div></div></div></div><div class="col dC cmp"><div class="fr"><div class="cap2"><b>C-dark</b> · calm</div><div class="crop"><div class="stage calm" style="height:58px"><div class="menubar"><div class="l"><span>Help</span></div><div class="r"><span class="batt"></span><span>14:48</span></div></div><div class="island closed calm"><div class="orn"><i class="o1"></i><i class="o2"></i></div><div class="wing L"><span class="pv st"><span class="ring"><span class="dial onp"><svg width="23" height="23" viewBox="0 0 24 24"><circle class="bz" cx="12" cy="12" r="11.6" fill="none" stroke-width=".8"/><circle class="tr" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3"/><circle class="ar2" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3" stroke-linecap="round" stroke-dasharray="23.88 62.83" transform="rotate(-90 12 12)"/><circle class="tr" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5"/><circle class="ar pc" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="21.11 43.98" transform="rotate(-90 12 12)"/><line class="pmk" x1="8.65" y1="16.61" x2="7.06" y2="18.80" stroke-width="2.8" stroke-linecap="round"/><line class="pm" x1="8.65" y1="16.61" x2="7.06" y2="18.80" stroke-width="1.2" stroke-linecap="round"/></svg></span><b class="dv">48</b></span><span class="pn">Claude</span></span><span class="pv st"><span class="ring"><span class="dial onp"><svg width="23" height="23" viewBox="0 0 24 24"><circle class="bz" cx="12" cy="12" r="11.6" fill="none" stroke-width=".8"/><circle class="tr" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3"/><circle class="ar2" cx="12" cy="12" r="10.0" fill="none" stroke-width="1.3" stroke-linecap="round" stroke-dasharray="13.82 62.83" transform="rotate(-90 12 12)"/><circle class="tr" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5"/><circle class="ar pc" cx="12" cy="12" r="7.0" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="13.63 43.98" transform="rotate(-90 12 12)"/><line class="pmk" x1="13.76" y1="17.42" x2="14.60" y2="19.99" stroke-width="2.8" stroke-linecap="round"/><line class="pm" x1="13.76" y1="17.42" x2="14.60" y2="19.99" stroke-width="1.2" stroke-linecap="round"/></svg></span><b class="dv">31</b></span><span class="pn">Codex</span></span></div><div class="wing R"><span class="glyphs"><i class="s block"></i><i class="s work"></i><i class="s idle"></i></span><span class="ovf">+2</span></div><div class="hw"></div></div></div></div></div></div></div></section></div></body></html>

@@ -1,0 +1,1393 @@
+<!DOCTYPE html>
+<!--
+  UX Design Validation Report — skeleton template.
+
+  This file is a starter the synthesis pass fills in directly. There is no
+  substitution engine. The LLM:
+    1. Reads {doc_workspace}/review-rubric.md and every review-{slug}.md from
+       additional reviewers.
+    2. Copies this skeleton.
+    3. Replaces the placeholder content (everything between TEMPLATE markers)
+       with the consolidated review, preserving the structure and CSS.
+    4. Writes the result to {doc_workspace}/validation-report.html.
+    5. Writes a markdown twin to {doc_workspace}/validation-report.md.
+
+  Visual rules the LLM must preserve:
+    - The container width, the color tokens, the typography.
+    - One dimension = one collapsible <section class="dimension">.
+    - Verdict pill uses the verdict-* class matching its judgment.
+    - Severity badge uses the badge-sev-* class matching its level.
+    - Each extra reviewer (accessibility, adversarial, etc.) gets its own
+      collapsible section below the rubric dimensions.
+    - The footer always shows the artifact paths and timestamp.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>UX Design Validation: Vigie</title>
+<style>
+  :root {
+    --bg: #fafaf9;
+    --surface: #ffffff;
+    --border: #e7e5e4;
+    --text: #1c1917;
+    --muted: #78716c;
+
+    --verdict-strong: #16a34a;
+    --verdict-adequate: #65a30d;
+    --verdict-thin: #d97706;
+    --verdict-broken: #dc2626;
+
+    --sev-low: #64748b;
+    --sev-medium: #ca8a04;
+    --sev-high: #ea580c;
+    --sev-critical: #dc2626;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    font-size: 15px;
+  }
+  .container { max-width: 960px; margin: 0 auto; padding: 32px 24px 64px; }
+
+  header.report-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 24px;
+  }
+  .title h1 { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
+  .title .subtitle { color: var(--muted); font-size: 13px; margin-top: 4px; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+
+  .synthesis {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--muted);
+    border-radius: 8px;
+    padding: 18px 22px;
+    margin-bottom: 24px;
+    font-size: 15.5px;
+  }
+  .synthesis p { margin: 0 0 10px; }
+  .synthesis p:last-child { margin-bottom: 0; }
+
+  .dimension-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .dim-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+  .dim-card .dim-name { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  .dim-card .dim-verdict { font-size: 14px; font-weight: 600; }
+
+  section.dimension, section.reviewer-section { margin-bottom: 14px; }
+  section.dimension details, section.reviewer-section details {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  section summary {
+    padding: 14px 20px;
+    cursor: pointer;
+    user-select: none;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  section summary::-webkit-details-marker { display: none; }
+  section summary::before {
+    content: "▸";
+    display: inline-block;
+    color: var(--muted);
+    transition: transform 0.15s ease;
+  }
+  section details[open] summary::before { transform: rotate(90deg); }
+  section summary h2 {
+    display: inline;
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+    flex: 1;
+  }
+  .verdict-pill {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: white;
+  }
+  .verdict-strong { background: var(--verdict-strong); }
+  .verdict-adequate { background: var(--verdict-adequate); }
+  .verdict-thin { background: var(--verdict-thin); }
+  .verdict-broken { background: var(--verdict-broken); }
+
+  .dim-body { padding: 4px 20px 18px; }
+  .dim-judgment { color: var(--text); font-size: 14.5px; }
+  .dim-judgment p { margin: 0 0 10px; }
+
+  .findings-list { padding: 0 20px 4px; }
+  article.finding {
+    padding: 14px 0;
+    border-top: 1px solid var(--border);
+  }
+  article.finding:first-child { border-top: none; }
+  article.finding header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+  }
+  .badge {
+    font-size: 10.5px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    line-height: 1.4;
+  }
+  .badge-sev-low { background: rgba(100, 116, 139, 0.12); color: var(--sev-low); }
+  .badge-sev-medium { background: rgba(202, 138, 4, 0.14); color: var(--sev-medium); }
+  .badge-sev-high { background: rgba(234, 88, 12, 0.14); color: var(--sev-high); }
+  .badge-sev-critical { background: rgba(220, 38, 38, 0.14); color: var(--sev-critical); }
+  .finding-title { margin: 0; font-size: 15px; font-weight: 500; flex: 1; min-width: 200px; }
+  .finding-location { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12.5px; color: var(--muted); }
+  .finding-note, .finding-fix { margin-top: 6px; font-size: 14px; }
+  .finding-fix strong { color: var(--muted); font-weight: 500; }
+
+  .reviewer-source {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+
+  .mechanical {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-top: 24px;
+    font-size: 14px;
+  }
+  .mechanical h3 { margin: 0 0 10px; font-size: 14px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  .mechanical ul { margin: 0; padding-left: 20px; }
+  .mechanical li { margin-bottom: 4px; color: var(--text); }
+
+  footer.report-footer {
+    margin-top: 40px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--muted);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  footer .meta { display: flex; gap: 24px; flex-wrap: wrap; }
+  code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.92em; background: rgba(120,113,108,0.10); padding: 0 3px; border-radius: 3px; }
+  .counts { font-size: 13px; color: var(--muted); margin: -12px 0 24px; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <header class="report-header">
+      <div class="title">
+        <h1>Vigie — UX Design Validation Report</h1>
+        <div class="subtitle">/Users/me/Documents/Ideas/notch/ux-designs/ux-vigie-2026-11-04/DESIGN.md<br>/Users/me/Documents/Ideas/notch/ux-designs/ux-vigie-2026-11-04/EXPERIENCE.md</div>
+      </div>
+    </header>
+    <div class="synthesis">
+      <p><strong>Adequate. Needs a targeted revision before it is a clean contract.</strong> The visual system is strong: every color token has a hex value in all four looks, the frontmatter resolves almost completely, every mockup and import is linked where it is used, and the Story 1.7 surfaces are specified in enough detail to build. The gaps are on the experience side: 3 of 8 user journeys have no Key Flow (UJ-6, UJ-7, UJ-8); Privacy mode, multiple Accounts, install-from-link Confirmation and the closed-notch Calendar glance are missing from both spines; the PRD is not listed as a source; peek concurrency and the quota-warning peek are not designed; and Flow 2 contradicts a decision recorded elsewhere in the same file. A consumer can extract the visuals cleanly. For the gaps above, a consumer would have to invent the behavior.</p>
+      <p>The accessibility reviewer gives a <strong>conditional pass</strong>: the core palette clears 4.5:1 in every look and no state relies on color alone in the main surfaces, but five high findings block the 1.7 stories (C light quota-warning text fails, no visible A light gear focus, no keyboard path to the drop display and Shelf, no Snooze shortcut, and a missed break peek leaves a stalled Pomodoro with no trace). The consistency reviewer finds the set <strong>not ready to build without a cleanup pass</strong>: the 2026-11-07 rulings reached every headline section, but older restatements in SPEC, epics, one PRD journey and one EXPERIENCE failure path still describe superseded behavior. Both reinforce the rubric's Flow 2, UJ-8 and Privacy mode findings.</p>
+    </div>
+    <p class="counts">Deduplicated findings: critical 0 · high 16 · medium 40 · low 37 (93 total, across the rubric and 2 extra reviewers)</p>
+    <div class="dimension-summary">
+      <div class="dim-card">
+        <div class="dim-name">Flow coverage</div>
+        <div class="dim-verdict" style="color: var(--verdict-thin)">thin</div>
+      </div>
+      <div class="dim-card">
+        <div class="dim-name">Token completeness</div>
+        <div class="dim-verdict" style="color: var(--verdict-adequate)">adequate</div>
+      </div>
+      <div class="dim-card">
+        <div class="dim-name">Component coverage</div>
+        <div class="dim-verdict" style="color: var(--verdict-adequate)">adequate</div>
+      </div>
+      <div class="dim-card">
+        <div class="dim-name">State coverage</div>
+        <div class="dim-verdict" style="color: var(--verdict-thin)">thin</div>
+      </div>
+      <div class="dim-card">
+        <div class="dim-name">Visual reference coverage</div>
+        <div class="dim-verdict" style="color: var(--verdict-strong)">strong</div>
+      </div>
+      <div class="dim-card">
+        <div class="dim-name">Bloat &amp; overspecification</div>
+        <div class="dim-verdict" style="color: var(--verdict-adequate)">adequate</div>
+      </div>
+      <div class="dim-card">
+        <div class="dim-name">Inheritance discipline</div>
+        <div class="dim-verdict" style="color: var(--verdict-thin)">thin</div>
+      </div>
+      <div class="dim-card">
+        <div class="dim-name">Shape fit</div>
+        <div class="dim-verdict" style="color: var(--verdict-adequate)">adequate</div>
+      </div>
+    </div>
+    <section class="dimension">
+      <details open>
+        <summary>
+          <h2>Flow coverage</h2>
+          <span class="verdict-pill verdict-thin">thin</span>
+        </summary>
+        <div class="dim-body"><div class="dim-judgment"><p>Extracted UJs: UJ-1 → Flow 1 through UJ-5 → Flow 5. Each has a named protagonist, numbered steps, a <strong>Climax</strong> beat and a failure path. UJ-6, UJ-7 and UJ-8 have no flow.</p></div></div>
+        <div class="findings-list">
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-high">high</span>
+              <h3 class="finding-title">UJ-8 has no Key Flow, and UJ-8 contradicts FR-49</h3>
+              <span class="finding-location">EXPERIENCE Key Flows; prd.md:69</span>
+            </header>
+            <div class="finding-note">Time is a Story 1.7 surface but has no flow. UJ-8 describes a break reminder firing while a Pomodoro runs, but FR-49, PRD §11, SPEC §7.7 and Story 20.6 all say break reminders pause during a Pomodoro. Under the 2026-11-07 ruling a Pomodoro work-phase end shows the break peek and waits for Start break, so "restarts without a click" is not true either.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Write Flow 6 around a plain break reminder: strength Peek, Away for 5 min counts as the break, the cycle restarts, plus a failure path (snooze, or user does not leave). Ask the PM to rewrite UJ-8 with either no Pomodoro or a Pomodoro only.</div>
+<div class="finding-note reviewer-source">Also raised by: Consistency</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-high">high</span>
+              <h3 class="finding-title">UJ-7 (install a community script from a link) has no flow and no surface</h3>
+              <span class="finding-location">EXPERIENCE Script Modules; IA table</span>
+            </header>
+            <div class="finding-note">Nothing describes the Confirmation screen: the "Verified: Vigie Script repository" state, the stronger warning for unsigned or other scripts, the author "claimed by the file", the full-file view, or the update diff with re-Confirmation (FR-42, FR-43). Only the sync case is covered.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Add a Confirmation surface to the IA with its states (verified / unsigned / invalid signature / update diff / declined), and add Flow 7.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-high">high</span>
+              <h3 class="finding-title">Flow 2 failure path contradicts the wake-summary ruling</h3>
+              <span class="finding-location">EXPERIENCE:235</span>
+            </header>
+            <div class="finding-note">Flow 2 says interrupted sessions each become failed and "alerts play once each [ASSUMPTION: no grouped summary alert in v1]". State Patterns (EXPERIENCE:153/162), Open Question 6, SPEC.md:384 and Story 4.12 (epics.md:1983) all say one summary alert: <code>&lt;n&gt; sessions interrupted by sleep</code> with <code>OPEN AGENTS</code>.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Rewrite the failure path to use the summary alert and drop the assumption.</div>
+<div class="finding-note reviewer-source">Also raised by: Consistency</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">UJ-6 (<code>vigie run -- make deploy</code>) has no flow</h3>
+              <span class="finding-location">EXPERIENCE Key Flows; FR-23</span>
+            </header>
+            <div class="finding-note">How a non-agent session appears is not committed: the agent column value, the failed kicker and reason for a non-zero exit (e.g. <code>FAILED · EXIT 2</code>), and done vs failed by exit code.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Add a short Flow 8 and one row in the session-states table.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">Flow 1 says "within pace"; UJ-1 says "ahead of pace"</h3>
+              <span class="finding-location">EXPERIENCE:216; PRD:62</span>
+            </header>
+            <div class="finding-note">The PRD says UJ-1..5 mirror Flows 1–5, so the wording should match.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Align one of them.</div>
+
+          </article>
+        </div>
+      </details>
+    </section>
+    <section class="dimension">
+      <details>
+        <summary>
+          <h2>Token completeness</h2>
+          <span class="verdict-pill verdict-adequate">adequate</span>
+        </summary>
+        <div class="dim-body"><div class="dim-judgment"><p>Extracted: 80 color tokens (3 <code>base</code>, plus full role sets for <code>a-dark</code>, <code>a-light</code>, <code>c-dark</code>, <code>c-light</code>), 27 typography, 14 rounded, 23 spacing, 12 motion (documented extension), 25 components. Every color token has a hex value and every role is defined in all four looks. DESIGN prose uses 94 distinct <code>{…}</code> refs; 90 resolve. EXPERIENCE uses 7, and all 7 resolve. A contrast table covers ink-1/2/3, the lowest status hue, pace-ahead and quota-warning against <code>surface-panel</code> for every look.</p></div></div>
+        <div class="findings-list">
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">Template and glob token refs a resolver cannot expand</h3>
+              <span class="finding-location">DESIGN:339–341, 655, 707</span>
+            </header>
+            <div class="finding-note"><code>{colors.&lt;look&gt;-status-idle}</code>, <code>{colors.&lt;look&gt;-quota-warning}</code> and <code>{colors.&lt;look&gt;-status-failed}</code> in <code>components.status-vocabulary</code>; <code>components.*-panel.shadow-*</code>; <code>typography.*-readout-value</code>.</div>
+            <div class="finding-fix"><strong>Fix:</strong> State one resolver rule ("<code>&lt;look&gt;</code> is substituted with the active look") in the token-scheme section, or expand the refs per look as <code>widget-card</code> does.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">No contrast stated for accent colors used as text</h3>
+              <span class="finding-location">DESIGN Contrast, 552–563</span>
+            </header>
+            <div class="finding-note">Missing: <code>a-light-iris-1/2/3</code> (Time values, <code>IN 42 MIN</code>, <code>ASK AI</code> label, revealed secret), <code>c-dark-gold-text</code>, status labels on alert-tinted rows and on <code>surface-card</code>; <code>c-light-gold-text</code> 5.5:1 appears only in prose.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Add an "accent text" row per look, and a row for status labels on <code>surface-card</code> and on the tinted rows.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">Only <code>motion.enter</code> is defined; no exit, peek or grow durations</h3>
+              <span class="finding-location">DESIGN motion; EXPERIENCE:450 (OQ17)</span>
+            </header>
+            <div class="finding-note">There is no token for collapse or exit, or for peek, drop-display and expanded grow and retract. Story-dev will invent these values.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Commit provisional values: <code>exit</code>, <code>peek-grow</code>, <code>drop-display-grow</code>.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">No tokens for the dark-mode <code>menu_bar</code> virtual notch</h3>
+              <span class="finding-location">EXPERIENCE:408 (OQ15)</span>
+            </header>
+            <div class="finding-note"><code>surface-vn-*</code> exists only for light, yet Responsive &amp; Platform says <code>style = menu_bar</code> takes the menu-bar material.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Add <code>a-dark-surface-vn-*</code> and <code>c-dark-surface-vn-*</code>, or state that dark <code>menu_bar</code> falls back to <code>base-island</code>.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">Light Time accent / ring arc color is unspecified, and the likely candidate fails 3:1</h3>
+              <span class="finding-location">DESIGN:376–377, 499 (Variant accents → Time accent)</span>
+            </header>
+            <div class="finding-note"><code>components.time-ring</code> gives only dark accents; light values (<code>#126F8C</code> text, <code>filament-1</code> rims, <code>c-light-gold</code>) live only in Colors prose. If A light arcs follow the rim, <code>filament-1</code> <code>#3FA3C4</code> measures 2.65 on panel and 2.90 on card, below 3:1 for a graphic that carries time left.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Add <code>a-accent-light</code> and <code>c-accent-light</code> to <code>components.time-ring</code>. State that A light Time arcs and the current-phase pip use <code>a-light-iris-1</code> <code>#126F8C</code> (5.23 / 5.71); keep <code>filament-1</code> for the decorative rim only.</div>
+<div class="finding-note reviewer-source">Also raised by: Accessibility</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">Non-text contrast rule (≥ 3:1) is not written down</h3>
+              <span class="finding-location">DESIGN Colors → Contrast</span>
+            </header>
+            <div class="finding-note">DESIGN states only the 4.5:1 text rule. Contrast for the selection ring at 55%, the settings gear in <code>ink-3</code> and the stale dashed ring is not stated, and the contrast table does not cover cards, vn surfaces, alert-row tints or alpha borders.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Add the 3:1 non-text rule and extend the contrast table with those rows (the accessibility review's table supplies the measured values).</div>
+<div class="finding-note reviewer-source">Also raised by: Accessibility</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">Defined tokens never referenced; prose hardcodes values</h3>
+              <span class="finding-location">DESIGN:767</span>
+            </header>
+            <div class="finding-note"><code>spacing.expanded-bar-padding-x</code>, <code>grid-padding-x</code>, <code>peek-timer-bottom</code>, <code>tab-padding-x</code>, <code>motion.c-usage-bezel</code>, <code>components.time-ring</code> are unused, while the dwell-timer prose hardcodes "inset 26px, 12px up".</div>
+            <div class="finding-fix"><strong>Fix:</strong> Reference the tokens from the prose, or drop them.</div>
+
+          </article>
+        </div>
+      </details>
+    </section>
+    <section class="dimension">
+      <details>
+        <summary>
+          <h2>Component coverage</h2>
+          <span class="verdict-pill verdict-adequate">adequate</span>
+        </summary>
+        <div class="dim-body"><div class="dim-judgment"><p>Each of EXPERIENCE's 33 Component Patterns rows has a visual counterpart in DESIGN. The Story 1.7 components all have both a visual spec and a behavioral row: settings gear, status vocabulary, drop display, drop zone / <code>SEND TO</code>, copied readout, script widget, Time readout, Time tab.</p></div></div>
+        <div class="findings-list">
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-high">high</span>
+              <h3 class="finding-title">Quota-warning peek and sleep-summary peek have no visual spec or actions</h3>
+              <span class="finding-location">EXPERIENCE:34, 153; DESIGN:768–771</span>
+            </header>
+            <div class="finding-note">The IA lists the quota-warning peek as a trigger, but DESIGN's Peek variants (blocked / done / failed / Time) omit it: kicker, title, beacon, hue and the two actions (e.g. <code>OPEN USAGE</code> / <code>DISMISS</code>) are uncommitted. The sleep summary peek (<code>&lt;n&gt; sessions interrupted by sleep</code>, <code>OPEN AGENTS</code>) has no visual spec either.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Add both to DESIGN Peek variants and to EXPERIENCE Peek shortcuts.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">Several DESIGN components have no Component Patterns row</h3>
+              <span class="finding-location">DESIGN:884; EXPERIENCE:335</span>
+            </header>
+            <div class="finding-note">Script page, Side-slot item, Phase indicator, Readout, <code>SEND TO</code> card, Scroll and reorder affordances, Notes tab: behavior is scattered across module sections.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Add rows. Script page especially needs tab naming, keyboard, and the <code>REVEAL</code> / <code>OPEN SOURCE</code> targets.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">Status vocabulary visual spec sits under Colors, not Components</h3>
+              <span class="finding-location">DESIGN:517–532</span>
+            </header>
+            <div class="finding-note">It is a component (<code>components.status-vocabulary</code>) but its shape, sizes and stroke are specified in Colors.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Move it to Components and leave a pointer in Colors.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">Home widget catalog has no anatomy or sizing rules</h3>
+              <span class="finding-location">DESIGN:623; EXPERIENCE:102</span>
+            </header>
+            <div class="finding-note">Sessions, quota, shelf, calendar card, GitHub PR count and script widgets have no anatomy; "cards can span two columns" is not tied to a user action.</div>
+            <div class="finding-fix"><strong>Fix:</strong> List the widget catalog with each widget's span, and state how the user adds and reorders widgets.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">Component names drift between the spines</h3>
+              <span class="finding-location">EXPERIENCE:84</span>
+            </header>
+            <div class="finding-note">EXPERIENCE claims "same names", but: Notes panel / Floating notes panel, Empty state / Empty state block, Drop zone / Drop zone (in panels), Upcoming list + Event track / one combined heading.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Make them verbatim.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">Phase label differs: <code>SHORT BREAK · 2/4</code> vs <code>BREAK · 2/4</code></h3>
+              <span class="finding-location">DESIGN:900; EXPERIENCE:375</span>
+            </header>
+            <div class="finding-note">The two spines give different strings for the same label.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Pick one string.</div>
+
+          </article>
+        </div>
+      </details>
+    </section>
+    <section class="dimension">
+      <details open>
+        <summary>
+          <h2>State coverage</h2>
+          <span class="verdict-pill verdict-thin">thin</span>
+        </summary>
+        <div class="dim-body"><div class="dim-judgment"><p>Surfaces walked: closed wings, drop display, peek, the expanded tabs (Home, Agents, Usage, Shelf, Calendar, Time, Notes, script pages), floating notes panel, setup alert, Settings and onboarding. Session states, stale and process-only, empty states, quota warning, shelf expiry, missing calendar permission, Time away and break due, DND, full-screen, sleep, drop display hover and cancel, the <code>COPIED</code> readout and keyboard focus are well covered. Privacy mode, multiple Accounts and peek concurrency are not.</p></div></div>
+        <div class="findings-list">
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-high">high</span>
+              <h3 class="finding-title">Privacy mode is absent from both spines</h3>
+              <span class="finding-location">PRD FR-55; EXPERIENCE:398 (Settings panes); epics A88/A89</span>
+            </header>
+            <div class="finding-note">No redacted rendering per surface (session titles, project names, Shelf items, Timer labels, widget text, calendar titles, notes), no indicator, no manual toggle, no "detection unavailable" message, and no Privacy entry in the Settings pane list. A88's "fixed-width dots" is the only source; Epic 21 would invent visuals against the "design first" rule.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Add a Privacy mode section and state row covering every surface, a redaction rule ("glyphs, rings, numbers only"), and the Settings entry for the force/auto toggles.</div>
+<div class="finding-note reviewer-source">Also raised by: Consistency</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-high">high</span>
+              <h3 class="finding-title">Multiple Accounts has no UX</h3>
+              <span class="finding-location">FR-29</span>
+            </header>
+            <div class="finding-note">The closed ring should show the Account of the most recent Session and the Usage tab should show each account. Provider card anatomy has no account label, and switching is undefined.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Add an account line to the Usage provider card and to the left-wing ring label, plus a state row.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-high">high</span>
+              <h3 class="finding-title">Peek concurrency is undefined</h3>
+              <span class="finding-location">EXPERIENCE:95; SPEC §5.2</span>
+            </header>
+            <div class="finding-note">Nothing says what happens when an alert arrives while a peek is visible, while the expanded view is open, or while the drop display is showing. SPEC §5.2's rate limit is superseded with no replacement.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Commit a rule, e.g. queue by urgency, a newer blocked/failed alert replaces done, a peek is suppressed while expanded is open and the tab marker is shown instead.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">"More blocked/failed sessions than slots" is both decided and open</h3>
+              <span class="finding-location">EXPERIENCE:94, 136, 155, 436 (OQ5); SPEC.md:897 (§14.17); ARCHITECTURE-SPINE.md:379</span>
+            </header>
+            <div class="finding-note">SPEC §14.17 and the architecture Deferred table mark it decided; EXPERIENCE still defers it. The rule "<code>+X</code> never hides a blocked session" cannot hold with four blocked sessions and three slots.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Copy the SPEC §14.17 rule into EXPERIENCE and close OQ5. Qualify "never hides" to "never hides one while a lower-urgency session is visible", or give <code>+X</code> the blocked hue when it hides an alert.</div>
+<div class="finding-note reviewer-source">Also raised by: Consistency</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">Usage: stale, loading and day-one states missing</h3>
+              <span class="finding-location">FR-30</span>
+            </header>
+            <div class="finding-note">No stale indicator when remote limits fail, no first-launch loading state, no empty <code>HISTORY · 7D</code> or unavailable <code>COST · TODAY</code> on day one.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Add state rows.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">Time: empty state and FR-45/48/49 rules missing</h3>
+              <span class="finding-location">EXPERIENCE Time; State Patterns</span>
+            </header>
+            <div class="finding-note">No empty state for the Running card; "an end that passed while asleep raises its Alert once on wake" (FR-45) is missing; "break reminders are paused while a Pomodoro runs" and "Away time does not count as work" (FR-49) are not stated; the alert at the end of a Pomodoro break (FR-48) is unspecified.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Add these to Time and State Patterns.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">Script states exist only for the widget</h3>
+              <span class="finding-location">EXPERIENCE:161–162</span>
+            </header>
+            <div class="finding-note">Side slot and script page have no awaiting-confirmation, errored, never-run, timed-out or update-awaiting-re-Confirmation states (FR-43).</div>
+            <div class="finding-fix"><strong>Fix:</strong> Extend the state rows to all three surfaces.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">Notes: empty, no-results, first-launch and failure states missing</h3>
+              <span class="finding-location">EXPERIENCE Notes</span>
+            </header>
+            <div class="finding-note">No empty list, no "search finds nothing", no first-launch state for the floating panel, no decrypt or sync failure (E2E keys on a new Mac; iCloud conflict).</div>
+            <div class="finding-fix"><strong>Fix:</strong> Add state rows.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">Drop display: no in-progress, error or all-zones-disabled states</h3>
+              <span class="finding-location">EXPERIENCE Drop display</span>
+            </header>
+            <div class="finding-note">No in-progress state for Image to Text between drop and <code>COPIED</code> (e.g. multi-page PDF OCR), no failure state for AirDrop or Stash (unreadable file, disk full), no rule for when Shelf is off or every zone is disabled.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Add a <code>READING…</code> readout state and an error readout, and state that with no enabled zone no display appears.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">Home empty state and Agents tab empty visual still open</h3>
+              <span class="finding-location">EXPERIENCE:146–147 (OQ14)</span>
+            </header>
+            <div class="finding-note">Copy exists only as [ASSUMPTION].</div>
+            <div class="finding-fix"><strong>Fix:</strong> Commit the copy; the visual can use Empty state block.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">Shelf <code>REF</code> item with a moved or deleted original has no state</h3>
+              <span class="finding-location">EXPERIENCE Shelf</span>
+            </header>
+            <div class="finding-note">A reference item can outlive its file.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Add one row.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">FR-13 (activity log) and FR-60 (other notch apps warning) have no surface</h3>
+              <span class="finding-location">FR-13, FR-60</span>
+            </header>
+            <div class="finding-note">Neither has a named place in the spines.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Name where they appear, even if only a Settings pane.</div>
+
+          </article>
+        </div>
+      </details>
+    </section>
+    <section class="dimension">
+      <details>
+        <summary>
+          <h2>Visual reference coverage</h2>
+          <span class="verdict-pill verdict-strong">strong</span>
+        </summary>
+        <div class="dim-body"><div class="dim-judgment"><p><code>mockups/</code> (10 files) and <code>imports/</code> (5 files) are all linked or cited in context; there are no orphans and no <code>wireframes/</code>. The <code>key-design-pass-1-7</code> links name their part (1.7a–f), the chosen option is in the sheet's banner, and the "spines win" rule is stated consistently in both files (DESIGN:457, EXPERIENCE:13).</p></div></div>
+        <div class="findings-list">
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">Imports cited as code paths, not links</h3>
+              <span class="finding-location">DESIGN:446, 639, 958; EXPERIENCE:362, 418–424</span>
+            </header>
+            <div class="finding-note">Mockups are links; imports are plain paths.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Make them links for consistency.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">"Not mocked" coverage is scattered as [ASSUMPTION] tags</h3>
+              <span class="finding-location">EXPERIENCE:52; DESIGN passim</span>
+            </header>
+            <div class="finding-note">C drop display, C script widgets, C Time, light drop display, closed-notch quota warning and the break-reminder kicker are not mocked; DESIGN tags them individually.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Keep one "not mocked" list in DESIGN Brand &amp; Style next to the mockup list.</div>
+
+          </article>
+        </div>
+      </details>
+    </section>
+    <section class="dimension">
+      <details>
+        <summary>
+          <h2>Bloat &amp; overspecification</h2>
+          <span class="verdict-pill verdict-adequate">adequate</span>
+        </summary>
+        <div class="dim-body"><div class="dim-judgment"><p>The spines are long but mostly earn their length. The main cost is restatement: module sections repeat pattern rows, and resolved history is kept inline, which has already caused drift.</p></div></div>
+        <div class="findings-list">
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">Module sections restate pattern rows and have drifted</h3>
+              <span class="finding-location">EXPERIENCE:110 vs 365</span>
+            </header>
+            <div class="finding-note">Usage, Shelf, Calendar, Time, Notes and Script Modules repeat Component and State Patterns rows: "at most 5 events" vs "at most about 5", and the <code>BREAK</code> label.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Keep one home per rule. Module sections hold only what has no row (format, sync, settings).</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">Open Questions carries 14 resolved items and a history paragraph</h3>
+              <span class="finding-location">EXPERIENCE:437–463</span>
+            </header>
+            <div class="finding-note">Struck-through decided items and "Design before build … Done" duplicate the body.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Delete resolved items, keep only open ones, move history to <code>.memlog.md</code>.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">About 40 "decided 2026-11-0x (Story 1.7x)" stamps</h3>
+              <span class="finding-location">DESIGN, EXPERIENCE passim</span>
+            </header>
+            <div class="finding-note">Decision stamps clutter the contract.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Move them to the memlog; the spine states the rule.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">Hex values repeated in four body tables</h3>
+              <span class="finding-location">DESIGN Shared roles, Status, Status vocabulary, Pace</span>
+            </header>
+            <div class="finding-note">Repeating frontmatter hex values invites drift.</div>
+            <div class="finding-fix"><strong>Fix:</strong> The status vocabulary table should cite roles only.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">SPEC.md impacts lists rows already applied in SPEC v0.7</h3>
+              <span class="finding-location">EXPERIENCE:498, 501</span>
+            </header>
+            <div class="finding-note">The table should list only pending SPEC changes.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Drop the applied rows.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">Some frontmatter component values are prose strings</h3>
+              <span class="finding-location">DESIGN frontmatter</span>
+            </header>
+            <div class="finding-note"><code>status-glyph.stale</code>, <code>drop-display.grid</code>, <code>pace-marker.ring</code> are notes rather than tokens.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Acceptable as notes; consider a <code>note:</code> key per the spec's convention.</div>
+
+          </article>
+        </div>
+      </details>
+    </section>
+    <section class="dimension">
+      <details open>
+        <summary>
+          <h2>Inheritance discipline</h2>
+          <span class="verdict-pill verdict-thin">thin</span>
+        </summary>
+        <div class="dim-body"><div class="dim-judgment"><p><code>../../SPEC.md</code> resolves and EXPERIENCE's token refs all resolve to DESIGN (7/7). Component names are mostly identical. The PRD is missing from <code>sources</code>, which is why the FR gaps under Flow and State coverage were not caught.</p></div></div>
+        <div class="findings-list">
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-high">high</span>
+              <h3 class="finding-title">The PRD is not in either spine's <code>sources</code></h3>
+              <span class="finding-location">DESIGN, EXPERIENCE frontmatter; EXPERIENCE:380</span>
+            </header>
+            <div class="finding-note">EXPERIENCE cites "PRD FR-49" and the PRD declares UJ-1..5 mirror the Key Flows, yet <code>prds/prd-vigie-2026-11-06/prd.md</code> is not a source. This is why the FR gaps under Flow and State coverage were not caught.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Add the PRD to both <code>sources</code> and check the spines against FR-1..FR-64.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">Glossary drift from the PRD</h3>
+              <span class="finding-location">EXPERIENCE:168 and passim</span>
+            </header>
+            <div class="finding-note">"Presence levels" vs PRD <strong>Presence mode</strong> / "Calm mode"; "Idle-sleep prevention" vs <strong>Keep-awake</strong>; countdown "to a date" vs "to a clock time"; "Do Not Disturb / Focus mode" where the PRD requires "macOS Focus mode" in full.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Adopt the PRD terms verbatim.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">FR-50 closed-notch Calendar glance is missing</h3>
+              <span class="finding-location">FR-50; EXPERIENCE left-wing lane; SPEC.md impacts</span>
+            </header>
+            <div class="finding-note">The left-wing lane lists only rings, scripts and Time, and SPEC.md impacts does not record the conflict.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Add Calendar as a left-lane item, or record the removal in SPEC impacts and raise it with the PM.</div>
+
+          </article>
+        </div>
+      </details>
+    </section>
+    <section class="dimension">
+      <details>
+        <summary>
+          <h2>Shape fit</h2>
+          <span class="verdict-pill verdict-adequate">adequate</span>
+        </summary>
+        <div class="dim-body"><div class="dim-judgment"><p>DESIGN body sections follow the canonical order, and the frontmatter extensions are documented (<code>motion</code>) or harmless (<code>status</code>, <code>updated</code>, <code>sources</code>). EXPERIENCE has all required sections.</p></div></div>
+        <div class="findings-list">
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">EXPERIENCE section order</h3>
+              <span class="finding-location">EXPERIENCE:209 vs 402, 415</span>
+            </header>
+            <div class="finding-note">Key Flows sits after Accessibility Floor; Responsive &amp; Platform and Inspiration &amp; Anti-patterns follow about 200 lines later. The examples put Responsive and Inspiration before Key Flows.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Reorder.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">C deltas only in the Twin Metal Tactical roll-up</h3>
+              <span class="finding-location">DESIGN Components</span>
+            </header>
+            <div class="finding-note">Invented sections (Presence Levels, Sounds, Theming, Sync &amp; Encryption, Settings &amp; Onboarding, SPEC.md impacts) earn their place. The Twin Metal Tactical roll-up is acceptable, but the C deltas would be easier to extract if they also appeared in each component's own entry.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Repeat each C delta in its component's entry.</div>
+
+          </article>
+        </div>
+      </details>
+    </section>
+    <section class="reviewer-section">
+      <details>
+        <summary>
+          <h2>Accessibility &amp; contrast review</h2>
+          <span class="reviewer-source">review-accessibility.md</span>
+        </summary>
+        <div class="dim-body"><div class="dim-judgment">
+          <p><strong>Conditional pass.</strong> Every look keeps the core palette (ink-1/2/3 and status hues on panel and card) at or above 4.5:1. Every session state, module level and quota state has a shape and a label, not just a color. Five high findings need fixing before the 1.7 stories are built. There are no critical findings.</p>
+          <p>Method: WCAG 2.x relative-luminance ratios, computed by script for every text and non-text color token on every surface the spines place it on, in all four looks. Text ≥ 4.5:1; non-text UI ≥ 3:1 (WCAG 1.4.11). Ratios are not rounded, so 4.499 counts as a fail. The full contrast table is in the reviewer file.</p>
+        </div></div>
+        <div class="findings-list">
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-high">high</span>
+              <h3 class="finding-title">C light <code>quota-warning</code> <code>#8A6D00</code> fails 4.5:1 as text everywhere it is allowed</h3>
+              <span class="finding-location">DESIGN Colors → Contrast; Pace and quota-warning table</span>
+            </header>
+            <div class="finding-note">4.03 on <code>c-light-surface-panel</code> and <strong>4.499 on <code>c-light-surface-card</code></strong>, so the "warning text only on cards" rule still fails; 3.92 on <code>surface-vn-bottom</code>. A light: 4.51 on panel (almost no margin) and 4.27 on <code>a-light-surface-vn-bottom</code> (fails).</div>
+            <div class="finding-fix"><strong>Fix:</strong> Split the role: keep <code>#8A6D00</code> for non-text fills; add <code>{a,c}-light-quota-warning-text: #7E6300</code> (4.69 C panel, 5.23 C card, 4.56 C vn-bottom, 5.24 A panel, 4.96 A vn-bottom), or <code>#7A6000</code> for wider margin. Drop the "cards only" rule and update the contrast table.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-high">high</span>
+              <h3 class="finding-title">Settings gear has no visible keyboard focus in A light</h3>
+              <span class="finding-location">DESIGN Settings gear; Elevation &amp; Depth</span>
+            </header>
+            <div class="finding-note">The focus is "1px platinum ring at 55% plus 3px cyan halo (dark)". Platinum at 55% on <code>a-light-surface-panel</code> measures <strong>1.05:1</strong> (WCAG 2.4.7 / 1.4.11).</div>
+            <div class="finding-fix"><strong>Fix:</strong> In A light, use <code>components.selection-ring.a-light</code> (1px graphite <code>#161B24</code>) with no halo. State it in <code>components.settings-gear</code> per look.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-high">high</span>
+              <h3 class="finding-title">Drop display, Send to zones and Shelf have no keyboard or VoiceOver path</h3>
+              <span class="finding-location">EXPERIENCE Drop display, Drop zone, Interaction Primitives; DESIGN Drop display</span>
+            </header>
+            <div class="finding-note">Stash, Ask AI, AirDrop and Image to Text are reachable only by dragging. The keyboard map has no Shelf actions besides Space for Quick Look; Reveal and Pin are hover chips. This breaks the floor rule "every expanded-view action is reachable when it has focus".</div>
+            <div class="finding-fix"><strong>Fix:</strong> (1) On a selected Shelf row, <code>↵</code> opens a "Send to" menu, plus keys for Reveal and Pin, exposed as VoiceOver custom actions. (2) Add a Services / Share entry "Stash in Vigie" and <code>⌘V</code> on the Shelf tab. (3) Label each drop zone for VoiceOver.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-high">high</span>
+              <h3 class="finding-title">Snooze on the break peek has no shortcut</h3>
+              <span class="finding-location">EXPERIENCE Interaction Primitives "Peek shortcuts"; DESIGN Peek → Break</span>
+            </header>
+            <div class="finding-note">Peeks never take focus, so a keyboard-only user can Start or Skip a break but cannot snooze it. This breaks the floor rule "peek actions are reachable through the global shortcuts".</div>
+            <div class="finding-fix"><strong>Fix:</strong> Assign a third global shortcut while the peek is visible (e.g. <code>⌥⌘Z</code> or <code>⌥⌘S</code>), shown on the button; include each shortcut in the buttons' accessibility labels.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-high">high</span>
+              <h3 class="finding-title">Missed break peek leaves no lasting trace; <code>BREAK DUE</code> has no place when <code>closed_notch = "off"</code></h3>
+              <span class="finding-location">EXPERIENCE Time, State Patterns "Time · break due", EXPERIENCE:166; SPEC §7.7, SPEC.md:779; Story 20.6 (epics.md:4140)</span>
+            </header>
+            <div class="finding-note">A Pomodoro break waits for Start break, but the peek retracts after 5 s, the closed Time readout is <code>off</code> by default, and with DND on missed peeks are dropped. Quiet style would show nothing at all under the default config. The user ends up with a stalled Pomodoro and no visible sign. The Time tab row (<code>PAUSE</code>/<code>RESET</code>/<code>REMOVE</code>) has no <code>START BREAK</code>, though State Patterns says it is available there.</div>
+            <div class="finding-fix"><strong>Fix:</strong> After the peek retracts, the left wing shows the <code>BREAK DUE</code> readout as a temporary left-lane item (like <code>COPIED</code>) regardless of <code>closed_notch</code>, until the break starts or is skipped. The Time tab row in break-due shows <code>START BREAK</code>, <code>SNOOZE 5M</code>, <code>SKIP</code>; the Time tab gets the attention marker; break-due counts as an unresolved alert for post-DND replay. State the rule in SPEC §7.7, EXPERIENCE and Stories 20.3, 20.4, 20.6.</div>
+<div class="finding-note reviewer-source">Also raised by: Consistency</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">Light Time accent / ring arc color is unspecified, and the likely candidate fails 3:1</h3>
+              <span class="finding-location">DESIGN:376–377, 499 (Variant accents → Time accent)</span>
+            </header>
+            <div class="finding-note"><code>components.time-ring</code> gives only dark accents; light values (<code>#126F8C</code> text, <code>filament-1</code> rims, <code>c-light-gold</code>) live only in Colors prose. If A light arcs follow the rim, <code>filament-1</code> <code>#3FA3C4</code> measures 2.65 on panel and 2.90 on card, below 3:1 for a graphic that carries time left.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Add <code>a-accent-light</code> and <code>c-accent-light</code> to <code>components.time-ring</code>. State that A light Time arcs and the current-phase pip use <code>a-light-iris-1</code> <code>#126F8C</code> (5.23 / 5.71); keep <code>filament-1</code> for the decorative rim only.</div>
+<div class="finding-note reviewer-source">Also raised by: Token completeness</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title"><code>ink-3</code> text on tinted alert rows fails in the dark looks</h3>
+              <span class="finding-location">DESIGN Session row; C tabs</span>
+            </header>
+            <div class="finding-note"><code>ink-3</code> over the 10% blocked/failed fade on <code>surface-card</code>: 3.93 / 3.85 in A dark, 4.46 / 4.39 in C dark.</div>
+            <div class="finding-fix"><strong>Fix:</strong> On alert-tinted rows set the secondary line in <code>ink-2</code> (9.1 and 10.6), or lift <code>a-dark-ink-3</code> to <code>#8790A0</code>; C dark also needs <code>ink-2</code> on tinted rows.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">A light idle and done hues fail as text on <code>a-light-surface-vn-bottom</code></h3>
+              <span class="finding-location">DESIGN Side-slot item</span>
+            </header>
+            <div class="finding-note"><code>status-idle</code> <code>#0E7F57</code> 4.35 and <code>status-done</code> <code>#1D6FC0</code> 4.46 in the light <code>menu_bar</code> virtual notch; the side-slot <code>OK</code> label uses the idle hue.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Keep left-wing level labels in <code>ink-1</code> and color only the glyph, or darken for vn: idle <code>#0B7651</code> (4.89), done <code>#1A68B5</code> (4.94).</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">Drop zone and chip boundaries below 3:1; Increase contrast fallback is generic</h3>
+              <span class="finding-location">DESIGN Drop display, Drop zone, Action button; EXPERIENCE Accessibility Floor</span>
+            </header>
+            <div class="finding-note">Ask AI dashed: A dark 2.30, A light 1.66, C light 1.88. C struct inner border 1.64 / 1.33. A Stash/AirDrop hairlines 1.24 / 1.17. Chip borders 1.67 / 2.13 / 1.52. A drop target's extent matters during a drag. "Hairlines move to <code>ink-3</code>" does not cover dashed, chip or struct borders, pips or the Time track.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Add an explicit Increase contrast table: zone, chip and card borders become solid 1px <code>ink-3</code>; Ask AI border 100% lilac / gold, still dashed; tracks <code>ink-3</code> at ≥ 40%; upcoming pips a 1px <code>ink-3</code> ring; focus halo dropped and ring 2px.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">Time readout ring-only variant relies on color alone</h3>
+              <span class="finding-location">DESIGN Time readout; EXPERIENCE Accessibility Floor</span>
+            </header>
+            <div class="finding-note">Away · paused is shown only by the arc turning <code>ink-3</code>. Break due (full dashed ring) is hard to tell from a break just started.</div>
+            <div class="finding-fix"><strong>Fix:</strong> In ring-only mode add a center mark (pause glyph for Away, small triangle or dot for Break due), or force the label while the state is not running.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">Time tab keyboard model and VoiceOver labels undefined</h3>
+              <span class="finding-location">EXPERIENCE Time tab, Interaction Primitives; DESIGN Time tab, Phase indicator</span>
+            </header>
+            <div class="finding-note">Only <code>↵</code> = Start is specified. Focus order, how <code>PAUSE</code>/<code>RESET</code>/<code>REMOVE</code> are triggered on a selected row, keyboard entry for <code>+ DATE</code>, and VoiceOver text for rings and pips are undefined. <code>RESET</code> and <code>REMOVE</code> are destructive, 5px apart, with no undo.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Define focus order (quick start → minutes → <code>START</code> → running list → row chips); row keys Space = Pause/Resume, <code>⌘⌫</code> = Remove with undo, <code>⌘R</code> = Reset; row label such as "Tea, 5 minute timer, 3 minutes 12 seconds left, ends 14:52, paused"; ring hidden as decoration.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title"><code>COPIED</code> / <code>NO TEXT FOUND</code> readout is 2 s with no lasting or VoiceOver equivalent</h3>
+              <span class="finding-location">DESIGN Copied readout; EXPERIENCE Copied readout, State Patterns</span>
+            </header>
+            <div class="finding-note">Set at 7.5–8px, no peek, no sound; <code>NO TEXT FOUND</code> is the only failure signal.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Post an <code>NSAccessibility</code> announcement, hold the readout while the pointer is over the notch, keep a trace like <code>LAST · 3 LINES · 14:48</code> in the <code>SEND TO</code> card, and make the duration configurable.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">Peeks not announced to VoiceOver; Timer-end peek leaves no record</h3>
+              <span class="finding-location">EXPERIENCE Peek alert panel, Accessibility Floor, Time</span>
+            </header>
+            <div class="finding-note">Panels correctly never take focus, so VoiceOver users get nothing without an announcement. A Timer end leaves nothing after the 5 s dwell.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Announce every peek (kicker + title + primary shortcut). On the Time tab, keep the ended timer as <code>ENDED 14:48</code> with <code>DISMISS</code> until acknowledged.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">Reduce motion has no static fallback for functional drains or new loops</h3>
+              <span class="finding-location">EXPERIENCE Accessibility Floor; DESIGN Presence levels</span>
+            </header>
+            <div class="finding-note">"Removes animations" would also remove the peek dwell line, the 2 s <code>COPIED</code> drain and the notes clipboard drain, which carry time information. The calm table omits the Time peek rim, Ask AI breathing <code>+</code>, card iris filament and drop display rim.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Under Reduce motion, show drains as a static full line that disappears at the end, or stepped segments. List the new loops explicitly as static in Calm and Reduce motion.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">Release line is set at 7.5px meta size</h3>
+              <span class="finding-location">DESIGN Drop display</span>
+            </header>
+            <div class="finding-note"><code>RELEASE TO ASK</code> / <code>RELEASE TO SHARE</code> is the only confirmation of the drop target; it passes contrast but is smaller than the open 7.5–8px legibility question.</div>
+            <div class="finding-fix"><strong>Fix:</strong> On hover set the release line at label size (9px A / <code>c-card-title</code> C), replacing the meta line.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">Non-text contrast rule (≥ 3:1) is not written down</h3>
+              <span class="finding-location">DESIGN Colors → Contrast</span>
+            </header>
+            <div class="finding-note">DESIGN states only the 4.5:1 text rule. Contrast for the selection ring at 55%, the settings gear in <code>ink-3</code> and the stale dashed ring is not stated, and the contrast table does not cover cards, vn surfaces, alert-row tints or alpha borders.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Add the 3:1 non-text rule and extend the contrast table with those rows (the accessibility review's table supplies the measured values).</div>
+<div class="finding-note reviewer-source">Also raised by: Token completeness</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">Upcoming phase pips measure 1.33–1.47</h3>
+              <span class="finding-location">DESIGN Phase indicator</span>
+            </header>
+            <div class="finding-note">Done and upcoming differ only in lightness; the <code>WORK · 2/4</code> label carries the count, so no information is lost.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Draw upcoming pips as a 1px <code>ink-3</code> ring.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">Small, tightly spaced hit targets on chips</h3>
+              <span class="finding-location">mockup 1.7d/e; Time row, Script page</span>
+            </header>
+            <div class="finding-note">Chips are about 20px tall with 5px gaps (<code>PAUSE</code>/<code>RESET</code>/<code>REMOVE</code>, <code>REVEAL</code>/<code>OPEN SOURCE</code>).</div>
+            <div class="finding-fix"><strong>Fix:</strong> Hit area ≥ 24px tall and 8px gaps. Add undo to Remove.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">C process-only vs idle differ only by a thin outer circle</h3>
+              <span class="finding-location">DESIGN Status glyph, Stale and process-only</span>
+            </header>
+            <div class="finding-note">At 16px without color, and the right wing has no label.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Make the C process-only dot clearly smaller (e.g. 4px) or a hollow dashed dot; ship the VoiceOver labels with v1.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">Script page and widget keyboard / VoiceOver reach unspecified</h3>
+              <span class="finding-location">DESIGN Script page; EXPERIENCE Script Modules</span>
+            </header>
+            <div class="finding-note">How <code>REVEAL</code> / <code>OPEN SOURCE</code> and "click a card opens its tab" are reached by keyboard is unstated.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Tab order hero → About → Runs → chips; hero label such as "vigie.app, OK, up, 200, 142 ms, checked 2 minutes ago".</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title"><code>a-dark-ink-3</code> on card is 4.56, a thin margin</h3>
+              <span class="finding-location">DESIGN Colors</span>
+            </header>
+            <div class="finding-note">Any extra overlay (hover brighten, alert tint) drops it below 4.5.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Lift to <code>#8790A0</code> (5.42 on card, 5.98 on panel) or document the margin.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">Status-vocabulary <code>OK</code> glyph equals the A idle session glyph</h3>
+              <span class="finding-location">DESIGN Status vocabulary</span>
+            </header>
+            <div class="finding-note">Kept apart by wing and label; VoiceOver needs the same separation.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Side-slot labels lead with the module ("vigie.app, OK"), session labels with the project. Keep it when building.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">A drop zone that rejects the item gives no reason</h3>
+              <span class="finding-location">DESIGN Drop display</span>
+            </header>
+            <div class="finding-note">It simply stays unlit.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Show a dimmed meta such as <code>IMAGES AND PDF ONLY</code> while an unaccepted file is dragged over.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title"><code>←→</code> in the tab row is ambiguous; tab alert marker unlabeled</h3>
+              <span class="finding-location">EXPERIENCE Settings gear</span>
+            </header>
+            <div class="finding-note">"Tab / <code>←→</code> reach the settings gear" could mean <code>←→</code> switches tabs.</div>
+            <div class="finding-fix"><strong>Fix:</strong> <code>←→</code> moves focus without activating; <code>↵</code> / Space activates. Tab label reads "Agents, needs attention".</div>
+
+          </article>
+        </div>
+      </details>
+    </section>
+    <section class="reviewer-section">
+      <details>
+        <summary>
+          <h2>Cross-document consistency review</h2>
+          <span class="reviewer-source">review-consistency.md</span>
+        </summary>
+        <div class="dim-body"><div class="dim-judgment">
+          <p><strong>Not ready to build without a cleanup pass.</strong> The 2026-11-07 rulings were applied to the headline sections of every document. Older restatements were left behind: SPEC §4 code sketches, the epics FR inventory and AD summaries, the first acceptance criterion of Story 9.1, one PRD user journey and one EXPERIENCE failure path. A builder who reads those sections will implement superseded behavior.</p>
+          <p>Traceability is complete: FR-1..FR-64 all mapped, every story id exists, FR1–FR111, NFR1–28 and UX-DR1–79 all resolve, and Story 1.7 parts a–f are marked done with matching "Depends on" lines.</p>
+        </div></div>
+        <div class="findings-list">
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-high">high</span>
+              <h3 class="finding-title">UJ-8 has no Key Flow, and UJ-8 contradicts FR-49</h3>
+              <span class="finding-location">EXPERIENCE Key Flows; prd.md:69</span>
+            </header>
+            <div class="finding-note">Time is a Story 1.7 surface but has no flow. UJ-8 describes a break reminder firing while a Pomodoro runs, but FR-49, PRD §11, SPEC §7.7 and Story 20.6 all say break reminders pause during a Pomodoro. Under the 2026-11-07 ruling a Pomodoro work-phase end shows the break peek and waits for Start break, so "restarts without a click" is not true either.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Write Flow 6 around a plain break reminder: strength Peek, Away for 5 min counts as the break, the cycle restarts, plus a failure path (snooze, or user does not leave). Ask the PM to rewrite UJ-8 with either no Pomodoro or a Pomodoro only.</div>
+<div class="finding-note reviewer-source">Also raised by: Flow coverage</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-high">high</span>
+              <h3 class="finding-title">Flow 2 failure path contradicts the wake-summary ruling</h3>
+              <span class="finding-location">EXPERIENCE:235</span>
+            </header>
+            <div class="finding-note">Flow 2 says interrupted sessions each become failed and "alerts play once each [ASSUMPTION: no grouped summary alert in v1]". State Patterns (EXPERIENCE:153/162), Open Question 6, SPEC.md:384 and Story 4.12 (epics.md:1983) all say one summary alert: <code>&lt;n&gt; sessions interrupted by sleep</code> with <code>OPEN AGENTS</code>.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Rewrite the failure path to use the summary alert and drop the assumption.</div>
+<div class="finding-note reviewer-source">Also raised by: Flow coverage</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-high">high</span>
+              <h3 class="finding-title">Privacy mode is absent from both spines</h3>
+              <span class="finding-location">PRD FR-55; EXPERIENCE:398 (Settings panes); epics A88/A89</span>
+            </header>
+            <div class="finding-note">No redacted rendering per surface (session titles, project names, Shelf items, Timer labels, widget text, calendar titles, notes), no indicator, no manual toggle, no "detection unavailable" message, and no Privacy entry in the Settings pane list. A88's "fixed-width dots" is the only source; Epic 21 would invent visuals against the "design first" rule.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Add a Privacy mode section and state row covering every surface, a redaction rule ("glyphs, rings, numbers only"), and the Settings entry for the force/auto toggles.</div>
+<div class="finding-note reviewer-source">Also raised by: State coverage</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-high">high</span>
+              <h3 class="finding-title">Missed break peek leaves no lasting trace; <code>BREAK DUE</code> has no place when <code>closed_notch = "off"</code></h3>
+              <span class="finding-location">EXPERIENCE Time, State Patterns "Time · break due", EXPERIENCE:166; SPEC §7.7, SPEC.md:779; Story 20.6 (epics.md:4140)</span>
+            </header>
+            <div class="finding-note">A Pomodoro break waits for Start break, but the peek retracts after 5 s, the closed Time readout is <code>off</code> by default, and with DND on missed peeks are dropped. Quiet style would show nothing at all under the default config. The user ends up with a stalled Pomodoro and no visible sign. The Time tab row (<code>PAUSE</code>/<code>RESET</code>/<code>REMOVE</code>) has no <code>START BREAK</code>, though State Patterns says it is available there.</div>
+            <div class="finding-fix"><strong>Fix:</strong> After the peek retracts, the left wing shows the <code>BREAK DUE</code> readout as a temporary left-lane item (like <code>COPIED</code>) regardless of <code>closed_notch</code>, until the break starts or is skipped. The Time tab row in break-due shows <code>START BREAK</code>, <code>SNOOZE 5M</code>, <code>SKIP</code>; the Time tab gets the attention marker; break-due counts as an unresolved alert for post-DND replay. State the rule in SPEC §7.7, EXPERIENCE and Stories 20.3, 20.4, 20.6.</div>
+<div class="finding-note reviewer-source">Also raised by: Accessibility</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-high">high</span>
+              <h3 class="finding-title">Per-side module assignment still specified, contradicting the fixed wings</h3>
+              <span class="finding-location">SPEC.md:138; epics.md:58, 64; Story 2.8</span>
+            </header>
+            <div class="finding-note"><code>ModuleManifest.defaultSide: NotchSide</code> and FR4 / FR10 ("assigned to that side or <code>any</code>") survive, while the right wing is sessions only and the left wing is the priority lane.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Remove <code>defaultSide</code>/<code>NotchSide</code> from SPEC §4.2. Mark FR4 and FR10 <strong>Amended 2026-11-07</strong> like FR9: right wing = <code>agents.sessions</code> only; left wing pools items by state, then <code>priority</code>, then provider <code>order</code>.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-high">high</span>
+              <h3 class="finding-title">Story 9.1 states two different DropZone contracts</h3>
+              <span class="finding-location">epics.md:2663, 2683–2685, 222; SPEC.md:190–199</span>
+            </header>
+            <div class="finding-note">The first AC uses the superseded <code>{ id, label, glyph, accentToken, placement, accepts, handler }</code>; a later AC uses <code>role</code>/<code>DropCell</code>/<code>order</code> per AD-19. The AD-19 summary and SPEC §4.6 still show the old shape.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Rewrite the first AC to <code>{ id, label, glyph, accentToken, role, cell: DropCell, order, accepts, handler(DropPayload) }</code> with <code>source: .dropDisplay | .shelfTab | .homeWidget | .stashItem</code>; update the AD-19 summary and SPEC §4.6.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-high">high</span>
+              <h3 class="finding-title">Two-wing closed-notch drop zones still described as current</h3>
+              <span class="finding-location">epics.md:94, 111, 295, 324, 471, 613; SPEC.md:357</span>
+            </header>
+            <div class="finding-note">FR57, FR40, UX-DR50, UX-DR70 and SPEC §7.1 still describe dropping on the closed notch; Story 9.1 lists FR57 and UX-DR50 as live.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Mark FR57, UX-DR50 and UX-DR70 superseded or amended to "drag-only drop display (layout B)"; change SPEC §7.1 to "on the drop display".</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">"More blocked/failed sessions than slots" is both decided and open</h3>
+              <span class="finding-location">EXPERIENCE:94, 136, 155, 436 (OQ5); SPEC.md:897 (§14.17); ARCHITECTURE-SPINE.md:379</span>
+            </header>
+            <div class="finding-note">SPEC §14.17 and the architecture Deferred table mark it decided; EXPERIENCE still defers it. The rule "<code>+X</code> never hides a blocked session" cannot hold with four blocked sessions and three slots.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Copy the SPEC §14.17 rule into EXPERIENCE and close OQ5. Qualify "never hides" to "never hides one while a lower-urgency session is visible", or give <code>+X</code> the blocked hue when it hides an alert.</div>
+<div class="finding-note reviewer-source">Also raised by: State coverage</div>
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">What happens when Shelf is disabled is contradictory</h3>
+              <span class="finding-location">ARCHITECTURE-SPINE.md:186; epics.md:4347, 2824; SPEC.md:188, 204–205, 416</span>
+            </header>
+            <div class="finding-note">AD-19, A72 and Story 9.6 say only Stash disappears, but SPEC lists AirDrop and Image to Text as Shelf zones, Story 9.8 gates AirDrop on Shelf, and SPEC says Shelf hosts all drop zones while AD-19 makes the host own the drop display.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Rule that Shelf off ⇒ Stash, AirDrop and Image to Text disappear and Ask AI remains. Update AD-19, A72, SPEC §4.6 and §7.3.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">A74 keys missing from SPEC §11</h3>
+              <span class="finding-location">SPEC.md:669–797; epics.md:1256, 2987, 1856, 1860, 1436</span>
+            </header>
+            <div class="finding-note"><code>[general] tab_order</code>, <code>[home] cards</code>, <code>stale_after</code>, <code>ignored_paths</code>, <code>[notify]</code> <code>min_severity</code> and <code>cooldown</code>.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Add them to §11 with defaults, or point A74 at where they are defined.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">Privacy auto-detection default contradicts A88</h3>
+              <span class="finding-location">SPEC.md:699; epics.md:4366; Story 21.3</span>
+            </header>
+            <div class="finding-note">SPEC sets <code>auto = true</code> unconditionally; A88 says off where detection needs Screen Recording.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Annotate the SPEC key and add the default to Story 21.3.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">Time sound defaults and coverage disagree</h3>
+              <span class="finding-location">SPEC.md:691–692; epics.md:4022, 152; prd.md:256</span>
+            </header>
+            <div class="finding-note"><code>timer_end</code> is on in SPEC but off in Story 20.2; no story covers <code>break_reminder</code>; FR98 says four events and PRD §4.8 lists five.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Pick one timer-end default, add the break-reminder sound to Story 20.6, update FR98 and PRD §4.8 to six events.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">SPEC §5.2 states the two-action peek rule with no exception</h3>
+              <span class="finding-location">SPEC.md:237; DESIGN.md:771</span>
+            </header>
+            <div class="finding-note">The break peek has three actions and Skip on <code>⌥⌘⌫</code> changes state.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Add the scoped exception to §5.2.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">Closed-source drift in the UX spines</h3>
+              <span class="finding-location">EXPERIENCE.md:24; DESIGN.md:3</span>
+            </header>
+            <div class="finding-note">Both still say open-source / donationware.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Change both to "closed source for now, business model undecided (SPEC §2.1)".</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">Stale look still described as a badge</h3>
+              <span class="finding-location">SPEC.md:343; epics.md:90 (FR36)</span>
+            </header>
+            <div class="finding-note">A "'?' badge" could be implemented as an overlay; the 1.7b ruling replaces the glyph with a dashed ring and <code>?</code>.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Update SPEC §7.1 Liveness and FR36 to the 1.7b look.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">PRD does not reflect v0.1 rulings A15/A79 and A60/A61</h3>
+              <span class="finding-location">prd.md:398, 265, 378; SPEC.md:870</span>
+            </header>
+            <div class="finding-note">Reduce motion v0.1 floor, the v0.1 launch-at-login toggle and first-launch display prompt, and the activity log are missing.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Add them to FR-63, FR-58/59 and the SPEC §13 v0.1 row.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">Epics AD summaries are stale</h3>
+              <span class="finding-location">epics.md:212–226</span>
+            </header>
+            <div class="finding-note">AD-9, AD-13, AD-20, AD-22 and AD-23 lack amendments; AD-24..26 are missing.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Regenerate the AD summary block from the current spine.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">SPEC §4.5 <code>ModuleContext</code> lists 8 services; AD-19 says exactly 16</h3>
+              <span class="finding-location">SPEC.md:173–184; ARCHITECTURE-SPINE.md:185</span>
+            </header>
+            <div class="finding-note">Missing <code>secrets</code>, <code>permissions</code>, <code>power</code>, <code>clipboard</code>, <code>executables</code>, <code>privacy</code>, <code>away</code>, <code>activity</code>.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Sync the sketch or mark it "see AD-19 (authoritative)".</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-medium">medium</span>
+              <h3 class="finding-title">Pomodoro Resume wording is ambiguous</h3>
+              <span class="finding-location">SPEC.md:445; EXPERIENCE.md:165</span>
+            </header>
+            <div class="finding-note">"Resume restarts it at once" can be read as resetting the work phase; the ruling and Story 20.3 say "resumes".</div>
+            <div class="finding-fix"><strong>Fix:</strong> Use "resumes" everywhere.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">PRD and addendum cite stale architecture range</h3>
+              <span class="finding-location">prd.md:15; addendum.md:9</span>
+            </header>
+            <div class="finding-note">"AD-1 to AD-23" (now AD-26); addendum says the spine is not amended (it is).</div>
+            <div class="finding-fix"><strong>Fix:</strong> Update both.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">PRD §9 Q4/Q5 list decided items as open</h3>
+              <span class="finding-location">prd.md:485–486</span>
+            </header>
+            <div class="finding-note">Epics reconciliation, A1–A78 rulings, slot overflow, DND replay vs drop.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Mark them resolved.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">Architecture Deferred table lists "DND replay vs drop"</h3>
+              <span class="finding-location">ARCHITECTURE-SPINE.md:374</span>
+            </header>
+            <div class="finding-note">Decided: <code>[notify] after_focus</code>.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Strike it.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">EXPERIENCE contains stale assumptions</h3>
+              <span class="finding-location">EXPERIENCE.md:149, 353, 494</span>
+            </header>
+            <div class="finding-note">80% default and 7-day default tags are resolved; "Sounds: four events" is now six.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Drop the resolved tags and update the count.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title"><code>brew install --cask vigie</code> ignores the tap ruling</h3>
+              <span class="finding-location">prd.md:392; EXPERIENCE.md:241; epics.md:3897</span>
+            </header>
+            <div class="finding-note">The ruling is a <code>homebrew-vigie</code> tap first (SPEC.md:846, A50).</div>
+            <div class="finding-fix"><strong>Fix:</strong> State the tap step, or note the short form applies after an official cask exists.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">PRD beta has no timing</h3>
+              <span class="finding-location">prd.md:386–389</span>
+            </header>
+            <div class="finding-note">A63 says beta exists only from the public release.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Add "from the public release".</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">"Copy text" survives as Image to Text microcopy</h3>
+              <span class="finding-location">DESIGN.md:745, 748; EXPERIENCE.md:105; epics.md:2673, 2899</span>
+            </header>
+            <div class="finding-note">Meta <code>COPY TEXT</code> and <code>RELEASE TO COPY TEXT</code> [ASSUMPTION]; the release line is missing from EXPERIENCE and Story 9.1 lists.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Confirm the wording and list the Image to Text release line in EXPERIENCE and Story 9.9.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">Status vocabulary <code>error</code> → <code>DOWN</code> mapping is implicit</h3>
+              <span class="finding-location">SPEC §9.3; epics.md:120</span>
+            </header>
+            <div class="finding-note">Script output uses <code>ok | warn | error</code>; the UI uses OK / WARN / DOWN.</div>
+            <div class="finding-fix"><strong>Fix:</strong> State it in SPEC §9.3 and Story 12.5.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">Script <code>priority</code> defined in two places with no precedence</h3>
+              <span class="finding-location">SPEC §9.1; SPEC.md:793–796</span>
+            </header>
+            <div class="finding-note">Front matter and config both set it.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Write down which wins.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">UX-DR41 describes the old left wing</h3>
+              <span class="finding-location">epics.md:283</span>
+            </header>
+            <div class="finding-note">Says "Shelf Stash <code>1fr</code> + Ask AI 212"; it is now the priority lane and the <code>SEND TO</code> card.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Amend it.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">PRD glossary Alert and Status omit break reminder and stale / process-only</h3>
+              <span class="finding-location">prd.md §3</span>
+            </header>
+            <div class="finding-note">Completeness gap.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Add them.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">A89 Time key names differ from SPEC</h3>
+              <span class="finding-location">epics.md:4367; SPEC.md:775–779</span>
+            </header>
+            <div class="finding-note"><code>work</code> / <code>break</code> vs <code>breaks.work</code> / <code>breaks.length</code>.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Align the names.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">epics.md frontmatter stale</h3>
+              <span class="finding-location">epics.md:23–25</span>
+            </header>
+            <div class="finding-note"><code>updated: '2026-11-06'</code> despite 11-07 edits; <code>referencedMockups</code> omits <code>key-design-pass-1-7.html</code>.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Bump the date and add the mockup.</div>
+
+          </article>
+          <article class="finding">
+            <header>
+              <span class="badge badge-sev-low">low</span>
+              <h3 class="finding-title">Story 2.10 / 2.8 cosmetic drift</h3>
+              <span class="finding-location">epics.md:1237; Story 2.8</span>
+            </header>
+            <div class="finding-note">2.10 lacks "(done 2026-11-07)" on its 1.7a dependency; 2.8 still uses per-side wording.</div>
+            <div class="finding-fix"><strong>Fix:</strong> Cosmetic alignment.</div>
+
+          </article>
+        </div>
+      </details>
+    </section>
+    <div class="mechanical">
+      <h3>Mechanical notes</h3>
+      <ul>
+        <li>Raw counts before merging: rubric 0 / 8 / 19 / 16, accessibility 0 / 5 / 10 / 9, consistency 0 / 5 / 13 / 14 (critical / high / medium / low).</li>
+        <li>Merged duplicates (7): UJ-8 vs FR-49 and Flow 2 sleep summary (rubric + consistency); Privacy mode (rubric + consistency, kept high); blocked/failed overflow (rubric + consistency); <code>BREAK DUE</code> with <code>closed_notch = "off"</code> (accessibility + consistency, kept high); non-text 3:1 rule (rubric + accessibility); light Time accent (rubric + accessibility, kept medium).</li>
+        <li>Token resolution: DESIGN 90 of 94 distinct <code>{…}</code> refs resolve (4 <code>&lt;look&gt;</code> templates, plus 2 globs outside the count); EXPERIENCE 7/7.</li>
+        <li>Frontmatter: colors 80 · typography 27 · rounded 14 · spacing 23 · motion 12 · components 25.</li>
+        <li>UJ → flow: UJ-1..5 → Flows 1..5; UJ-6, UJ-7, UJ-8 missing.</li>
+        <li>PRD FRs with no UX in the spines: FR-13, FR-23 (partly), FR-29, FR-30, FR-42, FR-43, FR-45 (sleep end), FR-49 (Pomodoro pause), FR-50, FR-55, FR-60.</li>
+        <li>Story 1.7: strong for gear (1.7a), stale/process-only (1.7b), C tabs and notes (1.7f); adequate for drop display (1.7c) and status vocabulary / scripts (1.7d); thin on behavior for Time (1.7e).</li>
+        <li><code>reconcile-*.md</code> and <code>.working/</code> are not referenced by the spines; expected for working files.</li>
+      </ul>
+    </div>
+    <footer class="report-footer">
+      <div class="meta">
+        <span>Rubric: /Users/me/Documents/Ideas/notch/ux-designs/ux-vigie-2026-11-04/review-rubric.md</span>
+        <span>Reviewers: /Users/me/Documents/Ideas/notch/ux-designs/ux-vigie-2026-11-04/review-accessibility.md, /Users/me/Documents/Ideas/notch/ux-designs/ux-vigie-2026-11-04/review-consistency.md</span>
+        <span>Generated: 2026-11-07T18:03:40+01:00</span>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>

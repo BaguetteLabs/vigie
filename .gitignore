@@ -1,0 +1,9 @@
+.DS_Store
+.build/
+*.xcodeproj
+xcuserdata/
+DerivedData/
+.swiftpm/
+*.xcuserstate
+/App/Vigie.xcodeproj
+.worktrees/

@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Usage tab</title>
+<style>
+/* =====================================================================
+   VIGIE · KEY SCREEN · EXPANDED · USAGE TAB  (A Chrome Hologram; dark + light)
+   Governing spine sections (check these when the spine changes):
+   - DESIGN.md: Components > Expanded panel, Tab bar, Widget card, Quota dial,
+     Usage meter and pace bar; Colors > Shared roles, Variant accents, Status
+     colors, Contrast; Layout > Geometry,
+     Containment; Elevation & Depth (no glows on light).
+   - EXPERIENCE.md: Information Architecture (Expanded · Usage), Component
+     Patterns (Quota dial, Usage meter and pace bar), State Patterns > Surface
+     states (Quota warning, Pace ahead, Window absent, No agent connected),
+     Voice and Tone.
+   - .memlog.md (latest): ring default fill = theme metal; ahead-of-pace has its
+     own hue, user-configurable (--pace = Ember, user choice); pace on weekly when no 5h
+     window; warning only on % threshold, own hue --qwarn (signal yellow, user-configurable);
+     pace tolerance 5 pts; 50/50 layout; >2 providers = scrolling, user-ordered list; dense HUD.
+   - SPEC.md §7.2 (limit bars, reset times, history chart, cost by project).
+   ===================================================================== */
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--t-enter:280ms;--t-ambient:6s;--t-work:1.5s;--t-block:1.8s;--t-calm:2.6s;--t-scan:7s}
+body{background:#0B0D10;color:#E6E9ED;font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif;-webkit-font-smoothing:antialiased;padding:36px 24px 80px}
+.page{max-width:1700px;margin:0 auto}
+
+/* ---------- page chrome (neutral, NOT Vigie) ---------- */
+.ph{margin-bottom:34px;padding-bottom:22px;border-bottom:1px solid #1C2229}
+.ph .k{font:500 11px/1 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;color:#8A939C;text-transform:uppercase}
+.ph h1{font:300 34px/1.15 -apple-system,BlinkMacSystemFont,sans-serif;letter-spacing:-.01em;margin:10px 0 18px}
+.ph .lists{display:grid;grid-template-columns:1fr 1fr 1.3fr;gap:28px}
+@media (max-width:1100px){.ph .lists{grid-template-columns:1fr}}
+.ph h3{font:600 11px/1 -apple-system,sans-serif;letter-spacing:.24em;text-transform:uppercase;color:#E6E9ED;margin-bottom:10px}
+.ph ul{list-style:none;display:grid;gap:7px}
+.ph li{font:400 13px/1.5 -apple-system,sans-serif;color:#B4BBC3;padding-left:14px;position:relative}
+.ph li::before{content:"";position:absolute;left:0;top:.62em;width:5px;height:1px;background:#69727B}
+.ph li b{font-weight:600;color:#E6E9ED}
+.ph code{font:500 11.5px ui-monospace,Menlo,monospace;color:#D5DADF}
+.ph .sw{display:inline-block;width:10px;height:10px;border-radius:3px;vertical-align:-1px;margin-right:4px;box-shadow:0 0 0 1px rgba(255,255,255,.2) inset}
+.row-h{display:flex;align-items:baseline;gap:14px;margin:0 0 14px}
+.row-h .n{font:300 26px/1 -apple-system,sans-serif;color:#5C656E}
+.row-h h2{font:600 12px/1 -apple-system,sans-serif;letter-spacing:.28em;text-transform:uppercase}
+.row-h p{margin-left:auto;font:400 12px/1 -apple-system,sans-serif;color:#7D868F}
+.quad{display:grid;grid-template-columns:repeat(2,820px);justify-content:start;gap:26px;margin-bottom:56px}
+@media (max-width:1730px){.quad{grid-template-columns:820px}}
+.col{min-width:0}
+.clab{display:flex;align-items:center;gap:10px;margin-bottom:10px;height:22px}
+.clab .nm{font:500 12px/1 -apple-system,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#D5DADF}
+.mode{font:600 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;padding:4px 7px;border-radius:5px;margin-left:auto}
+.mode.d{background:#22272D;color:#C9CED3}
+.mode.l{background:#E3E5E8;color:#1D2024}
+.note{margin-top:10px;font:400 12px/1.5 -apple-system,sans-serif;color:#A5ADB5;max-width:820px}
+.note b{color:#E6E9ED;font-weight:600}
+.note code{font:500 11px ui-monospace,Menlo,monospace;color:#D5DADF}
+
+/* =====================================================================
+   SHARED BASE · neutral desktop + expanded geometry (from theme-family-4-looks)
+   ===================================================================== */
+.crop{position:relative;overflow:hidden;width:820px;border-radius:12px}
+.stage{width:820px;height:470px;position:relative;overflow:hidden;border-radius:12px;background:linear-gradient(180deg,#3B3E44 0%,#2E3136 100%)}
+.stage.desk-lt{background:linear-gradient(180deg,#DDDFE3 0%,#CDD0D5 100%)}
+.menubar{position:absolute;inset:0 0 auto 0;height:34px;display:flex;justify-content:space-between;align-items:center;padding:0 22px;
+  background:rgba(24,26,30,.72);font:400 13px/1 -apple-system,BlinkMacSystemFont,sans-serif;color:#ECEDEF;z-index:1}
+.menubar .l,.menubar .r{display:flex;gap:18px;align-items:center}
+.batt{width:24px;height:11px;border:1px solid rgba(255,255,255,.6);border-radius:3px;position:relative;padding:1px}
+.batt::before{content:"";display:block;height:100%;width:72%;background:#ECEDEF;border-radius:1px}
+.batt::after{content:"";position:absolute;right:-3px;top:3px;width:2px;height:4px;background:rgba(255,255,255,.6);border-radius:0 1px 1px 0}
+.desk-lt .menubar{background:rgba(250,250,252,.80);color:#1D1D1F;box-shadow:0 .5px 0 rgba(0,0,0,.12)}
+.desk-lt .batt{border-color:rgba(0,0,0,.55)}.desk-lt .batt::before{background:#1D1D1F}.desk-lt .batt::after{background:rgba(0,0,0,.55)}
+
+.island{position:absolute;left:50%;top:0;transform:translateX(-50%);background:#000;z-index:5;overflow:hidden;isolation:isolate}
+.exp{width:720px;height:420px;border-radius:0 0 24px 24px;box-shadow:0 28px 60px rgba(0,0,0,.5)}
+.desk-lt .exp{box-shadow:0 28px 60px rgba(0,0,0,.22),0 2px 8px rgba(0,0,0,.08)}
+.orn{position:absolute;inset:0;pointer-events:none;border-radius:inherit;z-index:0}
+.orn i{position:absolute;display:block}
+.hw{position:absolute;left:50%;top:0;width:196px;height:34px;transform:translateX(-50%);pointer-events:none;z-index:2}
+.hw::after{content:"";position:absolute;left:50%;top:12px;width:7px;height:7px;border-radius:50%;transform:translateX(-50%);
+  background:radial-gradient(circle at 35% 35%,#1e2a3a,#05070a 70%);box-shadow:0 0 0 1px #0d0f13}
+.exp .top{position:relative;z-index:2;height:34px;display:flex;justify-content:space-between;align-items:center;padding:0 20px}
+.tabs{position:relative;z-index:1;display:flex;align-items:center;gap:2px;margin:6px 16px 0;height:30px}
+.tab{height:24px;display:flex;align-items:center;gap:6px;padding:0 12px;white-space:nowrap}
+.card{position:relative;padding:12px 13px;overflow:hidden;min-width:0}
+.ch{display:flex;justify-content:space-between;align-items:center;height:11px;margin-bottom:6px;white-space:nowrap}
+
+/* tab body: the area below the tab bar (top 80 = band 34 + 6 + tabs 30 + 10) */
+.body{position:absolute;left:16px;right:16px;top:80px;bottom:14px;z-index:1;display:grid;gap:10px}
+
+/* standalone inset (a single widget on panel material, for Home widget crops) */
+.inset{position:relative;border-radius:16px;padding:16px;width:fit-content;overflow:hidden}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* =====================================================================
+   SKIN A — CHROME HOLOGRAM (dark tokens; .lt swaps to light tokens)
+   ===================================================================== */
+.dA, .dA .lt .onblack{--platinum:#E8ECF2;--silver:#B4BCC8;--steel:#7A8393;--graphite:#232934;--cy:#A5EEFF;--li:#CDB9FF;--ro:#FFC4E1;
+  --idle:#A6F2D2;--work:#FFD9A0;--done:#8FD3FF;--block:#FF7B8C;--fail:#E58CFF;
+  --iris:linear-gradient(90deg,#A5EEFF,#CDB9FF,#FFC4E1,#E8ECF2,#A5EEFF);--hair:rgba(255,255,255,.07);--hair2:rgba(255,255,255,.04);
+  /* additions for these tabs (see header): metal fills + pace-ahead hue */
+  --metal:linear-gradient(90deg,#B4BCC8,#E8ECF2);--metal2:linear-gradient(90deg,#7A8393,#A3ABB8);
+  --track:rgba(255,255,255,.10);--cardbg:#14181F;
+  --pace:#FF8A3D; /* pace-ahead · user-configurable (default Ember) */
+  /* sample EventKit calendar colours (user-owned data, not Vigie tokens) */
+  --cal1:#7FB2F0;--cal2:#E8A47C;
+}
+.dA .lt{--platinum:#161B24;--silver:#454E5D;--steel:#5D6676;--graphite:#D3D8E0;--cy:#126F8C;--li:#6A4FD0;--ro:#A8346B;
+  --idle:#0E7F57;--work:#985A00;--done:#1D6FC0;--block:#C8243F;--fail:#9B35C4;
+  --iris:linear-gradient(90deg,#3FA3C4,#8A6CE8,#D06A9E,#8A93A2,#3FA3C4);--hair:rgba(22,27,36,.10);--hair2:rgba(22,27,36,.07);
+  --metal:linear-gradient(90deg,#5D6676,#2A313C);--metal2:linear-gradient(90deg,#A3ABB8,#8A93A2);
+  --track:rgba(22,27,36,.12);--cardbg:#FFFFFF;
+  --pace:#B5410A; /* pace-ahead · user-configurable, light Ember 5.2:1 */
+  --cal1:#2F6DB5;--cal2:#B8582A;
+}
+.dA{
+  --sans:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",sans-serif;--mono:ui-monospace,"SF Mono",Menlo,monospace;
+  font-family:var(--sans);
+  .orn .o1{inset:0;border-radius:inherit;padding:0 1px 1px;background:var(--iris);background-size:300% 100%;
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;
+    animation:a-iris var(--t-ambient) linear infinite}
+  .exp{background:linear-gradient(180deg,#000 0,#000 34px,#070A10 120px,#0A0E16 100%)}
+  .exp .orn .o1{opacity:.35}
+  .exp .orn .o2{left:0;right:0;top:-30%;height:30%;
+    background:linear-gradient(180deg,transparent,rgba(165,238,255,.06) 50%,transparent);animation:a-scan var(--t-scan) ease-in-out infinite}
+  .inset{background:linear-gradient(180deg,#070A10,#0A0E16);box-shadow:0 0 0 1px rgba(255,255,255,.05) inset}
+  .word{font:500 11px/1 var(--sans);letter-spacing:.5em;background:var(--iris);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:a-iris 10s linear infinite}
+  .clock{font:300 11px/1 var(--sans);color:var(--silver);letter-spacing:.12em}
+  .clock b{font-weight:400;color:var(--idle)}
+  .tabs{padding:0 3px;border-radius:999px;background:rgba(255,255,255,.035);box-shadow:0 0 0 1px rgba(255,255,255,.06) inset;width:max-content}
+  .tab{font:500 11px/1 var(--sans);color:var(--steel);border-radius:999px;letter-spacing:.04em}
+  .tab.on{color:var(--platinum);background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.03));box-shadow:0 0 0 1px rgba(232,236,242,.16) inset}
+  .tab .mk{width:5px;height:5px;background:var(--block);transform:rotate(45deg)}
+  .card{border-radius:16px;background:linear-gradient(160deg,rgba(255,255,255,.055),rgba(255,255,255,.015));box-shadow:0 0 0 1px rgba(232,236,242,.08) inset}
+  .card::before{content:"";position:absolute;left:16px;right:16px;top:0;height:1px;background:var(--iris);background-size:300% 100%;opacity:.45;animation:a-iris 12s linear infinite}
+  .ch .t{font:500 9px/1 var(--sans);letter-spacing:.26em;color:var(--silver);text-transform:uppercase}
+  .ch .m{font:400 9px/1 var(--sans);letter-spacing:.14em;color:var(--steel);text-transform:uppercase}
+  .ch .m b{font-weight:500;color:var(--silver)}
+  .ch .m .w{color:var(--work);font-weight:500}
+  .act{height:30px;display:inline-flex;align-items:center;justify-content:space-between;gap:14px;padding:0 14px;white-space:nowrap;
+    font:500 10px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--platinum);border-radius:999px;border:1px solid rgba(232,236,242,.22);background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.01))}
+  .act kbd{font:400 11px var(--sans);letter-spacing:0;text-transform:none;color:var(--silver)}
+  .act.sec{color:var(--silver);border-color:rgba(255,255,255,.10);background:none}
+
+  /* ---------------- A · LIGHT (only on .lt surfaces) ---------------- */
+  .lt{
+    &.exp{background:linear-gradient(180deg,#000 0 34px,#F7F8FB 34px,#EEF1F6 100%)}
+    &.exp .orn .o1{opacity:.7}
+    &.exp .orn .o2{background:linear-gradient(180deg,transparent,rgba(63,163,196,.06) 50%,transparent)}
+    &.inset{background:linear-gradient(180deg,#F7F8FB,#EEF1F6);box-shadow:0 0 0 1px rgba(22,27,36,.06) inset}
+    .tabs{background:rgba(22,27,36,.045);box-shadow:0 0 0 1px rgba(22,27,36,.07) inset}
+    .tab.on{background:#FFFFFF;box-shadow:0 0 0 1px rgba(22,27,36,.10) inset,0 1px 2px rgba(22,27,36,.08)}
+    .card{background:linear-gradient(160deg,#FFFFFF,rgba(255,255,255,.72));box-shadow:0 0 0 1px rgba(22,27,36,.08) inset,0 1px 2px rgba(22,27,36,.04)}
+    .card::before{opacity:.8}
+    .act{border-color:rgba(22,27,36,.20);background:linear-gradient(180deg,#FFFFFF,#EEF1F5);box-shadow:0 1px 1px rgba(22,27,36,.06)}
+    .act.sec{border-color:rgba(22,27,36,.12);background:none;box-shadow:none}
+  }
+}
+@keyframes a-iris{to{background-position:300% 0}}
+@keyframes a-scan{0%,100%{top:-30%}50%{top:100%}}
+@keyframes a-breathe{0%,100%{box-shadow:0 0 0 1px rgba(205,185,255,.45) inset,0 0 0 0 rgba(205,185,255,0)}50%{box-shadow:0 0 0 1px rgba(205,185,255,.45) inset,0 0 0 5px rgba(205,185,255,.08)}}
+
+/* ---------- empty-state block (shared by the three tabs) ---------- */
+.dA .empty{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px;height:100%}
+.dA .empty .ek{font:500 10px/1 var(--sans);letter-spacing:.26em;text-transform:uppercase;color:var(--silver)}
+.dA .empty p{font:400 12px/16px var(--sans);color:var(--steel);max-width:320px}
+.dA .empty .act{margin-top:6px}
+.dA .empty .ring0{width:34px;height:34px;border-radius:50%;box-shadow:0 0 0 1px var(--track) inset;margin-bottom:4px}
+
+/* reduced motion: every loop stops (OS has final say, EXPERIENCE Accessibility Floor) */
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+
+
+/* ---------- Usage tab ---------- */
+/* pace-ahead · user-configurable (user choice: Ember). Default A dark #FF8A3D (8.2:1 on panel); A light #B5410A (5.2:1, text-safe) */
+.dA{--pace:#FF8A3D} .dA .lt{--pace:#B5410A}
+/* quota-warning · user-configurable (own hue, user decision). Default "Signal yellow", A and C, dark #FFE14D  / A light #8A6D00 
+   Distinct from working (champagne), Ember (pace-ahead), the 5 status hues and the iris. Non-colour cues kept: hatched fill, triangle, WARN label. */
+.dA{--qwarn:#FFE14D} .dA .lt{--qwarn:#8A6D00}
+.dA .wtri{display:inline-block;width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-bottom:7px solid var(--qwarn);margin-right:5px;vertical-align:-0.5px}
+.dA .ring .c i .wtri{border-left-width:3px;border-right-width:3px;border-bottom-width:5px;margin-right:3px;vertical-align:0}
+.u-body{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr}
+.u-side{grid-column:2}
+/* provider list: left half, scrollable when it overflows, user-ordered */
+.plist{grid-column:1;grid-row:1 / 3;position:relative;min-height:0;display:flex;flex-direction:column}
+.dA .pscroll{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;gap:10px}
+.dA .plist.more .pscroll{padding-right:8px;-webkit-mask:linear-gradient(180deg,#000 calc(100% - 46px),transparent);mask:linear-gradient(180deg,#000 calc(100% - 46px),transparent)}
+.dA .plist .card{flex:none}
+.dA .sbar{position:absolute;right:0;top:0;bottom:22px;width:3px;border-radius:2px;background:var(--hair)}
+.dA .sbar i{position:absolute;left:0;right:0;top:0;height:72%;border-radius:2px;background:var(--steel);opacity:.8}
+.dA .phint{height:14px;margin-top:6px;display:flex;justify-content:space-between;align-items:center;font:500 8px/1 var(--sans);letter-spacing:.16em;color:var(--steel);text-transform:uppercase;white-space:nowrap}
+.dA .phint b{font-weight:500;color:var(--silver)}
+.dA .ch .t .pg,.dA .phint .pg{display:inline-block;width:6px;height:10px;margin-right:7px;vertical-align:-1px;background:radial-gradient(circle,var(--steel) .9px,transparent 1.3px) 0 0/3px 3.4px}
+.dA .prov{display:grid;grid-template-columns:58px 1fr;gap:12px;align-items:center}
+.dA .ring{position:relative;width:58px;height:58px}
+.dA .ring svg{display:block;overflow:visible}
+.dA .ring .tr{stroke:var(--track)}
+.dA .ring .r5{stroke:url(#metalA)} .dA .ring .rw{stroke:url(#silverA)}
+.dA .lt .ring .r5{stroke:url(#metalAL)} .dA .lt .ring .rw{stroke:url(#silverAL)}
+.dA .ring .ahead{stroke:var(--pace)} .dA .ring .warn{stroke:var(--qwarn)}
+.dA .ring .pt{stroke:var(--platinum);stroke-width:1.4;stroke-linecap:round}
+.dA .ring .c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.dA .ring .c b{font:200 17px/1 var(--sans);color:var(--platinum);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.dA .ring .c b small{font-size:9px;color:var(--silver);font-weight:300}
+.dA .ring .c i{font:500 7.5px/1 var(--sans);font-style:normal;letter-spacing:.2em;color:var(--steel);margin-top:3px;text-transform:uppercase}
+.dA .wins{display:flex;flex-direction:column;gap:13px;min-width:0}
+.dA .win .l1{display:flex;align-items:baseline;gap:8px;height:14px;white-space:nowrap}
+.dA .win .wl{font:500 8.5px/1 var(--sans);letter-spacing:.2em;color:var(--silver);width:32px;text-transform:uppercase}
+.dA .win .wv{font:300 15px/1 var(--sans);color:var(--platinum);font-variant-numeric:tabular-nums}
+.dA .win .wv small{font-size:9px;color:var(--silver)}
+.dA .win .wr{margin-left:auto;font:400 8.5px/1 var(--sans);letter-spacing:.08em;color:var(--steel);text-transform:uppercase}
+.dA .win .wr b{color:var(--silver);font-weight:500}
+.dA .pb{position:relative;height:12px;margin-top:5px}
+.dA .pb::before{content:"";position:absolute;left:0;right:0;top:4px;height:4px;border-radius:2px;background:var(--track)}
+.dA .pb .f{position:absolute;left:0;top:4px;height:4px;border-radius:2px;background:var(--metal)}
+.dA .pb .f.w2{background:var(--metal2)}
+.dA .pb .f.ahead{background:var(--pace)}
+.dA .pb .f.warn{background:repeating-linear-gradient(135deg,var(--qwarn) 0 3px,color-mix(in srgb,var(--qwarn) 40%,transparent) 3px 5px)}
+.dA .pb .th{position:absolute;top:1px;width:1px;height:10px;margin-left:-.5px;background:repeating-linear-gradient(180deg,var(--silver) 0 2px,transparent 2px 3.3px)}
+.dA .pb .el{position:absolute;top:0;width:2px;height:12px;margin-left:-1px;border-radius:1px;background:var(--platinum);box-shadow:0 0 0 1.5px var(--cardbg)}
+.dA .win .l3{display:flex;justify-content:space-between;font:500 8px/1 var(--sans);letter-spacing:.2em;color:var(--steel);margin-top:4px;height:8px;text-transform:uppercase;white-space:nowrap}
+.dA .win .l3 .ahead{color:var(--pace)} .dA .win .l3 .warn{color:var(--qwarn)}
+.dA .win .l3 .ok{color:var(--silver)}
+/* side: history + cost */
+.dA .big{font:200 26px/26px var(--sans);letter-spacing:-.02em;color:var(--platinum);font-variant-numeric:tabular-nums}
+.dA .big small{font:500 8px var(--sans);letter-spacing:.2em;color:var(--steel);margin-left:6px;text-transform:uppercase}
+.dA .hist{display:flex;align-items:flex-end;gap:6px;height:58px;margin-top:10px}
+.dA .hist span{flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:1px;height:100%;position:relative}
+.dA .hist span i{display:block;border-radius:1.5px}
+.dA .hist span i.c1{background:var(--metal)} .dA .hist span i.c2{background:var(--metal2);opacity:.85}
+.dA .hist span.today i.c1{box-shadow:0 0 0 1px var(--platinum)}
+.dA .days{display:flex;gap:6px;margin-top:5px}
+.dA .days b{flex:1;text-align:center;font:500 7.5px/1 var(--sans);letter-spacing:.1em;color:var(--steel)}
+.dA .days b.on{color:var(--platinum)}
+.dA .lg{display:flex;gap:12px;margin-top:9px;font:500 8px/1 var(--sans);letter-spacing:.18em;color:var(--steel);text-transform:uppercase}
+.dA .lg i{display:inline-block;width:8px;height:3px;border-radius:1px;vertical-align:1px;margin-right:5px;background:var(--metal)}
+.dA .lg i.c2{background:var(--metal2)}
+.dA .cost{display:grid;grid-template-columns:1fr auto;gap:7px 8px;margin-top:11px;align-items:center}
+.dA .cost .p{font:400 11px/1 var(--sans);color:var(--platinum);white-space:nowrap}
+.dA .cost .v{font:300 11px/1 var(--sans);color:var(--silver);text-align:right;font-variant-numeric:tabular-nums}
+.dA .cost .bar{grid-column:1 / -1;height:2px;margin-top:-4px;background:var(--track);border-radius:1px;position:relative}
+.dA .cost .bar i{position:absolute;left:0;top:0;bottom:0;border-radius:1px;background:var(--metal)}
+.dA .src{font:400 8px/1 var(--sans);letter-spacing:.14em;color:var(--steel);text-transform:uppercase;margin-top:10px}
+
+</style></head>
+<body><svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<linearGradient id="metalA" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#B4BCC8"/></linearGradient>
+<linearGradient id="silverA" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#A3ABB8"/><stop offset="1" stop-color="#6E7787"/></linearGradient>
+<linearGradient id="metalAL" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2A313C"/><stop offset="1" stop-color="#5D6676"/></linearGradient>
+<linearGradient id="silverAL" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8A93A2"/><stop offset="1" stop-color="#A3ABB8"/></linearGradient>
+</defs></svg>
+<div class="page">
+<header class="ph"><div class="k">Vigie · key screen · expanded view</div><h1>Usage tab</h1><div class="lists"><div><h3>Shown</h3><ul><li><b>01</b> Main: Claude Code (Max) and Codex (Plus), each with 5h + weekly pace bars and a nested ring.</li><li><b>02</b> Three providers in a scrolling list, in user order: Codex past its 80% threshold, Claude Code on <b>Ultra</b> (no 5h window, so pace runs on weekly), and Gemini CLI (daily quota only).</li><li><b>03</b> Empty: no usage provider turned on.</li></ul></div><div><h3>Colours (user choices)</h3><ul><li><span class="sw" style="background:#FF8A3D"></span><code>pace-ahead · user-configurable</code>. Default <b>Ember</b>: dark <code>#FF8A3D</code> (8.2:1) · light <code>#B5410A</code> (5.2:1, text-safe). On pace = theme metal fill.</li><li><span class="sw" style="background:#FFE14D"></span><code>quota-warning · user-configurable</code>. Default <b>Signal yellow</b>: dark <code>#FFE14D</code>  · light <code>#8A6D00</code> (text-safe). Always paired with hatch, triangle and WARN.</li><li>Time context: Wed 04 Nov 14:48. Elapsed % is computed from each reset time.</li></ul></div><div><h3>Composition choices to confirm</h3><ul><li><b>Layout (user decision):</b> 50/50. Providers on the left half, <b>History · 7D</b> and <b>Cost · today</b> on the right half.</li><li><b>More than 2 providers:</b> the left half becomes a scrolling list in user order. Affordance: bottom fade, a 3px scroll track and the hint <code>DRAG TO REORDER · ALSO IN SETTINGS</code> + <code>SCROLL ↓</code>. Each card header carries a 6-dot grip, reusing the Shelf grip pattern.</li><li><b>Ring size:</b> 58px (was 64) to fit the half-width cards. Single-window plans (Ultra weekly, Gemini daily) get one primary-weight ring.</li><li><b>Ring:</b> inner = 5h (thicker), outer = weekly (thinner), per DESIGN Quota dial. The Home-card baseline had them the other way round.</li><li><b>Ring centre:</b> shows the 5h value, or the only window the plan has.</li><li><b>Fill:</b> 5h in bright platinum metal, weekly in darker silver metal. Pace-ahead and warning replace the fill.</li><li><b>Pace marker:</b> 2px platinum bar at elapsed time on bars, short radial tick on rings. Threshold: dashed tick at 80% on every bar; value shown in the card meta.</li><li><b>Precedence:</b> quota warning wins over pace-ahead on the same window.</li><li><b>Quota-warning hue (user decision, own token, user-configurable):</b> default <b>Signal yellow</b>, dark <code>#FFE14D</code>  · light <code>#8A6D00</code> (text-safe). Shared by A and C; replaces the lime first proposed, which looked like C's green "on pace".</li><li><b>Ember vs warning:</b> ahead of pace = solid Ember fill, <code>AHEAD OF PACE</code>, no glyph. Quota warning = signal yellow with a <b>hatched</b> fill, a <b>triangle</b> and <code>WARN</code>, plus a triangle on the ring centre.</li><li><b>Pace tolerance (user decision):</b> ahead only when used &gt; elapsed + <b>5 pts</b> (configurable). Inside the band the label reads <code>WITHIN PACE · +3</code> and the fill stays metal.</li><li><b>Strings:</b> <code>WITHIN PACE</code>, <code>AHEAD OF PACE · +9</code>, <code>WITHIN PACE · +3</code>, <code>WARN · ≥ 80%</code>, <code>RESET 16:40 · IN 1H52</code>, <code>ELAPSED 63%</code>, empty <code>NO USAGE PROVIDER</code>.</li></ul></div></div></header>
+<div class="row-h"><span class="n">01</span><h2>Usage · main state</h2><p>720 × 420 · A Chrome Hologram</p></div><div class="quad"><div class="col dA"><div class="clab"><span class="nm">A · Chrome Hologram</span><span class="mode d">Dark</span></div><div class="crop"><div class="stage"><div class="menubar"><div class="l"><span>Window</span><span>Help</span></div><div class="r"><span class="batt"></span><span>14:48</span></div></div><div class="island exp">
+  <div class="orn"><i class="o1"></i><i class="o2"></i></div>
+  <div class="top onblack"><span class="word">VIGIE</span><span class="clock"><b>●</b> Online · 14:48 · Wed 04 Nov</span></div>
+  <div class="hw"></div>
+  <div class="tabs"><span class="tab">Home</span><span class="tab">Agents <span class="mk"></span></span><span class="tab on">Usage</span><span class="tab">Shelf</span><span class="tab">Calendar</span><span class="tab">GitHub PRs</span></div>
+  <div class="body u-body"><div class="plist"><div class="pscroll"><div class="card"><div class="ch"><span class="t"><i class="pg"></i>Claude Code</span><span class="m">Max · warn <b>80%</b></span></div>
+    <div class="prov"><div class="ring"><svg width="58" height="58" viewBox="0 0 64 64"><circle class="tr" cx="32" cy="32" r="20.5" fill="none" stroke-width="2.8"/><circle class="r5" cx="32" cy="32" r="20.5" fill="none" stroke-width="2.8" stroke-linecap="round" stroke-dasharray="79.9 128.8" transform="rotate(-90 32 32)"/><line class="pt" x1="19.90" y1="43.80" x2="14.75" y2="48.83"/><circle class="tr" cx="32" cy="32" r="28" fill="none" stroke-width="1.7"/><circle class="ahead" cx="32" cy="32" r="28" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-dasharray="72.1 175.9" transform="rotate(-90 32 32)"/><line class="pt" x1="54.58" y1="42.62" x2="60.09" y2="45.22"/></svg><div class="c"><b>62<small>%</small></b><i>5H</i></div></div><div class="wins"><div class="win"><div class="l1"><span class="wl">5H</span><span class="wv">62<small>%</small></span><span class="wr">Reset <b>16:40</b> · in 1h52</span></div>
+      <div class="pb"><i class="f " style="width:62.0%"></i><i class="th" style="left:80%"></i><i class="el" style="left:62.7%"></i></div>
+      <div class="l3"><span>Elapsed 63%</span><span class="ok">Within pace</span></div></div><div class="win"><div class="l1"><span class="wl">Week</span><span class="wv">41<small>%</small></span><span class="wr">Reset <b>Mon 09:00</b> · in 4d18h</span></div>
+      <div class="pb"><i class="f ahead" style="width:41.0%"></i><i class="th" style="left:80%"></i><i class="el" style="left:32.0%"></i></div>
+      <div class="l3"><span>Elapsed 32%</span><span class="ahead">Ahead of pace · +9</span></div></div></div></div></div><div class="card"><div class="ch"><span class="t"><i class="pg"></i>Codex</span><span class="m">Plus · warn <b>80%</b></span></div>
+    <div class="prov"><div class="ring"><svg width="58" height="58" viewBox="0 0 64 64"><circle class="tr" cx="32" cy="32" r="20.5" fill="none" stroke-width="2.8"/><circle class="r5" cx="32" cy="32" r="20.5" fill="none" stroke-width="2.8" stroke-linecap="round" stroke-dasharray="27.0 128.8" transform="rotate(-90 32 32)"/><line class="pt" x1="32.74" y1="48.88" x2="33.06" y2="56.08"/><circle class="tr" cx="32" cy="32" r="28" fill="none" stroke-width="1.7"/><circle class="rw" cx="32" cy="32" r="28" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-dasharray="21.1 175.9" transform="rotate(-90 32 32)"/><line class="pt" x1="45.37" y1="10.93" x2="48.64" y2="5.78"/></svg><div class="c"><b>21<small>%</small></b><i>5H</i></div></div><div class="wins"><div class="win"><div class="l1"><span class="wl">5H</span><span class="wv">21<small>%</small></span><span class="wr">Reset <b>17:20</b> · in 2h32</span></div>
+      <div class="pb"><i class="f " style="width:21.0%"></i><i class="th" style="left:80%"></i><i class="el" style="left:49.3%"></i></div>
+      <div class="l3"><span>Elapsed 49%</span><span class="ok">Within pace</span></div></div><div class="win"><div class="l1"><span class="wl">Week</span><span class="wv">12<small>%</small></span><span class="wr">Reset <b>Tue 23:40</b> · in 6d08h</span></div>
+      <div class="pb"><i class="f w2" style="width:12.0%"></i><i class="th" style="left:80%"></i><i class="el" style="left:9.0%"></i></div>
+      <div class="l3"><span>Elapsed 9%</span><span class="ok">Within pace · +3</span></div></div></div></div></div></div></div><div class="card u-side"><div class="ch"><span class="t">History · 7D</span><span class="m">Tokens</span></div>
+      <div class="big">1.84M<small>all agents</small></div>
+      <div class="hist"><span class=""><i class="c2" style="height:12%"></i><i class="c1" style="height:50%"></i></span><span class=""><i class="c2" style="height:14%"></i><i class="c1" style="height:71%"></i></span><span class=""><i class="c1" style="height:19%"></i></span><span class=""><i class="c2" style="height:5%"></i><i class="c1" style="height:29%"></i></span><span class=""><i class="c2" style="height:17%"></i><i class="c1" style="height:81%"></i></span><span class=""><i class="c2" style="height:12%"></i><i class="c1" style="height:69%"></i></span><span class="today"><i class="c2" style="height:12%"></i><i class="c1" style="height:48%"></i></span></div><div class="days"><b class="">T</b><b class="">F</b><b class="">S</b><b class="">S</b><b class="">M</b><b class="">T</b><b class="on">W</b></div>
+      <div class="lg"><span><i></i>Claude</span><span><i class="c2"></i>Codex</span></div></div><div class="card u-side"><div class="ch"><span class="t">Cost · today</span><span class="m">Estimate</span></div>
+      <div class="big">$4.12<small>API rate</small></div><div class="cost"><span class="p">vigie</span><span class="v">$2.31</span><span class="bar"><i style="width:100%"></i></span><span class="p">infra</span><span class="v">$1.02</span><span class="bar"><i style="width:44%"></i></span><span class="p">blog</span><span class="v">$0.79</span><span class="bar"><i style="width:34%"></i></span></div>
+      <div class="src">From local logs · offline</div></div></div>
+</div></div></div><div class="note">Claude weekly is <b>ahead of pace</b>: 41% used at 32% elapsed (+9, beyond the 5-pt tolerance), so it takes Ember on the bar and the outer ring. Codex weekly is +3 (12% at 9%), inside the tolerance, so it reads <code>WITHIN PACE · +3</code> with the metal fill.</div></div><div class="col dA"><div class="clab"><span class="nm">A · Chrome Hologram</span><span class="mode l">Light</span></div><div class="crop"><div class="stage desk-lt"><div class="menubar"><div class="l"><span>Window</span><span>Help</span></div><div class="r"><span class="batt"></span><span>14:48</span></div></div><div class="island exp lt">
+  <div class="orn"><i class="o1"></i><i class="o2"></i></div>
+  <div class="top onblack"><span class="word">VIGIE</span><span class="clock"><b>●</b> Online · 14:48 · Wed 04 Nov</span></div>
+  <div class="hw"></div>
+  <div class="tabs"><span class="tab">Home</span><span class="tab">Agents <span class="mk"></span></span><span class="tab on">Usage</span><span class="tab">Shelf</span><span class="tab">Calendar</span><span class="tab">GitHub PRs</span></div>
+  <div class="body u-body"><div class="plist"><div class="pscroll"><div class="card"><div class="ch"><span class="t"><i class="pg"></i>Claude Code</span><span class="m">Max · warn <b>80%</b></span></div>
+    <div class="prov"><div class="ring"><svg width="58" height="58" viewBox="0 0 64 64"><circle class="tr" cx="32" cy="32" r="20.5" fill="none" stroke-width="2.8"/><circle class="r5" cx="32" cy="32" r="20.5" fill="none" stroke-width="2.8" stroke-linecap="round" stroke-dasharray="79.9 128.8" transform="rotate(-90 32 32)"/><line class="pt" x1="19.90" y1="43.80" x2="14.75" y2="48.83"/><circle class="tr" cx="32" cy="32" r="28" fill="none" stroke-width="1.7"/><circle class="ahead" cx="32" cy="32" r="28" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-dasharray="72.1 175.9" transform="rotate(-90 32 32)"/><line class="pt" x1="54.58" y1="42.62" x2="60.09" y2="45.22"/></svg><div class="c"><b>62<small>%</small></b><i>5H</i></div></div><div class="wins"><div class="win"><div class="l1"><span class="wl">5H</span><span class="wv">62<small>%</small></span><span class="wr">Reset <b>16:40</b> · in 1h52</span></div>
+      <div class="pb"><i class="f " style="width:62.0%"></i><i class="th" style="left:80%"></i><i class="el" style="left:62.7%"></i></div>
+      <div class="l3"><span>Elapsed 63%</span><span class="ok">Within pace</span></div></div><div class="win"><div class="l1"><span class="wl">Week</span><span class="wv">41<small>%</small></span><span class="wr">Reset <b>Mon 09:00</b> · in 4d18h</span></div>
+      <div class="pb"><i class="f ahead" style="width:41.0%"></i><i class="th" style="left:80%"></i><i class="el" style="left:32.0%"></i></div>
+      <div class="l3"><span>Elapsed 32%</span><span class="ahead">Ahead of pace · +9</span></div></div></div></div></div><div class="card"><div class="ch"><span class="t"><i class="pg"></i>Codex</span><span class="m">Plus · warn <b>80%</b></span></div>
+    <div class="prov"><div class="ring"><svg width="58" height="58" viewBox="0 0 64 64"><circle class="tr" cx="32" cy="32" r="20.5" fill="none" stroke-width="2.8"/><circle class="r5" cx="32" cy="32" r="20.5" fill="none" stroke-width="2.8" stroke-linecap="round" stroke-dasharray="27.0 128.8" transform="rotate(-90 32 32)"/><line class="pt" x1="32.74" y1="48.88" x2="33.06" y2="56.08"/><circle class="tr" cx="32" cy="32" r="28" fill="none" stroke-width="1.7"/><circle class="rw" cx="32" cy="32" r="28" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-dasharray="21.1 175.9" transform="rotate(-90 32 32)"/><line class="pt" x1="45.37" y1="10.93" x2="48.64" y2="5.78"/></svg><div class="c"><b>21<small>%</small></b><i>5H</i></div></div><div class="wins"><div class="win"><div class="l1"><span class="wl">5H</span><span class="wv">21<small>%</small></span><span class="wr">Reset <b>17:20</b> · in 2h32</span></div>
+      <div class="pb"><i class="f " style="width:21.0%"></i><i class="th" style="left:80%"></i><i class="el" style="left:49.3%"></i></div>
+      <div class="l3"><span>Elapsed 49%</span><span class="ok">Within pace</span></div></div><div class="win"><div class="l1"><span class="wl">Week</span><span class="wv">12<small>%</small></span><span class="wr">Reset <b>Tue 23:40</b> · in 6d08h</span></div>
+      <div class="pb"><i class="f w2" style="width:12.0%"></i><i class="th" style="left:80%"></i><i class="el" style="left:9.0%"></i></div>
+      <div class="l3"><span>Elapsed 9%</span><span class="ok">Within pace · +3</span></div></div></div></div></div></div></div><div class="card u-side"><div class="ch"><span class="t">History · 7D</span><span class="m">Tokens</span></div>
+      <div class="big">1.84M<small>all agents</small></div>
+      <div class="hist"><span class=""><i class="c2" style="height:12%"></i><i class="c1" style="height:50%"></i></span><span class=""><i class="c2" style="height:14%"></i><i class="c1" style="height:71%"></i></span><span class=""><i class="c1" style="height:19%"></i></span><span class=""><i class="c2" style="height:5%"></i><i class="c1" style="height:29%"></i></span><span class=""><i class="c2" style="height:17%"></i><i class="c1" style="height:81%"></i></span><span class=""><i class="c2" style="height:12%"></i><i class="c1" style="height:69%"></i></span><span class="today"><i class="c2" style="height:12%"></i><i class="c1" style="height:48%"></i></span></div><div class="days"><b class="">T</b><b class="">F</b><b class="">S</b><b class="">S</b><b class="">M</b><b class="">T</b><b class="on">W</b></div>
+      <div class="lg"><span><i></i>Claude</span><span><i class="c2"></i>Codex</span></div></div><div class="card u-side"><div class="ch"><span class="t">Cost · today</span><span class="m">Estimate</span></div>
+      <div class="big">$4.12<small>API rate</small></div><div class="cost"><span class="p">vigie</span><span class="v">$2.31</span><span class="bar"><i style="width:100%"></i></span><span class="p">infra</span><span class="v">$1.02</span><span class="bar"><i style="width:44%"></i></span><span class="p">blog</span><span class="v">$0.79</span><span class="bar"><i style="width:34%"></i></span></div>
+      <div class="src">From local logs · offline</div></div></div>
+</div></div></div><div class="note">Light body under the 34px black band. No glows. Pace-ahead uses the light Ember <code>#B5410A</code> (5.2:1).</div></div></div><div class="row-h"><span class="n">02</span><h2>Usage · 3 providers + empty</h2><p>Scrolling list · threshold crossed · absent windows · no provider</p></div><div class="quad"><div class="col dA"><div class="clab"><span class="nm">3 providers · scrolling, user order</span><span class="mode d">Dark</span></div><div class="crop"><div class="stage"><div class="menubar"><div class="l"><span>Window</span><span>Help</span></div><div class="r"><span class="batt"></span><span>14:48</span></div></div><div class="island exp">
+  <div class="orn"><i class="o1"></i><i class="o2"></i></div>
+  <div class="top onblack"><span class="word">VIGIE</span><span class="clock"><b>●</b> Online · 14:48 · Wed 04 Nov</span></div>
+  <div class="hw"></div>
+  <div class="tabs"><span class="tab">Home</span><span class="tab">Agents <span class="mk"></span></span><span class="tab on">Usage</span><span class="tab">Shelf</span><span class="tab">Calendar</span><span class="tab">GitHub PRs</span></div>
+  <div class="body u-body"><div class="plist more"><div class="pscroll"><div class="card"><div class="ch"><span class="t"><i class="pg"></i>Codex</span><span class="m">Plus · warn <b>80%</b></span></div>
+    <div class="prov"><div class="ring"><svg width="58" height="58" viewBox="0 0 64 64"><circle class="tr" cx="32" cy="32" r="20.5" fill="none" stroke-width="2.8"/><circle class="warn" cx="32" cy="32" r="20.5" fill="none" stroke-width="2.8" stroke-linecap="round" stroke-dasharray="108.2 128.8" transform="rotate(-90 32 32)"/><line class="pt" x1="21.47" y1="18.78" x2="16.99" y2="13.14"/><circle class="tr" cx="32" cy="32" r="28" fill="none" stroke-width="1.7"/><circle class="rw" cx="32" cy="32" r="28" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-dasharray="54.5 175.9" transform="rotate(-90 32 32)"/><line class="pt" x1="27.79" y1="56.59" x2="26.76" y2="62.60"/></svg><div class="c"><b>84<small>%</small></b><i><i class="wtri"></i>5H</i></div></div><div class="wins"><div class="win"><div class="l1"><span class="wl">5H</span><span class="wv">84<small>%</small></span><span class="wr">Reset <b>15:20</b> · in 32m</span></div>
+      <div class="pb"><i class="f warn" style="width:84.0%"></i><i class="th" style="left:80%"></i><i class="el" style="left:89.3%"></i></div>
+      <div class="l3"><span>Elapsed 89%</span><span class="warn"><i class="wtri"></i>Warn · ≥ 80%</span></div></div><div class="win"><div class="l1"><span class="wl">Week</span><span class="wv">31<small>%</small></span><span class="wr">Reset <b>Sat 22:10</b> · in 3d07h</span></div>
+      <div class="pb"><i class="f w2" style="width:31.0%"></i><i class="th" style="left:80%"></i><i class="el" style="left:52.7%"></i></div>
+      <div class="l3"><span>Elapsed 53%</span><span class="ok">Within pace</span></div></div></div></div></div><div class="card"><div class="ch"><span class="t"><i class="pg"></i>Claude Code</span><span class="m">Ultra · weekly only</span></div>
+    <div class="prov"><div class="ring"><svg width="58" height="58" viewBox="0 0 64 64"><circle class="tr" cx="32" cy="32" r="26" fill="none" stroke-width="2.8"/><circle class="ahead" cx="32" cy="32" r="26" fill="none" stroke-width="2.8" stroke-linecap="round" stroke-dasharray="76.8 163.4" transform="rotate(-90 32 32)"/><line class="pt" x1="52.27" y1="41.54" x2="58.78" y2="44.60"/></svg><div class="c"><b>47<small>%</small></b><i>Week</i></div></div><div class="wins"><div class="win"><div class="l1"><span class="wl">Week</span><span class="wv">47<small>%</small></span><span class="wr">Reset <b>Mon 09:00</b> · in 4d18h</span></div>
+      <div class="pb"><i class="f ahead" style="width:47.0%"></i><i class="th" style="left:80%"></i><i class="el" style="left:32.0%"></i></div>
+      <div class="l3"><span>Elapsed 32%</span><span class="ahead">Ahead of pace · +15</span></div></div></div></div></div><div class="card"><div class="ch"><span class="t"><i class="pg"></i>Gemini CLI</span><span class="m">Daily quota only</span></div>
+    <div class="prov"><div class="ring"><svg width="58" height="58" viewBox="0 0 64 64"><circle class="tr" cx="32" cy="32" r="26" fill="none" stroke-width="2.8"/><circle class="r5" cx="32" cy="32" r="26" fill="none" stroke-width="2.8" stroke-linecap="round" stroke-dasharray="29.4 163.4" transform="rotate(-90 32 32)"/><line class="pt" x1="54.37" y1="30.87" x2="61.56" y2="30.51"/></svg><div class="c"><b>18<small>%</small></b><i>Day</i></div></div><div class="wins"><div class="win"><div class="l1"><span class="wl">Day</span><span class="wv">18<small>%</small></span><span class="wr">Reset <b>09:00</b> · in 18h12</span></div>
+      <div class="pb"><i class="f " style="width:18.0%"></i><i class="th" style="left:80%"></i><i class="el" style="left:24.2%"></i></div>
+      <div class="l3"><span>Elapsed 24%</span><span class="ok">Within pace</span></div></div></div></div></div></div><div class="sbar"><i></i></div><div class="phint"><span><i class="pg"></i>Drag to reorder · also in <b>Settings</b></span><span>Scroll ↓</span></div></div><div class="card u-side"><div class="ch"><span class="t">History · 7D</span><span class="m">Tokens</span></div>
+      <div class="big">1.84M<small>all agents</small></div>
+      <div class="hist"><span class=""><i class="c2" style="height:12%"></i><i class="c1" style="height:50%"></i></span><span class=""><i class="c2" style="height:14%"></i><i class="c1" style="height:71%"></i></span><span class=""><i class="c1" style="height:19%"></i></span><span class=""><i class="c2" style="height:5%"></i><i class="c1" style="height:29%"></i></span><span class=""><i class="c2" style="height:17%"></i><i class="c1" style="height:81%"></i></span><span class=""><i class="c2" style="height:12%"></i><i class="c1" style="height:69%"></i></span><span class="today"><i class="c2" style="height:12%"></i><i class="c1" style="height:48%"></i></span></div><div class="days"><b class="">T</b><b class="">F</b><b class="">S</b><b class="">S</b><b class="">M</b><b class="">T</b><b class="on">W</b></div>
+      <div class="lg"><span><i></i>Claude</span><span><i class="c2"></i>Codex</span></div></div><div class="card u-side"><div class="ch"><span class="t">Cost · today</span><span class="m">Estimate</span></div>
+      <div class="big">$4.12<small>API rate</small></div><div class="cost"><span class="p">vigie</span><span class="v">$2.31</span><span class="bar"><i style="width:100%"></i></span><span class="p">infra</span><span class="v">$1.02</span><span class="bar"><i style="width:44%"></i></span><span class="p">blog</span><span class="v">$0.79</span><span class="bar"><i style="width:34%"></i></span></div>
+      <div class="src">From local logs · offline</div></div></div>
+</div></div></div><div class="note"><b>Codex 5h at 84%</b> is past the 80% warning: signal yellow with a hatched fill, triangle and WARN, distinct from Ember. <b>Claude Code · Ultra</b> has no 5h window, so it has a single ring and pace runs on weekly (47% vs 32%, ahead). <b>Gemini CLI</b> has a daily quota only and sits under the fade, which signals more content below. The warning fires on % only, never on pace.</div></div><div class="col dA"><div class="clab"><span class="nm">Empty · no provider</span><span class="mode d">Dark</span></div><div class="crop"><div class="stage"><div class="menubar"><div class="l"><span>Window</span><span>Help</span></div><div class="r"><span class="batt"></span><span>14:48</span></div></div><div class="island exp">
+  <div class="orn"><i class="o1"></i><i class="o2"></i></div>
+  <div class="top onblack"><span class="word">VIGIE</span><span class="clock"><b>●</b> Online · 14:48 · Wed 04 Nov</span></div>
+  <div class="hw"></div>
+  <div class="tabs"><span class="tab">Home</span><span class="tab">Agents <span class="mk"></span></span><span class="tab on">Usage</span><span class="tab">Shelf</span><span class="tab">Calendar</span><span class="tab">GitHub PRs</span></div>
+  <div class="body" style="grid-template-columns:1fr"><div class="card"><div class="ch"><span class="t">Usage</span><span class="m">0 providers</span></div>
+      <div class="empty" style="height:calc(100% - 17px)"><div class="ring0"></div><div class="ek">No usage provider</div>
+      <p>Turn on a usage provider for Claude Code, Codex or Gemini CLI in Settings. Local-log providers work offline and need no sign-in.</p>
+      <span class="act">Open settings <kbd>⌘,</kbd></span></div></div></div>
+</div></div></div><div class="note">Same pattern as <code>NO AGENT CONNECTED</code>: a label, one factual sentence and a button to the Settings pane. [ASSUMPTION] copy and <code>⌘,</code> shortcut.</div></div></div>
+</div></body></html>
