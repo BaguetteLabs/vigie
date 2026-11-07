@@ -1260,6 +1260,246 @@
           }
         }
       }
+    },
+    "settings.alerts.section" : {
+      "comment" : "Module Settings pane: heading above the generated alert settings, one group per declared alert kind.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alerts"
+          }
+        }
+      }
+    },
+    "settings.alerts.enabled" : {
+      "comment" : "Alert settings: whether this alert kind is shown at all (off writes mute = true).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enabled"
+          }
+        }
+      }
+    },
+    "settings.alerts.mute" : {
+      "comment" : "Config key label: modules.<id>.notify.<kind>.mute.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muted"
+          }
+        }
+      }
+    },
+    "settings.alerts.outputs" : {
+      "comment" : "Alert settings: where an alert of this kind appears (peek, macOS notification, sound).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Outputs"
+          }
+        }
+      }
+    },
+    "settings.alerts.output.peek" : {
+      "comment" : "Alert output: the notch peek.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Peek"
+          }
+        }
+      }
+    },
+    "settings.alerts.output.system" : {
+      "comment" : "Alert output: a macOS notification.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "System notification"
+          }
+        }
+      }
+    },
+    "settings.alerts.output.sound" : {
+      "comment" : "Alert output: a sound from the Sounds settings.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sound"
+          }
+        }
+      }
+    },
+    "settings.alerts.reminder" : {
+      "comment" : "Alert settings: delay after which an unresolved alert is shown again.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reminder"
+          }
+        }
+      }
+    },
+    "settings.alerts.reminder.none" : {
+      "comment" : "Placeholder of the empty reminder field: no reminder.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None"
+          }
+        }
+      }
+    },
+    "settings.alerts.reminder.help" : {
+      "comment" : "Help under the alert reminder field.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shows the peek and sound once more if nothing changed after this delay. Empty for none."
+          }
+        }
+      }
+    },
+    "settings.alerts.reset" : {
+      "comment" : "Context menu of an alert setting row: removes the key from config.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reset to default"
+          }
+        }
+      }
+    },
+    "settings.alerts.kind.session.blocked" : {
+      "comment" : "Alert kind label: an agent session needs the user.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Blocked"
+          }
+        }
+      }
+    },
+    "settings.alerts.kind.session.done" : {
+      "comment" : "Alert kind label: an agent session finished its turn.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finished"
+          }
+        }
+      }
+    },
+    "settings.alerts.kind.session.failed" : {
+      "comment" : "Alert kind label: an agent session failed.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Failed"
+          }
+        }
+      }
+    },
+    "settings.alerts.kind.usage.quota_warning" : {
+      "comment" : "Alert kind label: plan usage is close to its limit.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quota warning"
+          }
+        }
+      }
+    },
+    "settings.alerts.kind.shelf.expiring" : {
+      "comment" : "Alert kind label: a Shelf item is about to expire.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shelf item expiring"
+          }
+        }
+      }
+    },
+    "settings.alerts.kind.time.timer_end" : {
+      "comment" : "Alert kind label: a timer, countdown or Pomodoro break ended.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Timer end"
+          }
+        }
+      }
+    },
+    "settings.alerts.kind.time.break_reminder" : {
+      "comment" : "Alert kind label: time for a break.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Break reminder"
+          }
+        }
+      }
+    },
+    "settings.alerts.kind.calendar.reminder" : {
+      "comment" : "Alert kind label: a calendar event's own alarm time.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Event reminder"
+          }
+        }
+      }
+    },
+    "settings.alerts.kind.setup.problem" : {
+      "comment" : "Alert kind label: something needs fixing in setup.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Setup problem"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

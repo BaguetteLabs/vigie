@@ -77,14 +77,14 @@ struct SettingsHarness {
         var urls: [URL] = []
     }
 
-    init(config: String? = nil) async throws {
-        let manifests = [testManifest, calendarManifest, customManifest]
+    init(config: String? = nil, sessions: ModuleManifest = testManifest) async throws {
+        let manifests = [sessions, calendarManifest, customManifest]
         (store, watcher) = try await fixture.makeStore(manifests: manifests, config: config)
         checker.set(.calendar, .denied)
         let (stream, _) = AsyncStream.makeStream(of: Void.self)
         coordinator = PermissionsCoordinator(checker: checker, activationNotifications: stream)
         let descriptors = [
-            ModuleDescriptor(manifest: testManifest) { SpyModule(manifest: testManifest, shouldThrow: false) },
+            ModuleDescriptor(manifest: sessions) { SpyModule(manifest: sessions, shouldThrow: false) },
             ModuleDescriptor(manifest: calendarManifest) { CustomSettingsModule(manifest: calendarManifest) },
             ModuleDescriptor(manifest: customManifest) { CustomSettingsModule(manifest: customManifest) },
         ]

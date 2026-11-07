@@ -150,7 +150,8 @@ public struct ConfigSchema: Sendable {
         }
     }
 
-    /// Adds a module's `enabled` key and settings. Registering the same id again is a no-op; returns whether
+    /// Adds a module's `enabled` key, its settings, and `mute` / `outputs` / `reminder` under
+    /// `modules."<id>".notify."<kind>"` for each declared alert kind. Registering the same id again is a no-op; returns whether
     /// anything was added.
     @discardableResult
     public mutating func register(_ manifest: ModuleManifest) -> Bool {
@@ -165,6 +166,10 @@ public struct ConfigSchema: Sendable {
         for descriptor in manifest.settings {
             let path = ConfigKeyPath.module(manifest.id, descriptor.key, scope: descriptor.scope)
             guard entries[path] == nil else { continue }
+            entries[path] = ConfigSchemaEntry(path: path, descriptor: descriptor, moduleID: manifest.id)
+        }
+        // Notifier-owned rule keys of each declared alert kind (Story 3.7, AD-13).
+        for (path, descriptor) in AlertSettings.schemaDescriptors(for: manifest) where entries[path] == nil {
             entries[path] = ConfigSchemaEntry(path: path, descriptor: descriptor, moduleID: manifest.id)
         }
         return true

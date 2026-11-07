@@ -183,8 +183,9 @@ struct CLISection: View {
     }
 }
 
-/// A module's pane: `enabled`, status, the permission block when needed, its generated rows, then its own
-/// view below them (never instead of them, FR5).
+/// A module's pane: `enabled`, status, the permission block when needed, its generated rows, the alert
+/// settings generated from its declared kinds (Story 3.7), then its own view below them (never instead of
+/// them, FR5).
 struct ModulePaneContent: View {
     let controller: SettingsController
     let manifest: ModuleManifest
@@ -211,6 +212,7 @@ struct ModulePaneContent: View {
                 ForEach(rows) { SettingRow($0) }
             }
         }
+        AlertSettingsSection(controller: controller, manifest: manifest)
         if let custom = controller.customSettingsView(manifest.id) {
             Section { custom }
         }
