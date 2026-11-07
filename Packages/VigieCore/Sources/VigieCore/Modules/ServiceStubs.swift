@@ -63,8 +63,3 @@ struct StubAwayService: AwayService {
     var presence: Presence { .present }
     var changes: AsyncStream<Presence> { AsyncStream { $0.finish() } }
 }
-
-/// Implemented in Story 3.8.
-struct StubActivityLog: ActivityLog {
-    func record(_ entry: ActivityEntry) {}
-}

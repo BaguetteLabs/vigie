@@ -259,18 +259,123 @@ public protocol AwayService: Sendable {
 
 // MARK: - Activity log (implemented in Story 3.8)
 
-/// An outcome entry (AD-26). Never put secrets, note content or raw script output in it.
-public struct ActivityEntry: Hashable, Sendable {
-    public let kind: String
-    public let outcome: String
-    public let ids: [String: String]
-    public let at: Date
+public enum ActivityCategory: String, Codable, Hashable, Sendable {
+    case alert, peek, reminder, focus, module
+}
 
-    public init(kind: String, outcome: String, ids: [String: String] = [:], at: Date = Date()) {
-        self.kind = kind
-        self.outcome = outcome
-        self.ids = ids
+/// What happened. Encoded as one string: `posted`, `suppressed:<reason>`, `focusFailed:<reason>`, `custom:<text>`.
+public enum ActivityOutcome: Hashable, Sendable, Codable {
+    case posted
+    /// `reason`: mute, quietHours, cooldown, dnd, undeclaredKind, minSeverity, condition.
+    case suppressed(reason: String)
+    case shown
+    case repeated
+    case dismissed
+    case resolved
+    case focusExact
+    case focusAppOnly
+    case focusFailed(reason: String)
+    case custom(String)
+
+    public var encoded: String {
+        switch self {
+        case .posted: "posted"
+        case .suppressed(let r): "suppressed:\(r)"
+        case .shown: "shown"
+        case .repeated: "repeated"
+        case .dismissed: "dismissed"
+        case .resolved: "resolved"
+        case .focusExact: "focusExact"
+        case .focusAppOnly: "focusAppOnly"
+        case .focusFailed(let r): "focusFailed:\(r)"
+        case .custom(let t): "custom:\(t)"
+        }
+    }
+
+    public init(encoded: String) {
+        let parts = encoded.split(separator: ":", maxSplits: 1, omittingEmptySubsequences: false)
+        let tail = parts.count > 1 ? String(parts[1]) : ""
+        switch parts[0] {
+        case "posted": self = .posted
+        case "suppressed": self = .suppressed(reason: tail)
+        case "shown": self = .shown
+        case "repeated": self = .repeated
+        case "dismissed": self = .dismissed
+        case "resolved": self = .resolved
+        case "focusExact": self = .focusExact
+        case "focusAppOnly": self = .focusAppOnly
+        case "focusFailed": self = .focusFailed(reason: tail)
+        case "custom": self = .custom(tail)
+        default: self = .custom(encoded)
+        }
+    }
+
+    public init(from decoder: any Decoder) throws {
+        self.init(encoded: try decoder.singleValueContainer().decode(String.self))
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var c = encoder.singleValueContainer()
+        try c.encode(encoded)
+    }
+}
+
+/// An outcome entry (AD-26), one JSON line. Never put secrets, note content or raw script output in it;
+/// `detail` is small, and `redacted()` drops keys that look secret and truncates values to 200 characters.
+public struct ActivityEntry: Hashable, Sendable, Codable {
+    public var at: Date
+    /// nil for core components.
+    public var module: ModuleID?
+    public var category: ActivityCategory
+    /// Alert kind or focus action.
+    public var kind: String
+    public var severity: AlertSeverity?
+    public var dedupeKey: String?
+    public var outcome: ActivityOutcome
+    /// Terminal adapter id (focus entries).
+    public var adapter: String?
+    public var detail: [String: String]
+
+    public init(
+        at: Date = Date(), module: ModuleID? = nil, category: ActivityCategory, kind: String,
+        severity: AlertSeverity? = nil, dedupeKey: String? = nil, outcome: ActivityOutcome,
+        adapter: String? = nil, detail: [String: String] = [:]
+    ) {
         self.at = at
+        self.module = module
+        self.category = category
+        self.kind = kind
+        self.severity = severity
+        self.dedupeKey = dedupeKey
+        self.outcome = outcome
+        self.adapter = adapter
+        self.detail = detail
+    }
+
+    public static func alert(
+        module: ModuleID?, kind: String, severity: AlertSeverity?, dedupeKey: String? = nil,
+        outcome: ActivityOutcome, at: Date = Date()
+    ) -> ActivityEntry {
+        ActivityEntry(
+            at: at, module: module, category: .alert, kind: kind, severity: severity, dedupeKey: dedupeKey,
+            outcome: outcome)
+    }
+
+    public static func focus(
+        module: ModuleID?, adapter: String?, outcome: ActivityOutcome, kind: String = "focus", at: Date = Date()
+    ) -> ActivityEntry {
+        ActivityEntry(at: at, module: module, category: .focus, kind: kind, outcome: outcome, adapter: adapter)
+    }
+
+    /// Drops `detail` keys containing token, secret, password or key (case-insensitive); truncates values to 200.
+    public func redacted() -> ActivityEntry {
+        var copy = self
+        copy.detail = detail.reduce(into: [:]) { out, pair in
+            let k = pair.key.lowercased()
+            guard !["token", "secret", "password", "key"].contains(where: k.contains) else { return }
+            out[pair.key] = String(pair.value.prefix(200))
+        }
+        return copy
     }
 }
 

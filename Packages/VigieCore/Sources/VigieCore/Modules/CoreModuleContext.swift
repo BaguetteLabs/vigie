@@ -75,6 +75,7 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
     public let permissions: PermissionsCoordinator?
     public let hotkeyCenter: HotkeyCenter
     public let alertCenter: AlertCenter
+    public let activityStore: ActivityStore
 
     /// - Parameters:
     ///   - environment: injected by the App (`AppEnvironment.current`); VigieCore never reads `.current`.
@@ -84,10 +85,11 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
     ///     KeyboardShortcuts.
     ///   - alertCenter: the app-wide Notifier; defaults to one with default rules (`StaticNotifyRules`) and
     ///     recording sinks until ConfigStore and the outputs are wired.
+    ///   - activityStore: the app-wide activity log store (AD-26); defaults to one for `environment`.
     public init(
         environment: AppEnvironment, eventBus: InProcessEventBus, configStore: ConfigStore? = nil,
         permissions: PermissionsCoordinator? = nil, hotkeyCenter: HotkeyCenter? = nil,
-        alertCenter: AlertCenter? = nil
+        alertCenter: AlertCenter? = nil, activityStore: ActivityStore? = nil
     ) {
         self.environment = environment
         self.eventBus = eventBus
@@ -98,6 +100,7 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
             alertCenter
             ?? AlertCenter(
                 rules: StaticNotifyRules(), log: Logger(subsystem: environment.bundleID, category: "notifier"))
+        self.activityStore = activityStore ?? ActivityStore(environment: environment)
     }
 
     public func makeContext(for manifest: ModuleManifest, tracker: RegistrationTracker) -> any ModuleContext {
@@ -124,7 +127,7 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
             executables: StubExecutableResolver(),
             privacy: StubPrivacyService(),
             away: StubAwayService(),
-            activity: StubActivityLog(),
+            activity: CoreActivityLog(moduleID: manifest.id, store: activityStore),
             log: log
         )
     }
