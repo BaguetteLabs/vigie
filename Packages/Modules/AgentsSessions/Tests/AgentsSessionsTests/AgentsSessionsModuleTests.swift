@@ -64,7 +64,8 @@ import Wire
         #expect(context.fakeEvents.prefixes == ["agent.", "host.ready"])
         #expect(context.fakeScheduler.intervals == [.seconds(30), .seconds(10)])
         #expect(module.expandedView() != nil)
-        #expect(module.leftWingItems().isEmpty)
+        #expect(module.leftWingItems().map(\.id) == ["empty"])
+        #expect(module.wingEmptyState == .noActiveSessions)
         await module.stop()
     }
 

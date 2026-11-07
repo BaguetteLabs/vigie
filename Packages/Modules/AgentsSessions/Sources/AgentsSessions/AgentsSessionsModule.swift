@@ -188,8 +188,59 @@ public final class AgentsSessionsModule: NotchModule {
         await persister?.write(store.snapshot, generation: store.generation, force: true)
     }
 
-    // TODO(4.9): one status glyph per session, in urgency order.
-    public func leftWingItems() -> [LeftWingItem] { [] }
+    /// The right-wing content (FR37, A19). `ClosedNotchArbiter` routes `agents.sessions` items to the trailing
+    /// side, sorts them by item state, then `priority`, then `order`, and shows the first `closed.slots` with
+    /// `+X` after them. One glyph per session: the item state is the session's urgency (blocked / failed →
+    /// alert, done / working → active, idle / stale → ambient) and `order` its index in ``displaySessions``,
+    /// so blocked and failed (most recent first) fill the slots before any less urgent session. No count,
+    /// project name or label. With no session, one label-only readout: `NO AGENT CONNECTED` without adapters,
+    /// else `NO ACTIVE SESSIONS`.
+    public func leftWingItems() -> [LeftWingItem] {
+        Self.wingItems(
+            sessions: displaySessions, statuses: displayStatuses, empty: wingEmptyState, text: rowText,
+            now: Date())
+    }
+
+    /// The right wing's empty state, or nil when there are sessions.
+    public var wingEmptyState: WingEmptyState? {
+        guard displaySessions.isEmpty else { return nil }
+        return adapters.adapters.isEmpty ? .noAgentConnected : .noActiveSessions
+    }
+
+    /// Id of the empty-state readout item.
+    nonisolated static let emptyItemID = "empty"
+
+    static func wingItems(
+        sessions: [Session], statuses: [SessionKey: SessionStatus], empty: WingEmptyState?,
+        text: SessionRowText, now: Date
+    ) -> [LeftWingItem] {
+        if let empty {
+            let copy = empty.copy
+            return [
+                LeftWingItem(id: emptyItemID, priority: 0, state: .ambient) { size in
+                    size == .icon ? nil : AnyView(WingEmptyReadout(copy))
+                }
+            ]
+        }
+        return sessions.enumerated().map { index, session in
+            let status = statuses[session.key] ?? session.status
+            let label = text.accessibilityLabel(session, now: now)
+            return LeftWingItem(
+                id: session.key.description, priority: 0, state: wingState(status), order: index
+            ) { _ in
+                AnyView(SessionGlyphView(status, accessibilityLabel: label))
+            }
+        }
+    }
+
+    /// FR38 per session: the state the arbiter ranks a glyph by.
+    nonisolated static func wingState(_ status: SessionStatus) -> ModuleState {
+        switch status {
+        case .blocked, .failed: .alert
+        case .done, .working: .active
+        case .idle, .stale: .ambient
+        }
+    }
 
     // TODO(4.10): the Agents tab list replaces this placeholder.
     public func expandedView() -> AnyView? {
@@ -304,6 +355,21 @@ public final class AgentsSessionsModule: NotchModule {
         if display != displaySessions { displaySessions = display }
         let next = SessionReducer.moduleState(statuses: statuses.values)
         if state != next { state = next }
+    }
+}
+
+/// The right wing's label-only empty states (FR37, DESIGN "Readout").
+public enum WingEmptyState: Sendable, Equatable {
+    /// No agent adapter is set up.
+    case noAgentConnected
+    /// Adapters exist but no session runs.
+    case noActiveSessions
+
+    public var copy: VigieCopy.EmptyState {
+        switch self {
+        case .noAgentConnected: VigieCopy.noAgentConnected
+        case .noActiveSessions: VigieCopy.noActiveSessions
+        }
     }
 }
 
