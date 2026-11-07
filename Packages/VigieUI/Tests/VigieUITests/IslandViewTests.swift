@@ -32,6 +32,14 @@ import Testing
             #expect(calm.rimOpacity < IslandOrnaments(presence: .full).rimOpacity)
         }
     }
+
+    @Test func reduceMotionStopsRimAndShimmerButKeepsTheIrisRim() {
+        let still = IslandOrnaments(presence: .full, motionEnabled: false)
+        #expect(still.rimUsesIris)
+        #expect(!still.rimSlides)
+        #expect(!still.shimmerEnabled)
+        #expect(!still.loops)
+    }
 }
 
 @MainActor

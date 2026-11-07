@@ -769,6 +769,18 @@
         }
       }
     },
+    "usage.pace.ahead" : {
+      "comment" : "Label next to a usage window that is ahead of pace (non-color cue).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AHEAD OF PACE"
+          }
+        }
+      }
+    },
     "vigieui.sample.appName" : {
       "comment" : "Sample string proving the VigieUI String Catalog is bundled.",
       "extractionState" : "manual",

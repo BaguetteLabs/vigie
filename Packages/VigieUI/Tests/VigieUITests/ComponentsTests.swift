@@ -272,12 +272,12 @@ private func minutes(_ count: Int) -> Duration { .seconds(count * 60) }
 
     @Test func loopsStopInCalmOrReduceMotion() {
         var theme = ComponentFixtures.theme(.dark)
-        #expect(!theme.stopsLoops)
+        #expect(theme.loopsEnabled)
         theme.presence = .calm
-        #expect(theme.stopsLoops && !theme.reducesMotion)
+        #expect(!theme.loopsEnabled && theme.a11y.motionEnabled)
         theme.presence = .full
         theme.accessibility = AccessibilityAdjustments(reduceMotion: true)
-        #expect(theme.stopsLoops && theme.reducesMotion && theme.enterAnimation == nil)
+        #expect(!theme.loopsEnabled && !theme.a11y.motionEnabled && theme.animation(.enter) == nil)
     }
 }
 

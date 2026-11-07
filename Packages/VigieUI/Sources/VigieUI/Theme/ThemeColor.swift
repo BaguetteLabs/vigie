@@ -81,7 +81,56 @@ extension Double {
     fileprivate var clamped01: Double { Swift.min(1, Swift.max(0, self)) }
 }
 
-/// macOS accessibility display settings, resolved once in VigieUI (AD-14).
+// MARK: - WCAG contrast
+
+extension ThemeColor {
+    /// WCAG 2.x relative luminance (sRGB).
+    public var relativeLuminance: Double {
+        func linear(_ c: Double) -> Double { c <= 0.04045 ? c / 12.92 : pow((c + 0.055) / 1.055, 2.4) }
+        return 0.2126 * linear(red) + 0.7152 * linear(green) + 0.0722 * linear(blue)
+    }
+
+    /// WCAG contrast ratio with another color (1...21), unrounded.
+    public func contrastRatio(with other: ThemeColor) -> Double {
+        let a = relativeLuminance
+        let b = other.relativeLuminance
+        return (max(a, b) + 0.05) / (min(a, b) + 0.05)
+    }
+
+    /// This color drawn at `opacity` over an opaque `background` (source-over in sRGB, as browsers and
+    /// Core Graphics composite by default).
+    public func composited(opacity: Double, over background: ThemeColor) -> ThemeColor {
+        let a = opacity.clamped01
+        return ThemeColor(
+            red: red * a + background.red * (1 - a),
+            green: green * a + background.green * (1 - a),
+            blue: blue * a + background.blue * (1 - a))
+    }
+
+    /// The lowest contrast against any of `surfaces` (infinity when there are none).
+    public func worstContrast(against surfaces: [ThemeColor]) -> Double {
+        surfaces.map(contrastRatio(with:)).min() ?? .infinity
+    }
+
+    /// Moves lightness only (hue and saturation kept, AD-14) away from the surfaces until this color reaches
+    /// `minimum` against every one of them: lighter in a dark look, darker in a light look. Never lowers
+    /// contrast; returns `self` when it already passes.
+    public func raisingContrast(against surfaces: [ThemeColor], to minimum: Double, look: Look) -> ThemeColor {
+        guard worstContrast(against: surfaces) < minimum else { return self }
+        let (hue, saturation, start) = hsl
+        let step = look == .dark ? 0.005 : -0.005
+        var lightness = start
+        while look == .dark ? lightness < 1 : lightness > 0 {
+            lightness = (lightness + step).clamped01
+            let candidate = ThemeColor(hue: hue, saturation: saturation, lightness: lightness)
+            if candidate.worstContrast(against: surfaces) >= minimum { return candidate }
+        }
+        return ThemeColor(hue: hue, saturation: saturation, lightness: lightness)
+    }
+}
+
+/// macOS accessibility display settings, resolved once in VigieUI (AD-14). The derived rules every surface
+/// reads live in ``AccessibilityRules`` (`theme.a11y`).
 public struct AccessibilityAdjustments: Sendable, Equatable {
     public var increaseContrast: Bool
     public var reduceTransparency: Bool
@@ -101,11 +150,60 @@ public struct AccessibilityAdjustments: Sendable, Equatable {
     /// Lightness shift applied to ``contrastRoles`` under Increase contrast (away from the panel).
     static let contrastShift = 0.15
 
+    /// Text-capable roles: under Increase contrast each reaches at least 4.5:1 on every surface of its look
+    /// (DESIGN Contrast, UX-DR13). The defaults already pass; this lifts a user override that does not.
+    static let textFloorRoles: Set<ColorRole> = [
+        .ink1, .ink2, .ink3, .goldText, .quotaWarningText, .iris1, .iris2, .iris3,
+        .statusIdle, .statusWorking, .statusDone, .statusBlocked, .statusFailed, .paceOn, .paceAhead,
+    ]
+
+    /// Non-text meaning and decorative-only roles: under Increase contrast each reaches at least 3:1
+    /// (WCAG 1.4.11; DESIGN Contrast "Decorative-only elements … must reach 3:1 under Increase contrast",
+    /// UX-DR95).
+    static let nonTextFloorRoles: Set<ColorRole> = [
+        .gold, .quotaWarning, .structure, .filament1, .filament2, .filament3, .lineSilver, .line,
+    ]
+
+    public static let textMinimum = 4.5
+    public static let nonTextMinimum = 3.0
+
+    /// The surfaces a role is checked against in a look: panel and card everywhere, the black island in
+    /// dark looks (the island always uses the dark set), the virtual notch in light looks.
+    static func surfaceRoles(_ look: Look) -> [ColorRole] {
+        look == .dark
+            ? [.surfacePanel, .surfaceCard, .island]
+            : [.surfacePanel, .surfaceCard, .surfaceVNTop, .surfaceVNBottom]
+    }
+
     /// Adjusts one resolved color. Pure; it can only move lightness, so a user-chosen hue is never discarded.
     public func adjust(_ color: ThemeColor, role: ColorRole, look: Look) -> ThemeColor {
         guard increaseContrast, Self.contrastRoles.contains(role) else { return color }
         let lightness = color.hsl.lightness
         let target = look == .dark ? lightness + Self.contrastShift : lightness - Self.contrastShift
         return color.withLightness(target)
+    }
+
+    /// The accessibility step of the resolver (last, once; AD-14). Under Increase contrast: the
+    /// ``contrastRoles`` shift, then text roles floored at 4.5:1 and non-text roles at 3:1 against every
+    /// surface of the look. Lightness moves only, so a user override keeps its hue; contrast only rises.
+    /// Reduce transparency and Reduce motion change no color (they are read through ``AccessibilityRules``).
+    public func apply(to colors: [ColorRole: ThemeColor], look: Look) -> [ColorRole: ThemeColor] {
+        guard increaseContrast else { return colors }
+        var adjusted = colors
+        for (role, color) in colors { adjusted[role] = adjust(color, role: role, look: look) }
+        let surfaces = Self.surfaceRoles(look).compactMap { colors[$0] }
+        guard !surfaces.isEmpty else { return adjusted }
+        for (role, color) in adjusted {
+            let minimum: Double
+            if Self.textFloorRoles.contains(role) {
+                minimum = Self.textMinimum
+            } else if Self.nonTextFloorRoles.contains(role) {
+                minimum = Self.nonTextMinimum
+            } else {
+                continue
+            }
+            adjusted[role] = color.raisingContrast(against: surfaces, to: minimum, look: look)
+        }
+        return adjusted
     }
 }

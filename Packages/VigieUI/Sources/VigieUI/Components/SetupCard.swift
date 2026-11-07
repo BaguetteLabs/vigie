@@ -81,14 +81,12 @@ public struct SetupCard: View {
             if theme.usesCornerMarks {
                 CornerMarks()
                     .stroke(
-                        theme.color(.structure).opacity(ComponentMetrics.cornerMarkOpacity),
-                        lineWidth: ComponentMetrics.hairline)
+                        theme.borderColor(.structure, opacity: ComponentMetrics.cornerMarkOpacity),
+                        lineWidth: theme.a11y.hairlineWidth)
             } else {
                 shape.strokeBorder(
-                    theme.accessibility.increaseContrast
-                        ? theme.color(.ink3)
-                        : theme.color(.ink1).opacity(ComponentMetrics.setupOutline(theme.look)),
-                    lineWidth: ComponentMetrics.hairline)
+                    theme.borderColor(.ink1, opacity: ComponentMetrics.setupOutline(theme.look)),
+                    lineWidth: theme.a11y.hairlineWidth)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)

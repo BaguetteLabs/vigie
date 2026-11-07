@@ -100,9 +100,8 @@ public enum ThemeResolver {
         if look == .dark, colors[.quotaWarningText] == nil, let warning = colors[.quotaWarning] {
             colors[.quotaWarningText] = warning
         }
-        for (role, color) in colors {
-            colors[role] = accessibility.adjust(color, role: role, look: look)
-        }
+        // Accessibility last, once (AD-14): only lightness moves, so user hues survive.
+        colors = accessibility.apply(to: colors, look: look)
 
         var typographyRaw = skin.typography
         if let layer { typographyRaw.merge(layer.typography) { _, new in new } }

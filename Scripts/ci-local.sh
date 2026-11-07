@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Local dry run of .github/workflows/ci.yml: lint, package tests, theme regen diff, view literals,
+# Local dry run of .github/workflows/ci.yml: lint, package tests, theme regen diff, view literals, contrast,
 # xcodegen + xcodebuild, locale check.
 set -euo pipefail
 
@@ -21,6 +21,9 @@ Scripts/theme-regen-check.sh
 
 echo "==> view literals"
 Scripts/check-view-literals.sh
+
+echo "==> contrast check"
+Scripts/check-contrast.sh --quiet
 
 echo "==> spi-host guard"
 Scripts/check-spi-host.sh

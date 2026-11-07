@@ -74,7 +74,7 @@ public struct ScrollFadeList<Content: View>: View {
                     .accessibilityHidden(true)
             }
         }
-        .animation(theme.enterAnimation, value: metrics.hasMoreBelow)
+        .animation(theme.animation(.enter), value: metrics.hasMoreBelow)
     }
 
     private var fadeMask: some View {

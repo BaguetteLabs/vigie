@@ -87,6 +87,10 @@ jobs:
         id: view-literals
         run: Scripts/check-view-literals.sh
 
+      - name: contrast-check
+        id: contrast-check
+        run: Scripts/check-contrast.sh --quiet
+
       - name: spi-host-guard
         id: spi-host-guard
         run: Scripts/check-spi-host.sh

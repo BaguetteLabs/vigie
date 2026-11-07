@@ -26,7 +26,7 @@ public struct IslandView: View {
     }
 
     private var ornaments: IslandOrnaments {
-        IslandOrnaments(presence: theme.presence, isHovered: isHovered)
+        IslandOrnaments(presence: theme.presence, isHovered: isHovered, motionEnabled: theme.a11y.motionEnabled)
     }
 
     public var body: some View {
@@ -45,7 +45,7 @@ public struct IslandView: View {
         .clipShape(shape)
         .contentShape(shape)
         .onHover { hovering in
-            withAnimation(.easeOut(duration: theme.motionSeconds(.enter))) {
+            withAnimation(theme.animation(.enter)) {
                 isHovered = hovering
             }
             if hovering && ornaments.shimmerEnabled { hoverPasses += 1 }
@@ -155,11 +155,18 @@ struct IslandIrisGradient: View {
             }
             .offset(x: phase ? -length : 0)
         }
-        .onAppear {
-            guard slides else { return }
-            withAnimation(.linear(duration: theme.motionSeconds(.ambientLoop)).repeatForever(autoreverses: false)) {
-                phase = true
-            }
+        .onAppear(perform: start)
+        .onChange(of: slides) { start() }
+    }
+
+    /// Starts the slide, or parks the gradient when sliding stops (Calm, Reduce motion), live.
+    private func start() {
+        var still = Transaction()
+        still.disablesAnimations = true
+        withTransaction(still) { phase = false }
+        guard slides else { return }
+        withAnimation(.linear(duration: theme.motionSeconds(.ambientLoop)).repeatForever(autoreverses: false)) {
+            phase = true
         }
     }
 }

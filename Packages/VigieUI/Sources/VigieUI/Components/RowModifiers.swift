@@ -9,7 +9,7 @@ extension View {
 
     /// The keyboard selection ring (UX-DR40, `components.selection-ring`): 1px `ink-1` at 55% (platinum in
     /// dark, graphite in light), plus a faint 3px iris halo in dark Chrome Hologram. It stacks on top of
-    /// any alert tint. 2px under Increase contrast.
+    /// any alert tint. 2px with the halo dropped under Increase contrast (`theme.a11y`).
     public func keyboardSelectionRing(isSelected: Bool) -> some View {
         modifier(KeyboardSelectionRing(isSelected: isSelected))
     }
@@ -29,7 +29,7 @@ struct RowHoverBrighten: ViewModifier {
             }
             .contentShape(shape)
             .onHover { hovering in
-                withAnimation(theme.enterAnimation) { isHovered = hovering }
+                withAnimation(theme.animation(.enter)) { isHovered = hovering }
             }
     }
 
@@ -49,13 +49,14 @@ struct KeyboardSelectionRing: ViewModifier {
         content.overlay {
             if isSelected {
                 ZStack {
-                    if !theme.isLight && !theme.usesCornerMarks {
+                    if theme.a11y.haloEnabled && !theme.isLight && !theme.usesCornerMarks {
                         shape.stroke(
                             theme.color(.iris1).opacity(ComponentMetrics.selectionHalo),
                             lineWidth: ComponentMetrics.selectionHaloWidth * 2)
                     }
                     shape.strokeBorder(
-                        theme.color(.ink1).opacity(ComponentMetrics.selectionRing), lineWidth: theme.ringWidth)
+                        theme.color(.ink1).opacity(ComponentMetrics.selectionRing), lineWidth: theme.a11y.focusRingWidth
+                    )
                 }
                 .allowsHitTesting(false)
             }

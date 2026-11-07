@@ -4,7 +4,8 @@ import SwiftUI
 /// shortcut right. Chrome Hologram: pill, 1px platinum border at 22% and a faint glass gradient; secondary
 /// has no fill and a dimmer border; light looks fill white → panel with a 1px shadow. Twin Metal Tactical:
 /// square, 1px struct inner border at 30%; primary adds a gold frame, gold text and a gold gradient.
-/// Keyboard focus draws a ring in `iris-1`. Its accessibility label includes the shortcut.
+/// Keyboard focus draws a 1px ring in `iris-1` (2px under Increase contrast); borders turn solid `ink-3` and
+/// glass gradients flat `surface-card` under Increase contrast / Reduce transparency (`theme.a11y`). Its accessibility label includes the shortcut.
 public struct ActionButton: View {
     public enum Role: Sendable, Equatable {
         case primary
@@ -81,21 +82,21 @@ private struct ActionButtonBody: View {
         .frame(height: height)
         .background(fill, in: shape)
         .overlay {
-            shape.strokeBorder(borderColor, lineWidth: theme.ringWidth)
+            shape.strokeBorder(borderColor, lineWidth: theme.a11y.hairlineWidth)
         }
         .overlay {
             if theme.usesCornerMarks && role == .primary {
                 CornerMarks()
-                    .stroke(theme.color(.gold), lineWidth: ComponentMetrics.hairline)
+                    .stroke(theme.color(.gold), lineWidth: theme.a11y.hairlineWidth)
             }
         }
         .overlay {
             if isFocused {
-                shape.strokeBorder(theme.color(.iris1), lineWidth: theme.ringWidth + ComponentMetrics.hairline)
+                shape.strokeBorder(theme.color(.iris1), lineWidth: theme.a11y.focusRingWidth)
             }
         }
         .shadow(
-            color: theme.isLight && !theme.usesCornerMarks && role == .primary
+            color: theme.isLight && !theme.usesCornerMarks && role == .primary && !theme.a11y.flatSurfaces
                 ? theme.color(.shadow).opacity(ComponentMetrics.actionBorderSecondary) : .clear,
             radius: 0, y: ComponentMetrics.hairline
         )
@@ -108,37 +109,36 @@ private struct ActionButtonBody: View {
     }
 
     private var borderColor: Color {
-        if theme.accessibility.increaseContrast { return theme.color(.ink3) }
         if theme.usesCornerMarks {
-            return theme.color(.structure).opacity(ComponentMetrics.structBorder)
+            return theme.borderColor(.structure, opacity: ComponentMetrics.structBorder)
         }
         let opacity = role == .primary ? ComponentMetrics.actionBorderPrimary : ComponentMetrics.actionBorderSecondary
-        return theme.color(.ink1).opacity(opacity)
+        return theme.borderColor(.ink1, opacity: opacity)
     }
 
     private var fill: AnyShapeStyle {
         if role == .secondary { return AnyShapeStyle(Color.clear) }
-        if theme.accessibility.reduceTransparency { return AnyShapeStyle(theme.color(.surfaceCard)) }
+        // Reduce transparency / Increase contrast: every glass gradient becomes flat `surface-card`.
         if theme.usesCornerMarks {
-            return AnyShapeStyle(
+            return theme.glassFill(
                 LinearGradient(
                     colors: [
                         theme.color(.gold).opacity(ComponentMetrics.goldTop),
                         theme.color(.gold).opacity(ComponentMetrics.goldBottom),
-                    ], startPoint: .top, endPoint: .bottom))
+                    ], startPoint: .top, endPoint: .bottom), flat: .surfaceCard)
         }
         if theme.isLight {
-            return AnyShapeStyle(
+            return theme.glassFill(
                 LinearGradient(
                     colors: [theme.color(.surfaceCard), theme.color(.surfacePanel)],
-                    startPoint: .top, endPoint: .bottom))
+                    startPoint: .top, endPoint: .bottom), flat: .surfaceCard)
         }
-        return AnyShapeStyle(
+        return theme.glassFill(
             LinearGradient(
                 colors: [
                     theme.color(.ink1).opacity(ComponentMetrics.glassTop),
                     theme.color(.ink1).opacity(ComponentMetrics.glassBottom),
-                ], startPoint: .top, endPoint: .bottom))
+                ], startPoint: .top, endPoint: .bottom), flat: .surfaceCard)
     }
 }
 
@@ -179,9 +179,8 @@ public struct InlineChip: View {
             .background(theme.color(role).opacity(ComponentMetrics.chipFill), in: shape)
             .overlay {
                 shape.strokeBorder(
-                    theme.accessibility.increaseContrast
-                        ? theme.color(.ink3) : theme.color(role).opacity(ComponentMetrics.chipBorder),
-                    lineWidth: ComponentMetrics.hairline)
+                    theme.borderColor(role, opacity: ComponentMetrics.chipBorder),
+                    lineWidth: theme.a11y.hairlineWidth)
             }
     }
 }

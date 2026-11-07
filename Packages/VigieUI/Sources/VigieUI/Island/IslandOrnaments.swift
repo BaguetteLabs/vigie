@@ -8,17 +8,22 @@ import CoreGraphics
 public struct IslandOrnaments: Sendable, Equatable {
     public var presence: PresenceLevel
     public var isHovered: Bool
+    /// False under macOS Reduce motion (`theme.a11y.motionEnabled`): every loop and shimmer stops, the rim is
+    /// static (UX-DR96). Independent of presence: Reduce motion forcing Calm is Story 18.3.
+    public var motionEnabled: Bool
 
-    public init(presence: PresenceLevel, isHovered: Bool = false) {
+    public init(presence: PresenceLevel, isHovered: Bool = false, motionEnabled: Bool = true) {
         self.presence = presence
         self.isHovered = isHovered
+        self.motionEnabled = motionEnabled
     }
 
-    /// Full presence: the rim is the moving iris gradient. Calm: a flat platinum (`ink-1`) line.
+    /// Full presence: the rim is the iris gradient (moving, or static under Reduce motion). Calm: a flat
+    /// platinum (`ink-1`) line.
     public var rimUsesIris: Bool { presence == .full }
 
-    /// The rim gradient slides along the edge on `ambient-loop` (full presence only).
-    public var rimSlides: Bool { presence == .full }
+    /// The rim gradient slides along the edge on `ambient-loop` (full presence with motion only).
+    public var rimSlides: Bool { loops }
 
     /// Rim opacity: full strength on hover (UX-DR15); static and dimmer at calm (UX-DR42).
     public var rimOpacity: Double {
@@ -28,8 +33,9 @@ public struct IslandOrnaments: Sendable, Equatable {
         }
     }
 
-    /// The interior shimmer crosses the island every `ambient-loop`, and once more on hover (full only).
-    public var shimmerEnabled: Bool { presence == .full }
+    /// The interior shimmer crosses the island every `ambient-loop`, and once more on hover (full presence
+    /// with motion only).
+    public var shimmerEnabled: Bool { loops }
 
     /// Opacity of the soft `iris-2` glow rising from the island bottom; it lifts on hover. None at calm.
     public var interiorGlowOpacity: Double {
@@ -39,8 +45,8 @@ public struct IslandOrnaments: Sendable, Equatable {
         }
     }
 
-    /// Any looping animation runs (false at calm, which Reduce motion forces).
-    public var loops: Bool { presence == .full }
+    /// Any looping animation runs: false at calm and under Reduce motion.
+    public var loops: Bool { presence == .full && motionEnabled }
 
     /// Rim thickness, drawn inside the outline along the sides and bottom.
     public static let rimWidth: CGFloat = 1

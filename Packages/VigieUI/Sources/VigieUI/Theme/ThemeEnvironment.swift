@@ -2,6 +2,24 @@ import AppKit
 import Observation
 import SwiftUI
 
+/// Reads the macOS accessibility display settings. Injectable so tests drive the flags (Story 2.15).
+@MainActor public protocol AccessibilitySettingsProvider: AnyObject {
+    func currentAdjustments() -> AccessibilityAdjustments
+}
+
+/// The live macOS settings from `NSWorkspace` (Increase contrast, Reduce transparency, Reduce motion).
+@MainActor public final class SystemAccessibilitySettings: AccessibilitySettingsProvider {
+    public init() {}
+
+    public func currentAdjustments() -> AccessibilityAdjustments {
+        let workspace = NSWorkspace.shared
+        return AccessibilityAdjustments(
+            increaseContrast: workspace.accessibilityDisplayShouldIncreaseContrast,
+            reduceTransparency: workspace.accessibilityDisplayShouldReduceTransparency,
+            reduceMotion: workspace.accessibilityDisplayShouldReduceMotion)
+    }
+}
+
 /// Holds the active theme for the app (AD-14). Owned by the host and injected into views with
 /// ``SwiftUICore/View/vigieTheme(_:)``; views read it with `@Environment(\.vigieTheme)`.
 ///
@@ -25,6 +43,7 @@ import SwiftUI
     public private(set) var problems: [ThemeProblem]
 
     @ObservationIgnored private var observers = ObserverBag()
+    @ObservationIgnored private let accessibilityProvider: any AccessibilitySettingsProvider
 
     public init(
         library: ThemeLibrary,
@@ -33,8 +52,10 @@ import SwiftUI
         presence: PresenceLevel = .full,
         overrides: ColorOverrides = .none,
         systemIsDark: Bool = false,
-        accessibility: AccessibilityAdjustments = .none
+        accessibility: AccessibilityAdjustments = .none,
+        accessibilityProvider: (any AccessibilitySettingsProvider)? = nil
     ) {
+        self.accessibilityProvider = accessibilityProvider ?? SystemAccessibilitySettings()
         self.library = library
         self.variantID = variantID
         self.mode = mode
@@ -72,6 +93,12 @@ import SwiftUI
         guard isDark != systemIsDark else { return }
         systemIsDark = isDark
         resolve()
+    }
+
+    /// Re-reads the accessibility flags from the provider and re-resolves both themes when any of the
+    /// three changed. Called on `accessibilityDisplayOptionsDidChangeNotification` while observing.
+    public func refreshAccessibility() {
+        updateAccessibility(accessibilityProvider.currentAdjustments())
     }
 
     /// Records a macOS accessibility display settings change.
@@ -114,13 +141,7 @@ import SwiftUI
 
     private func readSystem() {
         updateSystemAppearance(isDark: Self.currentSystemIsDark())
-        let workspace = NSWorkspace.shared
-        updateAccessibility(
-            AccessibilityAdjustments(
-                increaseContrast: workspace.accessibilityDisplayShouldIncreaseContrast,
-                reduceTransparency: workspace.accessibilityDisplayShouldReduceTransparency,
-                reduceMotion: workspace.accessibilityDisplayShouldReduceMotion
-            ))
+        refreshAccessibility()
     }
 
     /// Reads the macOS appearance: the app's effective appearance when running, else the global default.

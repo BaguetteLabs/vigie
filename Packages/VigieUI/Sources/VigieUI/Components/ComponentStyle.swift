@@ -64,17 +64,6 @@ extension Theme {
     /// Twin Metal Tactical frames (square, struct corner marks); Chrome Hologram uses hairlines and iris.
     var usesCornerMarks: Bool { defines(.structure) }
 
-    /// True when animations should be removed (macOS Reduce motion).
-    var reducesMotion: Bool { accessibility.reduceMotion }
-
-    /// True when loops (card filament) must stop: Calm presence or Reduce motion.
-    var stopsLoops: Bool { presence == .calm || accessibility.reduceMotion }
-
-    /// The `enter` transition, or none under Reduce motion.
-    var enterAnimation: Animation? {
-        reducesMotion ? nil : .easeOut(duration: motionSeconds(.enter))
-    }
-
     /// Action button and chip corner radius: `rounded.action` where the variant sets it (C: 0), else the
     /// A pill (`rounded.full`), clamped to half the height.
     func actionRadius(height: CGFloat) -> CGFloat {
@@ -104,9 +93,6 @@ extension Theme {
 
     /// The neutral accent: iris in A, gold text in C.
     var accentRole: ColorRole { usesCornerMarks ? .goldText : .iris1 }
-
-    /// Increase contrast: borders solid `ink-3`, focus ring 2px (EXPERIENCE "Accessibility Floor").
-    var ringWidth: CGFloat { accessibility.increaseContrast ? 2 : ComponentMetrics.hairline }
 }
 
 /// C inner corner marks: four L-shaped 7px marks drawn inside the frame.

@@ -3,7 +3,7 @@ import SwiftUI
 /// The shared card frame (DESIGN "Widget card", UX-DR28): an 11px header row with the title (card-title,
 /// uppercase) on the left and meta in `ink-3` on the right, over `surface-card` with `rounded.card`.
 /// Chrome Hologram draws a 1px iris filament along the top edge (45% dark, 80% light) that drifts every
-/// `motion.card-iris`, static in Calm presence or under Reduce motion; Twin Metal Tactical draws four 7px
+/// `motion.card-iris`, static in Calm presence or under Reduce motion (`theme.loopsEnabled`), live when either flips; Twin Metal Tactical draws four 7px
 /// inner corner marks in `struct` at 38%. Tab bodies reuse the same frame.
 public struct WidgetCard<Content: View>: View {
     @Environment(\.vigieTheme) private var theme
@@ -44,12 +44,12 @@ public struct WidgetCard<Content: View>: View {
             if theme.usesCornerMarks {
                 CornerMarks()
                     .stroke(
-                        theme.color(.structure).opacity(ComponentMetrics.cornerMarkOpacity),
-                        lineWidth: ComponentMetrics.hairline)
+                        theme.borderColor(.structure, opacity: ComponentMetrics.cornerMarkOpacity),
+                        lineWidth: theme.a11y.hairlineWidth)
             } else {
                 shape.strokeBorder(
-                    theme.color(.ink1).opacity(ComponentMetrics.cardHairline(theme.look)),
-                    lineWidth: ComponentMetrics.hairline)
+                    theme.borderColor(.ink1, opacity: ComponentMetrics.cardHairline(theme.look)),
+                    lineWidth: theme.a11y.hairlineWidth)
             }
         }
         .clipShape(shape)
@@ -94,21 +94,20 @@ struct IrisFilament: View {
                 .offset(x: -width * phase)
         }
         .frame(height: ComponentMetrics.hairline)
-        .opacity(ComponentMetrics.filamentOpacity(theme.look))
+        // Increase contrast: decorative elements reach 3:1 (the resolver floors `filament-*`); full strength.
+        .opacity(theme.a11y.solidHairlines ? 1 : ComponentMetrics.filamentOpacity(theme.look))
         .accessibilityHidden(true)
         .onAppear(perform: start)
-        .onChange(of: theme.stopsLoops) { start() }
+        .onChange(of: theme.loopsEnabled) { start() }
     }
 
     private func start() {
-        guard !theme.stopsLoops else {
-            phase = 0
-            return
-        }
-        phase = 0
-        withAnimation(.linear(duration: theme.motionSeconds(.cardIris)).repeatForever(autoreverses: false)) {
-            phase = 1
-        }
+        // Stop any running loop first: a transaction without animation replaces the repeating one.
+        var still = Transaction()
+        still.disablesAnimations = true
+        withTransaction(still) { phase = 0 }
+        guard let loop = theme.loopAnimation(.cardIris) else { return }
+        withAnimation(loop) { phase = 1 }
     }
 }
 

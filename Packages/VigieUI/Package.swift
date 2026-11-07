@@ -8,6 +8,7 @@ let package = Package(
     products: [
         .library(name: "VigieUI", targets: ["VigieUI"]),
         .executable(name: "themegen", targets: ["themegen"]),
+        .executable(name: "contrastcheck", targets: ["contrastcheck"]),
     ],
     dependencies: [
         .package(path: "../ModuleKit"),
@@ -39,6 +40,11 @@ let package = Package(
         .executableTarget(
             name: "themegen",
             dependencies: ["ThemeGenKit"]
+        ),
+        // Story 2.15: CI contrast check of the DESIGN contrast pairs (`Scripts/check-contrast.sh`).
+        .executableTarget(
+            name: "contrastcheck",
+            dependencies: ["VigieUI"]
         ),
         .testTarget(
             name: "VigieUITests",
