@@ -1,0 +1,78 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "generic.adapter.name" : {
+      "comment" : "Name of the fallback terminal adapter that activates the terminal app without selecting a tab.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminal app"
+          }
+        }
+      }
+    },
+    "generic.app.ghostty" : {
+      "comment" : "Ghostty app name (Agents terminal column).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ghostty"
+          }
+        }
+      }
+    },
+    "generic.app.iterm" : {
+      "comment" : "iTerm2 app name (Agents terminal column).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iTerm2"
+          }
+        }
+      }
+    },
+    "generic.app.terminal" : {
+      "comment" : "Apple Terminal app name (Agents terminal column).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminal"
+          }
+        }
+      }
+    },
+    "generic.app.vscode" : {
+      "comment" : "Visual Studio Code app name (Agents terminal column).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "VS Code"
+          }
+        }
+      }
+    },
+    "generic.app.warp" : {
+      "comment" : "Warp app name (Agents terminal column).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Warp"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

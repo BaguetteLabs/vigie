@@ -79,9 +79,14 @@ public final class AgentsSessionsModule: NotchModule {
     public private(set) var state: ModuleState = .hidden
 
     public let adapters: AgentAdapters
+    /// Terminal adapters plus the fallback (App assembly passes `GenericTerminalAdapter`, A16).
     public let terminals: TerminalAdapters
     /// Per-adapter contexts built by App assembly (AD-19), for adapter calls that need services.
     public let adapterContexts: [AgentID: any AdapterContext]
+    /// Per-terminal-adapter contexts; a terminal without one gets a context built from this module's services.
+    public let terminalContexts: [TerminalID: any AdapterContext]
+    /// Opens a Settings pane by id (the `NO AGENT CONNECTED` button goes to Settings › Agents); nil hides it.
+    @ObservationIgnored public let openSettings: (@MainActor @Sendable (String) -> Void)?
 
     /// The session table. Only its reducer writes statuses (AD-5).
     public let store = SessionStore()
@@ -92,6 +97,9 @@ public final class AgentsSessionsModule: NotchModule {
     public private(set) var displaySessions: [Session] = []
     /// Display status per session key: the stored status, or `.stale` (FR36).
     public private(set) var displayStatuses: [SessionKey: SessionStatus] = [:]
+    /// Sessions whose agent process the last liveness pass found dead. Only failed sessions stay listed with a
+    /// dead process (FR36); those can be dismissed from the Agents tab.
+    public private(set) var endedProcesses: Set<SessionKey> = []
 
     /// Checks agent processes (pid + start time).
     public let liveness: any ProcessLiveness
@@ -105,18 +113,25 @@ public final class AgentsSessionsModule: NotchModule {
     @ObservationIgnored private var settings: (any ModuleSettings)?
     @ObservationIgnored var ignoredKeys = IgnoredKeys()
     @ObservationIgnored private var persister: SessionPersister?
-    @ObservationIgnored private var log: Logger?
+    @ObservationIgnored var log: Logger?
+    @ObservationIgnored var activity: (any ActivityLog)?
+    /// Built at start from the module context, for terminal adapters without their own context.
+    @ObservationIgnored var fallbackTerminalContext: (any AdapterContext)?
 
     public init(
         adapters: AgentAdapters,
         terminals: TerminalAdapters,
         contexts: [AgentID: any AdapterContext] = [:],
+        terminalContexts: [TerminalID: any AdapterContext] = [:],
         liveness: any ProcessLiveness = SystemProcessLiveness(),
-        homeDirectory: URL = FileManager.default.homeDirectoryForCurrentUser
+        homeDirectory: URL = FileManager.default.homeDirectoryForCurrentUser,
+        openSettings: (@MainActor @Sendable (String) -> Void)? = nil
     ) {
         self.adapters = adapters
         self.terminals = terminals
         self.adapterContexts = contexts
+        self.terminalContexts = terminalContexts
+        self.openSettings = openSettings
         self.liveness = liveness
         self.homeDirectory = homeDirectory
     }
@@ -125,6 +140,10 @@ public final class AgentsSessionsModule: NotchModule {
         let log = context.log
         self.log = log
         settings = context.settings
+        activity = context.activity
+        fallbackTerminalContext = AdapterContextBox(
+            settings: DefaultsReadOnlySettings(descriptors: []), secrets: context.secrets,
+            executables: context.executables, http: URLSessionHTTPClient(), log: log)
         let persister = SessionPersister(storage: context.storage, log: log)
         self.persister = persister
 
@@ -242,11 +261,6 @@ public final class AgentsSessionsModule: NotchModule {
         }
     }
 
-    // TODO(4.10): the Agents tab list replaces this placeholder.
-    public func expandedView() -> AnyView? {
-        AnyView(EmptyStateBlock(VigieCopy.noActiveSessions))
-    }
-
     /// Removes a failed session now (the Agents tab dismiss, Story 4.10). Other statuses are never dismissed
     /// (SPEC §7.1: dismissing does not change state). Returns true when a session was removed.
     @discardableResult
@@ -320,6 +334,8 @@ public final class AgentsSessionsModule: NotchModule {
     @discardableResult
     func reconcile(now: Date, dead: [SessionKey: AgentProcessRef]) -> (sessions: [Session], generation: Int)? {
         var removed = store.reconcile(now: now) { key, process in dead[key] == process }
+        let ended = Set(dead.keys.filter { store.table[$0]?.agentProcess == dead[$0] })
+        if ended != endedProcesses { endedProcesses = ended }
         let ignored = ignoredPaths
         if !ignored.isEmpty {
             let keys = store.table.values.filter { ignored.contains($0.cwd) }.map(\.key)

@@ -1008,6 +1008,138 @@
           }
         }
       }
+    },
+    "sessions.header" : {
+      "comment" : "Agents tab card title with the session count, no alert (FR39).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SESSIONS · %lld"
+          }
+        }
+      }
+    },
+    "sessions.header.oneAlert" : {
+      "comment" : "Agents tab card title with the session count and one alert.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SESSIONS · %lld · 1 ALERT"
+          }
+        }
+      }
+    },
+    "sessions.header.alerts" : {
+      "comment" : "Agents tab card title: session count, then the number of blocked and failed sessions.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SESSIONS · %1$lld · %2$lld ALERTS"
+          }
+        }
+      }
+    },
+    "sessions.hints" : {
+      "comment" : "Agents tab keyboard hints in the card header.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "↑↓ SELECT · ↵ FOCUS · ⌘1–9 TABS · ESC"
+          }
+        }
+      }
+    },
+    "sessions.sorted" : {
+      "comment" : "Agents tab card meta: the rows are sorted by urgency.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SORTED BY URGENCY"
+          }
+        }
+      }
+    },
+    "sessions.column.agent" : {
+      "comment" : "Agents tab column header.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AGENT"
+          }
+        }
+      }
+    },
+    "sessions.column.project" : {
+      "comment" : "Agents tab column header: project with the last action below.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PROJECT · LAST ACTION"
+          }
+        }
+      }
+    },
+    "sessions.column.terminal" : {
+      "comment" : "Agents tab column header: terminal app (shown only with several terminal apps).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TERMINAL"
+          }
+        }
+      }
+    },
+    "sessions.column.status" : {
+      "comment" : "Agents tab column header: status and time in status.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "STATUS · T+"
+          }
+        }
+      }
+    },
+    "sessions.action.focus" : {
+      "comment" : "Row chip: brings the session's terminal forward.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "FOCUS"
+          }
+        }
+      }
+    },
+    "sessions.action.dismiss" : {
+      "comment" : "Row chip on a failed session whose process ended: removes it from the list.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DISMISS"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"
