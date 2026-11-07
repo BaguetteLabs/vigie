@@ -27,6 +27,13 @@ public struct AlertHistoryEntry: Hashable, Sendable {
         case reminded(Set<AlertOutput>)
         /// The reminder came due inside quiet hours and was not replayed.
         case reminderSuppressed
+        /// Activated during a Focus mode (Story 3.5): peek and sound withheld, the other outputs (`system`)
+        /// delivered. The alert is active like a delivered one.
+        case suppressedByFocus(delivered: Set<AlertOutput>)
+        /// The reminder came due during a Focus mode and was not replayed.
+        case reminderSuppressedByFocus
+        /// `after_focus = "replay"`: shown when the Focus mode ended.
+        case replayedAfterFocus(Set<AlertOutput>)
         case resolved
     }
 
@@ -42,6 +49,14 @@ public struct AlertHistoryEntry: Hashable, Sendable {
 ///
 /// Order of checks in `post`: declared kind, mute, `min_severity`, quiet hours, rule conditions, cooldown per
 /// `dedupe_key`, outputs. Every drop is logged at debug level with its reason (kind only, never title or body).
+///
+/// Focus modes (FR17, Story 3.5): while `focus` reports a Focus (Do Not Disturb included), an alert that passes
+/// the rules is still activated (it is in `active`, its module's closed-notch state and tab update, the
+/// activity log records it) but its peek and sound are withheld; reminders falling inside the Focus are
+/// suppressed, not deferred. `system` notifications are delivered as usual: macOS applies the Focus to them
+/// itself and the user may allow Vigie in a given Focus. There is no bypass (UX-DR55). When the Focus ends,
+/// `[notify] after_focus` decides: `drop` (default, A21) shows nothing; `replay` shows, for each module, the
+/// latest suppressed alert still unresolved, as a normal peek with its normal sound.
 @MainActor @Observable
 public final class AlertCenter {
     /// Delivered and not yet resolved, oldest first.
@@ -59,6 +74,8 @@ public final class AlertCenter {
     @ObservationIgnored private let now: @Sendable () -> Date
     @ObservationIgnored private let calendar: @Sendable () -> Calendar
     @ObservationIgnored private let sinks: AlertSinks
+    @ObservationIgnored private let focus: any FocusModeMonitor
+    @ObservationIgnored private let activity: (any ActivityLog)?
     @ObservationIgnored private let log: Logger
 
     private struct RuleKey: Hashable {
@@ -79,18 +96,28 @@ public final class AlertCenter {
     @ObservationIgnored private var peekTokens: [UUID: PeekToken] = [:]
     @ObservationIgnored private var reminders: [UUID: Task<Void, Never>] = [:]
     @ObservationIgnored private let lifetime = TaskLifetime()
+    @ObservationIgnored private let focusLifetime = TaskLifetime()
+    /// Alerts whose peek and sound a Focus withheld, in activation order; cleared when the Focus ends.
+    @ObservationIgnored private var focusSuppressed: [UUID] = []
+
+    /// The Focus state as this center last saw it (from `focus.changes`).
+    public private(set) var isFocusActive: Bool
 
     /// - Parameters:
     ///   - rules: global `[notify]` and per-kind rules; `changes` clears the resolved-rule cache.
     ///   - clock: drives reminders.
     ///   - now: wall time for quiet hours, cooldowns and timestamps.
     ///   - calendar: the calendar and time zone quiet hours are read in.
+    ///   - focus: macOS Focus / Do Not Disturb state (`SystemFocusModeMonitor` in the App).
+    ///   - activity: where every history entry is also recorded (the activity log, Story 3.8); nil for none.
     public init(
         rules: any NotifyRulesProvider,
         clock: any Clock<Duration> = ContinuousClock(),
         now: @escaping @Sendable () -> Date = { Date() },
         calendar: @escaping @Sendable () -> Calendar = { Calendar.autoupdatingCurrent },
         sinks: AlertSinks = AlertSinks(),
+        focus: any FocusModeMonitor = ManualFocusModeMonitor(),
+        activity: (any ActivityLog)? = nil,
         historyLimit: Int = 200,
         log: Logger = Logger(subsystem: "fr.baguettelabs.vigie", category: "notifier")
     ) {
@@ -99,8 +126,18 @@ public final class AlertCenter {
         self.now = now
         self.calendar = calendar
         self.sinks = sinks
+        self.focus = focus
+        self.activity = activity
+        self.isFocusActive = focus.isActive
         self.historyLimit = historyLimit
         self.log = log
+        let focusChanges = focus.changes
+        focusLifetime.set(
+            Task { @MainActor [weak self] in
+                for await active in focusChanges {
+                    self?.focusChanged(active)
+                }
+            })
         let changes = rules.changes
         lifetime.set(
             Task { @MainActor [weak self] in
@@ -110,7 +147,10 @@ public final class AlertCenter {
             })
     }
 
-    deinit { lifetime.cancel() }
+    deinit {
+        lifetime.cancel()
+        focusLifetime.cancel()
+    }
 
     // MARK: Notifier
 
@@ -164,8 +204,16 @@ public final class AlertCenter {
         lastDelivered[cooldownKey] = timestamp
         let alert = ActiveAlert(id: id, module: module, event: event, outputs: outputs, postedAt: timestamp)
         active.append(alert)
-        deliver(alert, to: outputs)
-        record(alert, .delivered(outputs), at: timestamp)
+        if isFocusActive, !outputs.isDisjoint(with: Self.focusWithheld) {
+            let remaining = outputs.subtracting(Self.focusWithheld)
+            focusSuppressed.append(id)
+            deliver(alert, to: remaining)
+            log.debug("Alert \(event.kind, privacy: .public): peek and sound withheld by Focus")
+            record(alert, .suppressedByFocus(delivered: remaining), at: timestamp)
+        } else {
+            deliver(alert, to: outputs)
+            record(alert, .delivered(outputs), at: timestamp)
+        }
         if let reminder = rule.reminder, reminder > .zero {
             scheduleReminder(for: id, after: reminder)
         }
@@ -178,6 +226,7 @@ public final class AlertCenter {
     public func resolve(_ id: UUID) {
         guard let index = active.firstIndex(where: { $0.id == id }) else { return }
         let alert = active.remove(at: index)
+        focusSuppressed.removeAll { $0 == id }
         reminders.removeValue(forKey: id)?.cancel()
         if let token = peekTokens.removeValue(forKey: id) {
             sinks.peek.retract(token)
@@ -235,7 +284,8 @@ public final class AlertCenter {
         appendHistory(
             AlertHistoryEntry(
                 alertID: id, module: module, kind: event.kind, severity: event.severity, outcome: .dropped(reason),
-                at: timestamp))
+                at: timestamp),
+            dedupeKey: event.dedupeKey)
         return AlertHandle(id: id) {}
     }
 
@@ -272,6 +322,11 @@ public final class AlertCenter {
             record(alert, .reminderSuppressed, at: timestamp)
             return
         }
+        if isFocusActive {
+            log.debug("Reminder for \(alert.kind, privacy: .public) suppressed by Focus")
+            record(alert, .reminderSuppressedByFocus, at: timestamp)
+            return
+        }
         alert.isReminder = true
         active[index] = alert
         let replay = alert.outputs.intersection([.peek, .sound])
@@ -279,14 +334,54 @@ public final class AlertCenter {
         record(alert, .reminded(replay), at: timestamp)
     }
 
+    // MARK: Focus
+
+    /// The outputs a Focus withholds (FR17).
+    static let focusWithheld: Set<AlertOutput> = [.peek, .sound]
+
+    private func focusChanged(_ active: Bool) {
+        guard active != isFocusActive else { return }
+        isFocusActive = active
+        guard !active else { return }
+        let suppressed = focusSuppressed
+        focusSuppressed = []
+        guard rules.global.afterFocus == .replay else { return }
+        replayAfterFocus(suppressed)
+    }
+
+    /// Shows the latest still-unresolved suppressed alert of each module, oldest first, through the normal
+    /// outputs (one sound per peek when the rule has sound). Nothing is shown inside quiet hours.
+    private func replayAfterFocus(_ suppressed: [UUID]) {
+        var latest: [ModuleID: ActiveAlert] = [:]
+        for id in suppressed {
+            guard let alert = active.first(where: { $0.id == id }) else { continue }
+            latest[alert.module] = alert
+        }
+        let timestamp = now()
+        for alert in latest.values.sorted(by: { $0.postedAt < $1.postedAt }) {
+            let rule = resolvedRule(module: alert.module, kind: alert.kind)
+            if let quiet = rule.quietHours, quiet.contains(timestamp, calendar: calendar()) { continue }
+            let replay = alert.outputs.intersection(Self.focusWithheld)
+            deliver(alert, to: replay)
+            record(alert, .replayedAfterFocus(replay), at: timestamp)
+        }
+    }
+
+    // MARK: History
+
     private func record(_ alert: ActiveAlert, _ outcome: AlertHistoryEntry.Outcome, at timestamp: Date) {
         appendHistory(
             AlertHistoryEntry(
                 alertID: alert.id, module: alert.module, kind: alert.kind, severity: alert.severity, outcome: outcome,
-                at: timestamp))
+                at: timestamp),
+            dedupeKey: alert.event.dedupeKey)
     }
 
-    private func appendHistory(_ entry: AlertHistoryEntry) {
+    private func appendHistory(_ entry: AlertHistoryEntry, dedupeKey: String?) {
+        activity?.record(
+            .alert(
+                module: entry.module, kind: entry.kind, severity: entry.severity, dedupeKey: dedupeKey,
+                outcome: entry.outcome.activityOutcome, at: entry.at))
         history.append(entry)
         if history.count > historyLimit {
             history.removeFirst(history.count - historyLimit)
@@ -331,4 +426,33 @@ final class TaskLifetime: Sendable {
 
     func set(_ new: Task<Void, Never>) { task.withLock { $0 = new } }
     func cancel() { task.withLock { $0?.cancel() } }
+}
+
+extension AlertHistoryEntry.Outcome {
+    /// The activity log outcome (Story 3.8; suppression reasons as `ActivityOutcome` documents them).
+    var activityOutcome: ActivityOutcome {
+        switch self {
+        case .delivered: .posted
+        case .dropped(let reason): .suppressed(reason: reason.activityReason)
+        case .reminded: .repeated
+        case .reminderSuppressed: .suppressed(reason: "quietHours")
+        case .suppressedByFocus, .reminderSuppressedByFocus: .suppressed(reason: "dnd")
+        case .replayedAfterFocus: .shown
+        case .resolved: .resolved
+        }
+    }
+}
+
+extension DropReason {
+    var activityReason: String {
+        switch self {
+        case .undeclaredKind: "undeclaredKind"
+        case .muted: "mute"
+        case .belowMinSeverity: "minSeverity"
+        case .quietHours: "quietHours"
+        case .conditionNotMet: "condition"
+        case .cooldown: "cooldown"
+        case .noOutputs: "noOutputs"
+        }
+    }
 }

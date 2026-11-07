@@ -1,114 +1,6 @@
 {
   "sourceLanguage": "en",
   "strings": {
-    "config.general.hide_in_fullscreen": {
-      "comment": "Settings label for the config key general.hide_in_fullscreen.",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Hide in full screen"
-          }
-        }
-      }
-    },
-    "config.general.open_on_hover": {
-      "comment": "Settings label for the config key general.open_on_hover.",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Open on hover"
-          }
-        }
-      }
-    },
-    "config.general.close_on_leave": {
-      "comment": "Settings label for the config key general.close_on_leave.",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Close when the pointer leaves"
-          }
-        }
-      }
-    },
-    "config.general.hover_delay": {
-      "comment": "Settings label for the config key general.hover_delay.",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Hover delay"
-          }
-        }
-      }
-    },
-    "config.general.expand_hotkey": {
-      "comment": "Settings label for the config key general.expand_hotkey.",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Expand shortcut"
-          }
-        }
-      }
-    },
-    "config.general.prevent_idle_sleep": {
-      "comment": "Settings label for the config key general.prevent_idle_sleep.",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Prevent idle sleep while an agent works"
-          }
-        }
-      }
-    },
-    "config.general.launch_at_login": {
-      "comment": "Settings label for the config key general.launch_at_login.",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Launch at login"
-          }
-        }
-      }
-    },
-    "config.general.tab_order": {
-      "comment": "Settings label for the config key general.tab_order.",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tab order"
-          }
-        }
-      }
-    },
-    "config.appearance.theme": {
-      "comment": "Settings label for the config key appearance.theme.",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Theme"
-          }
-        }
-      }
-    },
     "config.appearance.mode": {
       "comment": "Settings label for the config key appearance.mode.",
       "extractionState": "manual",
@@ -117,6 +9,42 @@
           "stringUnit": {
             "state": "translated",
             "value": "Mode"
+          }
+        }
+      }
+    },
+    "config.appearance.mode.option.dark": {
+      "comment": "Settings option label for value \"dark\" of config key appearance.mode.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dark"
+          }
+        }
+      }
+    },
+    "config.appearance.mode.option.light": {
+      "comment": "Settings option label for value \"light\" of config key appearance.mode.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Light"
+          }
+        }
+      }
+    },
+    "config.appearance.mode.option.system": {
+      "comment": "Settings option label for value \"system\" of config key appearance.mode.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "System"
           }
         }
       }
@@ -133,242 +61,38 @@
         }
       }
     },
-    "config.sounds.enabled": {
-      "comment": "Settings label for the config key sounds.enabled.",
+    "config.appearance.presence.option.calm": {
+      "comment": "Settings option label for value \"calm\" of config key appearance.presence.",
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sounds"
+            "value": "Calm"
           }
         }
       }
     },
-    "config.sounds.blocked": {
-      "comment": "Settings label for the config key sounds.blocked.",
+    "config.appearance.presence.option.full": {
+      "comment": "Settings option label for value \"full\" of config key appearance.presence.",
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Blocked sound"
+            "value": "Full"
           }
         }
       }
     },
-    "config.sounds.failed": {
-      "comment": "Settings label for the config key sounds.failed.",
+    "config.appearance.theme": {
+      "comment": "Settings label for the config key appearance.theme.",
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Failed sound"
-          }
-        }
-      }
-    },
-    "config.sounds.done": {
-      "comment": "Settings label for the config key sounds.done.",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Done sound"
-          }
-        }
-      }
-    },
-    "config.sounds.quota_warning": {
-      "comment": "Settings label for the config key sounds.quota_warning.",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Quota warning sound"
-          }
-        }
-      }
-    },
-    "config.sounds.timer_end": {
-      "comment": "Settings label for the config key sounds.timer_end.",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Timer end sound"
-          }
-        }
-      }
-    },
-    "config.sounds.break_reminder": {
-      "comment": "Settings label for the config key sounds.break_reminder.",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Break reminder sound"
-          }
-        }
-      }
-    },
-    "config.sounds.calendar_reminder": {
-      "comment": "Settings label for the config key sounds.calendar_reminder.",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Calendar reminder sound"
-          }
-        }
-      }
-    },
-    "config.notify.quiet_hours": {
-      "comment": "Settings label for the config key notify.quiet_hours.",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Quiet hours"
-          }
-        }
-      }
-    },
-    "config.notify.after_focus": {
-      "comment": "Settings label for the config key notify.after_focus.",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "After a Focus mode ends"
-          }
-        }
-      }
-    },
-    "config.notify.min_severity": {
-      "comment": "Settings label for the config key notify.min_severity.",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Minimum severity"
-          }
-        }
-      }
-    },
-    "config.notify.cooldown": {
-      "comment": "Settings label for the config key notify.cooldown.",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cooldown"
-          }
-        }
-      }
-    },
-    "config.privacy.auto": {
-      "comment": "Settings label for the config key privacy.auto.",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Detect screen sharing"
-          }
-        }
-      }
-    },
-    "config.privacy.force": {
-      "comment": "Settings label for the config key privacy.force.",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Always private"
-          }
-        }
-      }
-    },
-    "config.home.cards": {
-      "comment": "Settings label for the config key home.cards.",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Home cards"
-          }
-        }
-      }
-    },
-    "config.sync.icloud": {
-      "comment": "Settings label for the config key sync.icloud.",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sync with iCloud"
-          }
-        }
-      }
-    },
-    "config.updates.auto_check": {
-      "comment": "Settings label for the config key updates.auto_check.",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Check for updates automatically"
-          }
-        }
-      }
-    },
-    "config.updates.check_interval": {
-      "comment": "Settings label for the config key updates.check_interval.",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Update check interval"
-          }
-        }
-      }
-    },
-    "config.updates.auto_install": {
-      "comment": "Settings label for the config key updates.auto_install.",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Install updates automatically"
-          }
-        }
-      }
-    },
-    "config.updates.channel": {
-      "comment": "Settings label for the config key updates.channel.",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Update channel"
+            "value": "Theme"
           }
         }
       }
@@ -381,18 +105,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Maximum side width"
-          }
-        }
-      }
-    },
-    "config.closed.slots": {
-      "comment": "Settings label for the config key closed.slots.",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Items per side"
           }
         }
       }
@@ -421,6 +133,18 @@
         }
       }
     },
+    "config.closed.slots": {
+      "comment": "Settings label for the config key closed.slots.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Items per side"
+          }
+        }
+      }
+    },
     "config.display.display": {
       "comment": "Settings label for the config key display.display.",
       "extractionState": "manual",
@@ -433,122 +157,122 @@
         }
       }
     },
-    "config.virtual_notch.width": {
-      "comment": "Settings label for the config key virtual_notch.width.",
+    "config.general.close_on_leave": {
+      "comment": "Settings label for the config key general.close_on_leave.",
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Virtual notch width"
+            "value": "Close when the pointer leaves"
           }
         }
       }
     },
-    "config.virtual_notch.idle": {
-      "comment": "Settings label for the config key virtual_notch.idle.",
+    "config.general.expand_hotkey": {
+      "comment": "Settings label for the config key general.expand_hotkey.",
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "When idle"
+            "value": "Expand shortcut"
           }
         }
       }
     },
-    "config.virtual_notch.position": {
-      "comment": "Settings label for the config key virtual_notch.position.",
+    "config.general.hide_in_fullscreen": {
+      "comment": "Settings label for the config key general.hide_in_fullscreen.",
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Position"
+            "value": "Hide in full screen"
           }
         }
       }
     },
-    "config.virtual_notch.placement": {
-      "comment": "Settings label for the config key virtual_notch.placement.",
+    "config.general.hover_delay": {
+      "comment": "Settings label for the config key general.hover_delay.",
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Placement"
+            "value": "Hover delay"
           }
         }
       }
     },
-    "config.virtual_notch.style": {
-      "comment": "Settings label for the config key virtual_notch.style.",
+    "config.general.launch_at_login": {
+      "comment": "Settings label for the config key general.launch_at_login.",
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Style"
+            "value": "Launch at login"
           }
         }
       }
     },
-    "config.appearance.mode.option.system": {
-      "comment": "Settings option label for value \"system\" of config key appearance.mode.",
+    "config.general.open_on_hover": {
+      "comment": "Settings label for the config key general.open_on_hover.",
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "System"
+            "value": "Open on hover"
           }
         }
       }
     },
-    "config.appearance.mode.option.light": {
-      "comment": "Settings option label for value \"light\" of config key appearance.mode.",
+    "config.general.prevent_idle_sleep": {
+      "comment": "Settings label for the config key general.prevent_idle_sleep.",
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Light"
+            "value": "Prevent idle sleep while an agent works"
           }
         }
       }
     },
-    "config.appearance.mode.option.dark": {
-      "comment": "Settings option label for value \"dark\" of config key appearance.mode.",
+    "config.general.tab_order": {
+      "comment": "Settings label for the config key general.tab_order.",
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Dark"
+            "value": "Tab order"
           }
         }
       }
     },
-    "config.appearance.presence.option.full": {
-      "comment": "Settings option label for value \"full\" of config key appearance.presence.",
+    "config.home.cards": {
+      "comment": "Settings label for the config key home.cards.",
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Full"
+            "value": "Home cards"
           }
         }
       }
     },
-    "config.appearance.presence.option.calm": {
-      "comment": "Settings option label for value \"calm\" of config key appearance.presence.",
+    "config.notify.after_focus": {
+      "comment": "Settings label for the config key notify.after_focus.",
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Calm"
+            "value": "When Focus ends"
           }
         }
       }
@@ -560,7 +284,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Drop"
+            "value": "Drop missed alerts"
           }
         }
       }
@@ -572,7 +296,43 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Replay the latest"
+            "value": "Show the latest per module"
+          }
+        }
+      }
+    },
+    "config.notify.cooldown": {
+      "comment": "Settings label for the config key notify.cooldown.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cooldown"
+          }
+        }
+      }
+    },
+    "config.notify.min_severity": {
+      "comment": "Settings label for the config key notify.min_severity.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Minimum severity"
+          }
+        }
+      }
+    },
+    "config.notify.min_severity.option.critical": {
+      "comment": "Settings option label for value \"critical\" of config key notify.min_severity.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Critical"
           }
         }
       }
@@ -601,26 +361,182 @@
         }
       }
     },
-    "config.notify.min_severity.option.critical": {
-      "comment": "Settings option label for value \"critical\" of config key notify.min_severity.",
+    "config.notify.quiet_hours": {
+      "comment": "Settings label for the config key notify.quiet_hours.",
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Critical"
+            "value": "Quiet hours"
           }
         }
       }
     },
-    "config.updates.channel.option.stable": {
-      "comment": "Settings option label for value \"stable\" of config key updates.channel.",
+    "config.privacy.auto": {
+      "comment": "Settings label for the config key privacy.auto.",
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Stable"
+            "value": "Detect screen sharing"
+          }
+        }
+      }
+    },
+    "config.privacy.force": {
+      "comment": "Settings label for the config key privacy.force.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Always private"
+          }
+        }
+      }
+    },
+    "config.sounds.blocked": {
+      "comment": "Settings label for the config key sounds.blocked.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Blocked sound"
+          }
+        }
+      }
+    },
+    "config.sounds.break_reminder": {
+      "comment": "Settings label for the config key sounds.break_reminder.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Break reminder sound"
+          }
+        }
+      }
+    },
+    "config.sounds.calendar_reminder": {
+      "comment": "Settings label for the config key sounds.calendar_reminder.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calendar reminder sound"
+          }
+        }
+      }
+    },
+    "config.sounds.done": {
+      "comment": "Settings label for the config key sounds.done.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done sound"
+          }
+        }
+      }
+    },
+    "config.sounds.enabled": {
+      "comment": "Settings label for the config key sounds.enabled.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sounds"
+          }
+        }
+      }
+    },
+    "config.sounds.failed": {
+      "comment": "Settings label for the config key sounds.failed.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Failed sound"
+          }
+        }
+      }
+    },
+    "config.sounds.quota_warning": {
+      "comment": "Settings label for the config key sounds.quota_warning.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quota warning sound"
+          }
+        }
+      }
+    },
+    "config.sounds.timer_end": {
+      "comment": "Settings label for the config key sounds.timer_end.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Timer end sound"
+          }
+        }
+      }
+    },
+    "config.sync.icloud": {
+      "comment": "Settings label for the config key sync.icloud.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sync with iCloud"
+          }
+        }
+      }
+    },
+    "config.updates.auto_check": {
+      "comment": "Settings label for the config key updates.auto_check.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check for updates automatically"
+          }
+        }
+      }
+    },
+    "config.updates.auto_install": {
+      "comment": "Settings label for the config key updates.auto_install.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Install updates automatically"
+          }
+        }
+      }
+    },
+    "config.updates.channel": {
+      "comment": "Settings label for the config key updates.channel.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Update channel"
           }
         }
       }
@@ -637,14 +553,38 @@
         }
       }
     },
-    "config.virtual_notch.idle.option.shrink": {
-      "comment": "Settings option label for value \"shrink\" of config key virtual_notch.idle.",
+    "config.updates.channel.option.stable": {
+      "comment": "Settings option label for value \"stable\" of config key updates.channel.",
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Shrink"
+            "value": "Stable"
+          }
+        }
+      }
+    },
+    "config.updates.check_interval": {
+      "comment": "Settings label for the config key updates.check_interval.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Update check interval"
+          }
+        }
+      }
+    },
+    "config.virtual_notch.idle": {
+      "comment": "Settings label for the config key virtual_notch.idle.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "When idle"
           }
         }
       }
@@ -673,6 +613,66 @@
         }
       }
     },
+    "config.virtual_notch.idle.option.shrink": {
+      "comment": "Settings option label for value \"shrink\" of config key virtual_notch.idle.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shrink"
+          }
+        }
+      }
+    },
+    "config.virtual_notch.placement": {
+      "comment": "Settings label for the config key virtual_notch.placement.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Placement"
+          }
+        }
+      }
+    },
+    "config.virtual_notch.placement.option.below": {
+      "comment": "Settings option label for value \"below\" of config key virtual_notch.placement.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Below the menu bar"
+          }
+        }
+      }
+    },
+    "config.virtual_notch.placement.option.menu_bar": {
+      "comment": "Settings option label for value \"menu_bar\" of config key virtual_notch.placement.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In the menu bar"
+          }
+        }
+      }
+    },
+    "config.virtual_notch.position": {
+      "comment": "Settings label for the config key virtual_notch.position.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Position"
+          }
+        }
+      }
+    },
     "config.virtual_notch.position.option.center": {
       "comment": "Settings option label for value \"center\" of config key virtual_notch.position.",
       "extractionState": "manual",
@@ -697,26 +697,14 @@
         }
       }
     },
-    "config.virtual_notch.placement.option.menu_bar": {
-      "comment": "Settings option label for value \"menu_bar\" of config key virtual_notch.placement.",
+    "config.virtual_notch.style": {
+      "comment": "Settings label for the config key virtual_notch.style.",
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "In the menu bar"
-          }
-        }
-      }
-    },
-    "config.virtual_notch.placement.option.below": {
-      "comment": "Settings option label for value \"below\" of config key virtual_notch.placement.",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Below the menu bar"
+            "value": "Style"
           }
         }
       }
@@ -741,6 +729,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "Menu bar"
+          }
+        }
+      }
+    },
+    "config.virtual_notch.width": {
+      "comment": "Settings label for the config key virtual_notch.width.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Virtual notch width"
           }
         }
       }

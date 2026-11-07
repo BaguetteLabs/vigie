@@ -23,19 +23,23 @@ struct AlertHarness {
     let system = RecordingSystemSink()
     let sound = RecordingSoundSink()
     let router = RecordingActionRouter()
+    let focus: ManualFocusModeMonitor
+    let activity = RecordingActivityLog()
     let center: AlertCenter
     let notifier: any Notifier
 
     init(
         global: GlobalNotifyRules = GlobalNotifyRules(), kinds: [String: NotifyRule] = [:],
-        now: Date = parisDate(12, 0)
+        now: Date = parisDate(12, 0), focusActive: Bool = false
     ) {
+        focus = ManualFocusModeMonitor(isActive: focusActive)
         rules = StaticNotifyRules(global: global, kinds: [Self.module: kinds])
         self.now = MutableNow(now)
         let nowBox = self.now
         center = AlertCenter(
             rules: rules, clock: clock, now: { nowBox.date }, calendar: { parisCalendar },
-            sinks: AlertSinks(peek: peek, system: system, sound: sound, actionRouter: router), log: testLogger)
+            sinks: AlertSinks(peek: peek, system: system, sound: sound, actionRouter: router), focus: focus,
+            activity: activity, log: testLogger)
         notifier = center.makeNotifier(
             for: ModuleManifest(
                 id: Self.module, name: "Sessions", icon: "circle",
