@@ -66,14 +66,15 @@ public protocol ModuleContextFactory {
     func makeContext(for manifest: ModuleManifest, tracker: RegistrationTracker) -> any ModuleContext
 }
 
-/// The production factory: real settings (with a `ConfigStore`), storage, scheduler, event bus and hotkeys;
-/// the shared permissions coordinator; stubs for the rest.
+/// The production factory: real settings (with a `ConfigStore`), storage, scheduler, event bus, hotkeys and
+/// notifier; the shared permissions coordinator; stubs for the rest.
 public struct CoreModuleContextFactory: ModuleContextFactory {
     public let environment: AppEnvironment
     public let eventBus: InProcessEventBus
     public let configStore: ConfigStore?
     public let permissions: PermissionsCoordinator?
     public let hotkeyCenter: HotkeyCenter
+    public let alertCenter: AlertCenter
 
     /// - Parameters:
     ///   - environment: injected by the App (`AppEnvironment.current`); VigieCore never reads `.current`.
@@ -81,15 +82,22 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
     ///   - permissions: the shared coordinator; when nil each context gets its own system-backed one.
     ///   - hotkeyCenter: the app-wide hotkey center (shared with `CoreHotkeys`); defaults to one bound to
     ///     KeyboardShortcuts.
+    ///   - alertCenter: the app-wide Notifier; defaults to one with default rules (`StaticNotifyRules`) and
+    ///     recording sinks until ConfigStore and the outputs are wired.
     public init(
         environment: AppEnvironment, eventBus: InProcessEventBus, configStore: ConfigStore? = nil,
-        permissions: PermissionsCoordinator? = nil, hotkeyCenter: HotkeyCenter? = nil
+        permissions: PermissionsCoordinator? = nil, hotkeyCenter: HotkeyCenter? = nil,
+        alertCenter: AlertCenter? = nil
     ) {
         self.environment = environment
         self.eventBus = eventBus
         self.configStore = configStore
         self.permissions = permissions
         self.hotkeyCenter = hotkeyCenter ?? HotkeyCenter()
+        self.alertCenter =
+            alertCenter
+            ?? AlertCenter(
+                rules: StaticNotifyRules(), log: Logger(subsystem: environment.bundleID, category: "notifier"))
     }
 
     public func makeContext(for manifest: ModuleManifest, tracker: RegistrationTracker) -> any ModuleContext {
@@ -107,7 +115,7 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
             secrets: UnavailableSecretStore(),
             scheduler: CoreScheduler(tracker: tracker),
             hotkeys: CoreHotkeyRegistry(moduleID: manifest.id, center: hotkeyCenter, tracker: tracker),
-            notifier: StubNotifier(log: log),
+            notifier: alertCenter.makeNotifier(for: manifest),
             events: ModuleEventBus(bus: eventBus, tracker: tracker),
             host: StubHostControl(),
             permissions: permissions ?? PermissionsCoordinator(checker: SystemPermissionChecker()),

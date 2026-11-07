@@ -112,6 +112,8 @@ public struct NotifierEvent: Hashable, Sendable {
     public let body: String?
     public let action: AlertAction?
     public let dedupeKey: String?
+    /// Numeric facts the Notifier's rule conditions compare against (A54), e.g. `working_duration` in seconds.
+    public let metrics: [String: Double]
 
     public init(
         kind: String,
@@ -119,7 +121,8 @@ public struct NotifierEvent: Hashable, Sendable {
         title: String,
         body: String? = nil,
         action: AlertAction? = nil,
-        dedupeKey: String? = nil
+        dedupeKey: String? = nil,
+        metrics: [String: Double] = [:]
     ) {
         self.kind = kind
         self.severity = severity
@@ -127,6 +130,7 @@ public struct NotifierEvent: Hashable, Sendable {
         self.body = body
         self.action = action
         self.dedupeKey = dedupeKey
+        self.metrics = metrics
     }
 }
 

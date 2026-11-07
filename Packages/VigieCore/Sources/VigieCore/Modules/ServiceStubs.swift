@@ -1,6 +1,5 @@
 import Foundation
 import ModuleKit
-import os
 
 // Placeholders for the AD-19 services that later stories implement. Each is replaced, not extended.
 
@@ -23,16 +22,6 @@ struct DefaultsModuleSettings: ModuleSettings {
 struct UnavailableSecretStore: SecretStore {
     func read(_ key: String) async throws -> String? { throw ModuleServiceError.notAvailable }
     func write(_ value: String?, for key: String) async throws { throw ModuleServiceError.notAvailable }
-}
-
-/// Implemented in Story 3.1. Logs the kind only (never title or body).
-struct StubNotifier: Notifier {
-    let log: Logger
-
-    func post(_ event: NotifierEvent) -> AlertHandle {
-        log.debug("Notifier not available; dropped alert of kind \(event.kind, privacy: .public)")
-        return AlertHandle {}
-    }
 }
 
 /// Implemented in Stories 2.5, 2.10, 3.2 and (dynamic modules) Epic 15.
