@@ -63,12 +63,17 @@ final class TestClock: Clock, @unchecked Sendable {
         let id = UUID()
         try await withTaskCancellationHandler {
             try await withCheckedThrowingContinuation { (c: CheckedContinuation<Void, Error>) in
+                // A task cancelled before it got here never sees `onCancel` remove its sleeper.
+                if Task.isCancelled { return c.resume(throwing: CancellationError()) }
                 let due = lock.withLock { state -> Bool in
                     if deadline <= state.now { return true }
                     state.sleepers[id] = Sleeper(deadline: deadline, continuation: c)
                     return false
                 }
                 if due { c.resume() }
+                if Task.isCancelled, let s = lock.withLock({ $0.sleepers.removeValue(forKey: id) }) {
+                    s.continuation.resume(throwing: CancellationError())
+                }
             }
         } onCancel: {
             let s = lock.withLock { $0.sleepers.removeValue(forKey: id) }

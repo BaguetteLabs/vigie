@@ -70,12 +70,16 @@ private struct ActionButtonBody: View {
                 .textCase(.uppercase)
                 .foregroundStyle(theme.color(labelRole))
                 .lineLimit(1)
+                .allowsTightening(true)
+                // Label left, shortcut right, one action gap between them at least (`FOCUS TERMINAL ⌥⌘↵`
+                // fits the 176px peek action column).
+                .frame(maxWidth: shortcut == nil ? nil : .infinity, alignment: .leading)
             if let shortcut {
-                Spacer(minLength: theme.spacing(.actionGap))
                 Text(verbatim: shortcut)
                     .font(theme.font(.body))
                     .foregroundStyle(theme.color(.ink2))
                     .lineLimit(1)
+                    .fixedSize()
             }
         }
         .padding(.horizontal, theme.spacing(.tabPaddingX))
