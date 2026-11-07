@@ -34,7 +34,7 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - [x] 2.2 Module contracts and registry lifecycle
 - [ ] 2.3 ConfigStore read path with live reload
 - [x] 2.4 Chrome Hologram theme engine
-- [ ] 2.5 Notch Host on a physical notch
+- [x] 2.5 Notch Host on a physical notch (not yet seen on real notch hardware: lid was closed; see Waiting on Romain)
 - [ ] 2.6 Virtual notch on plain displays
 - [ ] 2.7 Display selection, multi-display and hot-plug
 - [ ] 2.8 Closed-notch arbitration with multi-slot sides
@@ -99,6 +99,7 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 
 - **Warp focus check (Story 1.5, 5 min, screen unlocked, no permission needed):** open three Warp tabs (one in a second window), run `echo $WARP_FOCUS_URL` in each, then from another tab run `open '<one of those urls>'`. Does the exact tab/pane come to the front? Yes → decision (a) exact focus via deep link; Warp activates but the tab does not switch → (c) app-level. Details and the prototype commands: `docs/decisions/spike-warp-focus.md` § How to re-run.
 - **Ghostty (Story 1.6):** Ghostty is not installed. OK to `brew install --cask ghostty` for the spike and later the adapter? Same question for iTerm2 (Story 5.3) and for the Codex and Gemini CLIs (Epics 8, 14).
+- **Notch check on hardware (Story 2.5, 2 min):** open the MacBook lid (or make the built-in display active), build and launch the Debug app (`cd App && xcodegen generate && xcodebuild -scheme Vigie -configuration Debug build CODE_SIGN_IDENTITY=- -derivedDataPath .build-dd && open .build-dd/Build/Products/Debug/Vigie\ Dev.app`). Expected: a black island hugging the notch with two wings, a thin iris rim, `Dev sample` in the left wing; right-click shows Settings…/Quit; typing in another app is not disturbed. Tell me what you see. Without a notch, `-VigieSimulateNotch YES` draws a fake one on the main display.
 - **gh auth:** `gh` is installed but not logged in. Run `! gh auth login -w` in this session (or `gh auth login` in a terminal) so CI runs on BaguetteLabs/vigie can be checked. Until then the `ci.yml` first run is unverified.
 
 ## Decisions log
