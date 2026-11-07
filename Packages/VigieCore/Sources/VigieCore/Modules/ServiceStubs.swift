@@ -24,16 +24,6 @@ struct UnavailableSecretStore: SecretStore {
     func write(_ value: String?, for key: String) async throws { throw ModuleServiceError.notAvailable }
 }
 
-/// Implemented in Stories 2.5, 2.10, 3.2 and (dynamic modules) Epic 15.
-struct StubHostControl: HostControl {
-    func requestPeek() {}
-    func expand(focus: UserIntent?) {}
-    func openOwnTab(focus: UserIntent?) {}
-    func registerDynamicModule(_ module: any NotchModule) throws -> RegistrationToken {
-        throw ModuleServiceError.notAvailable
-    }
-}
-
 /// Implemented in Story 4.12. Assertions are tracked but hold nothing.
 struct StubPowerService: PowerService {
     let tracker: RegistrationTracker

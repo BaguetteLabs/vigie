@@ -20,6 +20,9 @@ public enum NotchDisplayMode {
 /// recomputed on the main actor whenever a running module's `state` (or anything its `leftWingItems()` reads)
 /// changes, a module starts or stops, or a transient readout comes or goes. Call ``rearbitrate()`` when
 /// `closed.slots` changes.
+///
+/// The expanded view (Story 2.10, SPEC §10) opens only on a click on the island, the expand hotkey or, when
+/// `open_on_hover` is on, a hover longer than `hover_delay`; see `NotchHost+Expanded.swift`.
 @MainActor @Observable
 public final class NotchHost {
     public private(set) var displayMode: NotchDisplayMode = .none
@@ -33,23 +36,58 @@ public final class NotchHost {
     public private(set) var trailingLayout = SideLayout.empty
     /// The transient readout on the left wing, while it lasts.
     public private(set) var transient: TransientReadout?
+    /// True from `expand` until `collapse` (the panel stays on screen for the exit motion after that).
+    public internal(set) var isExpanded = false
+    /// The active tab of the expanded view; nil shows the first tab.
+    public var selectedTabID: String?
+    /// The closed island's size when the expanded view opened: where it grows from.
+    public internal(set) var expansionOrigin: CGSize = .zero
 
-    @ObservationIgnored private let themeController: ThemeController
-    @ObservationIgnored private let registry: ModuleRegistry
+    @ObservationIgnored let themeController: ThemeController
+    @ObservationIgnored let registry: ModuleRegistry
     @ObservationIgnored private let contextMenu: NotchContextMenu
     @ObservationIgnored private let maxSideWidth: @MainActor () -> CGFloat
     @ObservationIgnored private let closedSlots: @MainActor () -> Int
     @ObservationIgnored private var arbitrationGeneration = 0
     @ObservationIgnored private var transientTask: Task<Void, Never>?
     @ObservationIgnored private let screens: @MainActor () -> [NSScreen]
-    @ObservationIgnored private let logger: Logger
+    @ObservationIgnored let logger: Logger
     @ObservationIgnored private var panel: NotchPanel?
     @ObservationIgnored private var screenObserver: (any NSObjectProtocol)?
+    @ObservationIgnored private var islandScreenFrame: CGRect?
+
+    // Expanded view (NotchHost+Expanded.swift).
+    @ObservationIgnored let focusPolicy: FocusPolicy
+    @ObservationIgnored let openOnHover: @MainActor () -> Bool
+    @ObservationIgnored let hoverDelay: @MainActor () -> Duration
+    @ObservationIgnored let closeOnLeave: @MainActor () -> Bool
+    @ObservationIgnored let tabOrder: @MainActor () -> [String]
+    @ObservationIgnored let pointerLocation: @MainActor () -> CGPoint
+    @ObservationIgnored let makeExpandedPanel: @MainActor (NotchHost) -> any ExpandedPanelHosting
+    /// Opens the Settings window from the gear; nil keeps the gear inert (until Story 2.14).
+    @ObservationIgnored public let openSettings: (@MainActor () -> Void)?
+    @ObservationIgnored let expandedSurface = ExpandedSurface()
+    @ObservationIgnored var expandedPanel: (any ExpandedPanelHosting)?
+    @ObservationIgnored var expansionGeneration = 0
+    @ObservationIgnored var hoverTask: Task<Void, Never>?
+    @ObservationIgnored var hideTask: Task<Void, Never>?
+    @ObservationIgnored var eventMonitors: [Any] = []
+    @ObservationIgnored var pointerWasInside = false
+    /// Test seam: anchors used instead of the laid-out island.
+    @ObservationIgnored var anchorsOverride: [IslandAnchor]?
 
     /// - Parameters:
     ///   - maxSideWidth: `closed.max_side_width` (SPEC §5.3, default 120). ConfigStore wiring: Stories 2.6/2.7.
     ///   - closedSlots: `closed.slots` (SPEC §5, default 3, clamped 1…4). ConfigStore wiring comes later.
     ///   - screens: the screens to search; `NSScreen.screens` in production.
+    ///   - focusPolicy: the app-wide focus arbiter (AD-13); the expanded view is one of its surfaces.
+    ///   - openOnHover: `[general] open_on_hover` (default false).
+    ///   - hoverDelay: `[general] hover_delay` (default 150 ms).
+    ///   - closeOnLeave: `[general] close_on_leave` (default false).
+    ///   - tabOrder: `[general] tab_order`, module ids (default empty: registry order).
+    ///   - openSettings: opens the Settings window from the gear; nil until Story 2.14.
+    ///   - pointerLocation: the pointer in global AppKit coordinates; `NSEvent.mouseLocation` in production.
+    ///   - makeExpandedPanel: builds the expanded panel window; an ``ExpandedPanel`` in production.
     public init(
         themeController: ThemeController,
         registry: ModuleRegistry,
@@ -57,6 +95,14 @@ public final class NotchHost {
         maxSideWidth: @escaping @MainActor () -> CGFloat = { 120 },
         closedSlots: @escaping @MainActor () -> Int = { ClosedNotchArbiter.defaultSlots },
         screens: @escaping @MainActor () -> [NSScreen] = { NSScreen.screens },
+        focusPolicy: FocusPolicy = FocusPolicy(),
+        openOnHover: @escaping @MainActor () -> Bool = { false },
+        hoverDelay: @escaping @MainActor () -> Duration = { NotchHost.defaultHoverDelay },
+        closeOnLeave: @escaping @MainActor () -> Bool = { false },
+        tabOrder: @escaping @MainActor () -> [String] = { [] },
+        openSettings: (@MainActor () -> Void)? = nil,
+        pointerLocation: @escaping @MainActor () -> CGPoint = { NSEvent.mouseLocation },
+        makeExpandedPanel: (@MainActor (NotchHost) -> any ExpandedPanelHosting)? = nil,
         logger: Logger
     ) {
         self.themeController = themeController
@@ -65,7 +111,19 @@ public final class NotchHost {
         self.maxSideWidth = maxSideWidth
         self.closedSlots = closedSlots
         self.screens = screens
+        self.focusPolicy = focusPolicy
+        self.openOnHover = openOnHover
+        self.hoverDelay = hoverDelay
+        self.closeOnLeave = closeOnLeave
+        self.tabOrder = tabOrder
+        self.openSettings = openSettings
+        self.pointerLocation = pointerLocation
+        self.makeExpandedPanel =
+            makeExpandedPanel ?? { host in
+                ExpandedPanel(host: host, rootView: ExpandedRootView(host: host, themeController: themeController))
+            }
         self.logger = logger
+        expandedSurface.host = self
     }
 
     /// Places the island and follows screen parameter changes until `stop()`.
@@ -81,6 +139,11 @@ public final class NotchHost {
     }
 
     public func stop() {
+        collapse()
+        hideTask?.cancel()
+        expandedPanel?.hide()
+        expandedPanel = nil
+        islandScreenFrame = nil
         if let screenObserver { NotificationCenter.default.removeObserver(screenObserver) }
         screenObserver = nil
         arbitrationGeneration += 1  // drops the armed observation
@@ -103,6 +166,7 @@ public final class NotchHost {
             }
             panel?.orderOut(nil)
             geometry = nil
+            islandScreenFrame = nil
             displayMode = .none
             return
         }
@@ -118,6 +182,7 @@ public final class NotchHost {
             return
         }
         self.geometry = geometry
+        islandScreenFrame = metrics.frame
         displayMode = .physical(screen)
         let panel = self.panel ?? makePanel(frame: geometry.islandFrame)
         self.panel = panel
@@ -129,10 +194,34 @@ public final class NotchHost {
     }
 
     private func makePanel(frame: CGRect) -> NotchPanel {
-        NotchPanel(
+        let panel = NotchPanel(
             contentRect: frame,
             rootView: NotchRootView(host: self, themeController: themeController),
             contextMenu: contextMenu)
+        panel.onClick = { [weak self] in self?.islandClicked() }
+        return panel
+    }
+
+    /// The islands on screen, main Vigie display first. One today (the notched display); Stories 2.6/2.8 add
+    /// virtual notches and `[display] show_on`.
+    var islandAnchors: [IslandAnchor] {
+        if let anchorsOverride { return anchorsOverride }
+        guard let geometry, let islandScreenFrame else { return [] }
+        return [
+            IslandAnchor(
+                screenFrame: islandScreenFrame, islandFrame: geometry.islandFrame, notchRect: geometry.notchRect)
+        ]
+    }
+
+    /// The island on the display under `pointer`, or on the main Vigie display when that display shows none
+    /// (SPEC §5.4). Peeks and the expanded view anchor here.
+    public func anchor(forDisplayUnder pointer: CGPoint) -> IslandAnchor? {
+        IslandAnchor.select(islandAnchors, pointer: pointer)
+    }
+
+    /// The island frame (global AppKit coordinates) on the display under `pointer`, or on the main Vigie display.
+    public func anchorFrame(forDisplayUnder pointer: CGPoint) -> CGRect? {
+        anchor(forDisplayUnder: pointer)?.islandFrame
     }
 
     private func notchedScreen() -> (NSScreen, ScreenMetrics)? {
@@ -226,6 +315,7 @@ struct NotchRootView: View {
                 trailing: { lane(host.trailingLayout) }
             )
             .frame(width: geometry.islandFrame.width, height: geometry.islandFrame.height)
+            .onHover { host.islandHoverChanged($0) }
             .vigieTheme(themeController.islandTheme)
         }
     }

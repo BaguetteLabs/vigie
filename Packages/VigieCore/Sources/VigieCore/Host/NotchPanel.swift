@@ -3,12 +3,18 @@ import SwiftUI
 
 /// The borderless, non-activating panel that holds the island above the menu bar (AD-2, AD-13, NFR2).
 ///
-/// It never becomes key or main: the frontmost app keeps keyboard focus. Story 2.10 makes it key only on a
-/// `UserIntent`.
+/// It never becomes key or main: the frontmost app keeps keyboard focus. A left click opens the expanded view
+/// (``onClick``), which is its own panel and becomes key only on a `UserIntent`.
 @MainActor
 public final class NotchPanel: NSPanel {
     /// One level above the status bar, so the island draws over the menu bar.
     public static let islandLevel = NSWindow.Level(rawValue: NSWindow.Level.statusBar.rawValue + 1)
+
+    /// Left click on the island.
+    public var onClick: (@MainActor () -> Void)? {
+        get { (contentView as? IslandHostingView)?.onClick }
+        set { (contentView as? IslandHostingView)?.onClick = newValue }
+    }
 
     public init(contentRect: NSRect, rootView: some View, contextMenu: NotchContextMenu?) {
         super.init(
@@ -49,8 +55,19 @@ public final class NotchPanel: NSPanel {
 /// activating the app.
 final class IslandHostingView: NSHostingView<AnyView> {
     weak var contextMenu: NotchContextMenu?
+    var onClick: (@MainActor () -> Void)?
 
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+
+    override func mouseDown(with event: NSEvent) {
+        if event.modifierFlags.contains(.control), let contextMenu {
+            // Control-click is a right click.
+            contextMenu.show(at: convert(event.locationInWindow, from: nil), in: self)
+            return
+        }
+        super.mouseDown(with: event)
+        onClick?()
+    }
 
     override func rightMouseDown(with event: NSEvent) {
         guard let contextMenu else { return super.rightMouseDown(with: event) }

@@ -51,6 +51,13 @@ public enum VigieCopy {
         empty("empty.agents.noSessions")
     }
 
+    // MARK: Expanded view
+
+    /// `NO TABS` · "Turn on a module in Settings to add a tab."
+    public static var noTabs: EmptyState {
+        empty("empty.expanded")
+    }
+
     // MARK: Home
 
     /// `NO WIDGETS` · "Pick Home widgets in Settings."

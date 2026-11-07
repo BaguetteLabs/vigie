@@ -241,6 +241,30 @@
         }
       }
     },
+    "empty.expanded.label" : {
+      "comment" : "Empty state label (uppercase): the expanded view has no tab.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NO TABS"
+          }
+        }
+      }
+    },
+    "empty.expanded.sentence" : {
+      "comment" : "Empty state sentence: one factual sentence, no exclamation mark.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn on a module in Settings to add a tab."
+          }
+        }
+      }
+    },
     "empty.home.label" : {
       "comment" : "Empty state label (uppercase).",
       "extractionState" : "manual",
@@ -429,6 +453,66 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Turn on a usage provider for Claude Code, Codex or Gemini CLI in Settings."
+          }
+        }
+      }
+    },
+    "expanded.settings" : {
+      "comment" : "Accessibility label of the settings gear in the expanded view.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settings"
+          }
+        }
+      }
+    },
+    "expanded.settings.tooltip" : {
+      "comment" : "Tooltip of the settings gear in the expanded view, with its shortcut.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settings (⌘,)"
+          }
+        }
+      }
+    },
+    "expanded.status" : {
+      "comment" : "Expanded view band status after the green dot: %1$@ is the time (e.g. 14:48), %2$@ the date (e.g. Wed 04 Nov).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Online · %1$@ · %2$@"
+          }
+        }
+      }
+    },
+    "expanded.tab.needsAttention" : {
+      "comment" : "Spoken after a tab name when the tab carries the attention marker, lowercase: Agents, needs attention.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "needs attention"
+          }
+        }
+      }
+    },
+    "expanded.wordmark" : {
+      "comment" : "Brand wordmark on the expanded view band. Not translated.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "VIGIE"
           }
         }
       }
