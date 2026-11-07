@@ -41,7 +41,7 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - [ ] 2.9 Hotkeys and user-intent focus control
 - [ ] 2.10 Expanded view shell
 - [ ] 2.11 Shared VigieUI components
-- [ ] 2.12 Permissions service and needs-permission state
+- [x] 2.12 Permissions service and needs-permission state
 - [ ] 2.13 ConfigStore writer (comment-preserving TOML patcher)
 - [ ] 2.14 Generated Settings window
 - [ ] 2.15 Accessibility floor in v0.1
@@ -114,4 +114,4 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - 2026-11-07 — `Package.resolved` files are committed (reproducible builds). Theme TOML lives in `Themes/` with an identical bundled copy under `Packages/VigieUI/Sources/VigieUI/Resources/Themes/`; `Scripts/theme-regen-check.sh` enforces both. Config color keys (`colors.blocked`) → token roles (`status-blocked`) mapping is left to the ConfigStore story (2.3).
 - 2026-11-07 — Story 2.2 choices accepted: `UserIntent.init` is `@_spi(Host)` (only VigieCore imports `@_spi(Host) ModuleKit`; add a grep check later); `ModuleID` keeps string-literal support (traps on invalid literal); `LeftWingItem` has no own state yet — Story 2.8 adds an optional per-item state override so a single warned provider ring can outrank its siblings. App assembly of ModuleRegistry + ConfigStore enablement happens in Story 2.5 / an integration commit after 2.3.
 - 2026-11-07 — Spike 1.4 results for Epic 4: `vigie hook` median 6.4 ms incl. fork/exec; `permission_prompt` vs `idle_prompt` distinguishable via `notification_type` (SPEC §14.4 answered: yes); consider the `PermissionRequest` hook event for faster blocked detection (4.6); `claude` process is named by version (`2.1.319`) and is the hook's direct parent (`CLAUDE_PID` also set); `SubagentStop` fires for internal helpers (`agent_type: ""`) — ignore; `Stop` may fire while background subagents run; never forward `CLAUDE_CODE_MESSAGING_TOKEN`. Hook stdio has no TTY: the CLI falls back to the controlling terminal of the ancestors.
-- 2026-11-07 — Flake watch: `ModuleStorageTests` once failed with EACCES creating `modules/dev.sample` under a fresh temp dir while 5 other worktrees ran tests concurrently; 3 immediate re-runs passed. Re-check if it recurs.
+- 2026-11-07 — Fixed flake: `ModuleStorageTests` EACCES/no-write failures were caused by the spike `SocketListener` calling `umask(0o177)` process-wide during bind while other suites created temp dirs. Removed; 8 consecutive green runs. Rule: never call `umask` in library or test code.
