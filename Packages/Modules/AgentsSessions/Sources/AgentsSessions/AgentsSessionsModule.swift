@@ -72,7 +72,7 @@ public final class AgentsSessionsModule: NotchModule, AlertActionHandler {
                 scope: .synced,
                 help: LocalizedStringResource("agentsSessions.setting.ignoredPaths.help", bundle: bundle)),
         ],
-        alertKinds: AlertKind.allCases.map(\.rawValue),
+        alertKinds: AlertKind.allCases.map(\.rawValue) + [setupProblemKind],
         defaultEnabled: true
     )
 
@@ -111,9 +111,9 @@ public final class AgentsSessionsModule: NotchModule, AlertActionHandler {
     @ObservationIgnored var readyTask: Task<Void, Never>?
     @ObservationIgnored private var expiryToken: RegistrationToken?
     @ObservationIgnored private var livenessToken: RegistrationToken?
-    @ObservationIgnored private var settings: (any ModuleSettings)?
+    @ObservationIgnored var settings: (any ModuleSettings)?
     @ObservationIgnored var ignoredKeys = IgnoredKeys()
-    @ObservationIgnored private var persister: SessionPersister?
+    @ObservationIgnored var persister: SessionPersister?
     @ObservationIgnored var log: Logger?
     @ObservationIgnored var activity: (any ActivityLog)?
     @ObservationIgnored var notifier: (any Notifier)?
@@ -123,6 +123,12 @@ public final class AgentsSessionsModule: NotchModule, AlertActionHandler {
     @ObservationIgnored var alertActionTask: Task<FocusResult, Never>?
     /// Built at start from the module context, for terminal adapters without their own context.
     @ObservationIgnored var fallbackTerminalContext: (any AdapterContext)?
+    /// `context.permissions`, for ``focusPermissionIssues()`` (Story 5.1).
+    @ObservationIgnored var permissions: (any PermissionsService)?
+    /// Open `SETUP · PERMISSION` alerts by dedupe key (`permission:<adapter id>:<permission>`).
+    @ObservationIgnored var permissionAlerts: [String: PermissionAlert] = [:]
+    /// Sessions whose terminal was chosen before their env arrived; chosen again once it does.
+    @ObservationIgnored var unhintedSelections: Set<SessionKey> = []
 
     public init(
         adapters: AgentAdapters,
@@ -148,6 +154,7 @@ public final class AgentsSessionsModule: NotchModule, AlertActionHandler {
         settings = context.settings
         activity = context.activity
         notifier = context.notifier
+        permissions = context.permissions
         fallbackTerminalContext = AdapterContextBox(
             settings: DefaultsReadOnlySettings(descriptors: []), secrets: context.secrets,
             executables: context.executables, http: URLSessionHTTPClient(), log: log)
@@ -163,8 +170,12 @@ public final class AgentsSessionsModule: NotchModule, AlertActionHandler {
             saved = nil
         }
         store.load(saved ?? [])
+        // Sessions saved before Story 5.1 have no terminal yet: choose it now (pure).
+        let selected = selectMissingTerminals()
         if let save = expireDone(settings: context.settings) {
             await persister.write(save.sessions, generation: save.generation)
+        } else if selected {
+            await persister.write(store.snapshot, generation: store.generation)
         }
         syncState()
 
@@ -213,6 +224,7 @@ public final class AgentsSessionsModule: NotchModule, AlertActionHandler {
         // Heartbeat metadata (last action, last event time) is saved once on the way out.
         await persister?.write(store.snapshot, generation: store.generation, force: true)
         resolveAllAlerts()
+        resolveAllPermissionAlerts()
     }
 
     /// The right-wing content (FR37, A19). `ClosedNotchArbiter` routes `agents.sessions` items to the trailing
@@ -327,6 +339,7 @@ public final class AgentsSessionsModule: NotchModule, AlertActionHandler {
             let previous = store.table[key]
             let change = store.apply(event)
             if change.persists { persist = true }
+            if selectTerminalIfNeeded(after: change) { persist = true }
             noteAlert(change, previous: previous, at: event.context.at, replayed: replayed, now: now, in: &pending)
         }
         syncState(now: now)

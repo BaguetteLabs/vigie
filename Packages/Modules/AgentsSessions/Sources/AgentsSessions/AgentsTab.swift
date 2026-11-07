@@ -63,10 +63,12 @@ extension AgentsSessionsModule {
         adapters.adapter(for: id).map { String(localized: $0.name) } ?? id.rawValue
     }
 
-    /// The terminal app of the adapter that would focus the session (A55): the generic fallback names the app
-    /// itself (`Warp`, `iTerm2`). Nil without terminal info.
+    /// The terminal app of the session's chosen adapter (A55): the generic fallback names the app itself
+    /// (`Warp`, `iTerm2`). Nil without terminal info.
     func terminalName(_ session: Session) -> String? {
-        guard let env = session.terminal?.environment, let adapter = terminals.resolve(env: env) else { return nil }
+        guard let env = session.terminal?.environment else { return nil }
+        let chosen = session.terminalAdapterID.flatMap(terminals.anyAdapter(for:))
+        guard let adapter = chosen ?? terminals.select(env: env, preferred: preferredTerminal) else { return nil }
         if let naming = adapter as? any TerminalAppNaming, let name = naming.appName(env: env) { return name }
         return String(localized: adapter.name)
     }
@@ -78,24 +80,36 @@ extension AgentsSessionsModule {
         return session.agentProcess == nil || endedProcesses.contains(key)
     }
 
-    /// Focus (SPEC §7.1.1): the session's terminal adapter (matched on its env, else the fallback, which only
-    /// activates the app, A16) brings it forward. Never changes the session (EXPERIENCE "Focusing or dismissing
-    /// does not change the state"). The outcome goes to the activity log.
+    /// Focus (SPEC §7.1.1, FR43, FR44): the session's terminal adapter, chosen at `session.start`, focuses the
+    /// locator captured then. A missing permission activates the app (the adapter does) and raises
+    /// `SETUP · PERMISSION` (never an error toast); any other failure is the adapter's app-level fallback. A focus
+    /// that goes through resolves that adapter's permission alerts. Never changes the session (EXPERIENCE
+    /// "Focusing or dismissing does not change the state"). The outcome goes to the activity log.
     @discardableResult
     public func focus(_ key: SessionKey) async -> FocusResult {
-        guard let session = store.table[key] else { return .failed(reason: "unknown session") }
-        let env = session.terminal?.environment ?? [:]
-        guard let adapter = terminals.resolve(env: env) else {
+        guard store.table[key] != nil else { return .failed(reason: "unknown session") }
+        guard let adapter = terminalAdapter(for: key) else {
             return recordFocus(.failed(reason: "no terminal adapter"), adapter: nil)
         }
         guard let context = terminalContexts[adapter.id] ?? fallbackTerminalContext else {
             return recordFocus(.failed(reason: "no adapter context"), adapter: adapter.id)
         }
         let locator =
-            adapter.capture(env: env, pid: session.agentProcess?.pid, tty: session.tty)
-            ?? TerminalLocator(terminalID: adapter.id, fields: [:])
-        let result = await adapter.focus(locator, context: context)
-        return recordFocus(result, adapter: adapter.id)
+            store.table[key]?.terminalLocator ?? TerminalLocator(terminalID: adapter.id, fields: [:])
+        guard let reporting = adapter as? any PermissionReportingTerminalAdapter else {
+            return recordFocus(await adapter.focus(locator, context: context), adapter: adapter.id)
+        }
+        do {
+            let result = try await reporting.attemptFocus(locator, context: context)
+            resolvePermissionAlerts(for: adapter.id)
+            return recordFocus(result, adapter: adapter.id)
+        } catch {
+            switch error {
+            case .permissionRequired(let permission):
+                reportMissingPermission(permission, adapter: adapter)
+                return recordFocus(.appOnly, adapter: adapter.id)
+            }
+        }
     }
 
     private func recordFocus(_ result: FocusResult, adapter: TerminalID?) -> FocusResult {

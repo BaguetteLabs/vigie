@@ -249,6 +249,21 @@ public final class SessionStore {
         return removed
     }
 
+    /// Records the terminal chosen for a session (Story 5.1). Metadata, but persisted: the locator is captured
+    /// once and must survive a relaunch. Returns true when the session changed.
+    @discardableResult
+    public func setTerminal(_ key: SessionKey, adapter: TerminalID, locator: TerminalLocator?) -> Bool {
+        guard var session = table[key],
+            session.terminalAdapterID != adapter || session.terminalLocator != locator
+        else { return false }
+        session.terminalAdapterID = adapter
+        session.terminalLocator = locator
+        table[key] = session
+        refresh()
+        generation += 1
+        return true
+    }
+
     /// The table to persist, in urgency order.
     public var snapshot: [Session] { sessions }
 

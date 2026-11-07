@@ -48,9 +48,9 @@ final class RecordingNotifier: Notifier, @unchecked Sendable {
         return (setup.module, notifier, setup)
     }
 
-    @Test func manifestDeclaresTheThreeKinds() {
+    @Test func manifestDeclaresItsKinds() {
         let kinds = AgentsSessionsModule.staticManifest.alertKinds
-        #expect(kinds == ["session.blocked", "session.done", "session.failed"])
+        #expect(kinds == ["session.blocked", "session.done", "session.failed", "setup.problem"])
         for kind in AgentsSessionsModule.AlertKind.allCases {
             #expect(!String(localized: kind.label).hasPrefix("agentsSessions."), "\(kind) label in catalog")
         }

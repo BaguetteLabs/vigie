@@ -288,6 +288,90 @@
           }
         }
       }
+    },
+    "agentsSessions.permission.category" : {
+      "comment" : "Setup-problem kicker category for a missing Focus permission (SETUP · PERMISSION). Uppercase.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PERMISSION"
+          }
+        }
+      }
+    },
+    "agentsSessions.permission.title.automation" : {
+      "comment" : "Setup-problem title: Focus could not select a tab because the Automation permission for the terminal app (argument) is missing.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Focus needs the Automation permission for %@"
+          }
+        }
+      }
+    },
+    "agentsSessions.permission.title.accessibility" : {
+      "comment" : "Setup-problem title: Focus could not select a tab because the Accessibility permission is missing; argument is the terminal app.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Focus needs the Accessibility permission for %@"
+          }
+        }
+      }
+    },
+    "agentsSessions.permission.title.other" : {
+      "comment" : "Setup-problem title: Focus could not select a tab because a permission is missing; argument is the terminal app.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Focus needs a permission for %@"
+          }
+        }
+      }
+    },
+    "agentsSessions.permission.body.automation" : {
+      "comment" : "Setup-problem body for the missing Automation permission; argument is the terminal app.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vigie brought %@ to the front but cannot select the session's tab until you allow Automation."
+          }
+        }
+      }
+    },
+    "agentsSessions.permission.body.accessibility" : {
+      "comment" : "Setup-problem body for the missing Accessibility permission; argument is the terminal app.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vigie brought %@ to the front but cannot select the session's tab until you allow Accessibility."
+          }
+        }
+      }
+    },
+    "agentsSessions.permission.body.other" : {
+      "comment" : "Setup-problem body for another missing permission; argument is the terminal app.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vigie brought %@ to the front but cannot select the session's tab without this permission."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

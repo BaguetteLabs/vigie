@@ -28,6 +28,12 @@ public struct Session: Hashable, Sendable, Identifiable {
     public internal(set) var blockReason: BlockReason?
     /// The agent's message for `needs.input` or `session.error`; set while `blocked` or `failed`.
     public internal(set) var lastMessage: String?
+    /// The terminal adapter chosen for this session (Story 5.1, AD-23): the first `matches(env:)`, else the
+    /// `terminal` setting when the env names no terminal, else the fallback.
+    public internal(set) var terminalAdapterID: TerminalID?
+    /// What that adapter's `capture(env:pid:tty:)` returned, once, when the adapter was chosen. nil when the env
+    /// did not identify a tab (Focus then activates the app).
+    public internal(set) var terminalLocator: TerminalLocator?
 
     public var id: SessionKey { key }
     public var agentID: AgentID { key.agentID }
@@ -50,7 +56,9 @@ public struct Session: Hashable, Sendable, Identifiable {
         agentProcess: AgentProcessRef? = nil,
         model: String? = nil,
         blockReason: BlockReason? = nil,
-        lastMessage: String? = nil
+        lastMessage: String? = nil,
+        terminalAdapterID: TerminalID? = nil,
+        terminalLocator: TerminalLocator? = nil
     ) {
         self.key = key
         self.status = status
@@ -64,6 +72,8 @@ public struct Session: Hashable, Sendable, Identifiable {
         self.model = model
         self.blockReason = blockReason
         self.lastMessage = lastMessage
+        self.terminalAdapterID = terminalAdapterID
+        self.terminalLocator = terminalLocator
     }
 }
 
@@ -83,6 +93,8 @@ extension Session: Codable {
         case model
         case blockReason = "block_reason"
         case lastMessage = "last_message"
+        case terminalAdapterID = "terminal_adapter"
+        case terminalLocator = "terminal_locator"
     }
 
     public init(from decoder: any Decoder) throws {
@@ -104,6 +116,8 @@ extension Session: Codable {
         model = try container.decodeIfPresent(String.self, forKey: .model)
         blockReason = try container.decodeIfPresent(BlockReason.self, forKey: .blockReason)
         lastMessage = try container.decodeIfPresent(String.self, forKey: .lastMessage)
+        terminalAdapterID = try container.decodeIfPresent(TerminalID.self, forKey: .terminalAdapterID)
+        terminalLocator = try container.decodeIfPresent(TerminalLocator.self, forKey: .terminalLocator)
     }
 
     public func encode(to encoder: any Encoder) throws {
@@ -120,5 +134,7 @@ extension Session: Codable {
         try container.encodeIfPresent(model, forKey: .model)
         try container.encodeIfPresent(blockReason, forKey: .blockReason)
         try container.encodeIfPresent(lastMessage, forKey: .lastMessage)
+        try container.encodeIfPresent(terminalAdapterID, forKey: .terminalAdapterID)
+        try container.encodeIfPresent(terminalLocator, forKey: .terminalLocator)
     }
 }
