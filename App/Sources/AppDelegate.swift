@@ -2,6 +2,7 @@ import AgentKit
 import AgentsSessions
 import AppKit
 import ClaudeAdapter
+import GenericTerminal
 import ModuleKit
 import OSLog
 import VigieCore
@@ -89,13 +90,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let coordinator = PermissionsCoordinator(checker: SystemPermissionChecker())
         let hotkeyCenter = HotkeyCenter()
 
-        // Built once and shared by the agent modules (AD-4). Terminal adapters arrive with Epic 8.
+        // Built once and shared by the agent modules (AD-4). Per-terminal adapters arrive with Epic 5; until then
+        // every Focus goes to the generic fallback, which activates the terminal app without a tab (A16).
         let agentAdapters = AgentAdapters([ClaudeAdapter()])
-        let terminalAdapters = TerminalAdapters([])
+        let terminalAdapters = TerminalAdapters([], fallback: GenericTerminalAdapter())
 
         var descriptors: [ModuleDescriptor] = [
             ModuleDescriptor(manifest: AgentsSessionsModule.staticManifest) {
-                AgentsSessionsModule(adapters: agentAdapters, terminals: terminalAdapters)
+                // The SettingsController is created later in the sequence; resolve it when the button is used.
+                AgentsSessionsModule(
+                    adapters: agentAdapters, terminals: terminalAdapters,
+                    openSettings: { [weak self] pane in self?.openSettings(pane: pane) })
             }
         ]
         #if DEBUG
