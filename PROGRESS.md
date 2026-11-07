@@ -30,7 +30,7 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - [x] 1.7 UX design pass (done in docs, 2026-11-07)
 
 ### Epic 2 — Vigie lives in the notch
-- [ ] 2.1 Single-instance accessory app shell
+- [x] 2.1 Single-instance accessory app shell
 - [ ] 2.2 Module contracts and registry lifecycle
 - [ ] 2.3 ConfigStore read path with live reload
 - [ ] 2.4 Chrome Hologram theme engine

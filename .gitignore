@@ -7,3 +7,5 @@ DerivedData/
 *.xcuserstate
 /App/Vigie.xcodeproj
 .worktrees/
+.build-dd/
+.build*/
