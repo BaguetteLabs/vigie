@@ -80,7 +80,11 @@ jobs:
 
       - name: theme-regen-diff
         id: theme-regen-diff
-        run: echo "not yet"
+        run: Scripts/theme-regen-check.sh
+
+      - name: view-literals
+        id: view-literals
+        run: Scripts/check-view-literals.sh
 
       - name: adapter-fixtures
         id: adapter-fixtures

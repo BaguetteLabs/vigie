@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Local dry run of .github/workflows/ci.yml: lint, package tests, xcodegen + xcodebuild, locale check.
+# Local dry run of .github/workflows/ci.yml: lint, package tests, theme regen diff, view literals,
+# xcodegen + xcodebuild, locale check.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -14,6 +15,12 @@ for manifest in Packages/*/Package.swift Packages/*/*/Package.swift; do
   echo "==> swift test: $pkg"
   (cd "$pkg" && swift test --build-system swiftbuild)
 done
+
+echo "==> theme regen diff"
+Scripts/theme-regen-check.sh
+
+echo "==> view literals"
+Scripts/check-view-literals.sh
 
 echo "==> xcodegen generate"
 (cd App && xcodegen generate)
