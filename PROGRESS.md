@@ -69,7 +69,7 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - [x] 4.9 Session glyphs in the closed notch
 - [x] 4.10 Agents tab
 - [x] 4.11 Session alerts
-- [ ] 4.12 Sleep handling
+- [x] 4.12 Sleep handling (docs/decisions/host-slept-detection.md)
 - [ ] 4.13 Generic `vigie agent` reporting
 - [ ] 4.14 Research — warning before manual sleep
 
@@ -140,7 +140,9 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 
 - 2026-11-07 — Story 5.1: terminal chosen at session start (`TerminalAdapters.select(env:preferred:)`), `capture` once, locator persisted (`terminal_adapter`/`terminal_locator`). The `terminal` local setting applies only when the env names no terminal (otherwise a Ghostty session would be sent to Terminal.app); unknown terminals go to the generic fallback. Permission failures post `setup.problem` category `PERMISSION` (module declares the kind), resolved on the next focus without a permission error.
 
-- 2026-11-08 — Story 4.7: `IntegrationInstaller` is a ModuleContext service (`context.integrations`), implemented by `CoreIntegrationInstaller` (hash check, timestamped backup, atomic write, `[integrations.<adapter>]` record in local.toml via `ConfigStore.registerIntegration`). Connect/Disconnect live in `AgentsSessionsModule.settingsView()`; a stale preview re-plans up to 3 times. Gaps: `HookPipeline` still calls the ungated `normalize` (must switch to `normalize(_:sentAt:support:)` and raise the unsupported-version alert, 4.6/4.11 follow-up); `adapters` default `["claude"]` counts Claude as enabled before Connect; Warp focus statement cannot be shown by the module (AD-1).
+- 2026-11-08 — Story 4.7: `IntegrationInstaller` is a ModuleContext service (`context.integrations`), implemented by `CoreIntegrationInstaller` (hash check, timestamped backup, atomic write, `[integrations.<adapter>]` record in local.toml via `ConfigStore.registerIntegration`). Connect/Disconnect live in `AgentsSessionsModule.settingsView()`; a stale preview re-plans up to 3 times. Gaps (ungated normalize fixed 2026-11-08 by `AdapterSupportGate`): `adapters` default `["claude"]` counts Claude as enabled before Connect; Warp focus statement cannot be shown by the module (AD-1).
+
+- 2026-11-08 — Story 4.12: `CorePowerService` (one `.idleSystemSleepDisabled` activity while any request is open and `[general] prevent_idle_sleep` is on; inert tokens otherwise; `TrackedPowerService` per module). `SleepWakeEvent.didWake` has no timestamp (ModuleKit unchanged), so the wake time is receipt time. Sessions with an event after sleep began are not marked failed (extra guard, in the decision record). Keep-awake toggle stays in General with help text; the Agents block links to it. Adapter support gating: `AdapterSupportGate` detects versions at start and on `adapters` changes, holds early events until the first check, `.unsupported` posts `setup.problem` category `AGENT`.
 
 ## Notes for the next session
 
