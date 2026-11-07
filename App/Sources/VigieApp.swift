@@ -7,6 +7,8 @@ import Wire
 /// The Notch Host and module registry are composed here in later stories.
 @main
 struct VigieApp: App {
+    @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+
     init() {
         let env = AppEnvironment.current
         Logger(subsystem: env.logSubsystem, category: "app")

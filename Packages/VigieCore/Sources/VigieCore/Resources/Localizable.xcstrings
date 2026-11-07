@@ -12,6 +12,30 @@
           }
         }
       }
+    },
+    "menu.settings" : {
+      "comment" : "Closed notch context menu: open settings.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settings…"
+          }
+        }
+      }
+    },
+    "menu.quit" : {
+      "comment" : "Closed notch context menu: quit the app.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quit Vigie"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"
