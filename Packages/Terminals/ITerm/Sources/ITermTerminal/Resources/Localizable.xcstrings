@@ -1,0 +1,18 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "iterm.adapter.name" : {
+      "comment" : "Name of the iTerm2 terminal adapter (product name, not translated).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iTerm2"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}
