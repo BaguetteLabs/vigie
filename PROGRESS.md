@@ -40,7 +40,7 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - [ ] 2.8 Closed-notch arbitration with multi-slot sides
 - [x] 2.9 Hotkeys and user-intent focus control
 - [ ] 2.10 Expanded view shell
-- [ ] 2.11 Shared VigieUI components
+- [x] 2.11 Shared VigieUI components
 - [x] 2.12 Permissions service and needs-permission state
 - [ ] 2.13 ConfigStore writer (comment-preserving TOML patcher)
 - [ ] 2.14 Generated Settings window
@@ -117,3 +117,4 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - 2026-11-07 — Spike 1.4 results for Epic 4: `vigie hook` median 6.4 ms incl. fork/exec; `permission_prompt` vs `idle_prompt` distinguishable via `notification_type` (SPEC §14.4 answered: yes); consider the `PermissionRequest` hook event for faster blocked detection (4.6); `claude` process is named by version (`2.1.319`) and is the hook's direct parent (`CLAUDE_PID` also set); `SubagentStop` fires for internal helpers (`agent_type: ""`) — ignore; `Stop` may fire while background subagents run; never forward `CLAUDE_CODE_MESSAGING_TOKEN`. Hook stdio has no TTY: the CLI falls back to the controlling terminal of the ancestors.
 - 2026-11-07 — Fixed flake: `ModuleStorageTests` EACCES/no-write failures were caused by the spike `SocketListener` calling `umask(0o177)` process-wide during bind while other suites created temp dirs. Removed; 8 consecutive green runs. Rule: never call `umask` in library or test code.
 - 2026-11-07 — Story 2.9 notes: KeyboardShortcuts names cannot contain dots, so `core.expand` is stored as `core:expand`; config wins over its UserDefaults. SPEC has no `[hotkeys]` table: expand hotkey is `[general] expand_hotkey`, module hotkeys are `hotkey` keys under `[modules.<id>]`; the integration commit maps them to `HotkeyCenter.applyConfig`. App bundle now ships KeyboardShortcuts' own localizations (harmless for the locale check). Pending wiring (integration commit after 2.3/2.5): App creates one `HotkeyCenter` + `PermissionsCoordinator`, passes them to `CoreModuleContextFactory` and `ModuleRegistry`, registers `CoreHotkeys.registerDefaults`; Story 2.10 conforms NotchPanel to `KeySurface`.
+- 2026-11-07 — Story 2.11 copy written by the agent, to confirm with Romain at the next UX review: Usage empty sentence "Turn on a usage provider for Claude Code, Codex or Gemini CLI in Settings.", Calendar setup sentence "Allow access in System Settings › Privacy & Security › Calendars; Vigie only reads events.", `CHECKED <1 MIN AGO` / `CHECKED 1H52 AGO` qualifiers. `DOWN SINCE 14:44` (no `·`) follows the EXPERIENCE copy table.
