@@ -1,0 +1,10 @@
+{
+  "cwd": "/private/tmp/claude-501/-Users-romain-www-vigie/03a97dc6-097f-4d60-a649-a2f93afa8536/scratchpad/hook-spike/project",
+  "hook_event_name": "Notification",
+  "message": "Claude needs your permission",
+  "notification_type": "permission_prompt",
+  "prompt_id": "468b2b74-f088-41b4-9e22-3f792adb0ca2",
+  "scratchpad_dir": "/private/tmp/claude-501/-private-tmp-claude-501--Users-romain-www-vigie-03a97dc6-097f-4d60-a649-a2f93afa8536-scratchpad-hook-spike-project/e99d1c0e-8693-4ee5-a9ab-c7d58dfdb195/scratchpad",
+  "session_id": "e99d1c0e-8693-4ee5-a9ab-c7d58dfdb195",
+  "transcript_path": "/Users/romain/.claude/projects/-private-tmp-claude-501--Users-romain-www-vigie-03a97dc6-097f-4d60-a649-a2f93afa8536-scratchpad-hook-spike-project/e99d1c0e-8693-4ee5-a9ab-c7d58dfdb195.jsonl"
+}

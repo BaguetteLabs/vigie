@@ -1,0 +1,9 @@
+{
+  "cwd": "/private/tmp/claude-501/-Users-romain-www-vigie/03a97dc6-097f-4d60-a649-a2f93afa8536/scratchpad/hook-spike/project",
+  "hook_event_name": "SessionStart",
+  "model": "claude-fable-5-1",
+  "scratchpad_dir": "/private/tmp/claude-501/-private-tmp-claude-501--Users-romain-www-vigie-03a97dc6-097f-4d60-a649-a2f93afa8536-scratchpad-hook-spike-project/9e7edadc-2c04-4cd2-a417-af4d890de36b/scratchpad",
+  "session_id": "9e7edadc-2c04-4cd2-a417-af4d890de36b",
+  "source": "startup",
+  "transcript_path": "/Users/romain/.claude/projects/-private-tmp-claude-501--Users-romain-www-vigie-03a97dc6-097f-4d60-a649-a2f93afa8536-scratchpad-hook-spike-project/9e7edadc-2c04-4cd2-a417-af4d890de36b.jsonl"
+}

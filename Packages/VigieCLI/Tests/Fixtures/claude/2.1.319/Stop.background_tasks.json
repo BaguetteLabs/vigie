@@ -1,0 +1,24 @@
+{
+  "background_tasks": [
+    {
+      "agent_type": "general-purpose",
+      "description": "Reply with the word sub",
+      "id": "a4b7eae1e3afda5af",
+      "status": "running",
+      "type": "subagent"
+    }
+  ],
+  "cwd": "/private/tmp/claude-501/-Users-romain-www-vigie/03a97dc6-097f-4d60-a649-a2f93afa8536/scratchpad/hook-spike/project",
+  "effort": {
+    "level": "high"
+  },
+  "hook_event_name": "Stop",
+  "last_assistant_message": "The subagent is launched and running in the background. I ran no commands myself. I'll relay its reply as soon as the completion notification arrives.",
+  "permission_mode": "auto",
+  "prompt_id": "263d389a-7ca0-46d4-83ad-1239377b9b5e",
+  "scratchpad_dir": "/private/tmp/claude-501/-private-tmp-claude-501--Users-romain-www-vigie-03a97dc6-097f-4d60-a649-a2f93afa8536-scratchpad-hook-spike-project/9e7edadc-2c04-4cd2-a417-af4d890de36b/scratchpad",
+  "session_crons": [],
+  "session_id": "9e7edadc-2c04-4cd2-a417-af4d890de36b",
+  "stop_hook_active": false,
+  "transcript_path": "/Users/romain/.claude/projects/-private-tmp-claude-501--Users-romain-www-vigie-03a97dc6-097f-4d60-a649-a2f93afa8536-scratchpad-hook-spike-project/9e7edadc-2c04-4cd2-a417-af4d890de36b.jsonl"
+}

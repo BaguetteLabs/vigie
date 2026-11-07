@@ -1,0 +1,19 @@
+{
+  "agent_id": "a432e92f54abf729e",
+  "agent_transcript_path": "/Users/romain/.claude/projects/-private-tmp-claude-501--Users-romain-www-vigie-03a97dc6-097f-4d60-a649-a2f93afa8536-scratchpad-hook-spike-project/9e7edadc-2c04-4cd2-a417-af4d890de36b/subagents/agent-a432e92f54abf729e.jsonl",
+  "agent_type": "",
+  "background_tasks": [],
+  "cwd": "/private/tmp/claude-501/-Users-romain-www-vigie/03a97dc6-097f-4d60-a649-a2f93afa8536/scratchpad/hook-spike/project",
+  "effort": {
+    "level": "high"
+  },
+  "hook_event_name": "SubagentStop",
+  "last_assistant_message": "ls -la",
+  "permission_mode": "auto",
+  "prompt_id": "911d7860-e3a8-46a3-9398-d2556faabeb5",
+  "scratchpad_dir": "/private/tmp/claude-501/-private-tmp-claude-501--Users-romain-www-vigie-03a97dc6-097f-4d60-a649-a2f93afa8536-scratchpad-hook-spike-project/9e7edadc-2c04-4cd2-a417-af4d890de36b/scratchpad",
+  "session_crons": [],
+  "session_id": "9e7edadc-2c04-4cd2-a417-af4d890de36b",
+  "stop_hook_active": false,
+  "transcript_path": "/Users/romain/.claude/projects/-private-tmp-claude-501--Users-romain-www-vigie-03a97dc6-097f-4d60-a649-a2f93afa8536-scratchpad-hook-spike-project/9e7edadc-2c04-4cd2-a417-af4d890de36b.jsonl"
+}
