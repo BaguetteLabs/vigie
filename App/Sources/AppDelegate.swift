@@ -1,6 +1,7 @@
 import AgentKit
 import AgentsSessions
 import AppKit
+import ClaudeAdapter
 import ModuleKit
 import OSLog
 import VigieCore
@@ -24,6 +25,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var notifyRules: ConfigNotifyRules?
     private var executableOverrides: ExecutableOverrides?
     private var alertCenter: AlertCenter?
+    private var focusMonitor: (any FocusModeMonitor)?
+    private var peekPresenter: PeekPresenter?
+    private var setupProblems: SetupProblemReporter?
+    private var settings: SettingsController?
     private var appTopics: AppTopics?
     private var isShuttingDown = false
 
@@ -60,7 +65,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let themeController = ThemeController(library: library)
         themeController.startObservingSystem()
 
-        let contextMenu = NotchContextMenu()
+        let contextMenu = NotchContextMenu(openSettings: { [weak self] in self?.openSettings(pane: nil) })
         self.themeController = themeController
         self.contextMenu = contextMenu
 
@@ -70,13 +75,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
+    private func openSettings(pane: String?) {
+        guard let settings else {
+            logger.info("settings requested before assembly finished")
+            return
+        }
+        settings.open(pane: pane)
+    }
+
     private func assembleServices(themeController: ThemeController, contextMenu: NotchContextMenu) async {
         let eventBus = InProcessEventBus()
         let coordinator = PermissionsCoordinator(checker: SystemPermissionChecker())
         let hotkeyCenter = HotkeyCenter()
 
-        // Built once and shared by the agent modules (AD-4). Adapters arrive with Epics 5 and 8.
-        let agentAdapters = AgentAdapters([])
+        // Built once and shared by the agent modules (AD-4). Terminal adapters arrive with Epic 8.
+        let agentAdapters = AgentAdapters([ClaudeAdapter()])
         let terminalAdapters = TerminalAdapters([])
 
         var descriptors: [ModuleDescriptor] = [
@@ -126,26 +139,70 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             log: Logger(subsystem: environment.logSubsystem, category: "executables"))
         Task { await executables.prime() }
 
+        // The host is built after the registry, which needs the Notifier: the link closes that loop.
+        let hostLink = NotchHostLink()
+
+        // Notifier (AD-13): config rules, Focus modes, peek / system outputs, action routing.
         let notifierLog = Logger(subsystem: environment.logSubsystem, category: "notifier")
         let notifyRules = ConfigNotifyRules(store: configStore, logger: notifierLog)
         notifyRules.start()
         self.notifyRules = notifyRules
+        let focusMonitor = makeFocusMonitor(log: notifierLog)
+        self.focusMonitor = focusMonitor
         let actionRouter = AppAlertActionRouter(
             registry: { [weak self] in self?.registry },
+            openSettings: { [weak self] pane in self?.openSettings(pane: pane) },
             logger: Logger(subsystem: environment.logSubsystem, category: "alert-actions"))
+        let peeks = PeekPresenter(
+            anchors: hostLink, theme: themeController,
+            dwell: {
+                configStore.value(CoreSettings.path("closed", "peek_duration"), as: Duration.self)
+                    ?? PeekPresenter.defaultDwell
+            },
+            enabled: { _ in configStore.value(CoreSettings.path("closed", "peek"), as: Bool.self) ?? true },
+            logger: Logger(subsystem: environment.logSubsystem, category: "peek"))
+        self.peekPresenter = peeks
+        // Set once the core notifier exists; a denial is reported once, as a setup problem.
+        var reportPermissionDenied: (String) -> Void = { _ in }
+        let systemSink = SystemNotificationSink(
+            client: UNUserNotificationCenterClient(), permissions: coordinator, router: actionRouter,
+            onPermissionDenied: { message in reportPermissionDenied(message) })
         let alertCenter = AlertCenter(
-            rules: notifyRules, sinks: AlertSinks(actionRouter: actionRouter), log: notifierLog)
+            rules: notifyRules,
+            sinks: AlertSinks(peek: peeks, system: systemSink, actionRouter: actionRouter),
+            focus: focusMonitor,
+            activity: CoreActivityRecorder(store: activityStore),
+            log: notifierLog)
+        peeks.onPrimary = { [weak alertCenter] alert in alertCenter?.activate(alert) }
         self.alertCenter = alertCenter
+        let coreNotifier = alertCenter.makeNotifier(for: SetupProblemReporter.manifest)
+        reportPermissionDenied = { [notifierLog] message in
+            notifierLog.error("macOS notifications are denied; reported as a setup problem")
+            coreNotifier.post(
+                NotifierEvent(
+                    kind: SetupProblemReporter.alertKind, severity: .warn, title: message,
+                    action: .openSettings(pane: "notify"), dedupeKey: "permission.notifications"))
+        }
 
         do {
             hotkeyTokens = try CoreHotkeys.registerDefaults(
                 in: hotkeyCenter,
-                actions: CoreHotkeyActions(expand: { [logger] _ in logger.info("expand requested (Story 2.10)") }))
+                actions: CoreHotkeyActions(expand: { [weak self] intent in
+                    self?.notchHost?.toggleExpanded(focus: intent)
+                }))
         } catch {
             logger.error("core hotkeys failed to register: \(String(describing: error), privacy: .public)")
         }
         let bridge = HotkeyConfigBridge(store: configStore, center: hotkeyCenter, manifests: manifests)
         bridge.start()
+        self.hotkeyBridge = bridge
+
+        // Config and hotkey problems become `setup.problem` alerts (Story 3.4).
+        let setupProblems = SetupProblemReporter(
+            configStore: configStore, hotkeys: hotkeyCenter, notifier: coreNotifier,
+            log: Logger(subsystem: environment.logSubsystem, category: "setup-problems"))
+        setupProblems.start()
+        self.setupProblems = setupProblems
 
         for problem in configStore.problems {
             logger.error("config problem: \(String(describing: problem), privacy: .public)")
@@ -157,14 +214,29 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let contextFactory = CoreModuleContextFactory(
             environment: environment, eventBus: eventBus, configStore: configStore,
             permissions: coordinator, hotkeyCenter: hotkeyCenter, alertCenter: alertCenter,
-            activityStore: activityStore, executables: executables)
+            activityStore: activityStore, executables: executables,
+            hostControl: { CoreHostControl(moduleID: $0, link: hostLink) })
         let registry = ModuleRegistry(
             descriptors: descriptors,
             enablement: ConfigModuleEnablement(store: configStore),
             contextFactory: contextFactory,
             logger: Logger(subsystem: environment.logSubsystem, category: "modules"),
             permissions: coordinator)
+        self.registry = registry
 
+        let cliInstaller = CLIInstaller.bundledCLIURL(in: .main, cliName: environment.cliName).map {
+            CLIInstaller(environment: environment, bundledCLIURL: $0)
+        }
+        self.settings = SettingsController(
+            configStore: configStore, registry: registry, permissions: coordinator, hotkeyCenter: hotkeyCenter,
+            activityStore: activityStore, cliInstaller: cliInstaller, manifests: manifests,
+            loginShellPath: {
+                // The resolver's captured login-shell PATH; unknown when the capture fell back.
+                guard await executables.searchPathSource == .loginShell else { return nil }
+                return await executables.searchPath.joined(separator: ":")
+            })
+
+        let general = { (key: String) in CoreSettings.path("general", key) }
         let host = NotchHost(
             themeController: themeController,
             registry: registry,
@@ -176,34 +248,54 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             closedSlots: {
                 configStore.value(CoreSettings.path("closed", "slots"), as: Int.self) ?? ClosedNotchArbiter.defaultSlots
             },
+            openOnHover: { configStore.value(general("open_on_hover"), as: Bool.self) ?? false },
+            hoverDelay: { configStore.value(general("hover_delay"), as: Duration.self) ?? NotchHost.defaultHoverDelay },
+            closeOnLeave: { configStore.value(general("close_on_leave"), as: Bool.self) ?? false },
+            tabOrder: { configStore.value(general("tab_order"), as: [String].self) ?? [] },
+            openSettings: { [weak self] in self?.openSettings(pane: nil) },
             logger: Logger(subsystem: environment.logSubsystem, category: "host"))
+        hostLink.host = host
+        self.notchHost = host
 
-        // `vigie reload` and `vigie expand` (Story 4.3). Subscribed before the server's queue is released.
+        // `vigie reload` and `app.expand` (Story 4.3, AD-21). Subscribed before the server's queue is released.
         let appTopics = AppTopics(
             bus: eventBus, logger: logger,
             onReload: { await configStore.reload() },
-            onExpand: { [logger] _ in logger.info("expand requested (Story 2.10)") })
+            onExpand: { [weak host] _ in host?.expand(focus: nil) })
         appTopics.start()
-
-        self.hotkeyBridge = bridge
-        self.registry = registry
-        self.notchHost = host
         self.appTopics = appTopics
 
         host.start()
         await registry.start()
-        eventServer?.releaseQueue()
+        // AD-6 steps 4-6: replay the spool, release the socket queue, then announce readiness.
+        if let server = eventServer {
+            let report = await server.finishStartup(spool: SpoolLocations(environment: environment))
+            logger.info("spool replay: \(String(describing: report), privacy: .public)")
+        }
+        eventBus.publish(EventMessage(topic: Topic.hostReady, payload: Data("{}".utf8), sentAt: Date()))
+        logger.info("host ready")
 
-        installCLI()
+        installCLI(cliInstaller)
+    }
+
+    /// `-VigieSimulateFocus YES` (Debug) pretends a Focus mode is on, to exercise FR17 without changing the
+    /// system's Focus.
+    private func makeFocusMonitor(log: Logger) -> any FocusModeMonitor {
+        #if DEBUG
+            if UserDefaults.standard.bool(forKey: "VigieSimulateFocus") {
+                log.info("Focus mode on (simulated by -VigieSimulateFocus)")
+                return ManualFocusModeMonitor(isActive: true)
+            }
+        #endif
+        return SystemFocusModeMonitor(assertionsURL: SystemFocusModeMonitor.defaultAssertionsURL(), log: log)
     }
 
     /// Links `~/.local/bin/<cliName>` to the bundled helper (FR8, AD-22); never overwrites a foreign file.
-    private func installCLI() {
-        guard let bundled = CLIInstaller.bundledCLIURL(in: .main, cliName: environment.cliName) else {
+    private func installCLI(_ installer: CLIInstaller?) {
+        guard let installer else {
             logger.error("bundled CLI \(self.environment.cliName, privacy: .public) missing; not linked")
             return
         }
-        let installer = CLIInstaller(environment: environment, bundledCLIURL: bundled)
         let logger = logger
         Task.detached {
             let result = await installer.install()
@@ -221,8 +313,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             eventServer?.stop()
             return .terminateNow
         }
+        settings?.close()
         notchHost?.stop()
         hotkeyBridge?.stop()
+        setupProblems?.stop()
         appTopics?.stop()
         notifyRules?.stop()
         executableOverrides?.stop()

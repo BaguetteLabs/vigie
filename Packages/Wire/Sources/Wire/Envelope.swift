@@ -18,6 +18,8 @@ public enum Topic {
     public static let appReload = "app.reload"
     /// Sent by a second app instance to the running one, which opens its expanded view (AD-21); payload `{}`.
     public static let appExpand = "app.expand"
+    /// Published on the in-process bus once modules run and the spool is replayed (AD-6 step 6); payload `{}`.
+    public static let hostReady = "host.ready"
 }
 
 /// ISO 8601 UTC timestamps with fractional seconds, as used on the wire (AD-7).

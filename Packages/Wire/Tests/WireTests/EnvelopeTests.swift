@@ -144,3 +144,9 @@ extension JSONValue {
         return nil
     }
 }
+
+@Suite struct TopicTests {
+    @Test func hostReadyTopicIsStable() {
+        #expect(Topic.hostReady == "host.ready")
+    }
+}

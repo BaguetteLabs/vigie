@@ -265,6 +265,18 @@
         }
       }
     },
+    "peek.kicker.withCategory": {
+      "comment": "Peek kicker followed by the alert's category, e.g. SETUP · CONFIG. %1$@ is the kicker, %2$@ the category; shown uppercase.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ · %2$@"
+          }
+        }
+      }
+    },
     "peek.kicker.sleepSummary": {
       "comment": "Peek kicker for the summary of sessions interrupted by sleep; shown uppercase.",
       "extractionState": "manual",

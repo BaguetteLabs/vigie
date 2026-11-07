@@ -104,6 +104,21 @@ public final class ExpandedPanel: NSPanel, ExpandedPanelHosting {
         allowsKey = false
     }
 
+    /// ⌘, opens Settings while the panel is key (an accessory app has no app menu to carry the shortcut).
+    public override func performKeyEquivalent(with event: NSEvent) -> Bool {
+        if Self.isSettingsShortcut(event), let openSettings = host?.openSettings {
+            openSettings()
+            return true
+        }
+        return super.performKeyEquivalent(with: event)
+    }
+
+    static func isSettingsShortcut(_ event: NSEvent) -> Bool {
+        event.type == .keyDown
+            && event.modifierFlags.intersection(.deviceIndependentFlagsMask) == .command
+            && event.charactersIgnoringModifiers == ","
+    }
+
     /// Esc when no view handles it.
     public override func cancelOperation(_ sender: Any?) {
         host?.handleEscape()

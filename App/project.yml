@@ -21,6 +21,8 @@ packages:
     path: ../Packages/AgentKit
   AgentsSessions:
     path: ../Packages/Modules/AgentsSessions
+  ClaudeAdapter:
+    path: ../Packages/Adapters/Claude
 
 settings:
   base:
@@ -47,6 +49,7 @@ targets:
       - package: Wire
       - package: AgentKit
       - package: AgentsSessions
+      - package: ClaudeAdapter
     settings:
       base:
         INFOPLIST_FILE: Info.plist

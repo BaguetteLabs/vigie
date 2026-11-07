@@ -6,16 +6,24 @@ import os
 /// The App's `AlertActionRouter` (AD-13): carries out the actions of delivered alerts.
 ///
 /// - `.module(id, actionID, payload)`: `NotchModule` has no action entry point yet; logged until Story 3.3.
-/// - `.openSettings(pane)`: logged until the Settings window exists (Story 2.14).
+/// - `.openSettings(pane)`: opens the Settings window on `pane` (Story 2.14).
 /// - `.openURL`: opened with `NSWorkspace`.
 @MainActor
 public final class AppAlertActionRouter: AlertActionRouter {
     private let registry: () -> ModuleRegistry?
+    private let settings: (String) -> Void
     private let logger: Logger
 
-    /// - Parameter registry: the running registry, read lazily (the AlertCenter is built before it).
-    public init(registry: @escaping @MainActor () -> ModuleRegistry?, logger: Logger) {
+    /// - Parameters:
+    ///   - registry: the running registry, read lazily (the AlertCenter is built before it).
+    ///   - openSettings: opens the Settings window on a pane (`SettingsController.open(pane:)`).
+    public init(
+        registry: @escaping @MainActor () -> ModuleRegistry?,
+        openSettings: @escaping @MainActor (String) -> Void,
+        logger: Logger
+    ) {
         self.registry = registry
+        self.settings = openSettings
         self.logger = logger
     }
 
@@ -28,8 +36,7 @@ public final class AppAlertActionRouter: AlertActionRouter {
     }
 
     public func openSettings(pane: String) {
-        // TODO(Story 2.14): open the Settings window on `pane`.
-        logger.info("alert action open settings \(pane, privacy: .public); Settings arrives with Story 2.14")
+        settings(pane)
     }
 
     public func openURL(_ url: URL) {

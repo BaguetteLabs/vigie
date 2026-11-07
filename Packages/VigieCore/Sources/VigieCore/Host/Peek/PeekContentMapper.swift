@@ -50,7 +50,7 @@ public enum PeekContentMapper {
             shortcut: PeekAction.secondaryShortcut)
         return PeekContent(
             kind: kind,
-            kicker: string(kickerKey(kind)),
+            kicker: kicker(kind, category: alert.event.category),
             title: alert.event.title,
             body: alert.event.body,
             primary: primary,
@@ -68,6 +68,13 @@ public enum PeekContentMapper {
     }
 
     // MARK: Copy
+
+    /// The kicker, with the event's category when it has one (`SETUP · CONFIG`, Story 3.4).
+    static func kicker(_ kind: PeekKind, category: String?) -> String {
+        let base = string(kickerKey(kind))
+        guard let category, !category.isEmpty else { return base }
+        return format("peek.kicker.withCategory", base, category)
+    }
 
     static func kickerKey(_ kind: PeekKind) -> String {
         switch kind {

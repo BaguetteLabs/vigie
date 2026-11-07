@@ -1,7 +1,9 @@
+import AppKit
 import Foundation
 import ModuleKit
 import Synchronization
 import Testing
+import VigieUI
 import os
 
 @testable import VigieCore
@@ -169,5 +171,43 @@ struct ConfigStoreRawTests {
         await store.fireAndSettle(watcher)
         try await Task.sleep(for: .milliseconds(50))
         #expect(counter.count == 0)
+    }
+}
+
+@MainActor
+struct AssemblyPeekCategoryTests {
+    @Test func setupProblemKickerCarriesTheCategory() throws {
+        let theme = ThemeController(library: try ThemeLoader.loadBundled()).theme
+        let alert = ActiveAlert(
+            id: UUID(), module: "core",
+            event: NotifierEvent(
+                kind: "setup.problem", severity: .warn, title: "t", action: .openSettings(pane: "general"),
+                category: "CONFIG"),
+            outputs: [.peek], postedAt: Date())
+        #expect(PeekContentMapper.content(for: alert, theme: theme).kicker == "Setup · CONFIG")
+    }
+}
+
+@MainActor
+struct AssemblyPeekAnchorTests {
+    @Test func hostAnchorsPeeksOnThePointerDisplayElseMain() {
+        let fixture = ExpandedFixture()
+        let main = IslandAnchor(
+            screenFrame: ExpandedFixture.screen, islandFrame: ExpandedFixture.island, notchRect: ExpandedFixture.notch)
+        let second = IslandAnchor(
+            screenFrame: CGRect(x: 1512, y: 0, width: 1920, height: 1080),
+            islandFrame: CGRect(x: 2252, y: 1046, width: 440, height: 34),
+            notchRect: CGRect(x: 2372, y: 1048, width: 200, height: 32))
+        fixture.host.anchorsOverride = [main, second]
+        let provider: any PeekAnchorProvider = fixture.host
+
+        let onSecond = provider.anchor(forDisplayUnder: NSPoint(x: 2000, y: 500))
+        #expect(onSecond == PeekAnchor(screenFrame: second.screenFrame, notchRect: second.notchRect, bandHeight: 34))
+        let offScreen = provider.anchor(forDisplayUnder: NSPoint(x: -500, y: -500))
+        #expect(offScreen?.screenFrame == main.screenFrame)
+        #expect(provider.anchor(forDisplayUnder: nil)?.notchRect == main.notchRect)
+
+        fixture.host.anchorsOverride = []
+        #expect(provider.anchor(forDisplayUnder: nil) == nil)
     }
 }
