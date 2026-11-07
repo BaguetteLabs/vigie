@@ -114,6 +114,8 @@ public struct NotifierEvent: Hashable, Sendable {
     public let dedupeKey: String?
     /// Numeric facts the Notifier's rule conditions compare against (A54), e.g. `working_duration` in seconds.
     public let metrics: [String: Double]
+    /// Short uppercase category the peek shows in the kicker (`SETUP · <CATEGORY>`); used by `setup.problem`.
+    public let category: String?
 
     public init(
         kind: String,
@@ -122,8 +124,10 @@ public struct NotifierEvent: Hashable, Sendable {
         body: String? = nil,
         action: AlertAction? = nil,
         dedupeKey: String? = nil,
-        metrics: [String: Double] = [:]
+        metrics: [String: Double] = [:],
+        category: String? = nil
     ) {
+        self.category = category
         self.kind = kind
         self.severity = severity
         self.title = title

@@ -1080,6 +1080,174 @@
           }
         }
       }
+    },
+    "vigiecore.setup.title.invalidFile" : {
+      "comment" : "Title: a config file could not be parsed. %@ is the file name.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ can't be read"
+          }
+        }
+      }
+    },
+    "vigiecore.setup.title.invalidValue" : {
+      "comment" : "Title: a setting has a wrong value. %@ is the key.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invalid value for %@"
+          }
+        }
+      }
+    },
+    "vigiecore.setup.title.wrongFile" : {
+      "comment" : "Title: a setting is in the wrong config file. %@ is the key.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ is in the wrong file"
+          }
+        }
+      }
+    },
+    "vigiecore.setup.title.unknownKey" : {
+      "comment" : "Title: a setting key is not known. %@ is the key.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unknown setting %@"
+          }
+        }
+      }
+    },
+    "vigiecore.setup.body.invalidFile" : {
+      "comment" : "Setup problem sentence for an unreadable config file. %@ is the file name.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vigie keeps using the last valid content of %@."
+          }
+        }
+      }
+    },
+    "vigiecore.setup.body.invalidValue" : {
+      "comment" : "Setup problem sentence for a bad value.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The default value applies until the setting is fixed."
+          }
+        }
+      }
+    },
+    "vigiecore.setup.body.wrongFile" : {
+      "comment" : "Setup problem sentence for a key in the wrong file.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vigie ignores it there; move it to the other config file."
+          }
+        }
+      }
+    },
+    "vigiecore.setup.body.unknownKey" : {
+      "comment" : "Setup problem sentence for an unknown key.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No module declares this setting, so Vigie ignores it."
+          }
+        }
+      }
+    },
+    "vigiecore.setup.title.hotkeyConflict" : {
+      "comment" : "Title: two shortcuts use the same keys. %1$@ and %2$@ are hotkey names with their owner.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shortcut conflict: %1$@ and %2$@"
+          }
+        }
+      }
+    },
+    "vigiecore.setup.body.hotkeyConflict" : {
+      "comment" : "Setup problem sentence. %1$@ keeps the shortcut, %2$@ is not bound.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ keeps the shortcut; %2$@ is not bound."
+          }
+        }
+      }
+    },
+    "vigiecore.setup.title.hotkeyInvalid" : {
+      "comment" : "Title: a configured shortcut is invalid. %@ is the hotkey name.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invalid shortcut for %@"
+          }
+        }
+      }
+    },
+    "vigiecore.setup.body.hotkeyInvalid" : {
+      "comment" : "Setup problem sentence for an invalid shortcut.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The default shortcut stays in effect."
+          }
+        }
+      }
+    },
+    "vigiecore.setup.category.config" : {
+      "comment" : "Kicker category after SETUP, for config problems. Uppercase.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CONFIG"
+          }
+        }
+      }
+    },
+    "vigiecore.setup.category.hotkey" : {
+      "comment" : "Kicker category after SETUP, for shortcut problems. Uppercase.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HOTKEY"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
