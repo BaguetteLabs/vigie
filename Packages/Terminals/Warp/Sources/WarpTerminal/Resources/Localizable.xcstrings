@@ -1,0 +1,54 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "warp.adapter.name" : {
+      "comment" : "Name of the Warp terminal adapter.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Warp"
+          }
+        }
+      }
+    },
+    "warp.focus.statement.appOnly" : {
+      "comment" : "Settings › Agents: Warp focus level when only the Warp app can be brought forward (SPEC §14.1).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Warp: app-level focus only"
+          }
+        }
+      }
+    },
+    "warp.focus.statement.tab" : {
+      "comment" : "Settings › Agents: Warp focus level when Focus brings the session's own tab forward through Warp's session URL (confirmed).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Warp: tab focus via session URL"
+          }
+        }
+      }
+    },
+    "warp.focus.statement.tabUnverified" : {
+      "comment" : "Settings › Agents: Warp focus level while tab focus through Warp's session URL is not yet confirmed by a manual check.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Warp: tab focus via session URL (unverified)"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}
