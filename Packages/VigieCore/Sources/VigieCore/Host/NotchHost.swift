@@ -5,30 +5,73 @@ import SwiftUI
 import VigieUI
 import os
 
-/// Where the closed island lives.
-public enum NotchDisplayMode {
-    /// Around the hardware notch of this screen.
-    case physical(NSScreen)
-    /// Nowhere yet: no notched screen (the virtual notch arrives in Story 2.6).
+/// Where the main Vigie island lives.
+public enum NotchDisplayMode: Equatable, Sendable {
+    /// Around the hardware notch of this display.
+    case physical(DisplayInfo)
+    /// A virtual notch drawn by Vigie on this plain display (SPEC §5.5).
+    case virtual(DisplayInfo)
+    /// Nowhere: no display shows Vigie.
     case none
 }
 
-/// Owns the island panel and its placement (AD-2): finds the notched screen, lays out the island around the
-/// hardware notch, follows screen changes, and fills the wings.
+/// One placed island: its display, geometry and how it is drawn.
+public struct PlacedIsland: Sendable, Equatable {
+    public var display: DisplayInfo
+    public var geometry: NotchGeometry
+    /// The fill: black on a hardware notch and for `virtual_notch.style = "black"`.
+    public var surface: IslandSurface
+    /// True while the island is placed but not drawn: an idle virtual notch with `idle = hide`, or a virtual
+    /// notch whose auto-hidden menu bar is hidden (FR11, FR26). Peeks still anchor on it.
+    public var isHidden: Bool
+
+    public var anchor: IslandAnchor {
+        IslandAnchor(screenFrame: display.frame, islandFrame: geometry.islandFrame, notchRect: geometry.notchRect)
+    }
+}
+
+/// The island window as the host drives it. ``NotchPanel`` in production; tests use a fake.
+@MainActor
+public protocol IslandPanelHosting: AnyObject {
+    /// Moves the window to `frame` (global AppKit coordinates) without animation.
+    func place(frame: CGRect)
+    /// Orders the window front without taking focus.
+    func show()
+    func hide()
+    var isShown: Bool { get }
+}
+
+/// Owns the island panels and their placement (AD-2): classifies the displays, lays out the island around the
+/// hardware notch or draws a virtual notch on a plain display (SPEC §5.3–5.5), follows screen changes, and fills
+/// the wings.
 ///
 /// The wings come from ``ClosedNotchArbiter`` (SPEC §5): ``leadingLayout`` and ``trailingLayout`` are
 /// recomputed on the main actor whenever a running module's `state` (or anything its `leftWingItems()` reads)
 /// changes, a module starts or stops, or a transient readout comes or goes. Call ``rearbitrate()`` when
-/// `closed.slots` changes.
+/// `closed.slots` changes, and ``reloadDisplayConfiguration()`` when `[display]`, `[virtual_notch]`,
+/// `closed.max_side_width` or `general.hide_in_fullscreen` change.
 ///
 /// The expanded view (Story 2.10, SPEC §10) opens only on a click on the island, the expand hotkey or, when
 /// `open_on_hover` is on, a hover longer than `hover_delay`; see `NotchHost+Expanded.swift`.
 @MainActor @Observable
 public final class NotchHost {
-    public private(set) var displayMode: NotchDisplayMode = .none
-    public private(set) var geometry: NotchGeometry?
-    public var isPresented: Bool { panel?.isVisible ?? false }
-    /// The island frame in global AppKit coordinates, when presented.
+    /// The connected displays at the last placement.
+    public private(set) var displays: [DisplayInfo] = []
+    /// The placed islands, main Vigie display first.
+    public private(set) var islands: [PlacedIsland] = []
+    /// The display whose island fades in on hover from the top-center strip (FR27), while the pointer is there.
+    public private(set) var hoverStripDisplayID: CGDirectDisplayID?
+
+    /// The main Vigie display: where peeks go when the display under the pointer shows no island.
+    public var activeDisplayID: CGDirectDisplayID? { islands.first?.display.id }
+    public var displayMode: NotchDisplayMode {
+        guard let island = islands.first else { return .none }
+        return island.geometry.isVirtual ? .virtual(island.display) : .physical(island.display)
+    }
+    /// The main Vigie display's island geometry.
+    public var geometry: NotchGeometry? { islands.first?.geometry }
+    public var isPresented: Bool { panels.values.contains { $0.isShown } }
+    /// The main island frame in global AppKit coordinates, when placed.
     public var frame: CGRect? { geometry?.islandFrame }
     /// The left wing: the shared item lane.
     public private(set) var leadingLayout = SideLayout.empty
@@ -48,13 +91,21 @@ public final class NotchHost {
     @ObservationIgnored private let contextMenu: NotchContextMenu
     @ObservationIgnored private let maxSideWidth: @MainActor () -> CGFloat
     @ObservationIgnored private let closedSlots: @MainActor () -> Int
+    @ObservationIgnored private let virtualNotch: @MainActor () -> VirtualNotchSettings
+    @ObservationIgnored private let menuBarProbe: any MenuBarProbing
     @ObservationIgnored private var arbitrationGeneration = 0
     @ObservationIgnored private var transientTask: Task<Void, Never>?
-    @ObservationIgnored private let screens: @MainActor () -> [NSScreen]
+    @ObservationIgnored private let readDisplays: @MainActor () -> [DisplayInfo]
     @ObservationIgnored let logger: Logger
-    @ObservationIgnored private var panel: NotchPanel?
+    @ObservationIgnored private let makeIslandPanel: @MainActor (NotchHost, CGDirectDisplayID) -> any IslandPanelHosting
+    @ObservationIgnored private(set) var panels: [CGDirectDisplayID: any IslandPanelHosting] = [:]
     @ObservationIgnored private var screenObserver: (any NSObjectProtocol)?
-    @ObservationIgnored private var islandScreenFrame: CGRect?
+    @ObservationIgnored private var isStarted = false
+    @ObservationIgnored private var layoutScheduled = false
+    @ObservationIgnored private var lastIdle: Bool?
+    @ObservationIgnored private(set) var hiddenMenuBars: Set<CGDirectDisplayID> = []
+    @ObservationIgnored private var menuBarTimer: Timer?
+    @ObservationIgnored private var stripMonitors: [Any] = []
 
     // Expanded view (NotchHost+Expanded.swift).
     @ObservationIgnored let focusPolicy: FocusPolicy
@@ -77,9 +128,12 @@ public final class NotchHost {
     @ObservationIgnored var anchorsOverride: [IslandAnchor]?
 
     /// - Parameters:
-    ///   - maxSideWidth: `closed.max_side_width` (SPEC §5.3, default 120). ConfigStore wiring: Stories 2.6/2.7.
-    ///   - closedSlots: `closed.slots` (SPEC §5, default 3, clamped 1…4). ConfigStore wiring comes later.
-    ///   - screens: the screens to search; `NSScreen.screens` in production.
+    ///   - maxSideWidth: `closed.max_side_width` (SPEC §5.3, default 120).
+    ///   - closedSlots: `closed.slots` (SPEC §5, default 3, clamped 1…4).
+    ///   - virtualNotch: `[virtual_notch]` (SPEC §5.5); `VirtualNotchSettings(configStore:)` in production.
+    ///   - displays: the connected displays; ``DisplayInfo/current(_:)`` in production.
+    ///   - menuBarProbe: menu bar height, status items and auto-hide; ``SystemMenuBarProbe`` in production.
+    ///   - makeIslandPanel: builds an island window for a display; a ``NotchPanel`` in production.
     ///   - focusPolicy: the app-wide focus arbiter (AD-13); the expanded view is one of its surfaces.
     ///   - openOnHover: `[general] open_on_hover` (default false).
     ///   - hoverDelay: `[general] hover_delay` (default 150 ms).
@@ -94,7 +148,10 @@ public final class NotchHost {
         contextMenu: NotchContextMenu,
         maxSideWidth: @escaping @MainActor () -> CGFloat = { 120 },
         closedSlots: @escaping @MainActor () -> Int = { ClosedNotchArbiter.defaultSlots },
-        screens: @escaping @MainActor () -> [NSScreen] = { NSScreen.screens },
+        virtualNotch: @escaping @MainActor () -> VirtualNotchSettings = { .default },
+        displays: @escaping @MainActor () -> [DisplayInfo] = { DisplayInfo.current() },
+        menuBarProbe: (any MenuBarProbing)? = nil,
+        makeIslandPanel: (@MainActor (NotchHost, CGDirectDisplayID) -> any IslandPanelHosting)? = nil,
         focusPolicy: FocusPolicy = FocusPolicy(),
         openOnHover: @escaping @MainActor () -> Bool = { false },
         hoverDelay: @escaping @MainActor () -> Duration = { NotchHost.defaultHoverDelay },
@@ -110,7 +167,9 @@ public final class NotchHost {
         self.contextMenu = contextMenu
         self.maxSideWidth = maxSideWidth
         self.closedSlots = closedSlots
-        self.screens = screens
+        self.virtualNotch = virtualNotch
+        self.readDisplays = displays
+        self.menuBarProbe = menuBarProbe ?? SystemMenuBarProbe()
         self.focusPolicy = focusPolicy
         self.openOnHover = openOnHover
         self.hoverDelay = hoverDelay
@@ -118,6 +177,15 @@ public final class NotchHost {
         self.tabOrder = tabOrder
         self.openSettings = openSettings
         self.pointerLocation = pointerLocation
+        self.makeIslandPanel =
+            makeIslandPanel ?? { host, id in
+                let panel = NotchPanel(
+                    contentRect: .zero,
+                    rootView: NotchRootView(host: host, displayID: id, themeController: host.themeController),
+                    contextMenu: host.contextMenu)
+                panel.onClick = { [weak host] in host?.islandClicked() }
+                return panel
+            }
         self.makeExpandedPanel =
             makeExpandedPanel ?? { host in
                 ExpandedPanel(host: host, rootView: ExpandedRootView(host: host, themeController: themeController))
@@ -126,13 +194,14 @@ public final class NotchHost {
         expandedSurface.host = self
     }
 
-    /// Places the island and follows screen parameter changes until `stop()`.
+    /// Places the islands and follows screen parameter changes until `stop()`.
     public func start() {
-        guard screenObserver == nil else { return }
+        guard !isStarted else { return }
+        isStarted = true
         screenObserver = NotificationCenter.default.addObserver(
             forName: NSApplication.didChangeScreenParametersNotification, object: nil, queue: .main
         ) { [weak self] _ in
-            MainActor.assumeIsolated { self?.layout() }
+            MainActor.assumeIsolated { self?.screenParametersChanged() }
         }
         rearbitrate()
         layout()
@@ -143,74 +212,143 @@ public final class NotchHost {
         hideTask?.cancel()
         expandedPanel?.hide()
         expandedPanel = nil
-        islandScreenFrame = nil
         if let screenObserver { NotificationCenter.default.removeObserver(screenObserver) }
         screenObserver = nil
+        isStarted = false
         arbitrationGeneration += 1  // drops the armed observation
         transientTask?.cancel()
         transientTask = nil
         transient = nil
-        panel?.orderOut(nil)
-        panel = nil
-        geometry = nil
-        displayMode = .none
+        for panel in panels.values { panel.hide() }
+        panels = [:]
+        islands = []
+        hoverStripDisplayID = nil
+        setMenuBarPolling(false)
+        setStripMonitors(false)
     }
 
-    /// Recomputes the placement and moves, shows or hides the panel.
-    func layout() {
-        guard let (screen, metrics) = notchedScreen() else {
-            if case .physical = displayMode {
-                logger.info("Notched screen gone; island hidden")
-            } else {
-                logger.info("No physical notch; virtual notch arrives in Story 2.6")
+    /// Re-reads the display settings (`[display]`, `[virtual_notch]`, `closed.max_side_width`) and re-places the
+    /// islands. The App calls it when ConfigStore reports a change under those keys.
+    public func reloadDisplayConfiguration() {
+        guard isStarted else { return }
+        layout()
+    }
+
+    /// A display was connected or disconnected, or a resolution, arrangement or lid change happened: re-place
+    /// on the next run-loop turn (AppKit has settled the new screen list by then), coalescing bursts.
+    func screenParametersChanged() {
+        guard !layoutScheduled else { return }
+        layoutScheduled = true
+        DispatchQueue.main.async { [weak self] in
+            MainActor.assumeIsolated {
+                guard let self else { return }
+                self.layoutScheduled = false
+                if self.isStarted { self.layout() }
             }
-            panel?.orderOut(nil)
-            geometry = nil
-            islandScreenFrame = nil
-            displayMode = .none
-            return
         }
+    }
+
+    // MARK: Placement
+
+    /// The displays that show an island, main Vigie display first: the notched display if any, else the main
+    /// display.
+    func selectedDisplays(_ displays: [DisplayInfo]) -> [DisplayInfo] {
+        let chosen = displays.first(where: \.hasNotch) ?? displays.first(where: \.isMain) ?? displays.first
+        return chosen.map { [$0] } ?? []
+    }
+
+    /// True when no module wants either side (FR11).
+    var isIdle: Bool { leadingLayout.isEmpty && trailingLayout.isEmpty }
+
+    /// Recomputes the placement and moves, shows, hides, creates or removes the panels. A display that keeps its
+    /// island keeps its panel: only its frame moves.
+    func layout() {
+        let displays = readDisplays()
+        if displays != self.displays { self.displays = displays }
+        let settings = virtualNotch()
+        let idle = isIdle
+        lastIdle = idle
+        let autoHide = menuBarProbe.autoHidesMenuBar
+        let chosen = selectedDisplays(displays)
+        hiddenMenuBars =
+            autoHide
+            ? Set(chosen.filter { $0.kind.usesVirtualNotch && !menuBarProbe.isMenuBarVisible(on: $0.frame) }.map(\.id))
+            : []
+        let placed = chosen.compactMap { place($0, settings: settings, isIdle: idle) }
+        if placed != islands { islands = placed }
+        if placed.isEmpty {
+            logger.info("No display shows Vigie")
+        }
+        syncPanels()
+        let hasVirtual = placed.contains { $0.geometry.isVirtual }
+        setMenuBarPolling(hasVirtual && autoHide)
+        setStripMonitors(hasVirtual)
+    }
+
+    private func place(_ display: DisplayInfo, settings: VirtualNotchSettings, isIdle: Bool) -> PlacedIsland? {
         let theme = themeController.islandTheme
-        guard
-            let geometry = NotchGeometry.physical(
-                screen: metrics,
-                bandHeight: theme.spacing(.bandHeight),
-                maxSideWidth: maxSideWidth(),
-                cornerRadius: theme.radius(.islandClosed))
-        else {
-            logger.error("Notch geometry unavailable for \(screen.localizedName, privacy: .public)")
-            return
+        let bandHeight = theme.spacing(.bandHeight)
+        let radius = theme.radius(.islandClosed)
+        if display.hasNotch {
+            guard
+                let geometry = NotchGeometry.physical(
+                    screen: display.metrics, bandHeight: bandHeight, maxSideWidth: maxSideWidth(),
+                    cornerRadius: radius)
+            else {
+                logger.error("Notch geometry unavailable for \(display.name, privacy: .public)")
+                return nil
+            }
+            return PlacedIsland(display: display, geometry: geometry, surface: .black, isHidden: false)
         }
-        self.geometry = geometry
-        islandScreenFrame = metrics.frame
-        displayMode = .physical(screen)
-        let panel = self.panel ?? makePanel(frame: geometry.islandFrame)
-        self.panel = panel
-        panel.setFrame(geometry.islandFrame, display: true)
-        panel.orderFrontRegardless()
-        logger.info(
-            "Island on \(screen.localizedName, privacy: .public): frame \(NSStringFromRect(geometry.islandFrame), privacy: .public), notch \(NSStringFromRect(geometry.notchRect), privacy: .public)"
-        )
+        let geometry = NotchGeometry.virtual(
+            screen: display.metrics, settings: settings, menuBar: menuBarProbe.menuBar(on: display.frame),
+            bandHeight: bandHeight, maxSideWidth: maxSideWidth(), cornerRadius: radius, isIdle: isIdle)
+        let idleHidden = isIdle && settings.idle == .hide && hoverStripDisplayID != display.id
+        return PlacedIsland(
+            display: display, geometry: geometry, surface: settings.style == .menuBar ? .menuBar : .black,
+            isHidden: idleHidden || hiddenMenuBars.contains(display.id))
     }
 
-    private func makePanel(frame: CGRect) -> NotchPanel {
-        let panel = NotchPanel(
-            contentRect: frame,
-            rootView: NotchRootView(host: self, themeController: themeController),
-            contextMenu: contextMenu)
-        panel.onClick = { [weak self] in self?.islandClicked() }
-        return panel
+    private func syncPanels() {
+        let ids = Set(islands.map(\.display.id))
+        for (id, panel) in panels where !ids.contains(id) {
+            panel.hide()
+            panels[id] = nil
+        }
+        for island in islands {
+            let id = island.display.id
+            let panel = panels[id] ?? makeIslandPanel(self, id)
+            panels[id] = panel
+            panel.place(frame: island.geometry.islandFrame)
+            if island.isHidden {
+                panel.hide()
+            } else {
+                panel.show()
+            }
+        }
     }
 
-    /// The islands on screen, main Vigie display first. One today (the notched display); Stories 2.6/2.8 add
-    /// virtual notches and `[display] show_on`.
-    var islandAnchors: [IslandAnchor] {
+    /// The placed island on a display.
+    public func island(for displayID: CGDirectDisplayID) -> PlacedIsland? {
+        islands.first { $0.display.id == displayID }
+    }
+
+    /// The theme an island draws with: the main theme for a light `menu_bar` virtual notch (light role set,
+    /// `surface-vn-*`), the island (dark) theme otherwise (UX-DR76, OQ15).
+    public func theme(for island: PlacedIsland) -> Theme {
+        let main = themeController.theme
+        return island.surface == .menuBar && main.look == .light ? main : themeController.islandTheme
+    }
+
+    /// The islands on screen, main Vigie display first.
+    public var islandAnchors: [IslandAnchor] {
         if let anchorsOverride { return anchorsOverride }
-        guard let geometry, let islandScreenFrame else { return [] }
-        return [
-            IslandAnchor(
-                screenFrame: islandScreenFrame, islandFrame: geometry.islandFrame, notchRect: geometry.notchRect)
-        ]
+        return islands.map(\.anchor)
+    }
+
+    /// The peek anchors (one per island) and the main Vigie display's, for ``PeekAnchor/select(pointer:islands:main:)``.
+    public var peekAnchors: [PeekAnchor] {
+        islands.map { PeekAnchor(screenFrame: $0.display.frame, geometry: $0.geometry) }
     }
 
     /// The island on the display under `pointer`, or on the main Vigie display when that display shows none
@@ -224,32 +362,79 @@ public final class NotchHost {
         anchor(forDisplayUnder: pointer)?.islandFrame
     }
 
-    private func notchedScreen() -> (NSScreen, ScreenMetrics)? {
-        if let screen = screens().first(where: { $0.auxiliaryTopLeftArea != nil }) {
-            return (screen, ScreenMetrics(screen: screen))
+    // MARK: Auto-hidden menu bar (FR26)
+
+    private func setMenuBarPolling(_ on: Bool) {
+        if !on {
+            menuBarTimer?.invalidate()
+            menuBarTimer = nil
+            return
         }
-        #if DEBUG
-            // Development aid for Macs without a notch (lid closed, external display): draw the island
-            // around a simulated 200 pt cut-out at the top of the main screen. Removed by Story 2.6.
-            if UserDefaults.standard.bool(forKey: "VigieSimulateNotch"), let screen = NSScreen.main ?? screens().first {
-                return (screen, Self.simulatedMetrics(for: screen.frame))
-            }
-        #endif
-        return nil
+        guard menuBarTimer == nil else { return }
+        let timer = Timer(timeInterval: Self.menuBarPollInterval, repeats: true) { [weak self] _ in
+            MainActor.assumeIsolated { self?.refreshMenuBarVisibility() }
+        }
+        RunLoop.main.add(timer, forMode: .common)
+        menuBarTimer = timer
     }
 
-    #if DEBUG
-        nonisolated static func simulatedMetrics(for frame: CGRect) -> ScreenMetrics {
-            let notchWidth: CGFloat = 200
-            let side = (frame.width - notchWidth) / 2
-            let height: CGFloat = 32
-            return ScreenMetrics(
-                frame: frame, safeAreaTop: height,
-                auxiliaryTopLeftArea: CGRect(x: frame.minX, y: frame.maxY - height, width: side, height: height),
-                auxiliaryTopRightArea: CGRect(
-                    x: frame.maxX - side, y: frame.maxY - height, width: side, height: height))
+    /// How often the host checks whether an auto-hidden menu bar is showing.
+    static let menuBarPollInterval: TimeInterval = 0.2
+
+    /// Re-places when an auto-hidden menu bar appears or disappears on a display with a virtual notch.
+    func refreshMenuBarVisibility() {
+        let autoHide = menuBarProbe.autoHidesMenuBar
+        let hidden: Set<CGDirectDisplayID> =
+            autoHide
+            ? Set(
+                islands.filter { $0.geometry.isVirtual && !menuBarProbe.isMenuBarVisible(on: $0.display.frame) }
+                    .map(\.display.id))
+            : []
+        if hidden != hiddenMenuBars || !autoHide { layout() }
+    }
+
+    // MARK: Hover strip (FR27)
+
+    private func setStripMonitors(_ on: Bool) {
+        guard on != !stripMonitors.isEmpty else { return }
+        if !on {
+            for monitor in stripMonitors { NSEvent.removeMonitor(monitor) }
+            stripMonitors.removeAll()
+            return
         }
-    #endif
+        let moves: NSEvent.EventTypeMask = [.mouseMoved, .leftMouseDragged]
+        if let global = NSEvent.addGlobalMonitorForEvents(
+            matching: moves,
+            handler: { _ in
+                MainActor.assumeIsolated { [weak self] in self?.stripPointerMoved(to: NSEvent.mouseLocation) }
+            })
+        {
+            stripMonitors.append(global)
+        }
+        if let local = NSEvent.addLocalMonitorForEvents(
+            matching: moves,
+            handler: { [weak self] event in
+                MainActor.assumeIsolated { self?.stripPointerMoved(to: NSEvent.mouseLocation) }
+                return event
+            })
+        {
+            stripMonitors.append(local)
+        }
+    }
+
+    /// The pointer moved: on a plain display, the top-center strip (and the pill while it shows) is the hover
+    /// target. Entering it plays the hover reaction (and shows a pill hidden by `idle = hide`); leaving it ends.
+    func stripPointerMoved(to point: CGPoint) {
+        let hit = islands.first { island in
+            guard let strip = island.geometry.hoverStrip else { return false }
+            return Self.contains(strip, point)
+                || (island.display.id == hoverStripDisplayID && Self.contains(island.geometry.islandFrame, point))
+        }?.display.id
+        guard hit != hoverStripDisplayID else { return }
+        hoverStripDisplayID = hit
+        islandHoverChanged(hit != nil)
+        layout()
+    }
 
     // MARK: Arbitration
 
@@ -269,6 +454,9 @@ public final class NotchHost {
         }
         leadingLayout = leading
         trailingLayout = trailing
+        if isStarted, let lastIdle, lastIdle != isIdle, islands.contains(where: \.geometry.isVirtual) {
+            layout()
+        }
     }
 
     /// Shows a transient readout on the left wing (SPEC §5: after the first item, the last visible item steps
@@ -302,21 +490,27 @@ public final class NotchHost {
     }
 }
 
-/// The panel's root view: the island with the host's wing content, themed with the island (dark) theme.
+/// A panel's root view: the island of one display with the host's wing content (the same state on every
+/// display, FR23), themed with ``NotchHost/theme(for:)``.
 struct NotchRootView: View {
     let host: NotchHost
+    let displayID: CGDirectDisplayID
     let themeController: ThemeController
 
     var body: some View {
-        if let geometry = host.geometry {
+        if let island = host.island(for: displayID) {
+            let geometry = island.geometry
             IslandView(
                 wings: geometry.wings,
+                surface: island.surface,
+                floating: geometry.isFloating,
+                hoverHighlight: host.hoverStripDisplayID == displayID,
                 leading: { lane(host.leadingLayout) },
                 trailing: { lane(host.trailingLayout) }
             )
             .frame(width: geometry.islandFrame.width, height: geometry.islandFrame.height)
             .onHover { host.islandHoverChanged($0) }
-            .vigieTheme(themeController.islandTheme)
+            .vigieTheme(host.theme(for: island))
         }
     }
 

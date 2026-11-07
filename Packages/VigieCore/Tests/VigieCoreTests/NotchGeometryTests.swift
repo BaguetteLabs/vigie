@@ -85,7 +85,7 @@ import Testing
 
     #if DEBUG
         @Test func simulatedNotchIsCentered() throws {
-            let metrics = NotchHost.simulatedMetrics(for: CGRect(x: 0, y: 0, width: 2560, height: 1440))
+            let metrics = DisplayInfo.simulatedMetrics(for: CGRect(x: 0, y: 0, width: 2560, height: 1440))
             let g = try #require(geometry(metrics))
             #expect(g.notchRect.width == 200)
             #expect(g.islandFrame.midX == 1280)

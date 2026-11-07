@@ -88,4 +88,53 @@ import Testing
         #expect(!contains(CGPoint(x: 220, y: 17)))  // interior
         #expect(!contains(CGPoint(x: 220, y: 0.5)))  // top edge
     }
+
+    static var lightTheme: Theme {
+        Fixtures.library.resolve(themeID: ThemeLibrary.defaultVariantID, look: .light).theme
+    }
+
+    @Test func blackSurfaceReadsTheIslandRole() {
+        #expect(IslandSurface.black.roles(Self.darkTheme) == [.island])
+        #expect(IslandSurface.black.roles(Self.lightTheme) == [.island])
+    }
+
+    @Test func menuBarSurfaceIsTheVirtualNotchGradientInLightLooks() {
+        let theme = Self.lightTheme
+        #expect(IslandSurface.menuBar.roles(theme) == [.surfaceVNTop, .surfaceVNBottom])
+        #expect(theme.defines(.surfaceVNTop) && theme.defines(.surfaceVNBottom))
+    }
+
+    @Test(arguments: [
+        AccessibilityAdjustments(reduceTransparency: true), AccessibilityAdjustments(increaseContrast: true),
+    ])
+    func menuBarSurfaceIsFlatVNBottomUnderAccessibilitySettings(_ adjustments: AccessibilityAdjustments) {
+        var theme = Self.lightTheme
+        theme.accessibility = adjustments
+        #expect(IslandSurface.menuBar.roles(theme) == [.surfaceVNBottom])
+    }
+
+    @Test func darkMenuBarSurfaceFallsBackToTheBlackIsland() {
+        let theme = Self.darkTheme
+        for role in IslandSurface.menuBar.roles(theme) {
+            #expect(theme.themeColor(role) == theme.themeColor(.island))
+        }
+    }
+
+    @Test func floatingShapeRoundsTheTopCorners() {
+        let rect = CGRect(x: 0, y: 0, width: 200, height: 34)
+        let flush = IslandShape(radius: 14).path(in: rect)
+        let floating = IslandShape(radius: 14, topRadius: 14).path(in: rect)
+        #expect(flush.contains(CGPoint(x: 0.5, y: 0.5)))
+        #expect(!floating.contains(CGPoint(x: 0.5, y: 0.5)))
+    }
+
+    @Test(arguments: [IslandSurface.black, .menuBar])
+    func virtualNotchRendersWithEitherSurface(surface: IslandSurface) throws {
+        let wings = IslandWings(leading: 0, notch: 200, trailing: 0)
+        let view = IslandView(wings: wings, surface: surface, floating: true, hoverHighlight: true)
+            .frame(width: wings.totalWidth, height: 34)
+            .vigieTheme(Self.lightTheme)
+        let image = try #require(ImageRenderer(content: view).cgImage)
+        #expect(image.width > 0 && image.height > 0)
+    }
 }

@@ -234,7 +234,7 @@ final class LaneModule: NotchModule {
             let library = try! ThemeLoader.loadBundled()
             host = NotchHost(
                 themeController: ThemeController(library: library), registry: registry,
-                contextMenu: NotchContextMenu(), closedSlots: { slots }, screens: { [] }, logger: testLogger)
+                contextMenu: NotchContextMenu(), closedSlots: { slots }, displays: { [] }, logger: testLogger)
         }
     }
 

@@ -87,7 +87,7 @@ final class ExpandedFixture {
         let panel = panel
         host = NotchHost(
             themeController: ThemeController(library: library, accessibility: .init(reduceMotion: true)),
-            registry: registry, contextMenu: NotchContextMenu(), screens: { [] },
+            registry: registry, contextMenu: NotchContextMenu(), displays: { [] },
             focusPolicy: focus,
             openOnHover: { [unowned self] in self.openOnHover },
             hoverDelay: { .milliseconds(20) },

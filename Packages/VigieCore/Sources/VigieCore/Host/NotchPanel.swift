@@ -74,3 +74,20 @@ final class IslandHostingView: NSHostingView<AnyView> {
         contextMenu.show(at: convert(event.locationInWindow, from: nil), in: self)
     }
 }
+
+extension NotchPanel: IslandPanelHosting {
+    public func place(frame: CGRect) {
+        guard self.frame != frame else { return }
+        setFrame(frame, display: true, animate: false)
+    }
+
+    public func show() {
+        orderFrontRegardless()
+    }
+
+    public func hide() {
+        orderOut(nil)
+    }
+
+    public var isShown: Bool { isVisible }
+}

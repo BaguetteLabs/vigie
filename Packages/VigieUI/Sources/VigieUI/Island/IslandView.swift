@@ -2,38 +2,57 @@ import SwiftUI
 
 /// The closed island (DESIGN.md Closed island; UX-DR9, UX-DR10, UX-DR14, UX-DR15, UX-DR42).
 ///
-/// Draws the black island with `island-closed` bottom corners, the Chrome Hologram ornaments (1 px iris rim
-/// along the sides and bottom, interior glow and shimmer) and the two wing slots. Everything is clipped to the
-/// island outline (strict containment). Read the theme from the environment: the Notch Host injects
-/// `ThemeController.islandTheme`, always the dark look (AD-14).
+/// Draws the island with `island-closed` bottom corners, the Chrome Hologram ornaments (1 px iris rim along the
+/// sides and bottom, interior glow and shimmer) and the two wing slots. Everything is clipped to the island
+/// outline (strict containment). Read the theme from the environment: the Notch Host injects
+/// `ThemeController.islandTheme` (the dark look) around a hardware notch and for a `black` virtual notch, and the
+/// main theme for a `menu_bar` virtual notch (AD-14, UX-DR76).
 public struct IslandView: View {
     @Environment(\.vigieTheme) private var theme
     @State private var isHovered = false
     @State private var hoverPasses = 0
 
     private let wings: IslandWings
+    private let surface: IslandSurface
+    private let floating: Bool
+    private let hoverHighlight: Bool
     private let leading: @MainActor () -> AnyView?
     private let trailing: @MainActor () -> AnyView?
 
+    /// - Parameters:
+    ///   - surface: the island fill: black (hardware notch, `virtual_notch.style = "black"`) or the virtual-notch
+    ///     menu-bar gradient (`style = "menu_bar"`).
+    ///   - floating: true when the island sits below the menu bar (`virtual_notch.placement = "below"`): all four
+    ///     corners are rounded, since the top edge is not the screen edge.
+    ///   - hoverHighlight: drives the hover reaction from outside the view (the top-center hover strip of a plain
+    ///     display, SPEC §5.5), in addition to the pointer over the island itself.
     public init(
         wings: IslandWings,
+        surface: IslandSurface = .black,
+        floating: Bool = false,
+        hoverHighlight: Bool = false,
         leading: @escaping @MainActor () -> AnyView? = { nil },
         trailing: @escaping @MainActor () -> AnyView? = { nil }
     ) {
         self.wings = wings
+        self.surface = surface
+        self.floating = floating
+        self.hoverHighlight = hoverHighlight
         self.leading = leading
         self.trailing = trailing
     }
 
     private var ornaments: IslandOrnaments {
-        IslandOrnaments(presence: theme.presence, isHovered: isHovered, motionEnabled: theme.a11y.motionEnabled)
+        IslandOrnaments(
+            presence: theme.presence, isHovered: isHovered || hoverHighlight,
+            motionEnabled: theme.a11y.motionEnabled)
     }
 
     public var body: some View {
         let radius = theme.radius(.islandClosed)
-        let shape = IslandShape(radius: radius)
+        let shape = IslandShape(radius: radius, topRadius: floating ? radius : 0)
         ZStack {
-            shape.fill(theme.color(.island))
+            shape.fill(surface.fill(theme))
             IslandGlow(opacity: ornaments.interiorGlowOpacity)
             if ornaments.shimmerEnabled {
                 IslandAmbientShimmer()
@@ -48,7 +67,10 @@ public struct IslandView: View {
             withAnimation(theme.animation(.enter)) {
                 isHovered = hovering
             }
-            if hovering && ornaments.shimmerEnabled { hoverPasses += 1 }
+            if hovering && !hoverHighlight && ornaments.shimmerEnabled { hoverPasses += 1 }
+        }
+        .onChange(of: hoverHighlight) { _, highlighted in
+            if highlighted && !isHovered && ornaments.shimmerEnabled { hoverPasses += 1 }
         }
     }
 
@@ -77,16 +99,46 @@ public struct IslandView: View {
     }
 }
 
-/// The island outline: flush top, `island-closed` radius on the bottom corners only.
+/// The island's fill (DESIGN.md Closed island, Token scheme; UX-DR76).
+public enum IslandSurface: Sendable, Equatable {
+    /// `base-island` black: the hardware notch, and a virtual notch in `style = "black"`.
+    case black
+    /// A virtual notch in `style = "menu_bar"`: `surface-vn-top` → `surface-vn-bottom`, flat `surface-vn-bottom`
+    /// under Reduce transparency or Increase contrast. In a dark look both roles resolve to `island`, so the
+    /// dark `menu_bar` notch falls back to the black island look (OQ15).
+    case menuBar
+
+    /// The color roles the fill reads from `theme`, top to bottom.
+    public func roles(_ theme: Theme) -> [ColorRole] {
+        switch self {
+        case .black: [.island]
+        case .menuBar: theme.a11y.flatSurfaces ? [.surfaceVNBottom] : [.surfaceVNTop, .surfaceVNBottom]
+        }
+    }
+
+    /// The fill style for `theme`.
+    public func fill(_ theme: Theme) -> AnyShapeStyle {
+        let colors = roles(theme).map(theme.color)
+        guard colors.count > 1 else { return AnyShapeStyle(colors.first ?? theme.color(.island)) }
+        return AnyShapeStyle(LinearGradient(colors: colors, startPoint: .top, endPoint: .bottom))
+    }
+}
+
+/// The island outline: flush top (or `topRadius` when it floats below the menu bar), `island-closed` radius on
+/// the bottom corners.
 public struct IslandShape: Shape {
     public var radius: CGFloat
+    public var topRadius: CGFloat
 
-    public init(radius: CGFloat) { self.radius = radius }
+    public init(radius: CGFloat, topRadius: CGFloat = 0) {
+        self.radius = radius
+        self.topRadius = topRadius
+    }
 
     public func path(in rect: CGRect) -> Path {
         UnevenRoundedRectangle(
-            topLeadingRadius: 0, bottomLeadingRadius: radius, bottomTrailingRadius: radius,
-            topTrailingRadius: 0, style: .continuous
+            topLeadingRadius: topRadius, bottomLeadingRadius: radius, bottomTrailingRadius: radius,
+            topTrailingRadius: topRadius, style: .continuous
         )
         .path(in: rect)
     }
