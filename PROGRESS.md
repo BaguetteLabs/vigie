@@ -24,7 +24,7 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - [x] 1.1 Scaffold the SwiftPM-first workspace
 - [x] 1.2 AppEnvironment and dev build isolation
 - [x] 1.3 Continuous integration for pull requests (first runs failed: runner has no Xcode 27.1; pinned 26.6 on 2026-11-07; workflow is **manual-trigger only** until Romain watches a green run, then restore `pull_request` + `push` triggers)
-- [x] 1.4 Spike — Claude Code hook reaches a socket listener (record: docs/decisions/spike-hook-path.md; fixtures: Packages/VigieCLI/Tests/Fixtures/claude/2.1.319)
+- [x] 1.4 Spike — Claude Code hook reaches a socket listener (record: docs/decisions/spike-hook-path.md; fixtures moved to Packages/Adapters/Claude/Tests/Fixtures/2.1.319 by Story 4.6)
 - [P] 1.5 Spike — focus a specific Warp tab (record in docs/decisions/spike-warp-focus.md; deep link found; needs a visual check by Romain)
 - [ ] 1.6 Spike — Ghostty tab focus investigation (Ghostty not installed)
 - [x] 1.7 UX design pass (done in docs, 2026-11-07)
@@ -44,7 +44,7 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - [x] 2.12 Permissions service and needs-permission state
 - [x] 2.13 ConfigStore writer (comment-preserving TOML patcher)
 - [ ] 2.14 Generated Settings window
-- [ ] 2.15 Accessibility floor in v0.1
+- [x] 2.15 Accessibility floor in v0.1 (contrast check in CI; docs/accessibility-floor.md)
 
 ### Epic 3 — Alerts that never steal focus
 - [x] 3.1 Notifier rules engine
@@ -59,11 +59,11 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 
 ### Epic 4 — Track Claude Code sessions
 - [x] 4.1 Event Server (App wiring pending: start after lock, releaseQueue after registry.start, stop before lock release)
-- [ ] 4.2 Durable spool and launch order
+- [x] 4.2 Durable spool and launch order (App must call `EventServer.finishStartup(spool:)` after `registry.start()`; wiring in the integration pass)
 - [x] 4.3 CLI install on PATH, `vigie event` and `vigie reload` (App wiring of CLIInstaller.install and app.expand/app.reload handling pending in the integration commit)
 - [x] 4.4 Agent adapter contracts and assembly (App assembly of AgentKit/AgentsSessions packages pending in the integration commit)
-- [ ] 4.5 SessionStore status engine
-- [ ] 4.6 Claude Code adapter with version gating
+- [x] 4.5 SessionStore status engine
+- [x] 4.6 Claude Code adapter with version gating (App assembly of `ClaudeAdapter()` pending in the integration pass)
 - [ ] 4.7 Hook installer with diff confirmation
 - [ ] 4.8 Liveness, stale sessions and ignored paths
 - [ ] 4.9 Session glyphs in the closed notch
@@ -107,6 +107,11 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 
 - 2026-11-07 — Working mode, signing, installs, remote: see "Working mode" above.
 - 2026-11-07 — XcodeGen chosen for the App target project (AD-2 keeps the target thin; no hand-edited pbxproj in git).
+
+- 2026-11-07 — Story 4.5: `statusSince` is the `sent_at` of the entering event and is kept when a status re-enters itself (WORKING · 14M counts from the start of work). Late events only fill missing metadata, never overwrite. Unknown sessions are created by any event except `session.end`. Module state follows SPEC §7.1 (no sessions → ambient, done counts as active). `adapters` setting declared, not enforced yet. `agent.generic` topic is a TODO.
+- 2026-11-07 — Story 4.6: support matrix = tested `2.1.0...2.1.319`; same minor with a newer patch → `.assumed` (events flow, settings should warn); other versions → `.unsupported` (no events). `Stop` with running `background_tasks` → `turn.end` (may cause a done→working flip; revisit if noisy). Removal plan matches managed entries by exact command only (AD-22). `CLAUDE_PID` is not on the Wire env whitelist, so the ancestor-name rule applies; consider adding it. SPEC §11 `usage_providers`/`plan_auth` keys deferred to Epic 7. `agents.sessions` must call `adapter.normalize(_:sentAt:support:)` (gated) and raise the setup-problem alert on `.unsupported` (4.11).
+- 2026-11-07 — Story 2.15: 259 DESIGN contrast pairs checked, 0 fail, 10 cited exceptions (`Packages/VigieUI/Sources/VigieUI/Theme/ContrastAudit.swift`). Reduce motion still forces Calm presence through `ThemeController` (pre-existing; formally Story 18.3). DESIGN issues for the UX doc: (1) alert-tinted row ratios in the Contrast table match `surface-card`, not `surface-panel` (A light blocked label on panel = 4.36:1, fails); (2) A light `status-done` on panel measures 5.21, not 4.9; (3) clarify whether alpha zone/chip borders are exempt from 3:1 outside Increase contrast.
+- 2026-11-07 — Story 4.2: CLI writer re-checks the spool inode after taking the lock (closes the open-before-rename gap). `releaseQueue()` is internal; `finishStartup(spool:)` replays then releases. A crash between publish and delete can replay lines twice (`replayed = true` lets receivers dedupe); never loses. Floor test runs the real `vigie` binary with `CFFIXED_USER_HOME`; ~10 s per run.
 
 ## Notes for the next session
 
