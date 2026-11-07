@@ -31,7 +31,7 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 
 ### Epic 2 — Vigie lives in the notch
 - [x] 2.1 Single-instance accessory app shell
-- [ ] 2.2 Module contracts and registry lifecycle
+- [x] 2.2 Module contracts and registry lifecycle
 - [ ] 2.3 ConfigStore read path with live reload
 - [x] 2.4 Chrome Hologram theme engine
 - [ ] 2.5 Notch Host on a physical notch
@@ -112,3 +112,4 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - 2026-11-07 — Tests run with `swift test --build-system swiftbuild`: the default SwiftPM build system on Swift 6.3 copies `.xcstrings` uncompiled, so catalog lookups return the key. The strict catalog test is kept. CI must use the same flag.
 - 2026-11-07 — Story 1.1 deliberately leaves `CFBundleURLTypes`, `NSServices` and `NSCalendarsFullAccessUsageDescription` out of Info.plist; they arrive with the stories that handle them (12.9, 9.10, 13.1). Ad-hoc signing conflicts with AD-17 "never ad-hoc" until a real identity is wired (Story 6.1).
 - 2026-11-07 — `Package.resolved` files are committed (reproducible builds). Theme TOML lives in `Themes/` with an identical bundled copy under `Packages/VigieUI/Sources/VigieUI/Resources/Themes/`; `Scripts/theme-regen-check.sh` enforces both. Config color keys (`colors.blocked`) → token roles (`status-blocked`) mapping is left to the ConfigStore story (2.3).
+- 2026-11-07 — Story 2.2 choices accepted: `UserIntent.init` is `@_spi(Host)` (only VigieCore imports `@_spi(Host) ModuleKit`; add a grep check later); `ModuleID` keeps string-literal support (traps on invalid literal); `LeftWingItem` has no own state yet — Story 2.8 adds an optional per-item state override so a single warned provider ring can outrank its siblings. App assembly of ModuleRegistry + ConfigStore enablement happens in Story 2.5 / an integration commit after 2.3.
