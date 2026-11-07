@@ -12,7 +12,7 @@ import Testing
         #expect(!menu.quitItem.title.isEmpty && menu.quitItem.title != "menu.quit")
         #expect(menu.settingsItem.keyEquivalent == ",")
         #expect(menu.quitItem.keyEquivalent == "q")
-        #expect(!menu.settingsItem.isEnabled)
+        #expect(menu.settingsItem.isEnabled)
         #expect(menu.quitItem.isEnabled)
     }
 

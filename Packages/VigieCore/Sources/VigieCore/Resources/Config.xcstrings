@@ -492,6 +492,258 @@
           }
         }
       }
+    },
+    "config.appearance.mode.option.system": {
+      "comment": "Settings option label for value \"system\" of config key appearance.mode.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "System"
+          }
+        }
+      }
+    },
+    "config.appearance.mode.option.light": {
+      "comment": "Settings option label for value \"light\" of config key appearance.mode.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Light"
+          }
+        }
+      }
+    },
+    "config.appearance.mode.option.dark": {
+      "comment": "Settings option label for value \"dark\" of config key appearance.mode.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dark"
+          }
+        }
+      }
+    },
+    "config.appearance.presence.option.full": {
+      "comment": "Settings option label for value \"full\" of config key appearance.presence.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Full"
+          }
+        }
+      }
+    },
+    "config.appearance.presence.option.calm": {
+      "comment": "Settings option label for value \"calm\" of config key appearance.presence.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calm"
+          }
+        }
+      }
+    },
+    "config.notify.after_focus.option.drop": {
+      "comment": "Settings option label for value \"drop\" of config key notify.after_focus.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drop"
+          }
+        }
+      }
+    },
+    "config.notify.after_focus.option.replay": {
+      "comment": "Settings option label for value \"replay\" of config key notify.after_focus.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Replay the latest"
+          }
+        }
+      }
+    },
+    "config.notify.min_severity.option.info": {
+      "comment": "Settings option label for value \"info\" of config key notify.min_severity.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Info"
+          }
+        }
+      }
+    },
+    "config.notify.min_severity.option.warn": {
+      "comment": "Settings option label for value \"warn\" of config key notify.min_severity.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Warning"
+          }
+        }
+      }
+    },
+    "config.notify.min_severity.option.critical": {
+      "comment": "Settings option label for value \"critical\" of config key notify.min_severity.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Critical"
+          }
+        }
+      }
+    },
+    "config.updates.channel.option.stable": {
+      "comment": "Settings option label for value \"stable\" of config key updates.channel.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stable"
+          }
+        }
+      }
+    },
+    "config.updates.channel.option.beta": {
+      "comment": "Settings option label for value \"beta\" of config key updates.channel.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Beta"
+          }
+        }
+      }
+    },
+    "config.virtual_notch.idle.option.shrink": {
+      "comment": "Settings option label for value \"shrink\" of config key virtual_notch.idle.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shrink"
+          }
+        }
+      }
+    },
+    "config.virtual_notch.idle.option.hide": {
+      "comment": "Settings option label for value \"hide\" of config key virtual_notch.idle.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hide"
+          }
+        }
+      }
+    },
+    "config.virtual_notch.idle.option.keep": {
+      "comment": "Settings option label for value \"keep\" of config key virtual_notch.idle.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep"
+          }
+        }
+      }
+    },
+    "config.virtual_notch.position.option.center": {
+      "comment": "Settings option label for value \"center\" of config key virtual_notch.position.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Center"
+          }
+        }
+      }
+    },
+    "config.virtual_notch.position.option.right": {
+      "comment": "Settings option label for value \"right\" of config key virtual_notch.position.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Right"
+          }
+        }
+      }
+    },
+    "config.virtual_notch.placement.option.menu_bar": {
+      "comment": "Settings option label for value \"menu_bar\" of config key virtual_notch.placement.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In the menu bar"
+          }
+        }
+      }
+    },
+    "config.virtual_notch.placement.option.below": {
+      "comment": "Settings option label for value \"below\" of config key virtual_notch.placement.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Below the menu bar"
+          }
+        }
+      }
+    },
+    "config.virtual_notch.style.option.black": {
+      "comment": "Settings option label for value \"black\" of config key virtual_notch.style.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Black"
+          }
+        }
+      }
+    },
+    "config.virtual_notch.style.option.menu_bar": {
+      "comment": "Settings option label for value \"menu_bar\" of config key virtual_notch.style.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Menu bar"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

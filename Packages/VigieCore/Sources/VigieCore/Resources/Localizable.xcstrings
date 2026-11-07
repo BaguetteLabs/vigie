@@ -60,6 +60,750 @@
           }
         }
       }
+    },
+    "settings.window.title" : {
+      "comment" : "Title of the Settings window.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settings"
+          }
+        }
+      }
+    },
+    "settings.sidebar.modules" : {
+      "comment" : "Sidebar section heading above the module panes in Settings.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modules"
+          }
+        }
+      }
+    },
+    "settings.pane.general" : {
+      "comment" : "Settings pane title.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "General"
+          }
+        }
+      }
+    },
+    "settings.pane.activity" : {
+      "comment" : "Settings pane title: the read-only activity log (General › Activity log).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activity Log"
+          }
+        }
+      }
+    },
+    "settings.pane.appearance" : {
+      "comment" : "Settings pane title.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appearance"
+          }
+        }
+      }
+    },
+    "settings.pane.closed" : {
+      "comment" : "Settings pane title: closed-notch settings ([closed]).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notch"
+          }
+        }
+      }
+    },
+    "settings.pane.display" : {
+      "comment" : "Settings pane title: display choice and virtual notch.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Displays"
+          }
+        }
+      }
+    },
+    "settings.pane.home" : {
+      "comment" : "Settings pane title: Home cards and tab order.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Home"
+          }
+        }
+      }
+    },
+    "settings.pane.notify" : {
+      "comment" : "Settings pane title: alert rules ([notify]).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alerts"
+          }
+        }
+      }
+    },
+    "settings.pane.sounds" : {
+      "comment" : "Settings pane title.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sounds"
+          }
+        }
+      }
+    },
+    "settings.pane.sync" : {
+      "comment" : "Settings pane title.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sync"
+          }
+        }
+      }
+    },
+    "settings.pane.updates" : {
+      "comment" : "Settings pane title.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Updates"
+          }
+        }
+      }
+    },
+    "settings.section.privacy" : {
+      "comment" : "Settings › General section heading for the privacy keys.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Privacy Mode"
+          }
+        }
+      }
+    },
+    "settings.section.virtualNotch" : {
+      "comment" : "Settings › Displays section heading for the virtual notch keys.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Virtual Notch"
+          }
+        }
+      }
+    },
+    "settings.section.cli" : {
+      "comment" : "Settings › General section heading for the CLI status.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Command-Line Tool"
+          }
+        }
+      }
+    },
+    "settings.general.showActivity" : {
+      "comment" : "Button in Settings › General that opens the Activity Log pane.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show Activity Log"
+          }
+        }
+      }
+    },
+    "settings.appearance.reduceMotion" : {
+      "comment" : "Warning shown next to the Presence setting while macOS Reduce motion overrides it.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS Reduce motion is on: Vigie stays still whatever this setting says."
+          }
+        }
+      }
+    },
+    "settings.module.enabled" : {
+      "comment" : "Label of a module's on/off toggle in its Settings pane.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enabled"
+          }
+        }
+      }
+    },
+    "settings.module.status" : {
+      "comment" : "Label of a module's status line in its Settings pane.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Status"
+          }
+        }
+      }
+    },
+    "settings.module.status.disabled" : {
+      "comment" : "Module status in Settings: disabled.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Off"
+          }
+        }
+      }
+    },
+    "settings.module.status.running" : {
+      "comment" : "Module status in Settings: running.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Running"
+          }
+        }
+      }
+    },
+    "settings.module.status.stopped" : {
+      "comment" : "Module status in Settings: stopped.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stopped"
+          }
+        }
+      }
+    },
+    "settings.module.status.errored" : {
+      "comment" : "Module status in Settings when start failed; %@ is the module's own message.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't start: %@"
+          }
+        }
+      }
+    },
+    "settings.module.status.needsPermission" : {
+      "comment" : "Module status in Settings while a permission is missing; %@ is the permission name.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waiting for %@"
+          }
+        }
+      }
+    },
+    "settings.permission.accessibility" : {
+      "comment" : "Permission name.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accessibility"
+          }
+        }
+      }
+    },
+    "settings.permission.automation" : {
+      "comment" : "Permission name; %@ is the controlled app.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automation of %@"
+          }
+        }
+      }
+    },
+    "settings.permission.calendar" : {
+      "comment" : "Permission name.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Calendars"
+          }
+        }
+      }
+    },
+    "settings.permission.notifications" : {
+      "comment" : "Permission name.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notifications"
+          }
+        }
+      }
+    },
+    "settings.permission.screenRecording" : {
+      "comment" : "Permission name.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Screen Recording"
+          }
+        }
+      }
+    },
+    "settings.permission.title" : {
+      "comment" : "Title of the permission block in a module's Settings pane; %@ is the permission name.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vigie needs %@ access"
+          }
+        }
+      }
+    },
+    "settings.permission.sentence" : {
+      "comment" : "Sentence of the permission block; %@ is the permission name.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This module stays off until you allow %@ for Vigie in System Settings."
+          }
+        }
+      }
+    },
+    "settings.permission.grant" : {
+      "comment" : "Button asking macOS for a permission (only while macOS has not asked yet).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grant Access"
+          }
+        }
+      }
+    },
+    "settings.permission.openSystemSettings" : {
+      "comment" : "Button opening the System Settings pane of a permission.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open System Settings"
+          }
+        }
+      }
+    },
+    "settings.login.requiresApproval" : {
+      "comment" : "Note under Launch at login when macOS needs the user's approval.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allow Vigie in System Settings › General › Login Items."
+          }
+        }
+      }
+    },
+    "settings.login.openSettings" : {
+      "comment" : "Button opening System Settings › Login Items.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Login Items"
+          }
+        }
+      }
+    },
+    "settings.login.registerFailed" : {
+      "comment" : "Inline error when SMAppService registration fails.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vigie couldn't be added to your login items."
+          }
+        }
+      }
+    },
+    "settings.login.unregisterFailed" : {
+      "comment" : "Inline error when SMAppService unregistration fails.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vigie couldn't be removed from your login items."
+          }
+        }
+      }
+    },
+    "settings.cli.current" : {
+      "comment" : "CLI status in Settings › General; %@ is the link path.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The command-line tool is installed at %@."
+          }
+        }
+      }
+    },
+    "settings.cli.missing" : {
+      "comment" : "CLI status in Settings › General.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The command-line tool is not linked yet. Vigie links it at the next launch."
+          }
+        }
+      }
+    },
+    "settings.cli.stale" : {
+      "comment" : "CLI status in Settings › General.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The command-line tool points to an older copy of Vigie. Vigie repairs it at the next launch."
+          }
+        }
+      }
+    },
+    "settings.cli.conflict" : {
+      "comment" : "CLI status in Settings › General; %@ is the occupied path.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Another file is at %@, so Vigie left it alone."
+          }
+        }
+      }
+    },
+    "settings.cli.bundledMissing" : {
+      "comment" : "CLI status in Settings › General.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This build has no command-line tool."
+          }
+        }
+      }
+    },
+    "settings.cli.pathHint" : {
+      "comment" : "CLI PATH hint in Settings › General; %@ is the bin folder.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ is not on your shell's PATH. Add this line to your shell profile:"
+          }
+        }
+      }
+    },
+    "settings.hotkey.conflict" : {
+      "comment" : "Help under a shortcut setting whose combination conflicts.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Another shortcut already uses this combination, so it is not active."
+          }
+        }
+      }
+    },
+    "settings.hotkey.invalid" : {
+      "comment" : "Help under a shortcut setting whose config value does not parse.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The configured shortcut is not valid, so the default applies."
+          }
+        }
+      }
+    },
+    "settings.error.hotkey" : {
+      "comment" : "Inline error when a recorded shortcut is Option-only or has no modifier.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use a shortcut with Command or Control."
+          }
+        }
+      }
+    },
+    "settings.error.unknownSetting" : {
+      "comment" : "Inline Settings error: ConfigError.unknownSetting.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This setting is not known to Vigie."
+          }
+        }
+      }
+    },
+    "settings.error.invalidValue" : {
+      "comment" : "Inline Settings error: ConfigError.invalidValue (wrong type or out of range).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This value is not allowed here."
+          }
+        }
+      }
+    },
+    "settings.error.unsupportedLocation" : {
+      "comment" : "Inline Settings error: the key is inside an inline table or array of tables.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This setting is written in a form Vigie can't edit. Change it in the file."
+          }
+        }
+      }
+    },
+    "settings.error.fileUnavailable" : {
+      "comment" : "Inline Settings error; %@ is the file name.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ can't be read right now."
+          }
+        }
+      }
+    },
+    "settings.error.fileHasErrors" : {
+      "comment" : "Inline Settings error; %@ is the file name.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ has an error. Fix the file first."
+          }
+        }
+      }
+    },
+    "settings.error.verificationFailed" : {
+      "comment" : "Inline Settings error: ConfigError.verificationFailed.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The change couldn't be verified, so nothing was written."
+          }
+        }
+      }
+    },
+    "settings.error.writeFailed" : {
+      "comment" : "Inline Settings error; %@ is the file name.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ couldn't be saved."
+          }
+        }
+      }
+    },
+    "settings.activity.module" : {
+      "comment" : "Activity log filter label.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Module"
+          }
+        }
+      }
+    },
+    "settings.activity.kind" : {
+      "comment" : "Activity log filter label.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kind"
+          }
+        }
+      }
+    },
+    "settings.activity.all" : {
+      "comment" : "Activity log filter option: no filter.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All"
+          }
+        }
+      }
+    },
+    "settings.activity.day" : {
+      "comment" : "Activity log day picker label (UTC days).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Day"
+          }
+        }
+      }
+    },
+    "settings.activity.summary" : {
+      "comment" : "Activity log summary label.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Summary"
+          }
+        }
+      }
+    },
+    "settings.activity.summary.format" : {
+      "comment" : "Activity log per-day summary.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld alerts · %2$lld peeks · %3$lld reminders · focus %4$lld exact, %5$lld app only, %6$lld failed · %7$lld suppressed"
+          }
+        }
+      }
+    },
+    "settings.activity.copy" : {
+      "comment" : "Button copying the selected day of the activity log.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copy as Text"
+          }
+        }
+      }
+    },
+    "settings.activity.entries" : {
+      "comment" : "Activity log list heading.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entries"
+          }
+        }
+      }
+    },
+    "settings.activity.empty" : {
+      "comment" : "Activity log empty state.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No activity in the last 7 days."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

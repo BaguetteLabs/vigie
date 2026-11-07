@@ -34,6 +34,10 @@ public protocol NotchModule: AnyObject, Observable {
     /// Each item's state is its module's `state` unless the item overrides it.
     func leftWingItems() -> [LeftWingItem]
 
+    /// Extra settings shown in the module's Settings pane **below** the generated controls, never instead of
+    /// them (FR5). Asked only while the module runs. Default: nil.
+    func settingsView() -> AnyView?
+
     func start(context: any ModuleContext) async throws
     func stop() async
 }
@@ -44,6 +48,7 @@ extension NotchModule {
     public func expandedView() -> AnyView? { nil }
     public var dropZones: [DropZone] { [] }
     public func leftWingItems() -> [LeftWingItem] { [] }
+    public func settingsView() -> AnyView? { nil }
 }
 
 /// One item in the closed notch's shared left-wing lane (SPEC §5): pooled across modules, sorted by

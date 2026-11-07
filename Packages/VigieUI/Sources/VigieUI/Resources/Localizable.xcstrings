@@ -792,6 +792,138 @@
           }
         }
       }
+    },
+    "settings.reset" : {
+      "comment" : "Context menu action on a Settings row: removes the key so its default applies.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reset to Default"
+          }
+        }
+      }
+    },
+    "settings.secret.footnote" : {
+      "comment" : "Footnote under a disabled secret field in Settings (secrets are wired in Story 7.2).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stored in the Keychain. Editing arrives in a later version."
+          }
+        }
+      }
+    },
+    "settings.error.duration" : {
+      "comment" : "Inline Settings error for duration text that does not parse.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter a duration such as 90s, 15m or 1h30m."
+          }
+        }
+      }
+    },
+    "settings.error.integer" : {
+      "comment" : "Inline Settings error for number text that is not an integer.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter a whole number."
+          }
+        }
+      }
+    },
+    "settings.error.number" : {
+      "comment" : "Inline Settings error for number text that does not parse.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter a number."
+          }
+        }
+      }
+    },
+    "settings.error.generic" : {
+      "comment" : "Inline Settings error when a write fails for an unknown reason.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This change couldn't be saved."
+          }
+        }
+      }
+    },
+    "settings.hotkey.unavailable" : {
+      "comment" : "Shown in place of a shortcut recorder when none is injected.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shortcut recording is unavailable."
+          }
+        }
+      }
+    },
+    "settings.path.choose" : {
+      "comment" : "Button next to a path field in Settings: opens a file chooser.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose…"
+          }
+        }
+      }
+    },
+    "settings.path.choose.prompt" : {
+      "comment" : "Default button of the file chooser opened from Settings.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose"
+          }
+        }
+      }
+    },
+    "settings.list.add" : {
+      "comment" : "Button under an editable list in Settings: adds an empty row.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add"
+          }
+        }
+      }
+    },
+    "settings.list.remove" : {
+      "comment" : "Accessibility label of the button that removes a row from a list in Settings.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

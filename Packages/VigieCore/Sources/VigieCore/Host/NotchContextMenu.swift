@@ -25,8 +25,7 @@ public final class NotchContextMenu: NSObject {
         super.init()
         settingsItem.target = self
         quitItem.target = self
-        // TODO(Story 2.14): enable once the Settings window exists.
-        settingsItem.isEnabled = false
+        settingsItem.isEnabled = true
         menu.autoenablesItems = false
         menu.addItem(settingsItem)
         menu.addItem(quitItem)
