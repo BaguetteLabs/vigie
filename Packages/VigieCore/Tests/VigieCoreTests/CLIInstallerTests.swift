@@ -96,6 +96,22 @@ import Wire
         #expect(try FileManager.default.destinationOfSymbolicLink(atPath: installer.linkURL.path) == "/usr/bin/true")
     }
 
+    @Test func replacesDanglingForeignSymlink() async throws {
+        let fixture = try Fixture()
+        defer { fixture.cleanUp() }
+        let cli = try fixture.makeApp("Applications")
+        let installer = fixture.installer(cli)
+        try FileManager.default.createDirectory(at: installer.binDirectory, withIntermediateDirectories: true)
+        let gone = fixture.root.appendingPathComponent("gone/vigie-dev")
+        try FileManager.default.createSymbolicLink(atPath: installer.linkURL.path, withDestinationPath: gone.path)
+
+        #expect(await installer.diagnose() == .stale(link: installer.linkURL, target: gone.standardizedFileURL))
+        #expect(await installer.install() == .repaired(from: gone.standardizedFileURL))
+        #expect(
+            try FileManager.default.destinationOfSymbolicLink(atPath: installer.linkURL.path)
+                == cli.standardizedFileURL.path)
+    }
+
     @Test func failsWhenBundledCLIIsMissing() async throws {
         let fixture = try Fixture()
         defer { fixture.cleanUp() }

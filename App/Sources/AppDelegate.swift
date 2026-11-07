@@ -1,3 +1,5 @@
+import AgentKit
+import AgentsSessions
 import AppKit
 import ModuleKit
 import OSLog
@@ -17,6 +19,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var hotkeyBridge: HotkeyConfigBridge?
     private var hotkeyTokens: [RegistrationToken] = []
     private var contextMenu: NotchContextMenu?
+    private var eventServer: EventServer?
+    private var activityStore: ActivityStore?
+    private var notifyRules: ConfigNotifyRules?
+    private var executableOverrides: ExecutableOverrides?
+    private var alertCenter: AlertCenter?
+    private var appTopics: AppTopics?
     private var isShuttingDown = false
 
     private let environment = AppEnvironment.current
@@ -67,7 +75,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let coordinator = PermissionsCoordinator(checker: SystemPermissionChecker())
         let hotkeyCenter = HotkeyCenter()
 
-        var descriptors: [ModuleDescriptor] = []
+        // Built once and shared by the agent modules (AD-4). Adapters arrive with Epics 5 and 8.
+        let agentAdapters = AgentAdapters([])
+        let terminalAdapters = TerminalAdapters([])
+
+        var descriptors: [ModuleDescriptor] = [
+            ModuleDescriptor(manifest: AgentsSessionsModule.staticManifest) {
+                AgentsSessionsModule(adapters: agentAdapters, terminals: terminalAdapters)
+            }
+        ]
         #if DEBUG
             // The Debug build shows the sample module without touching the user's config.
             let sample = DevSampleModule.staticManifest
@@ -80,10 +96,46 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         let configStore = ConfigStore(environment: environment, manifests: manifests)
         await configStore.start()
-        guard !isShuttingDown else {
+        guard !isShuttingDown, let instanceLock else {
             configStore.stop()
             return
         }
+        self.configStore = configStore
+
+        // The socket is bound only while the instance lock is held (AD-21); messages queue until modules run.
+        let server = EventServer(
+            socketURL: environment.socketURL, bus: eventBus,
+            logger: Logger(subsystem: environment.logSubsystem, category: "server"))
+        do {
+            try server.start(lockHeld: instanceLock)
+            self.eventServer = server
+        } catch {
+            logger.error("event server failed to start: \(String(describing: error), privacy: .public)")
+        }
+
+        let activityStore = ActivityStore(
+            environment: environment, logger: Logger(subsystem: environment.logSubsystem, category: "activity"))
+        await activityStore.startDailyPruning()
+        self.activityStore = activityStore
+
+        let executableOverrides = ExecutableOverrides(store: configStore)
+        executableOverrides.start()
+        self.executableOverrides = executableOverrides
+        let executables = ExecutableResolverImpl(
+            overrides: { executableOverrides.current },
+            log: Logger(subsystem: environment.logSubsystem, category: "executables"))
+        Task { await executables.prime() }
+
+        let notifierLog = Logger(subsystem: environment.logSubsystem, category: "notifier")
+        let notifyRules = ConfigNotifyRules(store: configStore, logger: notifierLog)
+        notifyRules.start()
+        self.notifyRules = notifyRules
+        let actionRouter = AppAlertActionRouter(
+            registry: { [weak self] in self?.registry },
+            logger: Logger(subsystem: environment.logSubsystem, category: "alert-actions"))
+        let alertCenter = AlertCenter(
+            rules: notifyRules, sinks: AlertSinks(actionRouter: actionRouter), log: notifierLog)
+        self.alertCenter = alertCenter
 
         do {
             hotkeyTokens = try CoreHotkeys.registerDefaults(
@@ -104,7 +156,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         let contextFactory = CoreModuleContextFactory(
             environment: environment, eventBus: eventBus, configStore: configStore,
-            permissions: coordinator, hotkeyCenter: hotkeyCenter)
+            permissions: coordinator, hotkeyCenter: hotkeyCenter, alertCenter: alertCenter,
+            activityStore: activityStore, executables: executables)
         let registry = ModuleRegistry(
             descriptors: descriptors,
             enablement: ConfigModuleEnablement(store: configStore),
@@ -120,26 +173,63 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 configStore.value(CoreSettings.path("closed", "max_side_width"), as: Int.self)
                     .map { CGFloat($0) } ?? 120
             },
+            closedSlots: {
+                configStore.value(CoreSettings.path("closed", "slots"), as: Int.self) ?? ClosedNotchArbiter.defaultSlots
+            },
             logger: Logger(subsystem: environment.logSubsystem, category: "host"))
 
-        self.configStore = configStore
+        // `vigie reload` and `vigie expand` (Story 4.3). Subscribed before the server's queue is released.
+        let appTopics = AppTopics(
+            bus: eventBus, logger: logger,
+            onReload: { await configStore.reload() },
+            onExpand: { [logger] _ in logger.info("expand requested (Story 2.10)") })
+        appTopics.start()
+
         self.hotkeyBridge = bridge
         self.registry = registry
         self.notchHost = host
+        self.appTopics = appTopics
 
         host.start()
         await registry.start()
+        eventServer?.releaseQueue()
+
+        installCLI()
+    }
+
+    /// Links `~/.local/bin/<cliName>` to the bundled helper (FR8, AD-22); never overwrites a foreign file.
+    private func installCLI() {
+        guard let bundled = CLIInstaller.bundledCLIURL(in: .main, cliName: environment.cliName) else {
+            logger.error("bundled CLI \(self.environment.cliName, privacy: .public) missing; not linked")
+            return
+        }
+        let installer = CLIInstaller(environment: environment, bundledCLIURL: bundled)
+        let logger = logger
+        Task.detached {
+            let result = await installer.install()
+            logger.info(
+                "CLI install at \(installer.linkURL.path, privacy: .public): \(String(describing: result), privacy: .public)"
+            )
+        }
     }
 
     /// Stops modules before quitting (their storage flushes asynchronously).
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
         guard !isShuttingDown else { return .terminateNow }
         isShuttingDown = true
-        guard let registry else { return .terminateNow }
+        guard let registry else {
+            eventServer?.stop()
+            return .terminateNow
+        }
         notchHost?.stop()
         hotkeyBridge?.stop()
+        appTopics?.stop()
+        notifyRules?.stop()
+        executableOverrides?.stop()
         Task {
             await registry.shutdown()
+            eventServer?.stop()
+            await activityStore?.stopPruning()
             configStore?.stop()
             sender.reply(toApplicationShouldTerminate: true)
         }
@@ -147,6 +237,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationWillTerminate(_ notification: Notification) {
+        eventServer?.stop()  // idempotent; covers a quit before assembly finished
         instanceLock?.release()
         instanceLock = nil
     }

@@ -92,7 +92,8 @@ public struct CLIInstaller: Sendable {
         binDirectory.appendingPathComponent(environment.cliName)
     }
 
-    /// Ensures the link; never overwrites anything that is not a Vigie link.
+    /// Ensures the link; never overwrites anything that is not a Vigie link or a dangling link (a link whose
+    /// target no longer exists replaces nothing usable).
     public func install() async -> CLIInstallResult {
         let source = bundledCLIURL.standardizedFileURL
         guard fileManager.isExecutableFile(atPath: source.path) else {
@@ -107,7 +108,7 @@ public struct CLIInstaller: Sendable {
             return .installed
         case .link(let target) where target == source:
             return .alreadyCurrent
-        case .link(let target) where isVigieHelper(target):
+        case .link(let target) where isVigieHelper(target) || isDangling(target):
             if let failure = replaceLink(pointingTo: source) { return .failed(failure) }
             return .repaired(from: target)
         case .link, .other:
@@ -122,7 +123,8 @@ public struct CLIInstaller: Sendable {
         switch inspectLink() {
         case .missing: return .missing(link: linkURL)
         case .link(let target) where target == source: return .current(link: linkURL)
-        case .link(let target) where isVigieHelper(target): return .stale(link: linkURL, target: target)
+        case .link(let target) where isVigieHelper(target) || isDangling(target):
+            return .stale(link: linkURL, target: target)
         case .link, .other: return .conflict(existing: linkURL)
         }
     }
@@ -172,6 +174,12 @@ public struct CLIInstaller: Sendable {
     private func isVigieHelper(_ target: URL) -> Bool {
         target.lastPathComponent == environment.cliName
             && target.deletingLastPathComponent().path.hasSuffix("/" + Self.helpersRelativePath)
+    }
+
+    /// Nothing exists at `target` (not even another link).
+    private func isDangling(_ target: URL) -> Bool {
+        var info = stat()
+        return lstat(target.path, &info) != 0 && errno == ENOENT
     }
 
     private func ensureBinDirectory() -> Bool {

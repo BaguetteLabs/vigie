@@ -166,6 +166,40 @@ public final class ConfigStore {
         return shared.value(at: key)
     }
 
+    /// The file a raw read looks in.
+    public enum RawLocation: Sendable {
+        /// `local.toml` first, then `config.toml` (the precedence of `.local` keys over synced ones).
+        case merged
+        /// `config.toml` only.
+        case synced
+        /// `local.toml` only.
+        case local
+    }
+
+    /// The parsed value at `path`, schema or not, from the last valid content of the files. For tables the
+    /// schema does not know (`[executables]`, `[modules."<id>".notify]`); known keys read through `value(_:as:)`.
+    public func rawValue(at path: ConfigKeyPath, in location: RawLocation = .merged) -> ConfigValue? {
+        _ = revision
+        switch location {
+        case .merged: return localFile.document.value(at: path) ?? configFile.document.value(at: path)
+        case .synced: return configFile.document.value(at: path)
+        case .local: return localFile.document.value(at: path)
+        }
+    }
+
+    /// The table at `path`, or nil when absent or not a table. `.merged` combines both files key by key,
+    /// `local.toml` winning.
+    public func rawTable(at path: ConfigKeyPath, in location: RawLocation = .merged) -> [String: ConfigValue]? {
+        guard location == .merged else {
+            guard case .table(let table) = rawValue(at: path, in: location) else { return nil }
+            return table
+        }
+        let synced = rawTable(at: path, in: .synced)
+        let local = rawTable(at: path, in: .local)
+        guard synced != nil || local != nil else { return nil }
+        return (synced ?? [:]).merging(local ?? [:]) { _, localValue in localValue }
+    }
+
     /// `modules."<id>".enabled` from `config.toml`, or nil when absent (or invalid).
     public func isModuleEnabled(_ id: ModuleID) -> Bool? {
         shared.read { $0.enabled[id] }
@@ -176,7 +210,9 @@ public final class ConfigStore {
         shared.observe(key).stream
     }
 
-    /// Each element is the set of keys whose resolved value changed in one load. One stream per access.
+    /// Each element is the set of keys that changed in one load: schema keys whose resolved value changed, plus
+    /// every raw leaf path (arrays are leaves) whose value differs in either file, including tables the schema
+    /// does not know (`[executables]`, `[modules."<id>".notify]`). One stream per access.
     public var changes: AsyncStream<Set<ConfigKeyPath>> {
         shared.subscribeChanges()
     }
@@ -303,9 +339,21 @@ public final class ConfigStore {
         async let configRead = ConfigFileReader.read(configURL)
         async let localRead = ConfigFileReader.read(localURL)
         let (configResult, localResult) = await (configRead, localRead)
+        let oldConfig = configFile.document
+        let oldLocal = localFile.document
         let configChanged = ingest(configResult, into: &configFile, url: configURL)
         let localChanged = ingest(localResult, into: &localFile, url: localURL)
-        if configChanged || localChanged { recompute() }
+        guard configChanged || localChanged else { return }
+        let rawChanged = Self.changedLeafPaths(oldConfig, configFile.document)
+            .union(Self.changedLeafPaths(oldLocal, localFile.document))
+        recompute(rawChanged: rawChanged)
+    }
+
+    /// Leaf paths whose value differs between two parses of one file (added, removed or changed).
+    static func changedLeafPaths(_ old: ConfigDocument, _ new: ConfigDocument) -> Set<ConfigKeyPath> {
+        guard old != new else { return [] }
+        let paths = Set(old.leafPaths()).union(new.leafPaths())
+        return paths.filter { old.value(at: $0) != new.value(at: $0) }
     }
 
     /// Applies one read to a file's state; returns whether anything changed.
@@ -353,7 +401,9 @@ public final class ConfigStore {
 
     /// Re-resolves every key from the current documents, publishes problems and notifies observers of
     /// changed values. Keys that were not known before (just registered) are not reported as changed.
-    private func recompute() {
+    /// `rawChanged`: leaf paths whose parsed value changed in this load; reported on `changes` and bump
+    /// `revision` even when no schema key changed.
+    private func recompute(rawChanged: Set<ConfigKeyPath> = []) {
         let schema = shared.read { $0.schema }
         let resolution = ConfigResolver.resolve(
             schema: schema, config: configFile.document, local: localFile.document,
@@ -365,7 +415,8 @@ public final class ConfigStore {
             }
             return (snapshot.values, snapshot.enabled)
         }
-        var changed = Set<ConfigKeyPath>()
+        // Schema keys are reported by resolved value only (an edit that resolves to the same value is silent).
+        var changed = rawChanged.filter { schema.entries[$0] == nil }
         for (path, value) in resolution.values {
             if let old = oldValues[path], old != value { changed.insert(path) }
         }

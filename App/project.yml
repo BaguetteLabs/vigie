@@ -17,6 +17,10 @@ packages:
     path: ../Packages/VigieUI
   VigieCore:
     path: ../Packages/VigieCore
+  AgentKit:
+    path: ../Packages/AgentKit
+  AgentsSessions:
+    path: ../Packages/Modules/AgentsSessions
 
 settings:
   base:
@@ -41,6 +45,8 @@ targets:
       - package: VigieUI
       - package: ModuleKit
       - package: Wire
+      - package: AgentKit
+      - package: AgentsSessions
     settings:
       base:
         INFOPLIST_FILE: Info.plist
