@@ -47,6 +47,7 @@ final class RecordingPeekEvents: PeekSinkEvents {
     private(set) var primaries: [ActiveAlert] = []
     private(set) var intents: [UserIntent] = []
     private(set) var dismissals: [ActiveAlert] = []
+    private(set) var preemptions: [ActiveAlert] = []
 
     func peekPrimary(_ alert: ActiveAlert, intent: UserIntent) {
         primaries.append(alert)
@@ -54,6 +55,7 @@ final class RecordingPeekEvents: PeekSinkEvents {
     }
 
     func peekDismissed(_ alert: ActiveAlert) { dismissals.append(alert) }
+    func peekPreempted(_ alert: ActiveAlert) { preemptions.append(alert) }
 }
 
 /// A module that takes alert actions.

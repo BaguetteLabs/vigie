@@ -36,6 +36,8 @@ public struct AlertHistoryEntry: Hashable, Sendable {
         case replayedAfterFocus(Set<AlertOutput>)
         /// The user dismissed its peek (`⌥⌘⌫`, Story 3.3): the reminder is cancelled, the alert stays active.
         case dismissed
+        /// Its visible peek was replaced by a more urgent one (Story 3.9); it peeks again only via its reminder.
+        case preempted
         case resolved
     }
 
@@ -426,6 +428,14 @@ extension AlertCenter: PeekSinkEvents {
         peekTokens[alert.id] = nil
         dismiss(alert.id)
     }
+
+    /// A blocked or failed peek replaced this alert's peek: recorded as `.preempted`; the alert stays active and
+    /// its reminder still replays it.
+    public func peekPreempted(_ alert: ActiveAlert) {
+        peekTokens[alert.id] = nil
+        guard let current = active.first(where: { $0.id == alert.id }) else { return }
+        record(current, .preempted, at: now())
+    }
 }
 
 /// Runs `body` on the main actor: now when already on the main thread, else in FIFO order on the main queue.
@@ -470,6 +480,7 @@ extension AlertHistoryEntry.Outcome {
         case .suppressedByFocus, .reminderSuppressedByFocus: .suppressed(reason: "dnd")
         case .replayedAfterFocus: .shown
         case .dismissed: .dismissed
+        case .preempted: .custom("preempted")
         case .resolved: .resolved
         }
     }

@@ -115,7 +115,7 @@ final class PeekHarness {
 
     @Test func queueOrdersByKindUrgency() {
         let h = PeekHarness()
-        _ = h.presenter.show(PeekHarness.alert("x.event", module: "m0", title: "visible"))
+        _ = h.presenter.show(PeekHarness.alert("session.failed", module: "m0", title: "visible"))
         _ = h.presenter.show(PeekHarness.alert("setup.problem", module: "m1", severity: .critical, title: "setup"))
         _ = h.presenter.show(PeekHarness.alert("session.done", module: "m2", severity: .info, title: "done"))
         _ = h.presenter.show(PeekHarness.alert("usage.quota_warning", module: "m3", severity: .warn, title: "quota"))

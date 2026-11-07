@@ -34,8 +34,13 @@ public protocol PeekPanelDriver: AnyObject {
 
 /// The Notch Host's peek presenter (SPEC §5.2, AD-13, Story 3.2): the ``PeekSink`` given to `AlertCenter`.
 ///
-/// - One peek is visible at a time; others queue by urgency (``PeekContentMapper/urgency(_:)``), then
-///   severity, then arrival.
+/// - One peek is visible at a time; others queue by the Notifier's urgency table (``AlertUrgency``), then
+///   arrival (Story 3.9).
+/// - A blocked or failed alert replaces a visible peek of lower urgency at once, regardless of the rate limit;
+///   the replaced alert is reported as preempted and peeks again only through its reminder.
+/// - While `isSuppressed` (the expanded view is open) no peek shows: `show` returns an inert token and the queue
+///   is dropped; the module's tab carries the attention marker instead. Sound and system outputs are unaffected.
+/// - A queued peek retracted before it shows (its alert resolved) is dropped and never peeks.
 /// - A module cannot show a new peek within ``rateLimit`` (3 s, A52) of its previous one retracting; its next
 ///   peek waits in the queue while other modules' peeks may show.
 /// - Each alert peeks once. A second `show` for the same alert id peeks again only when it is the reminder
@@ -80,6 +85,7 @@ public final class PeekPresenter: PeekSink {
     @ObservationIgnored private let announce: @MainActor (String) -> Void
     @ObservationIgnored private let logger: Logger
     @ObservationIgnored private let shortcuts: TemporaryShortcuts?
+    @ObservationIgnored private let isSuppressed: @MainActor () -> Bool
 
     @ObservationIgnored private var queue: [Entry] = []
     @ObservationIgnored private var visibleToken: PeekToken?
@@ -102,6 +108,7 @@ public final class PeekPresenter: PeekSink {
     ///   - pointer: the pointer location in global coordinates.
     ///   - announce: posts a VoiceOver announcement; by default ``postAnnouncement(_:)``.
     ///   - shortcuts: `⌥⌘↵` / `⌥⌘⌫`, bound while a peek is visible (Story 3.3); nil binds none.
+    ///   - isSuppressed: true while no peek may show (the expanded view is open, Story 3.9).
     public init(
         anchors: any PeekAnchorProvider,
         theme: ThemeController,
@@ -113,6 +120,7 @@ public final class PeekPresenter: PeekSink {
         announce: @escaping @MainActor (String) -> Void = { PeekPresenter.postAnnouncement($0) },
         rateLimit: Duration = PeekPresenter.defaultRateLimit,
         shortcuts: TemporaryShortcuts? = nil,
+        isSuppressed: @escaping @MainActor () -> Bool = { false },
         logger: Logger = Logger(subsystem: "fr.baguettelabs.vigie", category: "peek")
     ) {
         self.anchors = anchors
@@ -126,6 +134,7 @@ public final class PeekPresenter: PeekSink {
         self.announce = announce
         self.rateLimit = rateLimit
         self.shortcuts = shortcuts
+        self.isSuppressed = isSuppressed
         self.logger = logger
     }
 
@@ -141,6 +150,10 @@ public final class PeekPresenter: PeekSink {
 
     public func show(_ alert: ActiveAlert) -> PeekToken {
         guard enabled(alert.module) else { return PeekToken() }
+        if isSuppressed() {
+            logger.debug("Peek for \(alert.kind, privacy: .public) suppressed: expanded view open")
+            return PeekToken()
+        }
         if shownIDs.contains(alert.id) {
             guard alert.isReminder, !remindedIDs.contains(alert.id) else {
                 logger.debug("Peek for \(alert.kind, privacy: .public) already shown; not peeking again")
@@ -150,17 +163,22 @@ public final class PeekPresenter: PeekSink {
         if let queued = queue.first(where: { $0.alert.id == alert.id }) { return queued.token }
         let token = PeekToken()
         sequence += 1
-        queue.append(
-            Entry(token: token, alert: alert, sequence: sequence, urgency: PeekContentMapper.urgency(alert)))
-        pump()
+        let entry = Entry(token: token, alert: alert, sequence: sequence, urgency: AlertUrgency.rank(alert))
+        queue.append(entry)
+        if let current = visible, AlertUrgency.preempts(alert, over: current) {
+            preempt(current, with: entry)
+        } else {
+            pump()
+        }
         return token
     }
 
     public func retract(_ token: PeekToken) {
         if token == visibleToken {
             retractVisible()
-        } else {
-            queue.removeAll { $0.token == token }
+        } else if let index = queue.firstIndex(where: { $0.token == token }) {
+            let dropped = queue.remove(at: index).alert
+            logger.debug("Queued peek for \(dropped.kind, privacy: .public) dropped before showing")
         }
     }
 
@@ -213,8 +231,7 @@ public final class PeekPresenter: PeekSink {
     // MARK: Queue
 
     private static func precedes(_ a: Entry, _ b: Entry) -> Bool {
-        if a.urgency != b.urgency { return a.urgency > b.urgency }
-        if a.alert.severity != b.alert.severity { return a.alert.severity > b.alert.severity }
+        if a.urgency != b.urgency { return a.urgency < b.urgency }
         return a.sequence < b.sequence
     }
 
@@ -227,6 +244,11 @@ public final class PeekPresenter: PeekSink {
         guard visibleToken == nil else { return }
         holdTask?.cancel()
         holdTask = nil
+        if isSuppressed() {
+            if !queue.isEmpty { logger.debug("Queued peeks dropped: expanded view open") }
+            queue.removeAll()
+            return
+        }
         queue.removeAll { !enabled($0.alert.module) }
         let now = elapsed()
         let ordered = queue.sorted(by: Self.precedes)
@@ -306,7 +328,17 @@ public final class PeekPresenter: PeekSink {
         driver.update(dwell: state)
     }
 
-    private func retractVisible() {
+    /// Story 3.9: `entry` (blocked or failed) replaces the visible, less urgent peek at once.
+    private func preempt(_ current: ActiveAlert, with entry: Entry) {
+        logger.debug("Peek for \(current.kind, privacy: .public) preempted by \(entry.alert.kind, privacy: .public)")
+        retractVisible(thenPump: false)
+        events?.peekPreempted(current)
+        holdTask?.cancel()
+        holdTask = nil
+        present(entry)
+    }
+
+    private func retractVisible(thenPump: Bool = true) {
         guard let alert = visible else { return }
         dwellTask?.cancel()
         dwellTask = nil
@@ -318,7 +350,7 @@ public final class PeekPresenter: PeekSink {
         isHovered = false
         shortcuts?.deactivate()
         driver.retract()
-        pump()
+        if thenPump { pump() }
     }
 
     /// Time since the presenter started, read from `clock`.

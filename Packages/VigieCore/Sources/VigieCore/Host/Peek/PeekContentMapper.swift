@@ -21,24 +21,6 @@ public enum PeekContentMapper {
         }
     }
 
-    /// Queue urgency (SPEC §5.2): blocked / failed > break due / Timer end / calendar reminder > quota warning >
-    /// done > setup problem. Other kinds rank by severity among these.
-    public static func urgency(_ alert: ActiveAlert) -> Int {
-        switch kind(for: alert.kind) {
-        case .blocked, .failed, .sleepSummary: 4
-        case .breakDue, .timerEnd, .calendarReminder: 3
-        case .quotaWarning: 2
-        case .done: 1
-        case .setupProblem: 0
-        case .generic:
-            switch alert.severity {
-            case .critical: 4
-            case .warn: 2
-            case .info: 1
-            }
-        }
-    }
-
     /// The panel content for `alert`. `theme` gives the variant's "now" accent for Time and calendar peeks.
     public static func content(for alert: ActiveAlert, theme: Theme) -> PeekContent {
         let kind = kind(for: alert.kind)

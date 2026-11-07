@@ -52,6 +52,9 @@ public struct PeekToken: Hashable, Sendable {
     func peekPrimary(_ alert: ActiveAlert, intent: UserIntent)
     /// The user dismissed the peek (`⌥⌘⌫` or a click on Dismiss). The peek has retracted.
     func peekDismissed(_ alert: ActiveAlert)
+    /// A more urgent alert replaced the alert's visible peek (Story 3.9). It keeps its state and peeks again only
+    /// through its reminder.
+    func peekPreempted(_ alert: ActiveAlert)
 }
 
 /// macOS notification output.
