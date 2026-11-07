@@ -110,3 +110,7 @@ jobs:
       - name: config-corpus
         id: config-corpus
         run: Scripts/config-corpus.sh
+
+      - name: spool-floor
+        id: spool-floor
+        run: Scripts/spool-floor-test.sh

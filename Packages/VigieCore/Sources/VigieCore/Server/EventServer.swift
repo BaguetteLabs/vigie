@@ -17,8 +17,10 @@ public enum EventServerError: Error, Equatable, Sendable {
 /// The app side of the hook path (FR78, AD-6, AD-7, AD-21): a user-only `AF_UNIX` stream socket that
 /// receives one `Envelope` JSON line per message and publishes it as an `EventMessage` on the bus.
 ///
-/// - Lines arriving before `releaseQueue()` are decoded and queued (bounded, oldest dropped first), so
+/// - Lines arriving before `finishStartup(spool:)` are decoded and queued (bounded, oldest dropped first), so
 ///   nothing is dispatched before the Registry has started modules (AD-6 launch order).
+/// - `finishStartup(spool:)` replays the CLI spool, then dispatches the queue, then keeps draining the spool
+///   whenever it appears; spool lines share the live lines' decoding rules and publish with `replayed = true`.
 /// - The server never interprets payloads; versions `v` and `v-1` are accepted, anything else is dropped
 ///   with one log entry (AD-7).
 /// - `start` takes the `InstanceLock` to prove the caller holds it: only then is a stale socket unlinked.
@@ -54,10 +56,26 @@ public final class EventServer: Sendable {
         try core.start(lock: lockHeld)
     }
 
-    /// Dispatches queued messages in arrival order; later messages are published as they arrive.
-    /// Call after `ModuleRegistry.start()` (and, from Story 4.2, after the spool replay).
-    public func releaseQueue() {
+    /// AD-6 steps 4 and 5, in an order callers cannot get wrong: replays a leftover `spool.replaying.jsonl`,
+    /// then renames, replays and deletes `spool.jsonl` (`replayed = true`, file order), then dispatches the
+    /// socket lines queued since `start` in arrival order; later lines are published as they arrive. From
+    /// then on the spool is drained whenever it appears (directory watch, 250 ms debounce; 30 s safety timer).
+    ///
+    /// Call once, after `start(lockHeld:)` and `ModuleRegistry.start()`, and before posting `host.ready`.
+    /// File work runs off the caller's actor. Later calls only return an empty report.
+    @discardableResult
+    public func finishStartup(spool: SpoolLocations) async -> SpoolReplayReport {
+        await core.finishStartup(spool: spool)
+    }
+
+    /// Dispatches queued messages without replaying the spool (tests only; the app calls `finishStartup`).
+    func releaseQueue() {
         core.releaseQueue()
+    }
+
+    /// The shared line decoder (tests).
+    func decode(line: Data) -> EventMessage? {
+        core.decode(line: line)
     }
 
     /// Stops accepting, closes clients and the listening socket, and unlinks the socket path if it is
@@ -104,6 +122,8 @@ extension EventServer {
             var overflowLogged = false
             var clients: [Int: Client] = [:]
             var nextClientID = 0
+            var replayer: SpoolReplayer?
+            var startupBegun = false
         }
 
         enum Phase {
@@ -159,6 +179,8 @@ extension EventServer {
         }
 
         func stop() {
+            // Outside the state lock: a drain in progress publishes under it, and is let finish first.
+            state.withLock { $0.replayer }?.stopWatching()
             let taken: (Running?, [Client])? = state.withLock { state in
                 let running: Running?
                 switch state.phase {
@@ -192,6 +214,41 @@ extension EventServer {
         }
 
         // MARK: Gate (AD-6)
+
+        func finishStartup(spool: SpoolLocations) async -> SpoolReplayReport {
+            let replayer = SpoolReplayer(
+                spoolURL: spool.spoolURL, replayingURL: spool.replayingURL,
+                decode: { [weak self] line in self?.decode(line: line) },
+                publish: { [weak self] message in self?.deliverReplayed(message) ?? false },
+                logger: logger)
+            let proceed = state.withLock { state in
+                if case .stopped = state.phase { return false }
+                guard !state.startupBegun else { return false }
+                state.startupBegun = true
+                state.replayer = replayer
+                return true
+            }
+            guard proceed else { return SpoolReplayReport() }
+            // The queue is still closed: live lines keep queueing while replayed ones reach the bus.
+            let report = await replayer.replayAtLaunch()
+            releaseQueue()
+            let stopped = state.withLock { state in
+                if case .stopped = state.phase { return true }
+                return false
+            }
+            if !stopped { replayer.startWatching() }
+            return report
+        }
+
+        /// Spool messages bypass the queue but publish under the same lock as live ones, so a drain never
+        /// interleaves with the release of the queue.
+        private func deliverReplayed(_ message: EventMessage) -> Bool {
+            state.withLock { state in
+                if case .stopped = state.phase { return false }
+                bus.publish(message)
+                return true
+            }
+        }
 
         func releaseQueue() {
             state.withLock { state in
@@ -229,38 +286,42 @@ extension EventServer {
         // MARK: Lines (AD-7)
 
         func handle(line: Data) {
+            if let message = decode(line: line) { deliver(message) }
+        }
+
+        /// Shared by socket and spool lines: size limit, version gate, payload re-encoding (AD-7).
+        /// Bad lines are dropped with one log entry each.
+        func decode(line: Data) -> EventMessage? {
             guard !line.isEmpty, line != Data([0x0D]) else {
                 logger.warning("dropped empty line")
-                return
+                return nil
             }
             guard line.count <= maxLineBytes else {
                 logger.warning("dropped line over \(self.maxLineBytes) bytes")
-                return
+                return nil
             }
             let envelope: Envelope
             do {
                 envelope = try Envelope.decodeLine(line)
             } catch WireError.unsupportedVersion(let version) {
                 logger.warning("dropped message with unsupported version \(version)")
-                return
+                return nil
             } catch WireError.invalidDate {
                 logger.warning("dropped message with invalid sent_at")
-                return
+                return nil
             } catch {
                 logger.warning("dropped malformed line (\(line.count) bytes)")
-                return
+                return nil
             }
             let payload: Data
             do {
                 payload = try JSONEncoder().encode(envelope.payload)
             } catch {
                 logger.warning("dropped \(envelope.topic, privacy: .public): payload not encodable")
-                return
+                return nil
             }
-            deliver(
-                EventMessage(
-                    topic: envelope.topic, payload: payload, sentAt: envelope.sentAt, receivedAt: Date(),
-                    replayed: false))
+            return EventMessage(
+                topic: envelope.topic, payload: payload, sentAt: envelope.sentAt, receivedAt: Date(), replayed: false)
         }
 
         // MARK: Socket

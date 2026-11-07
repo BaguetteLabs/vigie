@@ -40,17 +40,48 @@ public struct Delivery: Sendable {
 }
 
 /// Appends lines to the spool file (AD-6): `O_APPEND`, `flock(LOCK_EX)`, one `write`.
+///
+/// The app drains the spool by renaming it under the same lock (Story 4.2). A writer that opened
+/// the file before such a rename would otherwise append to the renamed inode after the app has
+/// read it, so once the lock is held the writer checks that the path still names its inode and
+/// reopens if not. Lines written under the lock to the current inode are therefore read exactly once.
 enum Spool {
+    /// Reopen attempts when the spool is renamed between `open` and `flock`.
+    static let maxAttempts = 8
+
     static func append(_ line: Data, to url: URL) -> Bool {
         let directory = url.deletingLastPathComponent()
         try? FileManager.default.createDirectory(
             at: directory, withIntermediateDirectories: true, attributes: [.posixPermissions: 0o700])
-        let fd = open(url.path, O_WRONLY | O_APPEND | O_CREAT | O_CLOEXEC, 0o600)
-        guard fd >= 0 else { return false }
+        for _ in 0..<maxAttempts {
+            switch appendOnce(line, to: url.path) {
+            case .written: return true
+            case .failed: return false
+            case .renamed: continue
+            }
+        }
+        return false
+    }
+
+    private enum Attempt {
+        case written
+        case failed
+        case renamed
+    }
+
+    private static func appendOnce(_ line: Data, to path: String) -> Attempt {
+        let fd = open(path, O_WRONLY | O_APPEND | O_CREAT | O_CLOEXEC, 0o600)
+        guard fd >= 0 else { return .failed }
         defer { close(fd) }
-        guard flock(fd, LOCK_EX) == 0 else { return false }
+        guard flock(fd, LOCK_EX) == 0 else { return .failed }
         defer { flock(fd, LOCK_UN) }
+        var opened = stat()
+        var current = stat()
+        guard fstat(fd, &opened) == 0 else { return .failed }
+        guard stat(path, &current) == 0, current.st_dev == opened.st_dev, current.st_ino == opened.st_ino else {
+            return .renamed
+        }
         let written = line.withUnsafeBytes { write(fd, $0.baseAddress, $0.count) }
-        return written == line.count
+        return written == line.count ? .written : .failed
     }
 }

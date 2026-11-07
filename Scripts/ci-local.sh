@@ -37,6 +37,9 @@ Scripts/check-package-deps.sh
 echo "==> config corpus"
 Scripts/config-corpus.sh
 
+echo "==> spool floor"
+Scripts/spool-floor-test.sh
+
 echo "==> xcodegen generate"
 (cd App && xcodegen generate)
 
