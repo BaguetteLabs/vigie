@@ -22,7 +22,7 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 
 ### Epic 1 — Foundation and risk spikes
 - [x] 1.1 Scaffold the SwiftPM-first workspace
-- [ ] 1.2 AppEnvironment and dev build isolation
+- [x] 1.2 AppEnvironment and dev build isolation
 - [x] 1.3 Continuous integration for pull requests (first GitHub run unverified until gh is authenticated)
 - [ ] 1.4 Spike — Claude Code hook reaches a socket listener
 - [ ] 1.5 Spike — focus a specific Warp tab
