@@ -58,12 +58,6 @@ struct StubHostControl: HostControl {
     }
 }
 
-/// Implemented in Story 2.12.
-struct StubPermissionsService: PermissionsService {
-    func status(of permission: Permission) async -> PermissionStatus { .notDetermined }
-    func request(_ permission: Permission) async -> PermissionStatus { .notDetermined }
-}
-
 /// Implemented in Story 4.12. Assertions are tracked but hold nothing.
 struct StubPowerService: PowerService {
     let tracker: RegistrationTracker

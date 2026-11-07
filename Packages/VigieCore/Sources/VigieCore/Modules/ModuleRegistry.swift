@@ -30,7 +30,7 @@ public enum ModuleStatus: Equatable, Sendable {
     case stopped
     /// `start` failed; the message is for Settings and logs.
     case errored(String)
-    /// Wired in Story 2.12.
+    /// Stopped until the user grants the permission (Story 2.12); retried on grant.
     case needsPermission(Permission)
 }
 
@@ -53,6 +53,8 @@ public final class ModuleRegistry {
     @ObservationIgnored private let enablement: any ModuleEnablement
     @ObservationIgnored private let contextFactory: any ModuleContextFactory
     @ObservationIgnored private let logger: Logger
+    @ObservationIgnored private let permissions: PermissionsCoordinator
+    @ObservationIgnored private var waiters: [ModuleID: (permission: Permission, task: Task<Void, Never>)] = [:]
     @ObservationIgnored private var running: [ModuleID: Running] = [:]
     @ObservationIgnored private var lastTransition: Task<Void, Never>?
     @ObservationIgnored private var changesTask: Task<Void, Never>?
@@ -62,8 +64,10 @@ public final class ModuleRegistry {
         descriptors: [ModuleDescriptor],
         enablement: any ModuleEnablement,
         contextFactory: any ModuleContextFactory,
-        logger: Logger
+        logger: Logger,
+        permissions: PermissionsCoordinator? = nil
     ) {
+        self.permissions = permissions ?? PermissionsCoordinator(checker: SystemPermissionChecker())
         var seen = Set<ModuleID>()
         var unique: [ModuleDescriptor] = []
         for descriptor in descriptors {
@@ -104,6 +108,7 @@ public final class ModuleRegistry {
         isShutDown = true
         changesTask?.cancel()
         changesTask = nil
+        for id in Array(waiters.keys) { clearWaiter(id) }
         for descriptor in descriptors.reversed() where running[descriptor.manifest.id] != nil {
             enqueue(descriptor.manifest.id)
         }
@@ -161,6 +166,7 @@ public final class ModuleRegistry {
         case (false, true):
             await stopModule(id, finalStatus: isShutDown ? .stopped : .disabled)
         case (false, false):
+            clearWaiter(id)
             if !isShutDown { statuses[id] = .disabled }
         case (true, true):
             break
@@ -169,6 +175,13 @@ public final class ModuleRegistry {
 
     private func startModule(_ descriptor: ModuleDescriptor) async {
         let id = descriptor.manifest.id
+        clearWaiter(id)
+        if let missing = await permissions.ensure(descriptor.manifest.permissions) {
+            statuses[id] = .needsPermission(missing)
+            await waitForGrant(of: missing, module: id)
+            logger.info("Module \(id.rawValue, privacy: .public) waits for a permission")
+            return
+        }
         let tracker = RegistrationTracker()
         let context = contextFactory.makeContext(for: descriptor.manifest, tracker: tracker)
         let module = descriptor.make()
@@ -190,6 +203,25 @@ public final class ModuleRegistry {
             statuses[id] = .errored(String(describing: error))
             logger.error("Module \(id.rawValue, privacy: .public) failed to start: \(error, privacy: .public)")
         }
+    }
+
+    /// Retries the start once when `permission` is granted (the coordinator re-checks while we wait).
+    private func waitForGrant(of permission: Permission, module id: ModuleID) async {
+        let granted = permissions.granted
+        permissions.beginWaiting(on: permission)
+        let task = Task { [weak self] in
+            for await p in granted where p == permission {
+                self?.enqueue(id)
+                return
+            }
+        }
+        waiters[id] = (permission, task)
+    }
+
+    private func clearWaiter(_ id: ModuleID) {
+        guard let waiter = waiters.removeValue(forKey: id) else { return }
+        waiter.task.cancel()
+        permissions.endWaiting(on: waiter.permission)
     }
 
     private func stopModule(_ id: ModuleID, finalStatus: ModuleStatus) async {

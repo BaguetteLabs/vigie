@@ -198,6 +198,8 @@ public enum PermissionStatus: Hashable, Sendable {
     case notDetermined
     case granted
     case denied
+    /// Automation only: the target app is not running, so macOS cannot say.
+    case targetNotRunning
 }
 
 public protocol PermissionsService: Sendable {

@@ -66,15 +66,20 @@ public protocol ModuleContextFactory {
     func makeContext(for manifest: ModuleManifest, tracker: RegistrationTracker) -> any ModuleContext
 }
 
-/// The production factory: real storage, scheduler and event bus; stubs for the rest.
+/// The production factory: real storage, scheduler and event bus; the shared permissions coordinator; stubs for the rest.
 public struct CoreModuleContextFactory: ModuleContextFactory {
     public let environment: AppEnvironment
     public let eventBus: InProcessEventBus
+    public let permissions: PermissionsCoordinator?
 
     /// - Parameter environment: injected by the App (`AppEnvironment.current`); VigieCore never reads `.current`.
-    public init(environment: AppEnvironment, eventBus: InProcessEventBus) {
+    /// - Parameter permissions: the shared coordinator; when nil each context gets its own system-backed one.
+    public init(
+        environment: AppEnvironment, eventBus: InProcessEventBus, permissions: PermissionsCoordinator? = nil
+    ) {
         self.environment = environment
         self.eventBus = eventBus
+        self.permissions = permissions
     }
 
     public func makeContext(for manifest: ModuleManifest, tracker: RegistrationTracker) -> any ModuleContext {
@@ -88,7 +93,7 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
             notifier: StubNotifier(log: log),
             events: ModuleEventBus(bus: eventBus, tracker: tracker),
             host: StubHostControl(),
-            permissions: StubPermissionsService(),
+            permissions: permissions ?? PermissionsCoordinator(checker: SystemPermissionChecker()),
             power: StubPowerService(tracker: tracker),
             clipboard: StubClipboardService(),
             executables: StubExecutableResolver(),
