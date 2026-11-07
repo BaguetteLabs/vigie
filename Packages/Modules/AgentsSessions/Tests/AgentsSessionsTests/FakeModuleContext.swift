@@ -232,9 +232,15 @@ struct NoIntegrations: IntegrationInstaller {
 
 /// Maps `raw = {"event": "<SPEC name>", "session": "<id>", "tool"?: "...", "cwd"?: "..."}` to one event.
 struct FakeAdapter: AgentAdapter {
+    /// What `support(for:)` returns (AD-23 gate); events flow only when it `emitsEvents`.
+    var supportState: AdapterSupport = .supported(AgentVersion(raw: "1.0.0"))
+
     var id: AgentID { "fake" }
     var name: LocalizedStringResource { "Fake" }
     var capabilities: Set<AgentCapability> { [.hooks] }
+
+    func detectVersion(context: any AdapterContext) async -> AgentVersion? { supportState.version }
+    func support(for version: AgentVersion?) -> AdapterSupport { supportState }
 
     func normalize(_ hook: HookPayload, sentAt: Date) -> [AgentEvent] {
         guard let name = hook.raw["event"]?.stringValue.flatMap(AgentEvent.Name.init(rawValue:)),

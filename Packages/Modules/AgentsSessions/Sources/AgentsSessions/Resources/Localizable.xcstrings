@@ -720,6 +720,42 @@
           }
         }
       }
+    },
+    "agentsSessions.support.category" : {
+      "comment" : "Peek kicker category for an agent adapter setup problem: the kicker reads 'SETUP · AGENT'.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AGENT"
+          }
+        }
+      }
+    },
+    "agentsSessions.support.unsupported.title" : {
+      "comment" : "Setup-problem alert title when the installed agent CLI version is not supported. %1$@: adapter name (e.g. 'Claude Code'); %2$@: the version (e.g. '2.2.0').",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ adapter: CLI version %2$@ unsupported"
+          }
+        }
+      }
+    },
+    "agentsSessions.support.unsupported.body" : {
+      "comment" : "Setup-problem alert body for an unsupported agent CLI version.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vigie ignores this agent's events until a supported version is installed."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

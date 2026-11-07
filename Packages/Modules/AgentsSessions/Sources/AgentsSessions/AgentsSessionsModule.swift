@@ -145,6 +145,16 @@ public final class AgentsSessionsModule: NotchModule, AlertActionHandler {
     /// The open `<n> sessions interrupted by sleep` alert.
     @ObservationIgnored var sleepSummary: SleepSummaryAlert?
     @ObservationIgnored var sleepTask: Task<Void, Never>?
+    /// Decodes and normalizes hooks behind the version gate (AD-23); built at start.
+    @ObservationIgnored var pipeline: HookPipeline?
+    /// Each adapter's support from the last version check (`AdapterSupportGate.swift`).
+    public internal(set) var adapterSupport: [AgentID: AdapterSupport] = [:]
+    /// Open `SETUP · AGENT` unsupported-version alerts by adapter.
+    @ObservationIgnored var supportAlerts: [AgentID: AlertHandle] = [:]
+    /// `context.secrets` / `context.executables`, for adapters App assembly gave no context.
+    @ObservationIgnored var moduleSecrets: (any SecretStore)?
+    @ObservationIgnored var moduleExecutables: (any ExecutableResolver)?
+    @ObservationIgnored var supportTask: Task<Void, Never>?
     /// Settings › Agents connect flow (Story 4.7); built at start from `context.integrations`.
     public private(set) var integrations: AgentIntegrationsModel?
 
@@ -174,6 +184,8 @@ public final class AgentsSessionsModule: NotchModule, AlertActionHandler {
         notifier = context.notifier
         permissions = context.permissions
         power = context.power
+        moduleSecrets = context.secrets
+        moduleExecutables = context.executables
         host = context.host
         fallbackTerminalContext = AdapterContextBox(
             settings: DefaultsReadOnlySettings(descriptors: []), secrets: context.secrets,
@@ -205,7 +217,10 @@ public final class AgentsSessionsModule: NotchModule, AlertActionHandler {
         // Subscribe before returning (AD-6 launch order: modules subscribe before the spool replay).
         let stream = context.events.subscribe(topicPrefix: "agent.")
         let pipeline = HookPipeline(adapters: adapters, log: log)
+        self.pipeline = pipeline
+        // AD-23: no event is normalized before each adapter's support is known; the stream buffers meanwhile.
         eventTask = Task.detached { [weak self] in
+            await self?.refreshAdapterSupport()
             for await message in stream {
                 let events = pipeline.normalize(message)
                 guard !events.isEmpty else { continue }
@@ -232,6 +247,12 @@ public final class AgentsSessionsModule: NotchModule, AlertActionHandler {
                 await self?.runLiveness()
             }
         }
+        let adapterChanges = context.settings.observe("adapters")
+        supportTask = Task { [weak self] in
+            for await _ in adapterChanges {
+                await self?.refreshAdapterSupport()
+            }
+        }
         let sleepWake = context.power.sleepWake
         sleepTask = Task { [weak self] in
             for await event in sleepWake {
@@ -244,6 +265,8 @@ public final class AgentsSessionsModule: NotchModule, AlertActionHandler {
     public func stop() async {
         sleepTask?.cancel()
         sleepTask = nil
+        supportTask?.cancel()
+        supportTask = nil
         releaseKeepAwake()
         sleepSnapshot = nil
         livenessPaused = false
@@ -260,6 +283,7 @@ public final class AgentsSessionsModule: NotchModule, AlertActionHandler {
         resolveAllAlerts()
         resolveAllPermissionAlerts()
         resolveSleepSummary()
+        resolveAllSupportAlerts()
         integrations = nil
     }
 
@@ -469,18 +493,28 @@ public enum WingEmptyState: Sendable, Equatable {
     }
 }
 
-/// Decodes `agent.hook` payloads and normalizes them with the matching adapter. Runs off the main actor;
-/// logs an unknown agent once per id.
+/// Decodes `agent.hook` payloads and normalizes them with the matching adapter through the AD-23 version gate
+/// (`normalize(_:sentAt:support:)`): an adapter whose support was not set yet, or does not `emitsEvents`,
+/// yields nothing. Runs off the main actor; logs an unknown agent once per id.
 final class HookPipeline: Sendable {
     static let hookTopic = "agent.hook"
 
     private let adapters: AgentAdapters
     private let log: Logger
     private let reported = OSAllocatedUnfairLock(initialState: Set<String>())
+    private let supports = OSAllocatedUnfairLock(initialState: [AgentID: AdapterSupport]())
 
     init(adapters: AgentAdapters, log: Logger) {
         self.adapters = adapters
         self.log = log
+    }
+
+    func setSupport(_ support: AdapterSupport, for id: AgentID) {
+        supports.withLock { $0[id] = support }
+    }
+
+    func support(for id: AgentID) -> AdapterSupport {
+        supports.withLock { $0[id] } ?? .notInstalled
     }
 
     func normalize(_ message: EventMessage) -> [AgentEvent] {
@@ -500,7 +534,7 @@ final class HookPipeline: Sendable {
             }
             return []
         }
-        return adapter.normalize(payload, sentAt: message.sentAt)
+        return adapter.normalize(payload, sentAt: message.sentAt, support: support(for: id))
     }
 }
 

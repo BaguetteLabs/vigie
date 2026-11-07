@@ -233,12 +233,12 @@ public final class AgentIntegrationsModel {
 }
 
 /// Used only when App assembly gave an adapter no context (tests, previews).
-private struct NoAdapterSecrets: SecretStore {
+struct NoAdapterSecrets: SecretStore {
     func read(_ key: String) async throws -> String? { nil }
     func write(_ value: String?, for key: String) async throws {}
 }
 
-private struct NoAdapterExecutables: ExecutableResolver {
+struct NoAdapterExecutables: ExecutableResolver {
     func resolve(_ name: String) async -> URL? { nil }
 }
 
