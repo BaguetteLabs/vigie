@@ -117,11 +117,12 @@ struct SampleV1: Codable, Sendable {
 
     @Test func writesAreSpacedByTheInterval() async throws {
         let writes = Counter()
-        let storage = makeStorage(interval: .milliseconds(200)) { _ in writes.increment() }
+        // A long interval keeps the check meaningful on a loaded machine (CI, parallel suites).
+        let storage = makeStorage(interval: .seconds(1)) { _ in writes.increment() }
         try await storage.writeJSON(1, name: "n", schema: 1)
         #expect(await eventually { writes.count == 1 })
         try await storage.writeJSON(2, name: "n", schema: 1)
-        try await Task.sleep(for: .milliseconds(80))
+        try await Task.sleep(for: .milliseconds(100))
         #expect(writes.count == 1)  // second write waits for the interval
         #expect(await eventually { writes.count == 2 })
     }
