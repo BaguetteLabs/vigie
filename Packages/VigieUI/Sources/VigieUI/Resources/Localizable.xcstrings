@@ -1,6 +1,726 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "a11y.grip" : {
+      "comment" : "Accessibility label of the 6-dot reorder grip.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drag to reorder"
+          }
+        }
+      }
+    },
+    "a11y.join" : {
+      "comment" : "Accessibility: joins parts of a label, e.g. vigie / api-refactor, blocked.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, %2$@"
+          }
+        }
+      }
+    },
+    "a11y.path" : {
+      "comment" : "Accessibility: project / session, e.g. vigie / api-refactor.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ / %2$@"
+          }
+        }
+      }
+    },
+    "a11y.status.blocked" : {
+      "comment" : "Spoken session status (blocked), lowercase, inside an accessibility label.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "blocked"
+          }
+        }
+      }
+    },
+    "a11y.status.done" : {
+      "comment" : "Spoken session status (done), lowercase, inside an accessibility label.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "done"
+          }
+        }
+      }
+    },
+    "a11y.status.failed" : {
+      "comment" : "Spoken session status (failed), lowercase, inside an accessibility label.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "failed"
+          }
+        }
+      }
+    },
+    "a11y.status.idle" : {
+      "comment" : "Spoken session status (idle), lowercase, inside an accessibility label.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "idle"
+          }
+        }
+      }
+    },
+    "a11y.status.stale" : {
+      "comment" : "Spoken session status (stale), lowercase, inside an accessibility label.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "stale"
+          }
+        }
+      }
+    },
+    "a11y.status.working" : {
+      "comment" : "Spoken session status (working), lowercase, inside an accessibility label.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "working"
+          }
+        }
+      }
+    },
+    "action.openSettings" : {
+      "comment" : "Button opening the relevant Settings pane (empty states, setup problems).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open settings"
+          }
+        }
+      }
+    },
+    "action.openSystemSettings" : {
+      "comment" : "Button opening macOS System Settings (setup cards).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open System Settings"
+          }
+        }
+      }
+    },
+    "empty.agents.noAgent.label" : {
+      "comment" : "Empty state label (uppercase).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NO AGENT CONNECTED"
+          }
+        }
+      }
+    },
+    "empty.agents.noAgent.sentence" : {
+      "comment" : "Empty state sentence: one factual sentence, no exclamation mark.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connect Claude Code, Codex or Gemini in Settings."
+          }
+        }
+      }
+    },
+    "empty.agents.noSessions.label" : {
+      "comment" : "Empty state label (uppercase).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NO ACTIVE SESSIONS"
+          }
+        }
+      }
+    },
+    "empty.agents.noSessions.sentence" : {
+      "comment" : "Empty state sentence: one factual sentence, no exclamation mark.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agent sessions appear here when they start."
+          }
+        }
+      }
+    },
+    "empty.calendar.label" : {
+      "comment" : "Empty state label (uppercase).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NO EVENTS TODAY"
+          }
+        }
+      }
+    },
+    "empty.home.label" : {
+      "comment" : "Empty state label (uppercase).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NO WIDGETS"
+          }
+        }
+      }
+    },
+    "empty.home.sentence" : {
+      "comment" : "Empty state sentence: one factual sentence, no exclamation mark.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pick Home widgets in Settings."
+          }
+        }
+      }
+    },
+    "empty.notes.label" : {
+      "comment" : "Empty state label (uppercase).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NO NOTES"
+          }
+        }
+      }
+    },
+    "empty.notes.locked.label" : {
+      "comment" : "Empty state label (uppercase).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NOTES LOCKED"
+          }
+        }
+      }
+    },
+    "empty.notes.locked.sentence" : {
+      "comment" : "Empty state sentence: one factual sentence, no exclamation mark.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waiting for iCloud Keychain, or enter your recovery key."
+          }
+        }
+      }
+    },
+    "empty.notes.noMatch.label" : {
+      "comment" : "Empty state label (uppercase).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NO MATCH"
+          }
+        }
+      }
+    },
+    "empty.notes.sentence" : {
+      "comment" : "Empty state sentence: one factual sentence, no exclamation mark.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Press ⌥⌘N to write one."
+          }
+        }
+      }
+    },
+    "empty.shelf.label" : {
+      "comment" : "Empty state label (uppercase).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "STASH EMPTY"
+          }
+        }
+      }
+    },
+    "empty.shelf.sentence" : {
+      "comment" : "Stash empty sentence; %lld is the stash time-to-live in days.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Drag a file, text or image onto the notch, or press ⌘V, to keep it here for %lld day."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Drag a file, text or image onto the notch, or press ⌘V, to keep it here for %lld days."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "empty.time.label" : {
+      "comment" : "Empty state label (uppercase).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NOTHING RUNNING"
+          }
+        }
+      }
+    },
+    "empty.usage.label" : {
+      "comment" : "Empty state label (uppercase).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NO USAGE PROVIDER"
+          }
+        }
+      }
+    },
+    "empty.usage.noCost.label" : {
+      "comment" : "Empty state label (uppercase).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NO COST DATA"
+          }
+        }
+      }
+    },
+    "empty.usage.noHistory.label" : {
+      "comment" : "Empty state label (uppercase).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NO HISTORY YET"
+          }
+        }
+      }
+    },
+    "empty.usage.readingLogs.label" : {
+      "comment" : "Empty state label (uppercase).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "READING LOGS…"
+          }
+        }
+      }
+    },
+    "empty.usage.sentence" : {
+      "comment" : "Empty state sentence: one factual sentence, no exclamation mark.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn on a usage provider for Claude Code, Codex or Gemini CLI in Settings."
+          }
+        }
+      }
+    },
+    "scroll.hint" : {
+      "comment" : "Footer hint while a list has more rows below.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SCROLL ↓"
+          }
+        }
+      }
+    },
+    "setup.calendar.secondary" : {
+      "comment" : "Setup card button opening Settings › Calendar.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Calendar settings"
+          }
+        }
+      }
+    },
+    "setup.calendar.sentence" : {
+      "comment" : "Setup card sentence for missing calendar access.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allow access in System Settings › Privacy & Security › Calendars; Vigie only reads events."
+          }
+        }
+      }
+    },
+    "setup.calendar.title" : {
+      "comment" : "Setup card title for missing calendar access.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vigie can't read your calendars"
+          }
+        }
+      }
+    },
+    "setup.calendar.topic" : {
+      "comment" : "Setup card topic (uppercase) for missing calendar access.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CALENDAR ACCESS"
+          }
+        }
+      }
+    },
+    "setup.kicker" : {
+      "comment" : "Setup card kicker; %@ is the uppercase topic.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SETUP · %@"
+          }
+        }
+      }
+    },
+    "status.blocked" : {
+      "comment" : "Status label word (blocked). Uppercase, compact UI (UX-DR43).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "BLOCKED"
+          }
+        }
+      }
+    },
+    "status.done" : {
+      "comment" : "Status label word (done). Uppercase, compact UI (UX-DR43).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DONE"
+          }
+        }
+      }
+    },
+    "status.down" : {
+      "comment" : "Status label word (down). Uppercase, compact UI (UX-DR43).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DOWN"
+          }
+        }
+      }
+    },
+    "status.down.since" : {
+      "comment" : "Down level with the clock time it went down, e.g. DOWN SINCE 14:44.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DOWN SINCE %@"
+          }
+        }
+      }
+    },
+    "status.elapsed.days" : {
+      "comment" : "Compact elapsed whole days, e.g. 2D.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lldD"
+          }
+        }
+      }
+    },
+    "status.elapsed.daysHours" : {
+      "comment" : "Compact elapsed days and hours, e.g. 1D 18H.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lldD %2$lldH"
+          }
+        }
+      }
+    },
+    "status.elapsed.hours" : {
+      "comment" : "Compact elapsed whole hours, e.g. 2H.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lldH"
+          }
+        }
+      }
+    },
+    "status.elapsed.hoursMinutes" : {
+      "comment" : "Compact elapsed hours and two-digit minutes, e.g. 1H52.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lldH%2$02lld"
+          }
+        }
+      }
+    },
+    "status.elapsed.minutes" : {
+      "comment" : "Compact elapsed minutes, e.g. 14M.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lldM"
+          }
+        }
+      }
+    },
+    "status.failed" : {
+      "comment" : "Status label word (failed). Uppercase, compact UI (UX-DR43).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "FAILED"
+          }
+        }
+      }
+    },
+    "status.failedExit" : {
+      "comment" : "Run exited non-zero; %lld is the exit code.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "FAILED · EXIT %lld"
+          }
+        }
+      }
+    },
+    "status.idle" : {
+      "comment" : "Status label word (idle). Uppercase, compact UI (UX-DR43).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "IDLE"
+          }
+        }
+      }
+    },
+    "status.ok" : {
+      "comment" : "Status label word (ok). Uppercase, compact UI (UX-DR43).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        }
+      }
+    },
+    "status.qualifier.checkedAgo" : {
+      "comment" : "Qualifier: compact time since the last check, e.g. CHECKED 1H52 AGO.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CHECKED %@ AGO"
+          }
+        }
+      }
+    },
+    "status.qualifier.checkedMinutesAgo" : {
+      "comment" : "Qualifier: minutes since the last check.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CHECKED %lld MIN AGO"
+          }
+        }
+      }
+    },
+    "status.qualifier.checkedUnderMinute" : {
+      "comment" : "Qualifier: checked less than a minute ago.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CHECKED <1 MIN AGO"
+          }
+        }
+      }
+    },
+    "status.qualifier.since" : {
+      "comment" : "Qualifier: since a clock time (24-hour).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SINCE %@"
+          }
+        }
+      }
+    },
+    "status.running" : {
+      "comment" : "Status label word (running). Uppercase, compact UI (UX-DR43).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RUNNING"
+          }
+        }
+      }
+    },
+    "status.stale" : {
+      "comment" : "Status label word (stale). Uppercase, compact UI (UX-DR43).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "STALE"
+          }
+        }
+      }
+    },
+    "status.warn" : {
+      "comment" : "Status label word (warn). Uppercase, compact UI (UX-DR43).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WARN"
+          }
+        }
+      }
+    },
+    "status.withDetail" : {
+      "comment" : "Status word followed by its qualifier or elapsed time, e.g. WORKING · 14M.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ · %2$@"
+          }
+        }
+      }
+    },
+    "status.working" : {
+      "comment" : "Status label word (working). Uppercase, compact UI (UX-DR43).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WORKING"
+          }
+        }
+      }
+    },
     "vigieui.sample.appName" : {
       "comment" : "Sample string proving the VigieUI String Catalog is bundled.",
       "extractionState" : "manual",
