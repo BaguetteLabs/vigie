@@ -262,17 +262,15 @@ final class PeekHarness {
 
     @Test func primaryAndDismissReachTheirHandlersAndRetract() {
         let h = PeekHarness()
-        var primaries: [String] = []
-        var dismissals: [String] = []
-        h.presenter.onPrimary = { primaries.append($0.event.title) }
-        h.presenter.onDismiss = { dismissals.append($0.event.title) }
+        let events = RecordingPeekEvents()
+        h.presenter.events = events
         _ = h.presenter.show(PeekHarness.alert(module: "m1", title: "one"))
         _ = h.presenter.show(PeekHarness.alert(module: "m2", title: "two"))
         h.driver.presented[0].handlers.primary()
-        #expect(primaries == ["one"])
+        #expect(events.primaries.map(\.event.title) == ["one"])
         #expect(h.visibleTitle == "two")
         h.driver.presented[1].handlers.secondary()
-        #expect(dismissals == ["two"])
+        #expect(events.dismissals.map(\.event.title) == ["two"])
         #expect(h.presenter.visible == nil)
         #expect(h.driver.retractCount == 2)
     }

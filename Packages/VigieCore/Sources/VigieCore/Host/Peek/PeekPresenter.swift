@@ -56,10 +56,8 @@ public final class PeekPresenter: PeekSink {
     /// True while the pointer is over the visible peek.
     public private(set) var isHovered = false
 
-    /// The primary action (`⌥⌘↵` or a click): wire to `AlertCenter.activate(_:)`.
-    @ObservationIgnored public var onPrimary: @MainActor (ActiveAlert) -> Void = { _ in }
-    /// The secondary action (`⌥⌘⌫`, Dismiss): wire to the reminder cancel (Story 3.3).
-    @ObservationIgnored public var onDismiss: @MainActor (ActiveAlert) -> Void = { _ in }
+    /// Receives the primary and Dismiss actions; `AlertCenter` sets itself here when given this sink.
+    @ObservationIgnored public weak var events: (any PeekSinkEvents)?
 
     /// A52: the per-module gap between one peek retracting and the next showing.
     public let rateLimit: Duration
@@ -81,6 +79,7 @@ public final class PeekPresenter: PeekSink {
     @ObservationIgnored private let pointer: @MainActor () -> NSPoint?
     @ObservationIgnored private let announce: @MainActor (String) -> Void
     @ObservationIgnored private let logger: Logger
+    @ObservationIgnored private let shortcuts: TemporaryShortcuts?
 
     @ObservationIgnored private var queue: [Entry] = []
     @ObservationIgnored private var visibleToken: PeekToken?
@@ -102,6 +101,7 @@ public final class PeekPresenter: PeekSink {
     ///   - enabled: `closed.peek` (and a per-module peek setting when one exists) for the posting module.
     ///   - pointer: the pointer location in global coordinates.
     ///   - announce: posts a VoiceOver announcement; by default ``postAnnouncement(_:)``.
+    ///   - shortcuts: `⌥⌘↵` / `⌥⌘⌫`, bound while a peek is visible (Story 3.3); nil binds none.
     public init(
         anchors: any PeekAnchorProvider,
         theme: ThemeController,
@@ -112,6 +112,7 @@ public final class PeekPresenter: PeekSink {
         pointer: @escaping @MainActor () -> NSPoint? = { NSEvent.mouseLocation },
         announce: @escaping @MainActor (String) -> Void = { PeekPresenter.postAnnouncement($0) },
         rateLimit: Duration = PeekPresenter.defaultRateLimit,
+        shortcuts: TemporaryShortcuts? = nil,
         logger: Logger = Logger(subsystem: "fr.baguettelabs.vigie", category: "peek")
     ) {
         self.anchors = anchors
@@ -124,6 +125,7 @@ public final class PeekPresenter: PeekSink {
         self.pointer = pointer
         self.announce = announce
         self.rateLimit = rateLimit
+        self.shortcuts = shortcuts
         self.logger = logger
     }
 
@@ -178,18 +180,21 @@ public final class PeekPresenter: PeekSink {
         publishDwell()
     }
 
-    /// `⌥⌘↵` or a click on the primary action: performs it and retracts the peek.
-    public func performPrimary() {
+    /// `⌥⌘↵` or a click on the primary action: retracts the peek, then has ``events`` perform the alert's action
+    /// with `intent` (minted for the click when nil).
+    public func performPrimary(intent: UserIntent? = nil) {
         guard let alert = visible, visibleContent?.primary != nil else { return }
-        onPrimary(alert)
+        let intent = intent ?? UserIntentMinter.mint(source: .peekAction)
         retractVisible()
+        events?.peekPrimary(alert, intent: intent)
     }
 
-    /// `⌥⌘⌫` or a click on Dismiss: retracts the peek (the reminder cancel is wired by the app).
+    /// `⌥⌘⌫` or a click on Dismiss: retracts the peek and has ``events`` cancel its reminder. The module's state
+    /// is untouched.
     public func performSecondary() {
         guard let alert = visible else { return }
-        onDismiss(alert)
         retractVisible()
+        events?.peekDismissed(alert)
     }
 
     // MARK: Announcement
@@ -267,6 +272,11 @@ public final class PeekPresenter: PeekSink {
                 primary: { [weak self] in self?.performPrimary() },
                 secondary: { [weak self] in self?.performSecondary() },
                 hover: { [weak self] in self?.hoverChanged($0) }))
+        var primary: (@MainActor (UserIntent) -> Void)?
+        if content.primary != nil {
+            primary = { [weak self] intent in self?.performPrimary(intent: intent) }
+        }
+        shortcuts?.activate(primary: primary, secondary: { [weak self] _ in self?.performSecondary() })
         announce(PeekContentMapper.announcement(for: content))
         startDwell()
     }
@@ -306,6 +316,7 @@ public final class PeekPresenter: PeekSink {
         visibleToken = nil
         dwellState = nil
         isHovered = false
+        shortcuts?.deactivate()
         driver.retract()
         pump()
     }

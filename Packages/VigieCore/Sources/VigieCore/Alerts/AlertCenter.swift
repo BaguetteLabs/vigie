@@ -34,6 +34,8 @@ public struct AlertHistoryEntry: Hashable, Sendable {
         case reminderSuppressedByFocus
         /// `after_focus = "replay"`: shown when the Focus mode ended.
         case replayedAfterFocus(Set<AlertOutput>)
+        /// The user dismissed its peek (`⌥⌘⌫`, Story 3.3): the reminder is cancelled, the alert stays active.
+        case dismissed
         case resolved
     }
 
@@ -131,6 +133,7 @@ public final class AlertCenter {
         self.isFocusActive = focus.isActive
         self.historyLimit = historyLimit
         self.log = log
+        sinks.peek.events = self
         let focusChanges = focus.changes
         focusLifetime.set(
             Task { @MainActor [weak self] in
@@ -234,10 +237,22 @@ public final class AlertCenter {
         record(alert, .resolved, at: now())
     }
 
+    /// The user dismissed the alert's peek (Story 3.3): cancels its pending reminder and records `.dismissed`.
+    /// The alert stays active (the module's state is untouched) until the module resolves it.
+    public func dismiss(_ id: UUID) {
+        guard let alert = active.first(where: { $0.id == id }) else { return }
+        reminders.removeValue(forKey: id)?.cancel()
+        if let token = peekTokens.removeValue(forKey: id) {
+            sinks.peek.retract(token)
+        }
+        record(alert, .dismissed, at: now())
+    }
+
     // MARK: Actions
 
-    /// Carries out `action` for `alert` (AD-13). `.module` always goes back to the module that posted the alert.
-    public func perform(_ action: AlertAction, for alert: ActiveAlert) {
+    /// Carries out `action` for `alert` (AD-13). `.module` always goes back to the module that posted the alert,
+    /// with `intent` when a user gesture took the action.
+    public func perform(_ action: AlertAction, for alert: ActiveAlert, intent: UserIntent? = nil) {
         switch action {
         case .module(let id, let actionID, let payload):
             if id != alert.module {
@@ -245,7 +260,7 @@ public final class AlertCenter {
                     "Alert action names \(id.rawValue, privacy: .public); routed to poster \(alert.module.rawValue, privacy: .public)"
                 )
             }
-            sinks.actionRouter.routeToModule(alert.module, actionID: actionID, payload: payload)
+            sinks.actionRouter.routeToModule(alert.module, actionID: actionID, payload: payload, intent: intent)
         case .openSettings(let pane):
             sinks.actionRouter.openSettings(pane: pane)
         case .openURL(let url):
@@ -254,9 +269,9 @@ public final class AlertCenter {
     }
 
     /// Performs the alert's own action (a click on the peek or notification); does nothing without one.
-    public func activate(_ alert: ActiveAlert) {
+    public func activate(_ alert: ActiveAlert, intent: UserIntent? = nil) {
         guard let action = alert.event.action else { return }
-        perform(action, for: alert)
+        perform(action, for: alert, intent: intent)
     }
 
     // MARK: Internals
@@ -397,6 +412,22 @@ public final class AlertCenter {
     }
 }
 
+// MARK: - Peek events (Story 3.3)
+
+extension AlertCenter: PeekSinkEvents {
+    /// `⌥⌘↵` or a click on the peek's primary action: performs the alert's action with the gesture's intent.
+    public func peekPrimary(_ alert: ActiveAlert, intent: UserIntent) {
+        peekTokens[alert.id] = nil
+        activate(alert, intent: intent)
+    }
+
+    /// `⌥⌘⌫` or Dismiss: cancels the reminder (``dismiss(_:)``).
+    public func peekDismissed(_ alert: ActiveAlert) {
+        peekTokens[alert.id] = nil
+        dismiss(alert.id)
+    }
+}
+
 /// Runs `body` on the main actor: now when already on the main thread, else in FIFO order on the main queue.
 func onMain(_ body: @escaping @MainActor @Sendable () -> Void) {
     if Thread.isMainThread {
@@ -438,6 +469,7 @@ extension AlertHistoryEntry.Outcome {
         case .reminderSuppressed: .suppressed(reason: "quietHours")
         case .suppressedByFocus, .reminderSuppressedByFocus: .suppressed(reason: "dnd")
         case .replayedAfterFocus: .shown
+        case .dismissed: .dismissed
         case .resolved: .resolved
         }
     }

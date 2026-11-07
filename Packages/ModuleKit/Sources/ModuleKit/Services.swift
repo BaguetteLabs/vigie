@@ -387,3 +387,15 @@ public protocol ActivityLog: Sendable {
     /// Records an entry; the module id is added by the context.
     func record(_ entry: ActivityEntry)
 }
+
+// MARK: - Alert actions (Story 3.3)
+
+/// Adopted by a module whose alerts carry `.module(id:actionID:payload:)` actions (AD-13). The Notifier delivers
+/// the action back to the posting module when the user takes it: the peek's primary action (`⌥⌘↵` or a click)
+/// or a click on the macOS notification. `intent` is present when the action came from a user gesture, so the
+/// module may pass it to focus-taking host calls; it is nil otherwise. Modules without alert actions need not
+/// adopt it.
+@MainActor
+public protocol AlertActionHandler: AnyObject {
+    func handleAlertAction(_ actionID: String, payload: Data, intent: UserIntent?)
+}
