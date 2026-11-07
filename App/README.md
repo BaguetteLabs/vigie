@@ -12,6 +12,16 @@ xcodebuild -project Vigie.xcodeproj -scheme Vigie -configuration Debug build
 
 Debug builds are `Vigie Dev.app` (`fr.baguettelabs.vigie.dev`); Release builds are `Vigie.app` (`fr.baguettelabs.vigie`). Both are ad-hoc signed for now.
 
+## Bundled CLI
+
+The "Embed vigie CLI" build phase (`project.yml`) builds `Packages/VigieCLI` with SwiftPM in the app's configuration and copies it to `Contents/Helpers/$(VIGIE_CLI_NAME)`: `vigie-dev` in `Vigie Dev.app` (Debug, so it talks to the dev socket and spool), `vigie` in `Vigie.app` (Release, universal). Its String Catalog bundle goes to `Contents/Resources/VigieCLI_VigieCLI.bundle`. Ad-hoc builds sign the helper in the phase. At launch `CLIInstaller` links `~/.local/bin/<cli name>` to the helper (AD-22).
+
+```sh
+"Vigie Dev.app/Contents/Helpers/vigie-dev" version               # vigie-dev fr.baguettelabs.vigie.dev
+"Vigie Dev.app/Contents/Helpers/vigie-dev" event test.ping '{"a":1}'  # sent, or spooled when the app is not running
+"Vigie Dev.app/Contents/Helpers/vigie-dev" reload                # reload requested / queued
+```
+
 ## Manual checks
 
 - **Focus (NFR2, Story 2.5):** `Scripts/check-focus.sh` launches the Debug app, types a sentence into a new TextEdit document and checks it arrived, proving the island panel never takes key status. It needs Automation and Accessibility permission for your terminal, so it is not part of CI.

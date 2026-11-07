@@ -1,14 +1,98 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "cli.usage" : {
-      "comment" : "First line of the vigie CLI usage text.",
+    "cli.error.deliveryFailed" : {
+      "comment" : "stderr line when vigie event/reload could neither reach the running app nor write its spool file.",
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Usage: vigie <command> [options]"
+            "value" : "vigie: could not reach Vigie or write its spool file"
+          }
+        }
+      }
+    },
+    "cli.error.invalidJSON" : {
+      "comment" : "stderr line when the payload given to vigie event is not valid JSON.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "vigie event: the payload is not valid JSON"
+          }
+        }
+      }
+    },
+    "cli.error.invalidTopic" : {
+      "comment" : "stderr line for a rejected topic. %1$@ is the topic, %2$ld the maximum length.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "vigie event: invalid topic “%1$@” (use a-z, 0-9, “.”, “_” and “-”, at most %2$ld characters)"
+          }
+        }
+      }
+    },
+    "cli.error.missingTopic" : {
+      "comment" : "stderr line when vigie event is run without a topic.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "vigie event: missing topic (usage: vigie event <topic> [json])"
+          }
+        }
+      }
+    },
+    "cli.error.unexpectedArgument" : {
+      "comment" : "stderr line for an extra command-line argument. %@ is the argument.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "vigie: unexpected argument “%@”"
+          }
+        }
+      }
+    },
+    "cli.reload.queued" : {
+      "comment" : "stdout after vigie reload when the app is not running and the request was spooled.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "queued"
+          }
+        }
+      }
+    },
+    "cli.reload.requested" : {
+      "comment" : "stdout after vigie reload reached the running app.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "reload requested"
+          }
+        }
+      }
+    },
+    "cli.usage" : {
+      "comment" : "vigie CLI usage text. Command names and arguments are not translated.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usage: vigie <command> [options]\n\nCommands:\n  event <topic> [json]  Send an event to Vigie (payload from the argument, else stdin, else {})\n  reload                Ask Vigie to reload its config from disk\n  hook <agent>          Forward an agent hook event (called by agent hooks)\n  version               Print the command name and bundle identifier"
           }
         }
       }

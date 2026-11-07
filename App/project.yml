@@ -56,6 +56,8 @@ targets:
         ENABLE_HARDENED_RUNTIME: YES
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         COMBINE_HIDPI_IMAGES: YES
+        # The "Embed vigie CLI" phase runs `swift build`, which reads the whole package tree.
+        ENABLE_USER_SCRIPT_SANDBOXING: NO
       configs:
         # Debug = dev flavor, Release = release flavor (AD-17). Single source of truth;
         # Wire/Package.swift defines the same VIGIE_DEV condition for its debug configuration.
@@ -64,10 +66,55 @@ targets:
           PRODUCT_BUNDLE_IDENTIFIER: fr.baguettelabs.vigie.dev
           PRODUCT_NAME: Vigie Dev
           VIGIE_DISPLAY_NAME: Vigie Dev
+          # AppEnvironment.cliName for the dev flavor (AD-17).
+          VIGIE_CLI_NAME: vigie-dev
         Release:
           PRODUCT_BUNDLE_IDENTIFIER: fr.baguettelabs.vigie
           PRODUCT_NAME: Vigie
           VIGIE_DISPLAY_NAME: Vigie
+          VIGIE_CLI_NAME: vigie
+
+    # Bundles the `vigie` CLI (FR8, AD-22): Packages/VigieCLI is built with SwiftPM in the same
+    # configuration as the app (Debug -> VIGIE_DEV, so the dev app ships `vigie-dev` talking to the
+    # dev socket) and copied to Contents/Helpers/$(VIGIE_CLI_NAME); its String Catalog bundle goes
+    # to Contents/Resources, where the CLI looks for it (VigieCLI/CLIResources.swift).
+    # Always runs: `swift build` is its own dependency analysis (a no-op build takes about a
+    # second), and files are only replaced when their content changed.
+    postCompileScripts:
+      - name: Embed vigie CLI
+        basedOnDependencyAnalysis: false
+        outputFiles:
+          - $(BUILT_PRODUCTS_DIR)/$(CONTENTS_FOLDER_PATH)/Helpers/$(VIGIE_CLI_NAME)
+          - $(BUILT_PRODUCTS_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/VigieCLI_VigieCLI.bundle
+        script: |
+          set -euo pipefail
+          PACKAGE="${SRCROOT}/../Packages/VigieCLI"
+          SCRATCH="${PROJECT_TEMP_DIR}/VigieCLI-swiftpm"
+          case "${CONFIGURATION}" in
+            Release) SWIFT_CONFIG=release ;;
+            *) SWIFT_CONFIG=debug ;;
+          esac
+          # A clean environment: Xcode's build settings (SDKROOT, ARCHS, ...) must not leak into SwiftPM.
+          swiftpm() {
+            env -i HOME="${HOME}" PATH="/usr/bin:/bin:/usr/sbin:/sbin" DEVELOPER_DIR="${DEVELOPER_DIR}" \
+              /usr/bin/xcrun swift build --package-path "${PACKAGE}" --scratch-path "${SCRATCH}" \
+              --build-system swiftbuild -c "${SWIFT_CONFIG}" --product vigie "$@"
+          }
+          swiftpm
+          BIN_DIR="$(swiftpm --show-bin-path)"
+          HELPERS="${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Helpers"
+          RESOURCES="${BUILT_PRODUCTS_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}"
+          TARGET="${HELPERS}/${VIGIE_CLI_NAME}"
+          mkdir -p "${HELPERS}" "${RESOURCES}"
+          if [ ! -f "${TARGET}" ] || [ "${BIN_DIR}/vigie" -nt "${TARGET}" ]; then
+            ditto "${BIN_DIR}/vigie" "${TARGET}"
+            # Ad-hoc builds sign the helper here; real identities are handled with release signing (Story 6.1).
+            if [ "${CODE_SIGN_IDENTITY:-}" = "-" ]; then
+              codesign --force --sign - --timestamp=none --options runtime \
+                --identifier "${PRODUCT_BUNDLE_IDENTIFIER}.cli" "${TARGET}"
+            fi
+          fi
+          rsync -a --checksum --delete "${BIN_DIR}/VigieCLI_VigieCLI.bundle/" "${RESOURCES}/VigieCLI_VigieCLI.bundle/"
 
 schemes:
   Vigie:
