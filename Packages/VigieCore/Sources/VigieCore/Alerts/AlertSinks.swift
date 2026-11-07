@@ -45,7 +45,7 @@ public struct PeekToken: Hashable, Sendable {
 }
 
 /// macOS notification output.
-@MainActor public protocol SystemNotificationSink: AnyObject {
+@MainActor public protocol SystemOutputSink: AnyObject {
     func deliver(_ alert: ActiveAlert)
 }
 
@@ -65,13 +65,13 @@ public struct PeekToken: Hashable, Sendable {
 /// The output and action endpoints of one `AlertCenter`.
 @MainActor public struct AlertSinks {
     public var peek: any PeekSink
-    public var system: any SystemNotificationSink
+    public var system: any SystemOutputSink
     public var sound: any SoundSink
     public var actionRouter: any AlertActionRouter
 
     public init(
         peek: any PeekSink = RecordingPeekSink(),
-        system: any SystemNotificationSink = RecordingSystemSink(),
+        system: any SystemOutputSink = RecordingSystemSink(),
         sound: any SoundSink = RecordingSoundSink(),
         actionRouter: any AlertActionRouter = RecordingActionRouter()
     ) {
@@ -101,7 +101,7 @@ public struct PeekToken: Hashable, Sendable {
     public func retract(_ token: PeekToken) { retracted.append(token) }
 }
 
-@MainActor public final class RecordingSystemSink: SystemNotificationSink {
+@MainActor public final class RecordingSystemSink: SystemOutputSink {
     public private(set) var delivered: [ActiveAlert] = []
     public init() {}
     public func deliver(_ alert: ActiveAlert) { delivered.append(alert) }
