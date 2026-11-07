@@ -64,7 +64,7 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - [x] 4.4 Agent adapter contracts and assembly (App assembly of AgentKit/AgentsSessions packages pending in the integration commit)
 - [x] 4.5 SessionStore status engine
 - [x] 4.6 Claude Code adapter with version gating (App assembly of `ClaudeAdapter()` pending in the integration pass)
-- [ ] 4.7 Hook installer with diff confirmation
+- [x] 4.7 Hook installer with diff confirmation
 - [x] 4.8 Liveness, stale sessions and ignored paths (`host.ready` must be posted by the App; module also reconciles at start)
 - [x] 4.9 Session glyphs in the closed notch
 - [x] 4.10 Agents tab
@@ -139,6 +139,8 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - 2026-11-07 — Integration pass 4 landed (terminal adapters Terminal.app/iTerm2/Warp + Generic fallback, sound sink, Sounds pane player). Observed at launch: "Focus assertions unreadable; treating Focus as off" — the app cannot read `~/Library/DoNotDisturb/DB/Assertions.json` (privacy-protected folder; the shell could because it has Full Disk Access). Focus detection therefore does not work in the app today; options: ask for Full Disk Access (bad), find another signal (`NSWorkspace`/`UNUserNotificationCenter` focus status APIs are not public), or accept the limit. Needs a decision (Story 3.5 follow-up).
 
 - 2026-11-07 — Story 5.1: terminal chosen at session start (`TerminalAdapters.select(env:preferred:)`), `capture` once, locator persisted (`terminal_adapter`/`terminal_locator`). The `terminal` local setting applies only when the env names no terminal (otherwise a Ghostty session would be sent to Terminal.app); unknown terminals go to the generic fallback. Permission failures post `setup.problem` category `PERMISSION` (module declares the kind), resolved on the next focus without a permission error.
+
+- 2026-11-08 — Story 4.7: `IntegrationInstaller` is a ModuleContext service (`context.integrations`), implemented by `CoreIntegrationInstaller` (hash check, timestamped backup, atomic write, `[integrations.<adapter>]` record in local.toml via `ConfigStore.registerIntegration`). Connect/Disconnect live in `AgentsSessionsModule.settingsView()`; a stale preview re-plans up to 3 times. Gaps: `HookPipeline` still calls the ungated `normalize` (must switch to `normalize(_:sentAt:support:)` and raise the unsupported-version alert, 4.6/4.11 follow-up); `adapters` default `["claude"]` counts Claude as enabled before Connect; Warp focus statement cannot be shown by the module (AD-1).
 
 ## Notes for the next session
 
