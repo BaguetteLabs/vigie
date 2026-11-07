@@ -137,4 +137,14 @@ import Testing
         let image = try #require(ImageRenderer(content: view).cgImage)
         #expect(image.width > 0 && image.height > 0)
     }
+
+    @Test func markerRendersInsideTheIsland() throws {
+        let wings = IslandWings(leading: 120, notch: 200, trailing: 120)
+        let view = IslandView(wings: wings, marker: true)
+            .frame(width: wings.totalWidth, height: 34)
+            .vigieTheme(Self.darkTheme)
+        let image = try #require(ImageRenderer(content: view).cgImage)
+        #expect(image.width > 0)
+        #expect(IslandOrnaments.markerInset < Self.darkTheme.spacing(.wingPaddingX))
+    }
 }

@@ -178,6 +178,11 @@ struct ExpandedRootView: View {
             openSettings: host.openSettings,
             content: { host.expandedContent(for: $0) }
         )
+        .overlay(alignment: .bottom) {
+            if host.showsDisplayPrompt {
+                DisplayPromptCard(host: host).padding(theme.spacing(.cardPaddingX))
+            }
+        }
         .frame(width: size.width, height: size.height)
         .expandedPanelPresentation(isShown: host.isExpanded, origin: host.expansionOrigin)
         .allowsHitTesting(host.isExpanded)

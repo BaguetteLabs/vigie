@@ -54,6 +54,8 @@ public struct IslandOrnaments: Sendable, Equatable {
     public static let shimmerWidth: CGFloat = 140
     /// Share of the `ambient-loop` period the shimmer takes to cross; it rests for the remainder.
     public static let shimmerTravelShare: Double = 0.55
+    /// Distance of the island marker from the leading edge.
+    public static let markerInset: CGFloat = 6
 }
 
 /// The closed island split into its three horizontal parts (island-local, left to right).

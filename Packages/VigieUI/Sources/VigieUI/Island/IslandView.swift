@@ -16,6 +16,7 @@ public struct IslandView: View {
     private let surface: IslandSurface
     private let floating: Bool
     private let hoverHighlight: Bool
+    private let marker: Bool
     private let leading: @MainActor () -> AnyView?
     private let trailing: @MainActor () -> AnyView?
 
@@ -26,11 +27,14 @@ public struct IslandView: View {
     ///     corners are rounded, since the top edge is not the screen edge.
     ///   - hoverHighlight: drives the hover reaction from outside the view (the top-center hover strip of a plain
     ///     display, SPEC §5.5), in addition to the pointer over the island itself.
+    ///   - marker: a small neutral diamond at the leading edge: something waits in the expanded view (the display
+    ///     prompt, Story 2.7).
     public init(
         wings: IslandWings,
         surface: IslandSurface = .black,
         floating: Bool = false,
         hoverHighlight: Bool = false,
+        marker: Bool = false,
         leading: @escaping @MainActor () -> AnyView? = { nil },
         trailing: @escaping @MainActor () -> AnyView? = { nil }
     ) {
@@ -38,6 +42,7 @@ public struct IslandView: View {
         self.surface = surface
         self.floating = floating
         self.hoverHighlight = hoverHighlight
+        self.marker = marker
         self.leading = leading
         self.trailing = trailing
     }
@@ -60,6 +65,11 @@ public struct IslandView: View {
             }
             IslandRim(ornaments: ornaments, radius: radius)
             wingSlots
+            if marker {
+                IslandMarker()
+                    .padding(.leading, IslandOrnaments.markerInset)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+            }
         }
         .clipShape(shape)
         .contentShape(shape)
@@ -96,6 +106,19 @@ public struct IslandView: View {
         } else {
             Color.clear
         }
+    }
+}
+
+/// The neutral marker: an `ink-2` diamond the size of the tab attention marker (a shape, never a hue alone).
+struct IslandMarker: View {
+    @Environment(\.vigieTheme) private var theme
+
+    var body: some View {
+        Rectangle()
+            .fill(theme.color(.ink2))
+            .frame(width: ExpandedMetrics.attentionMarker, height: ExpandedMetrics.attentionMarker)
+            .rotationEffect(.degrees(45))
+            .accessibilityHidden(true)
     }
 }
 

@@ -1500,6 +1500,78 @@
           }
         }
       }
+    },
+    "vigiecore.displayPrompt.title": {
+      "comment": "Display prompt card title in the expanded view (first launch with a display without a notch).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "WHERE SHOULD VIGIE APPEAR?"
+          }
+        }
+      }
+    },
+    "vigiecore.displayPrompt.body": {
+      "comment": "Display prompt card sentence.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A display without a notch is connected. Vigie can draw a virtual notch on it. You can change this later in Settings › Displays."
+          }
+        }
+      }
+    },
+    "vigiecore.displayPrompt.thisDisplay": {
+      "comment": "Display prompt button: show Vigie on the display the expanded view is on.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This display"
+          }
+        }
+      }
+    },
+    "vigiecore.displayPrompt.notched": {
+      "comment": "Display prompt button: show Vigie on the notched display (or the main display when none).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notched display"
+          }
+        }
+      }
+    },
+    "vigiecore.displayPrompt.all": {
+      "comment": "Display prompt button: show Vigie on every display.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All displays"
+          }
+        }
+      }
+    },
+    "vigiecore.displayPrompt.dismiss": {
+      "comment": "Display prompt button: keep the default and never ask again.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not now"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

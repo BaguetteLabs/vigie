@@ -132,8 +132,11 @@ final class FakeIslandPanel: IslandPanelHosting {
         placements += 1
     }
 
+    private(set) var hidesInFullScreen: Bool?
+
     func show() { isShown = true }
     func hide() { isShown = false }
+    func setHidesInFullScreen(_ hides: Bool) { hidesInFullScreen = hides }
 }
 
 @MainActor
@@ -181,6 +184,11 @@ extension DisplayInfo {
 final class DisplayHostFixture {
     var displays: [DisplayInfo]
     var settings = VirtualNotchSettings.default
+    var selection = DisplaySelection.notched
+    var hideInFullScreen = true
+    var promptPending = false
+    var answers: [DisplayPromptAnswer] = []
+    var pointer = CGPoint.zero
     let probe = FakeMenuBarProbe()
     var panels: [FakeIslandPanel] = []
     let module = WingModule("time")
@@ -202,6 +210,10 @@ final class DisplayHostFixture {
         host = NotchHost(
             themeController: themeController, registry: registry, contextMenu: NotchContextMenu(),
             virtualNotch: { [unowned self] in self.settings },
+            displaySelection: { [unowned self] in self.selection },
+            hideInFullScreen: { [unowned self] in self.hideInFullScreen },
+            displayPromptPending: { [unowned self] in self.promptPending },
+            onDisplayPromptAnswer: { [unowned self] in self.answers.append($0) },
             displays: { [unowned self] in self.displays },
             menuBarProbe: probe,
             makeIslandPanel: { [unowned self] _, id in
@@ -209,6 +221,7 @@ final class DisplayHostFixture {
                 self.panels.append(panel)
                 return panel
             },
+            pointerLocation: { [unowned self] in self.pointer },
             logger: testLogger)
     }
 

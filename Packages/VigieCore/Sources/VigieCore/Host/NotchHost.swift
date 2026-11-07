@@ -39,6 +39,9 @@ public protocol IslandPanelHosting: AnyObject {
     func show()
     func hide()
     var isShown: Bool { get }
+    /// `general.hide_in_fullscreen` (FR20): true keeps the window out of full-screen spaces, so it disappears
+    /// on a display that has a full-screen app open.
+    func setHidesInFullScreen(_ hides: Bool)
 }
 
 /// Owns the island panels and their placement (AD-2): classifies the displays, lays out the island around the
@@ -61,6 +64,9 @@ public final class NotchHost {
     public private(set) var islands: [PlacedIsland] = []
     /// The display whose island fades in on hover from the top-center strip (FR27), while the pointer is there.
     public private(set) var hoverStripDisplayID: CGDirectDisplayID?
+    /// True while the one-time display prompt waits in the expanded view (Story 2.7, A60): the App reports it
+    /// pending and a display without a notch is connected. The island carries a marker meanwhile.
+    public private(set) var showsDisplayPrompt = false
 
     /// The main Vigie display: where peeks go when the display under the pointer shows no island.
     public var activeDisplayID: CGDirectDisplayID? { islands.first?.display.id }
@@ -92,6 +98,11 @@ public final class NotchHost {
     @ObservationIgnored private let maxSideWidth: @MainActor () -> CGFloat
     @ObservationIgnored private let closedSlots: @MainActor () -> Int
     @ObservationIgnored private let virtualNotch: @MainActor () -> VirtualNotchSettings
+    @ObservationIgnored private let displaySelection: @MainActor () -> DisplaySelection
+    @ObservationIgnored private let hideInFullScreen: @MainActor () -> Bool
+    @ObservationIgnored private let displayPromptPending: @MainActor () -> Bool
+    @ObservationIgnored private let onDisplayPromptAnswer: (@MainActor (DisplayPromptAnswer) -> Void)?
+    @ObservationIgnored private var displayPromptAnswered = false
     @ObservationIgnored private let menuBarProbe: any MenuBarProbing
     @ObservationIgnored private var arbitrationGeneration = 0
     @ObservationIgnored private var transientTask: Task<Void, Never>?
@@ -131,6 +142,11 @@ public final class NotchHost {
     ///   - maxSideWidth: `closed.max_side_width` (SPEC §5.3, default 120).
     ///   - closedSlots: `closed.slots` (SPEC §5, default 3, clamped 1…4).
     ///   - virtualNotch: `[virtual_notch]` (SPEC §5.5); `VirtualNotchSettings(configStore:)` in production.
+    ///   - displaySelection: `[display] display` (SPEC §5.4); `DisplaySelection(configStore:)` in production.
+    ///   - hideInFullScreen: `[general] hide_in_fullscreen` (default true).
+    ///   - displayPromptPending: true until the one-time display prompt was answered or dismissed (A60); the App
+    ///     persists that.
+    ///   - onDisplayPromptAnswer: the App writes `[display] display` for `.choose` and records the prompt as done.
     ///   - displays: the connected displays; ``DisplayInfo/current(_:)`` in production.
     ///   - menuBarProbe: menu bar height, status items and auto-hide; ``SystemMenuBarProbe`` in production.
     ///   - makeIslandPanel: builds an island window for a display; a ``NotchPanel`` in production.
@@ -149,6 +165,10 @@ public final class NotchHost {
         maxSideWidth: @escaping @MainActor () -> CGFloat = { 120 },
         closedSlots: @escaping @MainActor () -> Int = { ClosedNotchArbiter.defaultSlots },
         virtualNotch: @escaping @MainActor () -> VirtualNotchSettings = { .default },
+        displaySelection: @escaping @MainActor () -> DisplaySelection = { .notched },
+        hideInFullScreen: @escaping @MainActor () -> Bool = { true },
+        displayPromptPending: @escaping @MainActor () -> Bool = { false },
+        onDisplayPromptAnswer: (@MainActor (DisplayPromptAnswer) -> Void)? = nil,
         displays: @escaping @MainActor () -> [DisplayInfo] = { DisplayInfo.current() },
         menuBarProbe: (any MenuBarProbing)? = nil,
         makeIslandPanel: (@MainActor (NotchHost, CGDirectDisplayID) -> any IslandPanelHosting)? = nil,
@@ -168,6 +188,10 @@ public final class NotchHost {
         self.maxSideWidth = maxSideWidth
         self.closedSlots = closedSlots
         self.virtualNotch = virtualNotch
+        self.displaySelection = displaySelection
+        self.hideInFullScreen = hideInFullScreen
+        self.displayPromptPending = displayPromptPending
+        self.onDisplayPromptAnswer = onDisplayPromptAnswer
         self.readDisplays = displays
         self.menuBarProbe = menuBarProbe ?? SystemMenuBarProbe()
         self.focusPolicy = focusPolicy
@@ -227,8 +251,9 @@ public final class NotchHost {
         setStripMonitors(false)
     }
 
-    /// Re-reads the display settings (`[display]`, `[virtual_notch]`, `closed.max_side_width`) and re-places the
-    /// islands. The App calls it when ConfigStore reports a change under those keys.
+    /// Re-reads the display settings (`[display]`, `[virtual_notch]`, `closed.max_side_width`,
+    /// `general.hide_in_fullscreen`) and re-places the islands. The App calls it when ConfigStore reports a change
+    /// under those keys.
     public func reloadDisplayConfiguration() {
         guard isStarted else { return }
         layout()
@@ -250,11 +275,9 @@ public final class NotchHost {
 
     // MARK: Placement
 
-    /// The displays that show an island, main Vigie display first: the notched display if any, else the main
-    /// display.
+    /// The displays that show an island, main Vigie display first (``DisplaySelector``).
     func selectedDisplays(_ displays: [DisplayInfo]) -> [DisplayInfo] {
-        let chosen = displays.first(where: \.hasNotch) ?? displays.first(where: \.isMain) ?? displays.first
-        return chosen.map { [$0] } ?? []
+        DisplaySelector.select(displays, selection: displaySelection())
     }
 
     /// True when no module wants either side (FR11).
@@ -279,6 +302,9 @@ public final class NotchHost {
         if placed.isEmpty {
             logger.info("No display shows Vigie")
         }
+        let prompt =
+            !displayPromptAnswered && displayPromptPending() && displays.contains { $0.kind.usesVirtualNotch }
+        if prompt != showsDisplayPrompt { showsDisplayPrompt = prompt }
         syncPanels()
         let hasVirtual = placed.contains { $0.geometry.isVirtual }
         setMenuBarPolling(hasVirtual && autoHide)
@@ -311,6 +337,7 @@ public final class NotchHost {
 
     private func syncPanels() {
         let ids = Set(islands.map(\.display.id))
+        let hidesInFullScreen = hideInFullScreen()
         for (id, panel) in panels where !ids.contains(id) {
             panel.hide()
             panels[id] = nil
@@ -319,6 +346,7 @@ public final class NotchHost {
             let id = island.display.id
             let panel = panels[id] ?? makeIslandPanel(self, id)
             panels[id] = panel
+            panel.setHidesInFullScreen(hidesInFullScreen)
             panel.place(frame: island.geometry.islandFrame)
             if island.isHidden {
                 panel.hide()
@@ -360,6 +388,33 @@ public final class NotchHost {
     /// The island frame (global AppKit coordinates) on the display under `pointer`, or on the main Vigie display.
     public func anchorFrame(forDisplayUnder pointer: CGPoint) -> CGRect? {
         anchor(forDisplayUnder: pointer)?.islandFrame
+    }
+
+    // MARK: Display prompt (A60)
+
+    /// Answers the display prompt: hides it for good and hands the answer to the App, which writes
+    /// `[display] display` and records the prompt as done.
+    public func answerDisplayPrompt(_ answer: DisplayPromptAnswer) {
+        displayPromptAnswered = true
+        showsDisplayPrompt = false
+        onDisplayPromptAnswer?(answer)
+        if case .choose = answer {
+            logger.info("Display prompt answered: \(String(describing: answer), privacy: .public)")
+        }
+    }
+
+    /// "This display": the display the expanded view is on (else the one under the pointer, else the main Vigie
+    /// display), by name.
+    public func answerDisplayPromptWithThisDisplay() {
+        guard let display = promptDisplay() else { return answerDisplayPrompt(.choose(.notched)) }
+        answerDisplayPrompt(.choose(.named(display.name)))
+    }
+
+    func promptDisplay() -> DisplayInfo? {
+        let point =
+            expandedPanel?.panelFrame.map { CGPoint(x: $0.midX, y: $0.maxY) } ?? pointerLocation()
+        return displays.first { Self.contains($0.frame, point) }
+            ?? activeDisplayID.flatMap { id in displays.first { $0.id == id } }
     }
 
     // MARK: Auto-hidden menu bar (FR26)
@@ -505,6 +560,7 @@ struct NotchRootView: View {
                 surface: island.surface,
                 floating: geometry.isFloating,
                 hoverHighlight: host.hoverStripDisplayID == displayID,
+                marker: host.showsDisplayPrompt,
                 leading: { lane(host.leadingLayout) },
                 trailing: { lane(host.trailingLayout) }
             )

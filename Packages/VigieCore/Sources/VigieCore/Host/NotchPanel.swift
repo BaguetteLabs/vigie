@@ -90,4 +90,12 @@ extension NotchPanel: IslandPanelHosting {
     }
 
     public var isShown: Bool { isVisible }
+
+    public func setHidesInFullScreen(_ hides: Bool) {
+        if hides {
+            collectionBehavior.remove(.fullScreenAuxiliary)
+        } else {
+            collectionBehavior.insert(.fullScreenAuxiliary)
+        }
+    }
 }
