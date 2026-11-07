@@ -23,7 +23,7 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 ### Epic 1 — Foundation and risk spikes
 - [x] 1.1 Scaffold the SwiftPM-first workspace
 - [x] 1.2 AppEnvironment and dev build isolation
-- [x] 1.3 Continuous integration for pull requests (first GitHub run unverified until gh is authenticated)
+- [x] 1.3 Continuous integration for pull requests (first runs failed: runner has no Xcode 27.1; pinned 26.6 on 2026-11-07; workflow is **manual-trigger only** until Romain watches a green run, then restore `pull_request` + `push` triggers)
 - [x] 1.4 Spike — Claude Code hook reaches a socket listener (record: docs/decisions/spike-hook-path.md; fixtures: Packages/VigieCLI/Tests/Fixtures/claude/2.1.319)
 - [P] 1.5 Spike — focus a specific Warp tab (record in docs/decisions/spike-warp-focus.md; deep link found; needs a visual check by Romain)
 - [ ] 1.6 Spike — Ghostty tab focus investigation (Ghostty not installed)
@@ -47,7 +47,7 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - [ ] 2.15 Accessibility floor in v0.1
 
 ### Epic 3 — Alerts that never steal focus
-- [ ] 3.1 Notifier rules engine
+- [x] 3.1 Notifier rules engine
 - [ ] 3.2 Peek presentation
 - [ ] 3.3 Peek actions with temporary global shortcuts
 - [ ] 3.4 Setup-problem alerts
@@ -100,6 +100,7 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - **Warp focus check (Story 1.5, 5 min, screen unlocked, no permission needed):** open three Warp tabs (one in a second window), run `echo $WARP_FOCUS_URL` in each, then from another tab run `open '<one of those urls>'`. Does the exact tab/pane come to the front? Yes → decision (a) exact focus via deep link; Warp activates but the tab does not switch → (c) app-level. Details and the prototype commands: `docs/decisions/spike-warp-focus.md` § How to re-run.
 - **Ghostty (Story 1.6):** Ghostty is not installed. OK to `brew install --cask ghostty` for the spike and later the adapter? Same question for iTerm2 (Story 5.3) and for the Codex and Gemini CLIs (Epics 8, 14).
 - **Notch check on hardware (Story 2.5, 2 min):** open the MacBook lid (or make the built-in display active), build and launch the Debug app (`cd App && xcodegen generate && xcodebuild -scheme Vigie -configuration Debug build CODE_SIGN_IDENTITY=- -derivedDataPath .build-dd && open .build-dd/Build/Products/Debug/Vigie\ Dev.app`). Expected: a black island hugging the notch with two wings, a thin iris rim, `Dev sample` in the left wing; right-click shows Settings…/Quit; typing in another app is not disturbed. Tell me what you see. Without a notch, `-VigieSimulateNotch YES` draws a fake one on the main display.
+- **CI re-enable:** `.github/workflows/ci.yml` is `workflow_dispatch` only (your request, 2026-11-07 evening, after ~20 failure mails). Cause found from your pasted log: the `macos-26` runner has Xcode 26.0…26.6 only, no 27.1. `.xcode-version` is now `26.6`. When you can watch: trigger the workflow manually from the Actions tab (or `gh workflow run ci`), and if green tell me to restore the triggers.
 - **gh auth:** `gh` is installed but not logged in. Run `! gh auth login -w` in this session (or `gh auth login` in a terminal) so CI runs on BaguetteLabs/vigie can be checked. Until then the `ci.yml` first run is unverified.
 
 ## Decisions log
@@ -121,3 +122,6 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - 2026-11-07 — **SPEC §11 defect:** the default config shown in SPEC is invalid TOML: `adapters = [...]` and the table `[modules."agents.sessions".adapters.claude]` define the same key twice. The shipped default file comments the adapters table out ("layout decided with the adapters, Epic 4"). Decide the final layout in Story 4.6/4.7 and fix SPEC §11 (ask Romain to confirm: e.g. rename the table to `adapter_settings.claude` or drop the array and derive it from the tables).
 - 2026-11-07 — Story 2.3 choices: `.local` keys are commented in a reference block at the end of the default `config.toml` (active ones would raise `wrongFile`); core tables exactly the SPEC §11 set (no `[hotkeys]`/`[alerts]`/`[cli]`); ranges chosen: `closed.slots` 1–4, `closed.max_side_width` 40–600, `virtual_notch.width` 80–800; `invalidValue` problems carry no line (swift-toml reports lines only for syntax errors); `ConfigProblem.message` is diagnostic English, the UI must build text from `kind`+`key`. Labels live in a separate `Config.xcstrings` table. Executable overrides for Story 4.4 live in `local.toml` `[executables]`.
 - 2026-11-07 — Story 2.8 decisions: `+X` sits after the last visible item on both wings (DESIGN "Overflow"); the 2 s COPIED duration is the motion token `confirm-readout`; unrenderable items are not counted in `+X`; `TransientReadout` lives in VigieUI. Deferred to later stories: readout hold on hover, drain line under COPIED, VoiceOver announcement, a module-facing `showTransient` API (ModuleContext), ConfigStore wiring of `closedSlots`. Story 4.9: `agents.sessions` offers one `LeftWingItem` per session (state = urgency) and the host routes them to the right wing; consider renaming `LeftWingItem` → `WingItem` then.
+- 2026-11-07 — CI Xcode pin changed from 27.1 (spine) to 26.6: GitHub `macos-26` runners ship 26.0–26.6 only. Revisit when 27.x appears on runners.
+- 2026-11-07 — Story 3.1 decisions: quiet hours drop (not defer); default outputs `[peek, sound]` for every severity (never `system` by default, A70); reminders replay peek+sound only (FR29); `min_working_time` compares against metric `working_duration` in seconds (A54); events without `dedupe_key` share one cooldown per kind. Wiring left: ConfigStore → `NotifyRulesProvider`, PeekSink (3.2), SystemNotificationSink (3.6), SoundSink (10.1), a real `AlertActionRouter` in the App.
+- 2026-11-07 — Process note: after rebasing a worktree created before a story that added package resources (e.g. 2.3's `Resources/Config`), swiftbuild's incremental build may not copy the new resources into the test bundle, giving bogus 'resource not found' test failures. Always `rm -rf Packages/*/.build` in a worktree after a rebase that brought new resources, and gate merges on the literal `ci-local: OK` line.
