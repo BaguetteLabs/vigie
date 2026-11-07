@@ -13,6 +13,8 @@ let package = Package(
         .package(path: "../VigieUI"),
         .package(path: "../Wire"),
         .package(url: "https://github.com/sindresorhus/KeyboardShortcuts", from: "3.1.0"),
+        // AD-16: decode only (config); ConfigStore never writes TOML with it.
+        .package(url: "https://github.com/mattt/swift-toml", exact: "2.1.0"),
     ],
     targets: [
         .target(
@@ -22,6 +24,7 @@ let package = Package(
                 .product(name: "VigieUI", package: "VigieUI"),
                 .product(name: "Wire", package: "Wire"),
                 .product(name: "KeyboardShortcuts", package: "KeyboardShortcuts"),
+                .product(name: "TOML", package: "swift-toml"),
             ],
             resources: [.process("Resources")]
         ),

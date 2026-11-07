@@ -1,0 +1,153 @@
+# Vigie configuration. Every key below shows its default.
+# Edits apply live, without a restart. If this file has a TOML error, Vigie keeps the last valid config
+# and shows a setup problem. Unknown keys are ignored (and kept when Vigie writes this file).
+# Durations are strings: "150ms", "90s", "20m", "2h", "1h30m", "7d".
+# Machine-specific settings (marked "local") are not read from this file: they live in local.toml,
+# which is never synced. They are listed, commented, at the end of this file.
+
+[general]
+hide_in_fullscreen = true
+open_on_hover = false         # click to open by default
+close_on_leave = false
+hover_delay = "150ms"
+expand_hotkey = "cmd+shift+space"
+prevent_idle_sleep = false    # while an agent is working
+tab_order = []                # module ids in tab order after Home; empty = default order
+
+[appearance]
+theme = "chrome-hologram"     # chrome-hologram | twin-metal-tactical | <custom>
+mode = "system"               # system | light | dark
+presence = "full"             # full | calm
+# colors.blocked = "#…"       # any status, pace or warning color can be overridden
+
+[sounds]
+enabled = true
+blocked = "builtin:blocked"   # off | builtin:<name> | path to a custom file
+failed = "builtin:failed"
+done = "off"
+quota_warning = "builtin:warn"
+timer_end = "off"             # off by default; e.g. "builtin:timer"
+break_reminder = "off"
+calendar_reminder = "off"     # off by default
+
+[notify]
+quiet_hours = ""              # e.g. "22:00-08:00"; empty = none
+after_focus = "drop"          # drop | replay (latest unresolved alert per module when the macOS Focus mode ends)
+min_severity = "info"         # info | warn | critical; also per kind in [modules."<id>".notify] with cooldown, outputs, reminder
+cooldown = "0s"               # per dedupe_key
+
+[home]
+cards = []                    # Home cards in order, e.g. ["agents.sessions", "agents.usage", "shelf"]; empty = default set
+
+[updates]
+auto_check = true
+check_interval = "24h"
+auto_install = false
+channel = "stable"            # stable | beta
+
+[closed]
+max_side_width = 120
+slots = 3                     # items per side, max 4; the rest collapse into +X
+peek = true
+peek_duration = "5s"          # dwell, paused on hover
+
+[modules."agents.sessions"]
+enabled = true
+priority = 1
+adapters = ["claude", "codex", "gemini"]
+done_to_idle = "15m"
+stale_after = "10m"           # working with no event this long → stale look
+ignored_paths = []            # sessions whose cwd is under these paths are ignored
+ask_default_agent = "claude"
+ask_cwd = "file_folder"       # home | file_folder | "<path>"
+ask_alt_cwd = "~/Code"        # used when ⌥ is held on drop
+
+# Per-adapter settings (layout decided with the adapters, Epic 4):
+# [modules."agents.sessions".adapters.claude]
+# usage_providers = ["local", "plan"]
+# plan_auth = "token"         # local, per Account: token | claude_code (reuse Claude Code's login, after Allow)
+
+[modules."agents.usage"]
+enabled = true
+priority = 2                  # left-wing item priority of every provider ring; override in providers.<id>
+order = ["claude", "codex"]   # provider order (also set by drag on the Usage tab; breaks priority ties)
+rings = "5h+weekly"           # 5h | 5h+weekly
+pace = true
+pace_tolerance = 5            # points
+warn_threshold = 80           # %, per provider override: [modules."agents.usage".providers.<id>]
+warn_action = "alert"         # alert | visual
+
+# One table per extra Account, for example:
+# [modules."agents.usage".accounts.claude-work]
+# provider = "claude"
+# name = "Work"
+# location = "~/.claude-work" # agent config/log location; sessions and logs here belong to this Account
+# plan_limits = false         # opt-in remote limits, per Account
+
+[modules.shelf]
+enabled = true
+ttl = "7d"
+mode = "reference"
+expiry_notification = false
+airdrop = true                # AirDrop drop zone
+image_to_text = false         # Image to Text drop zone (on-device text recognition)
+
+[modules.time]
+enabled = false
+closed_notch = "off"          # off | time | ring | both: nearest-to-end item on the left wing
+priority = 3                  # left-wing item priority
+# hotkey = "…"                # optional global hotkey, no default
+pomodoro = { work = "25m", short_break = "5m", long_break = "15m", long_every = 4 }
+
+[modules.time.breaks]
+enabled = false
+work = "55m"                  # presence before a reminder
+length = "5m"                 # Away time that counts as a break
+away_after = "90s"            # input idle threshold
+style = "peek"                # peek | quiet (no peek, no sound: BREAK DUE in the closed notch)
+
+[modules.notes]
+enabled = false
+hotkey = "opt+cmd+n"
+folder = "~/Notes/Vigie"
+clipboard_clear = "30s"
+
+[modules.calendar]
+enabled = false
+reminders = true              # peek at each event's own Calendar alarm times; no closed-notch glance
+
+[modules.integrations]
+update_checks = true          # scripts installed from a link, at most once a day
+
+# Script modules use their id, for example:
+# [modules."github.prs"]
+# enabled = true
+# priority = 5
+# repo = "me/project"
+
+# == local.toml ==
+# Machine-specific settings. Set them in local.toml (never synced), not here: Vigie ignores them in this
+# file. Same tables and keys; module ones go under [modules."<id>".local]. Defaults:
+#
+# [general]
+# launch_at_login = false
+#
+# [privacy]
+# auto = true                 # detect screen sharing/recording
+# force = false               # always on
+#
+# [sync]
+# icloud = false              # config/personalization and notes only
+#
+# [display]
+# display = "notched"         # main | notched | all | "<name>"
+#
+# [virtual_notch]
+# width = 200
+# idle = "shrink"             # shrink | hide | keep
+# position = "center"         # center | right
+# placement = "menu_bar"      # menu_bar | below
+# style = "black"             # black | menu_bar
+#
+# [modules."agents.sessions".local]
+# terminal = "warp"           # terminal | warp | ghostty | iterm

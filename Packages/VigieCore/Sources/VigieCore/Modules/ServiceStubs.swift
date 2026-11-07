@@ -4,7 +4,7 @@ import os
 
 // Placeholders for the AD-19 services that later stories implement. Each is replaced, not extended.
 
-/// Implemented in Story 2.3 (read) and 2.13 (write): returns each descriptor's declared default.
+/// Used when no `ConfigStore` is given (tests): returns each descriptor's declared default.
 struct DefaultsModuleSettings: ModuleSettings {
     let descriptors: [SettingDescriptor]
 

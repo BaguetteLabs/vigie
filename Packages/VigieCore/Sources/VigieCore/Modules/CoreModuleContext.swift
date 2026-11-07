@@ -66,32 +66,43 @@ public protocol ModuleContextFactory {
     func makeContext(for manifest: ModuleManifest, tracker: RegistrationTracker) -> any ModuleContext
 }
 
-/// The production factory: real storage, scheduler, event bus and hotkeys; the shared permissions coordinator; stubs for the rest.
+/// The production factory: real settings (with a `ConfigStore`), storage, scheduler, event bus and hotkeys;
+/// the shared permissions coordinator; stubs for the rest.
 public struct CoreModuleContextFactory: ModuleContextFactory {
     public let environment: AppEnvironment
     public let eventBus: InProcessEventBus
+    public let configStore: ConfigStore?
     public let permissions: PermissionsCoordinator?
     public let hotkeyCenter: HotkeyCenter
 
     /// - Parameters:
     ///   - environment: injected by the App (`AppEnvironment.current`); VigieCore never reads `.current`.
+    ///   - configStore: backs `context.settings`; without one, settings read their declared defaults.
     ///   - permissions: the shared coordinator; when nil each context gets its own system-backed one.
     ///   - hotkeyCenter: the app-wide hotkey center (shared with `CoreHotkeys`); defaults to one bound to
     ///     KeyboardShortcuts.
     public init(
-        environment: AppEnvironment, eventBus: InProcessEventBus, permissions: PermissionsCoordinator? = nil,
-        hotkeyCenter: HotkeyCenter? = nil
+        environment: AppEnvironment, eventBus: InProcessEventBus, configStore: ConfigStore? = nil,
+        permissions: PermissionsCoordinator? = nil, hotkeyCenter: HotkeyCenter? = nil
     ) {
         self.environment = environment
         self.eventBus = eventBus
+        self.configStore = configStore
         self.permissions = permissions
         self.hotkeyCenter = hotkeyCenter ?? HotkeyCenter()
     }
 
     public func makeContext(for manifest: ModuleManifest, tracker: RegistrationTracker) -> any ModuleContext {
         let log = Logger(subsystem: environment.bundleID, category: manifest.id.rawValue)
+        let settings: any ModuleSettings
+        if let configStore {
+            configStore.register(manifest: manifest)
+            settings = ConfigModuleSettings(store: configStore, moduleID: manifest.id, tracker: tracker)
+        } else {
+            settings = DefaultsModuleSettings(descriptors: manifest.settings)
+        }
         return CoreModuleContext(
-            settings: DefaultsModuleSettings(descriptors: manifest.settings),
+            settings: settings,
             storage: ModuleStorageImpl(moduleID: manifest.id, environment: environment, logger: log),
             secrets: UnavailableSecretStore(),
             scheduler: CoreScheduler(tracker: tracker),
