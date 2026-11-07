@@ -50,11 +50,15 @@ public protocol AgentAdapter: Sendable {
     /// `context.executables`. Default: nil.
     func detectVersion(context: any AdapterContext) async -> AgentVersion?
 
+    /// Where the installed CLI stands against the adapter's fixture-tested range (AD-23). Pure. Default:
+    /// `.notInstalled` for nil, else `.unsupported`: an adapter without a support matrix never guesses.
+    func support(for version: AgentVersion?) -> AdapterSupport
+
     /// Edits that install the integration (hooks, notify program), for the user to confirm (Story 4.7, AD-22).
-    /// Default: none.
-    func integrationPlan(context: any AdapterContext) async throws -> [ConfigDiff]
-    /// Edits that remove the integration. Default: none.
-    func removalPlan(context: any AdapterContext) async throws -> [ConfigDiff]
+    /// An empty plan means the integration is already installed. Default: none.
+    func integrationPlan(context: any AdapterContext, inputs: IntegrationInputs) async throws -> [ConfigDiff]
+    /// Edits that remove the integration: only Vigie's managed entries (AD-22). Default: none.
+    func removalPlan(context: any AdapterContext, inputs: IntegrationInputs) async throws -> [ConfigDiff]
 
     /// Pure: the native event in `hook.raw` → normalized events (SPEC §7.1). `sentAt` is the envelope's
     /// `sent_at` and becomes each event's `context.at` (AD-5). Unknown or ignored native events → `[]`.
@@ -78,8 +82,15 @@ public protocol AgentAdapter: Sendable {
 extension AgentAdapter {
     public var settings: [SettingDescriptor] { [] }
     public func detectVersion(context: any AdapterContext) async -> AgentVersion? { nil }
-    public func integrationPlan(context: any AdapterContext) async throws -> [ConfigDiff] { [] }
-    public func removalPlan(context: any AdapterContext) async throws -> [ConfigDiff] { [] }
+    public func support(for version: AgentVersion?) -> AdapterSupport {
+        version.map(AdapterSupport.unsupported) ?? .notInstalled
+    }
+    public func integrationPlan(context: any AdapterContext, inputs: IntegrationInputs) async throws -> [ConfigDiff] {
+        []
+    }
+    public func removalPlan(context: any AdapterContext, inputs: IntegrationInputs) async throws -> [ConfigDiff] {
+        []
+    }
     public func agentProcess(in ancestors: [ProcessInfoEntry], environment: [String: String]) -> AgentProcessRef? {
         nil
     }
@@ -87,4 +98,12 @@ extension AgentAdapter {
     public var logReader: (any AgentLogReader)? { nil }
     public var usageProvider: (any UsageProvider)? { nil }
     public func launchCommand(files: [URL], cwd: URL?) -> LaunchCommand? { nil }
+}
+
+extension AgentAdapter {
+    /// The version-gated entry point for `agents.sessions` (AD-23): `normalize(_:sentAt:)` when `support` lets
+    /// events through, else `[]`.
+    public func normalize(_ hook: HookPayload, sentAt: Date, support: AdapterSupport) -> [AgentEvent] {
+        support.emitsEvents ? normalize(hook, sentAt: sentAt) : []
+    }
 }

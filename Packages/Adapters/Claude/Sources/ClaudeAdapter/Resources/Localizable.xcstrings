@@ -1,0 +1,90 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "claude.adapter.name" : {
+      "comment" : "Name of the Claude Code agent adapter.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude Code"
+          }
+        }
+      }
+    },
+    "claude.plan.install.summary" : {
+      "comment" : "Integration diff summary. %1$lld = number of hook events, %2$@ = settings file path.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add Vigie hooks for %1$lld events to %2$@"
+          }
+        }
+      }
+    },
+    "claude.plan.remove.summary" : {
+      "comment" : "Removal diff summary. %1$lld = number of hooks, %2$@ = settings file path.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove %1$lld Vigie hooks from %2$@"
+          }
+        }
+      }
+    },
+    "claude.settings.executable.help" : {
+      "comment" : "Help for the claude executable path setting.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leave empty to find claude on your login shell's PATH."
+          }
+        }
+      }
+    },
+    "claude.settings.executable.label" : {
+      "comment" : "Settings › Agents › Claude: label of the claude executable path setting.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude Code executable"
+          }
+        }
+      }
+    },
+    "claude.settings.hooksScope.help" : {
+      "comment" : "Help for the hooks scope setting. user and project are the option values.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "user: ~/.claude/settings.json, for every project. project: the project's .claude/settings.json."
+          }
+        }
+      }
+    },
+    "claude.settings.hooksScope.label" : {
+      "comment" : "Settings › Agents › Claude: label of the hooks scope setting.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Install hooks in"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

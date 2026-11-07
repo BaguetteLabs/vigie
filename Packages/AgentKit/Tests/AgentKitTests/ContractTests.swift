@@ -191,8 +191,12 @@ func makeContext(settings: [SettingDescriptor] = []) -> AdapterContextBox {
         let context = makeContext()
         #expect(adapter.settings.isEmpty)
         #expect(await adapter.detectVersion(context: context) == nil)
-        #expect(try await adapter.integrationPlan(context: context).isEmpty)
-        #expect(try await adapter.removalPlan(context: context).isEmpty)
+        let inputs = IntegrationInputs(
+            cliPath: "/Users/romain/.local/bin/vigie", homeDirectory: URL(fileURLWithPath: "/Users/romain"))
+        #expect(try await adapter.integrationPlan(context: context, inputs: inputs).isEmpty)
+        #expect(try await adapter.removalPlan(context: context, inputs: inputs).isEmpty)
+        #expect(adapter.support(for: nil) == .notInstalled)
+        #expect(adapter.support(for: AgentVersion(raw: "1.0.0")) == .unsupported(AgentVersion(raw: "1.0.0")))
         let ancestors = [ProcessInfoEntry(pid: 10, ppid: 1, name: "2.1.319", startTime: nil)]
         #expect(adapter.agentProcess(in: ancestors, environment: [:]) == nil)
         #expect(adapter.transcriptWatcher == nil)

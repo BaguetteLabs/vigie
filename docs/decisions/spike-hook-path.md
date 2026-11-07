@@ -158,7 +158,7 @@ around `fork` and `exec` from a Python driver (debug build):
 ## Fixtures (Story 4.6)
 
 Raw stdin payloads, with `/Users/me` rewritten to `/Users/romain`, in
-`Packages/VigieCLI/Tests/Fixtures/claude/2.1.319/`:
+`Packages/VigieCLI/Tests/Fixtures/claude/2.1.319/` (moved by Story 4.6 to `Packages/Adapters/Claude/Tests/Fixtures/2.1.319/`):
 
 - `SessionStart.json` (interactive), `SessionStart.print.json` (`-p`)
 - `UserPromptSubmit.json`, `UserPromptSubmit.agent_message.json` (synthetic subagent hand-back prompt)

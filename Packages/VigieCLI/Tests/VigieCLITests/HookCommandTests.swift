@@ -171,13 +171,16 @@ import Wire
     }
 
     @Test func claudeFixturesBuildValidEnvelopes() throws {
+        // The Claude Code fixtures live with the adapter (Story 4.6): `Packages/Adapters/Claude/Tests/Fixtures`.
         let fixtures = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
-            .deletingLastPathComponent().appendingPathComponent("Fixtures/claude")
+            .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+            .appendingPathComponent("Adapters/Claude/Tests/Fixtures")
         let files =
             FileManager.default.enumerator(at: fixtures, includingPropertiesForKeys: nil)?
             .compactMap { $0 as? URL }.filter { $0.pathExtension == "json" } ?? []
         let folder = try Self.scratch()
         defer { try? FileManager.default.removeItem(at: folder) }
+        #expect(!files.isEmpty)
         var events: Set<String> = []
         for file in files {
             // `<event>.json` or `<event>.<variant>.json`
