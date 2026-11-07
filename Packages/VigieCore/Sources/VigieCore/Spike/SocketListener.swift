@@ -43,14 +43,14 @@ public final class SocketListener: Sendable {
         let socketFD = socket(AF_UNIX, SOCK_STREAM, 0)
         guard socketFD >= 0 else { throw ListenerError.posix("socket", errno) }
         _ = fcntl(socketFD, F_SETFD, FD_CLOEXEC)
-        let previousMask = umask(0o177)
+        // No umask(2): it is process-wide and races with other threads creating files.
+        // The parent directory is 0700 and the socket is chmod'ed right after bind.
         let bound = withUnsafePointer(to: &address) {
             $0.withMemoryRebound(to: sockaddr.self, capacity: 1) {
                 bind(socketFD, $0, socklen_t(MemoryLayout<sockaddr_un>.size))
             }
         }
         let bindErrno = errno
-        umask(previousMask)
         guard bound == 0 else {
             close(socketFD)
             throw ListenerError.posix("bind", bindErrno)
