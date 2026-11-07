@@ -2,7 +2,8 @@ import Foundation
 import ModuleKit
 
 // The outputs `AlertCenter` routes to. Later stories provide the real ones: peek (Notch Host, Story 3.2),
-// system (macOS notifications, Story 3.6), sound (Story 10.1). Until then the recording defaults collect calls.
+// system (macOS notifications, Story 3.6), sound (`NotifierSoundSink`, Story 10.1). The recording defaults collect
+// calls for tests and for an App that has not wired an output.
 
 /// A delivered alert, as outputs and the alert lists see it.
 public struct ActiveAlert: Identifiable, Hashable, Sendable {

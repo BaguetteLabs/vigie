@@ -1,6 +1,18 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "alerts.system.permissionDenied": {
+      "comment": "Setup-problem alert: notifications permission denied, so the macOS notification output is off.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notifications permission is denied; macOS notification output is off"
+          }
+        }
+      }
+    },
     "menu.quit": {
       "comment": "Closed notch context menu: quit the app.",
       "extractionState": "manual",
@@ -265,18 +277,6 @@
         }
       }
     },
-    "peek.kicker.withCategory": {
-      "comment": "Peek kicker followed by the alert's category, e.g. SETUP · CONFIG. %1$@ is the kicker, %2$@ the category; shown uppercase.",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%1$@ · %2$@"
-          }
-        }
-      }
-    },
     "peek.kicker.sleepSummary": {
       "comment": "Peek kicker for the summary of sessions interrupted by sleep; shown uppercase.",
       "extractionState": "manual",
@@ -297,6 +297,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "Timer · ended"
+          }
+        }
+      }
+    },
+    "peek.kicker.withCategory": {
+      "comment": "Peek kicker followed by the alert's category, e.g. SETUP · CONFIG. %1$@ is the kicker, %2$@ the category; shown uppercase.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ · %2$@"
           }
         }
       }
@@ -405,6 +417,246 @@
           "stringUnit": {
             "state": "translated",
             "value": "%1$lld alerts · %2$lld peeks · %3$lld reminders · focus %4$lld exact, %5$lld app only, %6$lld failed · %7$lld suppressed"
+          }
+        }
+      }
+    },
+    "settings.alerts.enabled": {
+      "comment": "Alert settings: whether this alert kind is shown at all (off writes mute = true).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enabled"
+          }
+        }
+      }
+    },
+    "settings.alerts.kind.calendar.reminder": {
+      "comment": "Alert kind label: a calendar event's own alarm time.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Event reminder"
+          }
+        }
+      }
+    },
+    "settings.alerts.kind.session.blocked": {
+      "comment": "Alert kind label: an agent session needs the user.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Blocked"
+          }
+        }
+      }
+    },
+    "settings.alerts.kind.session.done": {
+      "comment": "Alert kind label: an agent session finished its turn.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finished"
+          }
+        }
+      }
+    },
+    "settings.alerts.kind.session.failed": {
+      "comment": "Alert kind label: an agent session failed.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Failed"
+          }
+        }
+      }
+    },
+    "settings.alerts.kind.setup.problem": {
+      "comment": "Alert kind label: something needs fixing in setup.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Setup problem"
+          }
+        }
+      }
+    },
+    "settings.alerts.kind.shelf.expiring": {
+      "comment": "Alert kind label: a Shelf item is about to expire.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shelf item expiring"
+          }
+        }
+      }
+    },
+    "settings.alerts.kind.time.break_reminder": {
+      "comment": "Alert kind label: time for a break.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Break reminder"
+          }
+        }
+      }
+    },
+    "settings.alerts.kind.time.timer_end": {
+      "comment": "Alert kind label: a timer, countdown or Pomodoro break ended.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Timer end"
+          }
+        }
+      }
+    },
+    "settings.alerts.kind.usage.quota_warning": {
+      "comment": "Alert kind label: plan usage is close to its limit.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quota warning"
+          }
+        }
+      }
+    },
+    "settings.alerts.mute": {
+      "comment": "Config key label: modules.<id>.notify.<kind>.mute.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Muted"
+          }
+        }
+      }
+    },
+    "settings.alerts.output.peek": {
+      "comment": "Alert output: the notch peek.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Peek"
+          }
+        }
+      }
+    },
+    "settings.alerts.output.sound": {
+      "comment": "Alert output: a sound from the Sounds settings.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sound"
+          }
+        }
+      }
+    },
+    "settings.alerts.output.system": {
+      "comment": "Alert output: a macOS notification.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "System notification"
+          }
+        }
+      }
+    },
+    "settings.alerts.outputs": {
+      "comment": "Alert settings: where an alert of this kind appears (peek, macOS notification, sound).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Outputs"
+          }
+        }
+      }
+    },
+    "settings.alerts.reminder": {
+      "comment": "Alert settings: delay after which an unresolved alert is shown again.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reminder"
+          }
+        }
+      }
+    },
+    "settings.alerts.reminder.help": {
+      "comment": "Help under the alert reminder field.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shows the peek and sound once more if nothing changed after this delay. Empty for none."
+          }
+        }
+      }
+    },
+    "settings.alerts.reminder.none": {
+      "comment": "Placeholder of the empty reminder field: no reminder.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "None"
+          }
+        }
+      }
+    },
+    "settings.alerts.reset": {
+      "comment": "Context menu of an alert setting row: removes the key from config.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset to default"
+          }
+        }
+      }
+    },
+    "settings.alerts.section": {
+      "comment": "Module Settings pane: heading above the generated alert settings, one group per declared alert kind.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alerts"
           }
         }
       }
@@ -1045,6 +1297,54 @@
         }
       }
     },
+    "sounds.builtin.blocked": {
+      "comment": "Built-in sound name (Settings › Sounds picker): two-tone rising ping.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Blocked ping"
+          }
+        }
+      }
+    },
+    "sounds.builtin.done": {
+      "comment": "Built-in sound name (Settings › Sounds picker): soft chime.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done chime"
+          }
+        }
+      }
+    },
+    "sounds.builtin.failed": {
+      "comment": "Built-in sound name (Settings › Sounds picker): descending buzz.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Failed buzz"
+          }
+        }
+      }
+    },
+    "sounds.builtin.warn": {
+      "comment": "Built-in sound name (Settings › Sounds picker): short double blip.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Warning blip"
+          }
+        }
+      }
+    },
     "vigiecore.devSample.compact": {
       "comment": "Closed-notch label of the debug-only sample module.",
       "extractionState": "manual",
@@ -1069,446 +1369,14 @@
         }
       }
     },
-    "vigiecore.sample.hostName": {
-      "comment": "Sample string proving the VigieCore String Catalog is bundled.",
+    "vigiecore.displayPrompt.all": {
+      "comment": "Display prompt button: show Vigie on every display.",
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Notch host"
-          }
-        }
-      }
-    },
-    "alerts.system.permissionDenied" : {
-      "comment" : "Setup-problem alert: notifications permission denied, so the macOS notification output is off.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Notifications permission is denied; macOS notification output is off"
-          }
-        }
-      }
-    },
-    "vigiecore.setup.title.invalidFile" : {
-      "comment" : "Title: a config file could not be parsed. %@ is the file name.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ can't be read"
-          }
-        }
-      }
-    },
-    "vigiecore.setup.title.invalidValue" : {
-      "comment" : "Title: a setting has a wrong value. %@ is the key.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Invalid value for %@"
-          }
-        }
-      }
-    },
-    "vigiecore.setup.title.wrongFile" : {
-      "comment" : "Title: a setting is in the wrong config file. %@ is the key.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ is in the wrong file"
-          }
-        }
-      }
-    },
-    "vigiecore.setup.title.unknownKey" : {
-      "comment" : "Title: a setting key is not known. %@ is the key.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unknown setting %@"
-          }
-        }
-      }
-    },
-    "vigiecore.setup.body.invalidFile" : {
-      "comment" : "Setup problem sentence for an unreadable config file. %@ is the file name.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Vigie keeps using the last valid content of %@."
-          }
-        }
-      }
-    },
-    "vigiecore.setup.body.invalidValue" : {
-      "comment" : "Setup problem sentence for a bad value.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The default value applies until the setting is fixed."
-          }
-        }
-      }
-    },
-    "vigiecore.setup.body.wrongFile" : {
-      "comment" : "Setup problem sentence for a key in the wrong file.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Vigie ignores it there; move it to the other config file."
-          }
-        }
-      }
-    },
-    "vigiecore.setup.body.unknownKey" : {
-      "comment" : "Setup problem sentence for an unknown key.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No module declares this setting, so Vigie ignores it."
-          }
-        }
-      }
-    },
-    "vigiecore.setup.title.hotkeyConflict" : {
-      "comment" : "Title: two shortcuts use the same keys. %1$@ and %2$@ are hotkey names with their owner.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Shortcut conflict: %1$@ and %2$@"
-          }
-        }
-      }
-    },
-    "vigiecore.setup.body.hotkeyConflict" : {
-      "comment" : "Setup problem sentence. %1$@ keeps the shortcut, %2$@ is not bound.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@ keeps the shortcut; %2$@ is not bound."
-          }
-        }
-      }
-    },
-    "vigiecore.setup.title.hotkeyInvalid" : {
-      "comment" : "Title: a configured shortcut is invalid. %@ is the hotkey name.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Invalid shortcut for %@"
-          }
-        }
-      }
-    },
-    "vigiecore.setup.body.hotkeyInvalid" : {
-      "comment" : "Setup problem sentence for an invalid shortcut.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The default shortcut stays in effect."
-          }
-        }
-      }
-    },
-    "vigiecore.setup.category.config" : {
-      "comment" : "Kicker category after SETUP, for config problems. Uppercase.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "CONFIG"
-          }
-        }
-      }
-    },
-    "vigiecore.setup.category.hotkey" : {
-      "comment" : "Kicker category after SETUP, for shortcut problems. Uppercase.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "HOTKEY"
-          }
-        }
-      }
-    },
-    "settings.alerts.section" : {
-      "comment" : "Module Settings pane: heading above the generated alert settings, one group per declared alert kind.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Alerts"
-          }
-        }
-      }
-    },
-    "settings.alerts.enabled" : {
-      "comment" : "Alert settings: whether this alert kind is shown at all (off writes mute = true).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enabled"
-          }
-        }
-      }
-    },
-    "settings.alerts.mute" : {
-      "comment" : "Config key label: modules.<id>.notify.<kind>.mute.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Muted"
-          }
-        }
-      }
-    },
-    "settings.alerts.outputs" : {
-      "comment" : "Alert settings: where an alert of this kind appears (peek, macOS notification, sound).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Outputs"
-          }
-        }
-      }
-    },
-    "settings.alerts.output.peek" : {
-      "comment" : "Alert output: the notch peek.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Peek"
-          }
-        }
-      }
-    },
-    "settings.alerts.output.system" : {
-      "comment" : "Alert output: a macOS notification.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "System notification"
-          }
-        }
-      }
-    },
-    "settings.alerts.output.sound" : {
-      "comment" : "Alert output: a sound from the Sounds settings.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sound"
-          }
-        }
-      }
-    },
-    "settings.alerts.reminder" : {
-      "comment" : "Alert settings: delay after which an unresolved alert is shown again.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reminder"
-          }
-        }
-      }
-    },
-    "settings.alerts.reminder.none" : {
-      "comment" : "Placeholder of the empty reminder field: no reminder.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "None"
-          }
-        }
-      }
-    },
-    "settings.alerts.reminder.help" : {
-      "comment" : "Help under the alert reminder field.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Shows the peek and sound once more if nothing changed after this delay. Empty for none."
-          }
-        }
-      }
-    },
-    "settings.alerts.reset" : {
-      "comment" : "Context menu of an alert setting row: removes the key from config.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reset to default"
-          }
-        }
-      }
-    },
-    "settings.alerts.kind.session.blocked" : {
-      "comment" : "Alert kind label: an agent session needs the user.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Blocked"
-          }
-        }
-      }
-    },
-    "settings.alerts.kind.session.done" : {
-      "comment" : "Alert kind label: an agent session finished its turn.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Finished"
-          }
-        }
-      }
-    },
-    "settings.alerts.kind.session.failed" : {
-      "comment" : "Alert kind label: an agent session failed.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Failed"
-          }
-        }
-      }
-    },
-    "settings.alerts.kind.usage.quota_warning" : {
-      "comment" : "Alert kind label: plan usage is close to its limit.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Quota warning"
-          }
-        }
-      }
-    },
-    "settings.alerts.kind.shelf.expiring" : {
-      "comment" : "Alert kind label: a Shelf item is about to expire.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Shelf item expiring"
-          }
-        }
-      }
-    },
-    "settings.alerts.kind.time.timer_end" : {
-      "comment" : "Alert kind label: a timer, countdown or Pomodoro break ended.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Timer end"
-          }
-        }
-      }
-    },
-    "settings.alerts.kind.time.break_reminder" : {
-      "comment" : "Alert kind label: time for a break.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Break reminder"
-          }
-        }
-      }
-    },
-    "settings.alerts.kind.calendar.reminder" : {
-      "comment" : "Alert kind label: a calendar event's own alarm time.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Event reminder"
-          }
-        }
-      }
-    },
-    "settings.alerts.kind.setup.problem" : {
-      "comment" : "Alert kind label: something needs fixing in setup.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Setup problem"
-          }
-        }
-      }
-    },
-    "vigiecore.displayPrompt.title": {
-      "comment": "Display prompt card title in the expanded view (first launch with a display without a notch).",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "WHERE SHOULD VIGIE APPEAR?"
+            "value": "All displays"
           }
         }
       }
@@ -1525,14 +1393,14 @@
         }
       }
     },
-    "vigiecore.displayPrompt.thisDisplay": {
-      "comment": "Display prompt button: show Vigie on the display the expanded view is on.",
+    "vigiecore.displayPrompt.dismiss": {
+      "comment": "Display prompt button: keep the default and never ask again.",
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "This display"
+            "value": "Not now"
           }
         }
       }
@@ -1549,26 +1417,206 @@
         }
       }
     },
-    "vigiecore.displayPrompt.all": {
-      "comment": "Display prompt button: show Vigie on every display.",
+    "vigiecore.displayPrompt.thisDisplay": {
+      "comment": "Display prompt button: show Vigie on the display the expanded view is on.",
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "All displays"
+            "value": "This display"
           }
         }
       }
     },
-    "vigiecore.displayPrompt.dismiss": {
-      "comment": "Display prompt button: keep the default and never ask again.",
+    "vigiecore.displayPrompt.title": {
+      "comment": "Display prompt card title in the expanded view (first launch with a display without a notch).",
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Not now"
+            "value": "WHERE SHOULD VIGIE APPEAR?"
+          }
+        }
+      }
+    },
+    "vigiecore.sample.hostName": {
+      "comment": "Sample string proving the VigieCore String Catalog is bundled.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notch host"
+          }
+        }
+      }
+    },
+    "vigiecore.setup.body.hotkeyConflict": {
+      "comment": "Setup problem sentence. %1$@ keeps the shortcut, %2$@ is not bound.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ keeps the shortcut; %2$@ is not bound."
+          }
+        }
+      }
+    },
+    "vigiecore.setup.body.hotkeyInvalid": {
+      "comment": "Setup problem sentence for an invalid shortcut.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The default shortcut stays in effect."
+          }
+        }
+      }
+    },
+    "vigiecore.setup.body.invalidFile": {
+      "comment": "Setup problem sentence for an unreadable config file. %@ is the file name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vigie keeps using the last valid content of %@."
+          }
+        }
+      }
+    },
+    "vigiecore.setup.body.invalidValue": {
+      "comment": "Setup problem sentence for a bad value.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The default value applies until the setting is fixed."
+          }
+        }
+      }
+    },
+    "vigiecore.setup.body.unknownKey": {
+      "comment": "Setup problem sentence for an unknown key.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No module declares this setting, so Vigie ignores it."
+          }
+        }
+      }
+    },
+    "vigiecore.setup.body.wrongFile": {
+      "comment": "Setup problem sentence for a key in the wrong file.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vigie ignores it there; move it to the other config file."
+          }
+        }
+      }
+    },
+    "vigiecore.setup.category.config": {
+      "comment": "Kicker category after SETUP, for config problems. Uppercase.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CONFIG"
+          }
+        }
+      }
+    },
+    "vigiecore.setup.category.hotkey": {
+      "comment": "Kicker category after SETUP, for shortcut problems. Uppercase.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HOTKEY"
+          }
+        }
+      }
+    },
+    "vigiecore.setup.title.hotkeyConflict": {
+      "comment": "Title: two shortcuts use the same keys. %1$@ and %2$@ are hotkey names with their owner.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shortcut conflict: %1$@ and %2$@"
+          }
+        }
+      }
+    },
+    "vigiecore.setup.title.hotkeyInvalid": {
+      "comment": "Title: a configured shortcut is invalid. %@ is the hotkey name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invalid shortcut for %@"
+          }
+        }
+      }
+    },
+    "vigiecore.setup.title.invalidFile": {
+      "comment": "Title: a config file could not be parsed. %@ is the file name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ can't be read"
+          }
+        }
+      }
+    },
+    "vigiecore.setup.title.invalidValue": {
+      "comment": "Title: a setting has a wrong value. %@ is the key.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invalid value for %@"
+          }
+        }
+      }
+    },
+    "vigiecore.setup.title.unknownKey": {
+      "comment": "Title: a setting key is not known. %@ is the key.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unknown setting %@"
+          }
+        }
+      }
+    },
+    "vigiecore.setup.title.wrongFile": {
+      "comment": "Title: a setting is in the wrong config file. %@ is the key.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ is in the wrong file"
           }
         }
       }
