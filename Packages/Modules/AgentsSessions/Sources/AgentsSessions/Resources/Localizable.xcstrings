@@ -1,8 +1,56 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "agentsSessions.a11y.noEventFor" : {
+      "comment" : "VoiceOver detail for a stale agent session, after 'project, stale': a spoken duration, e.g. 'no event for 18 minutes'.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "no event for %@"
+          }
+        }
+      }
+    },
     "agentsSessions.module.name" : {
       "comment" : "Name of the agent sessions module, shown in Settings and as the Agents tab title.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agents"
+          }
+        }
+      }
+    },
+    "agentsSessions.row.lastEvent" : {
+      "comment" : "Last-action line of a stale agent session row: the clock time (24 h) of its last event, e.g. LAST EVENT 14:30.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LAST EVENT %@"
+          }
+        }
+      }
+    },
+    "agentsSessions.row.lastEventAction" : {
+      "comment" : "Last-action line of a stale agent session row: clock time (24 h) of its last event, then the last tool it ran, e.g. LAST EVENT 14:30 · Edit.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LAST EVENT %1$@ · %2$@"
+          }
+        }
+      }
+    },
+    "agentsSessions.setting.adapters" : {
+      "comment" : "Setting label: the list of enabled agent adapters (Claude Code, Codex, Gemini).",
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -37,6 +85,54 @@
         }
       }
     },
+    "agentsSessions.setting.ignoredPaths" : {
+      "comment" : "Setting label: folders whose agent sessions Vigie never tracks.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ignored folders"
+          }
+        }
+      }
+    },
+    "agentsSessions.setting.ignoredPaths.help" : {
+      "comment" : "Help text under the ignored folders setting.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sessions started in these folders or below them are not tracked. ~ is your home folder."
+          }
+        }
+      }
+    },
+    "agentsSessions.setting.staleAfter" : {
+      "comment" : "Setting label: how long a working agent session may go without any event before it is shown as stale.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stale after"
+          }
+        }
+      }
+    },
+    "agentsSessions.setting.staleAfter.help" : {
+      "comment" : "Help text under the stale-after setting.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A working session with no event for this long shows as stale. It raises no alert."
+          }
+        }
+      }
+    },
     "agentsSessions.setting.terminal" : {
       "comment" : "Setting label: the terminal app agent sessions are focused in.",
       "extractionState" : "manual",
@@ -45,18 +141,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Terminal app"
-          }
-        }
-      }
-    },
-    "agentsSessions.setting.adapters" : {
-      "comment" : "Setting label: the list of enabled agent adapters (Claude Code, Codex, Gemini).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Agents"
           }
         }
       }

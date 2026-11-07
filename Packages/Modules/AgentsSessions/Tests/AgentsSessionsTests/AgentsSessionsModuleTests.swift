@@ -41,11 +41,15 @@ import Wire
 
     @Test func settingsDeclared() {
         let settings = AgentsSessionsModule.staticManifest.settings
-        #expect(settings.map(\.key) == ["done_to_idle", "terminal", "adapters"])
+        #expect(settings.map(\.key) == ["done_to_idle", "terminal", "adapters", "stale_after", "ignored_paths"])
         #expect(settings[0].kind == .duration(default: .seconds(900)))
         #expect(settings[0].scope == .synced)
         #expect(settings[1].scope == .local)
         #expect(settings[2].kind == .list(of: .string, default: ["claude"]))
+        #expect(settings[3].kind == .duration(default: .seconds(600)))
+        #expect(settings[3].scope == .synced)
+        #expect(settings[4].kind == .list(of: .string, default: []))
+        #expect(settings[4].scope == .synced)
         for setting in settings {
             #expect(!String(localized: setting.label).hasPrefix("agentsSessions."), "\(setting.key) label in catalog")
         }
@@ -57,8 +61,8 @@ import Wire
         try await module.start(context: context)
         #expect(module.state == .ambient)
         #expect(module.sessions.isEmpty)
-        #expect(context.fakeEvents.prefixes == ["agent."])
-        #expect(context.fakeScheduler.intervals == [.seconds(30)])
+        #expect(context.fakeEvents.prefixes == ["agent.", "host.ready"])
+        #expect(context.fakeScheduler.intervals == [.seconds(30), .seconds(10)])
         #expect(module.expandedView() != nil)
         #expect(module.leftWingItems().isEmpty)
         await module.stop()

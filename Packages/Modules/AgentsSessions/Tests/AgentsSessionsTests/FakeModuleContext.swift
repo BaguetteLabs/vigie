@@ -249,3 +249,23 @@ enum Hook {
             topic: "agent.hook", payload: data, sentAt: at, receivedAt: at.addingTimeInterval(1), replayed: replayed)
     }
 }
+
+/// Liveness from a mutable set of live processes (pid + start time).
+final class FakeLiveness: ProcessLiveness, @unchecked Sendable {
+    private let lock = NSLock()
+    private var alive: Set<AgentProcessRef>
+    private(set) var checks = 0
+
+    init(alive: Set<AgentProcessRef> = []) {
+        self.alive = alive
+    }
+
+    func kill(_ ref: AgentProcessRef) { _ = lock.withLock { alive.remove(ref) } }
+
+    func isAlive(_ ref: AgentProcessRef) -> Bool {
+        lock.withLock {
+            checks += 1
+            return alive.contains(ref)
+        }
+    }
+}

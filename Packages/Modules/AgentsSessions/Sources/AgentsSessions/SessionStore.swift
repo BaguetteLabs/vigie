@@ -130,15 +130,7 @@ public enum SessionReducer {
     /// FR38 / SPEC §7.1: `alert` if any session is blocked or failed, `active` if any is done or working,
     /// `ambient` otherwise, including no session at all (so the empty-state label shows).
     public static func moduleState(for sessions: some Sequence<Session>) -> ModuleState {
-        var state = ModuleState.ambient
-        for session in sessions {
-            switch session.status {
-            case .blocked, .failed: return .alert
-            case .done, .working: state = .active
-            case .idle, .stale: break
-            }
-        }
-        return state
+        moduleState(statuses: sessions.lazy.map(\.status))
     }
 
     static func rank(_ status: SessionStatus) -> Int {
@@ -225,6 +217,36 @@ public final class SessionStore {
             generation += 1
         }
         return expired
+    }
+
+    /// The liveness pass (``SessionReducer/reconcile(in:now:failedRetention:isDead:)``); returns the removed keys.
+    @discardableResult
+    public func reconcile(
+        now: Date,
+        failedRetention: Duration = SessionReducer.failedRetention,
+        isDead: (SessionKey, AgentProcessRef) -> Bool
+    ) -> [SessionKey] {
+        let removed = SessionReducer.reconcile(
+            in: &table, now: now, failedRetention: failedRetention, isDead: isDead)
+        if !removed.isEmpty {
+            refresh()
+            generation += 1
+        }
+        return removed
+    }
+
+    /// Removes sessions outright (ignored paths, dismissed failed sessions); returns the keys that were there.
+    @discardableResult
+    public func remove(_ keys: some Sequence<SessionKey>) -> [SessionKey] {
+        var removed: [SessionKey] = []
+        for key in keys where table.removeValue(forKey: key) != nil {
+            removed.append(key)
+        }
+        if !removed.isEmpty {
+            refresh()
+            generation += 1
+        }
+        return removed
     }
 
     /// The table to persist, in urgency order.

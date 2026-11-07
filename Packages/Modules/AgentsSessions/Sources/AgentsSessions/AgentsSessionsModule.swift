@@ -16,6 +16,12 @@ import os
 /// adapter off the main actor, then applied in arrival order to the `SessionStore` on the main actor. Replayed
 /// messages go through the same path, so statuses converge. Status and membership changes are persisted to
 /// `sessions.json` off the main actor; heartbeats are not.
+///
+/// Liveness (Story 4.8, AD-5): every 10 s, and once at start and on `host.ready`, each session's agent process
+/// is checked off the main actor (pid + start time, ``ProcessLiveness``); sessions whose process is gone are
+/// removed, except failed ones, which stay until ``dismiss(_:)`` or 24 h after entering failed. Sessions the
+/// adapter could not tie to a process (no `agentProcess`) are left to their `session.end`. The same tick
+/// refreshes the derived stale state (`stale_after`) and drops sessions under `ignored_paths`.
 @MainActor @Observable
 public final class AgentsSessionsModule: NotchModule {
     nonisolated static let bundle = LocalizedStringResource.BundleDescription.atURL(Bundle.module.bundleURL)
@@ -27,6 +33,10 @@ public final class AgentsSessionsModule: NotchModule {
     nonisolated static let defaultDoneToIdle: Duration = .seconds(15 * 60)
     /// How often done sessions are checked against `done_to_idle`.
     nonisolated static let expiryInterval: Duration = .seconds(30)
+    /// How often agent processes are checked (SPEC §7.1, FR36).
+    nonisolated static let livenessInterval: Duration = .seconds(10)
+    /// Posted by the host once the launch sequence completes (AD-6 step 6).
+    nonisolated static let hostReadyTopic = "host.ready"
 
     public nonisolated static let staticManifest = ModuleManifest(
         id: "agents.sessions",
@@ -49,6 +59,18 @@ public final class AgentsSessionsModule: NotchModule {
                 label: LocalizedStringResource("agentsSessions.setting.adapters", bundle: bundle),
                 kind: .list(of: .string, default: ["claude"]),
                 scope: .synced),
+            SettingDescriptor(
+                key: "stale_after",
+                label: LocalizedStringResource("agentsSessions.setting.staleAfter", bundle: bundle),
+                kind: .duration(default: Session.defaultStaleAfter),
+                scope: .synced,
+                help: LocalizedStringResource("agentsSessions.setting.staleAfter.help", bundle: bundle)),
+            SettingDescriptor(
+                key: "ignored_paths",
+                label: LocalizedStringResource("agentsSessions.setting.ignoredPaths", bundle: bundle),
+                kind: .list(of: .string, default: []),
+                scope: .synced,
+                help: LocalizedStringResource("agentsSessions.setting.ignoredPaths.help", bundle: bundle)),
         ],
         defaultEnabled: true
     )
@@ -63,27 +85,46 @@ public final class AgentsSessionsModule: NotchModule {
 
     /// The session table. Only its reducer writes statuses (AD-5).
     public let store = SessionStore()
-    /// Urgency-sorted sessions (FR34).
+    /// Urgency-sorted sessions (FR34), by stored status.
     public var sessions: [Session] { store.sessions }
+    /// Urgency-sorted sessions by display status: stale sessions after idle (FR36). Refreshed on every event
+    /// and every liveness tick.
+    public private(set) var displaySessions: [Session] = []
+    /// Display status per session key: the stored status, or `.stale` (FR36).
+    public private(set) var displayStatuses: [SessionKey: SessionStatus] = [:]
+
+    /// Checks agent processes (pid + start time).
+    public let liveness: any ProcessLiveness
+    /// Where `~` in `ignored_paths` points.
+    public let homeDirectory: URL
 
     @ObservationIgnored var eventTask: Task<Void, Never>?
+    @ObservationIgnored var readyTask: Task<Void, Never>?
     @ObservationIgnored private var expiryToken: RegistrationToken?
+    @ObservationIgnored private var livenessToken: RegistrationToken?
+    @ObservationIgnored private var settings: (any ModuleSettings)?
+    @ObservationIgnored var ignoredKeys = IgnoredKeys()
     @ObservationIgnored private var persister: SessionPersister?
     @ObservationIgnored private var log: Logger?
 
     public init(
         adapters: AgentAdapters,
         terminals: TerminalAdapters,
-        contexts: [AgentID: any AdapterContext] = [:]
+        contexts: [AgentID: any AdapterContext] = [:],
+        liveness: any ProcessLiveness = SystemProcessLiveness(),
+        homeDirectory: URL = FileManager.default.homeDirectoryForCurrentUser
     ) {
         self.adapters = adapters
         self.terminals = terminals
         self.adapterContexts = contexts
+        self.liveness = liveness
+        self.homeDirectory = homeDirectory
     }
 
     public func start(context: any ModuleContext) async throws {
         let log = context.log
         self.log = log
+        settings = context.settings
         let persister = SessionPersister(storage: context.storage, log: log)
         self.persister = persister
 
@@ -118,13 +159,31 @@ public final class AgentsSessionsModule: NotchModule {
             guard let save = await self?.expireDone(settings: settings) else { return }
             await persister.write(save.sessions, generation: save.generation)
         }
+        livenessToken = context.scheduler.every(Self.livenessInterval) { [weak self] in
+            await self?.runLiveness()
+        }
+
+        // AD-5: one reconcile over the persisted sessions once the launch sequence is done (`host.ready`).
+        // The host does not post `host.ready` yet, so the module also reconciles here, at the end of its own
+        // start; a dead session recreated by the spool replay goes at the next 10 s tick.
+        let ready = context.events.subscribe(topicPrefix: Self.hostReadyTopic)
+        readyTask = Task.detached { [weak self] in
+            for await _ in ready {
+                await self?.runLiveness()
+            }
+        }
+        await runLiveness()
     }
 
     public func stop() async {
         eventTask?.cancel()
         eventTask = nil
+        readyTask?.cancel()
+        readyTask = nil
         expiryToken?.cancel()
         expiryToken = nil
+        livenessToken?.cancel()
+        livenessToken = nil
         // Heartbeat metadata (last action, last event time) is saved once on the way out.
         await persister?.write(store.snapshot, generation: store.generation, force: true)
     }
@@ -137,14 +196,90 @@ public final class AgentsSessionsModule: NotchModule {
         AnyView(EmptyStateBlock(VigieCopy.noActiveSessions))
     }
 
-    /// Applies normalized events in order; returns the table to persist when status or membership changed.
-    func apply(_ events: [AgentEvent]) -> (sessions: [Session], generation: Int)? {
-        var persist = false
-        for event in events where store.apply(event).persists {
-            persist = true
-        }
+    /// Removes a failed session now (the Agents tab dismiss, Story 4.10). Other statuses are never dismissed
+    /// (SPEC §7.1: dismissing does not change state). Returns true when a session was removed.
+    @discardableResult
+    public func dismiss(_ key: SessionKey) async -> Bool {
+        guard store.table[key]?.status == .failed else { return false }
+        store.remove([key])
         syncState()
+        await persister?.write(store.snapshot, generation: store.generation)
+        return true
+    }
+
+    /// The display status of a session (stale or its stored status).
+    public func displayStatus(of key: SessionKey) -> SessionStatus? {
+        displayStatuses[key]
+    }
+
+    /// Text for rows, glyphs and peeks with the current `stale_after`.
+    public var rowText: SessionRowText { SessionRowText(staleAfter: staleAfter) }
+
+    /// `stale_after` (SPEC §11), default 10 min.
+    var staleAfter: Duration {
+        settings?.value("stale_after", as: Duration.self) ?? Session.defaultStaleAfter
+    }
+
+    /// `ignored_paths` (SPEC §11), `~` expanded.
+    var ignoredPaths: IgnoredPaths {
+        IgnoredPaths(settings?.value("ignored_paths", as: [String].self) ?? [], home: homeDirectory)
+    }
+
+    /// Applies normalized events in order; returns the table to persist when status or membership changed.
+    ///
+    /// Ignored paths (FR42, A44): an event whose `cwd` lies under `ignored_paths` marks its session key as
+    /// ignored (and removes the session if it was tracked); every later event for that key is dropped, even
+    /// without a `cwd`, until its `session.end`.
+    func apply(_ events: [AgentEvent], now: Date = Date()) -> (sessions: [Session], generation: Int)? {
+        var persist = false
+        let ignored = ignoredPaths
+        for event in events {
+            let key = event.context.sessionKey
+            if ignoredKeys.contains(key) {
+                if case .sessionEnd = event { ignoredKeys.remove(key) }
+                continue
+            }
+            if ignored.contains(event.context.cwd) {
+                if case .sessionEnd = event {} else { ignoredKeys.insert(key) }
+                if !store.remove([key]).isEmpty { persist = true }
+                continue
+            }
+            if store.apply(event).persists { persist = true }
+        }
+        syncState(now: now)
         return persist ? (store.snapshot, store.generation) : nil
+    }
+
+    /// One liveness pass with the processes checked off the main actor; persists any removal.
+    nonisolated func runLiveness(now: Date = Date()) async {
+        let refs = await processRefs()
+        let dead = refs.filter { !liveness.isAlive($0.value) }
+        guard let save = await reconcile(now: now, dead: dead), let persister = await persister else { return }
+        await persister.write(save.sessions, generation: save.generation)
+    }
+
+    /// The agent process of every session that has one.
+    func processRefs() -> [SessionKey: AgentProcessRef] {
+        store.table.compactMapValues(\.agentProcess)
+    }
+
+    /// Removes sessions whose checked process is dead (unless the session's process changed since the check),
+    /// failed sessions past their 24 h retention, and sessions now under `ignored_paths`; refreshes the stale
+    /// state. Returns the table to persist when a session was removed.
+    @discardableResult
+    func reconcile(now: Date, dead: [SessionKey: AgentProcessRef]) -> (sessions: [Session], generation: Int)? {
+        var removed = store.reconcile(now: now) { key, process in dead[key] == process }
+        let ignored = ignoredPaths
+        if !ignored.isEmpty {
+            let keys = store.table.values.filter { ignored.contains($0.cwd) }.map(\.key)
+            for key in keys { ignoredKeys.insert(key) }
+            removed += store.remove(keys)
+        }
+        if !removed.isEmpty {
+            log?.info("liveness removed \(removed.count, privacy: .public) session(s)")
+        }
+        syncState(now: now)
+        return removed.isEmpty ? nil : (store.snapshot, store.generation)
     }
 
     /// Runs the `done_to_idle` check now; returns the table to persist when a session moved.
@@ -152,12 +287,23 @@ public final class AgentsSessionsModule: NotchModule {
     func expireDone(settings: any ModuleSettings, now: Date = Date()) -> (sessions: [Session], generation: Int)? {
         let delay = settings.value("done_to_idle", as: Duration.self) ?? Self.defaultDoneToIdle
         let expired = store.expireDone(now: now, doneToIdle: delay)
-        syncState()
+        syncState(now: now)
         return expired.isEmpty ? nil : (store.snapshot, store.generation)
     }
 
-    private func syncState() {
-        if state != store.state { state = store.state }
+    /// Refreshes the display statuses, the display order and the module state (FR38 on display statuses: a
+    /// stale session counts like idle).
+    func syncState(now: Date = Date()) {
+        let staleAfter = staleAfter
+        var statuses: [SessionKey: SessionStatus] = [:]
+        for session in store.sessions {
+            statuses[session.key] = session.displayStatus(now: now, staleAfter: staleAfter)
+        }
+        let display = SessionReducer.sorted(store.sessions) { statuses[$0.key] ?? $0.status }
+        if statuses != displayStatuses { displayStatuses = statuses }
+        if display != displaySessions { displaySessions = display }
+        let next = SessionReducer.moduleState(statuses: statuses.values)
+        if state != next { state = next }
     }
 }
 
