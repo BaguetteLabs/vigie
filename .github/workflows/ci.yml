@@ -7,6 +7,9 @@ name: ci
 # Restore `pull_request:` and `push: branches: [master]` once the first green run is seen.
 on:
   workflow_dispatch:
+  # TEMPORARY (2026-11-07): release tags will trigger this workflow once it is no longer manual-only (Story 6.2).
+  # push:
+  #   tags: ['v*']
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -58,6 +61,15 @@ jobs:
             echo "==> swift test: $pkg"
             (cd "$pkg" && swift test --build-system swiftbuild)
           done
+
+      - name: version
+        id: version
+        run: |
+          tag=""
+          if [ "${GITHUB_REF_TYPE:-}" = "tag" ]; then tag="$GITHUB_REF_NAME"; fi
+          Scripts/tests/version-test.sh
+          Scripts/version.sh ${tag:+--tag "$tag"} --build "$GITHUB_RUN_NUMBER" --xcconfig App/Config/Version.xcconfig
+          cat App/Config/Version.xcconfig
 
       - name: Generate Xcode project
         run: cd App && xcodegen generate

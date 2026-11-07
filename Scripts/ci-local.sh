@@ -40,7 +40,11 @@ Scripts/config-corpus.sh
 echo "==> spool floor"
 Scripts/spool-floor-test.sh
 
+echo "==> version script test"
+Scripts/tests/version-test.sh
+
 echo "==> xcodegen generate"
+Scripts/version.sh --xcconfig App/Config/Version.xcconfig
 (cd App && xcodegen generate)
 
 echo "==> xcodebuild build"

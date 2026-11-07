@@ -9,3 +9,4 @@ DerivedData/
 .worktrees/
 .build-dd/
 .build*/
+/App/Config/Version.xcconfig
