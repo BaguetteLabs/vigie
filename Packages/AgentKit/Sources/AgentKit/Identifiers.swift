@@ -5,8 +5,9 @@ import Foundation
 public struct AgentID: AdapterIdentifier {
     public let rawValue: String
 
+    /// Also accepts a generic agent id `generic.<agent>` (AD-5, `GenericAgentID.swift`).
     public init?(_ rawValue: String) {
-        guard Self.isValid(rawValue) else { return nil }
+        guard Self.isValid(rawValue) || Self.isGeneric(rawValue) else { return nil }
         self.rawValue = rawValue
     }
 }

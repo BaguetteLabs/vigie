@@ -14,9 +14,9 @@ public struct SessionRowText: Sendable {
         self.staleAfter = staleAfter
     }
 
-    /// The project name, or the agent id when the session has no `cwd` yet.
+    /// The project name, or the agent id (a generic agent's `--agent` value) when the session has no `cwd` yet.
     public func project(_ session: Session) -> String {
-        session.projectName ?? session.agentID.rawValue
+        session.projectName ?? session.agentID.genericAgentName ?? session.agentID.rawValue
     }
 
     /// `IDLE`, `WORKING · 14M`, `BLOCKED · 12M`; a stale session reads `STALE · 18M`, the time since its

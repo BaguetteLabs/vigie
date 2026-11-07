@@ -39,12 +39,18 @@ public enum CLI {
     /// agent id. `event` and `reload` deliver through `delivery` (by default `AppEnvironment.current`'s
     /// socket and spool, with the hook budget from `startedAt`); they return 0 when the message was
     /// sent or spooled, 1 when both failed and 2 on a usage error.
+    ///
+    /// `agent` returns 2 with one stderr line on a usage error, its only output; otherwise it delivers through
+    /// the same path (or logs and drops a reserved agent id) and returns 0 with no output, also when the line
+    /// could neither be sent nor spooled (AD-6).
     public static func run(
         arguments: [String],
         startedAt: ContinuousClock.Instant = .now,
         hookRunner: HookRunner = liveHookRunner,
         delivery: Delivery? = nil,
         readStdin: () -> Data? = ProcessInspector.pipedStandardInput,
+        agentCaller: () -> AgentCommand.Caller = AgentCommand.Caller.live,
+        log: (String) -> Void = AgentCommand.logLine,
         now: @escaping @Sendable () -> Date = { Date() },
         errorOutput: (String) -> Void = writeToStandardError,
         output: (String) -> Void
@@ -55,6 +61,17 @@ public enum CLI {
             if arguments.count >= 2, !arguments[1].isEmpty {
                 hookRunner(arguments[1], startedAt)
             }
+            return 0
+        case "agent":
+            let options: AgentCommand.Options
+            do {
+                options = try AgentCommand.parse(arguments: Array(arguments.dropFirst()))
+            } catch {
+                errorOutput(message(for: error))
+                return usageErrorStatus
+            }
+            let command = AgentCommand(options: options, caller: agentCaller(), now: now)
+            command.run(deliver: { resolvedDelivery().deliver($0) }, log: log)
             return 0
         case "event":
             let command: EventCommand
@@ -107,5 +124,31 @@ public enum CLI {
         case .unexpectedArgument(let argument):
             String(format: String(localized: "cli.error.unexpectedArgument", bundle: CLIResources.bundle), argument)
         }
+    }
+
+    static func message(for error: AgentCommand.ArgumentError) -> String {
+        func text(_ key: String.LocalizationValue) -> String { String(localized: key, bundle: CLIResources.bundle) }
+        let problem: String
+        switch error {
+        case .unknownFlag(let flag):
+            problem = String(format: text("cli.agent.error.unknownFlag"), flag)
+        case .missingValue(let flag):
+            problem = String(format: text("cli.agent.error.missingValue"), flag)
+        case .duplicateFlag(let flag):
+            problem = String(format: text("cli.agent.error.duplicateFlag"), flag)
+        case .missingAgent:
+            problem = text("cli.agent.error.missingAgent")
+        case .missingSession:
+            problem = text("cli.agent.error.missingSession")
+        case .invalidAgent(let agent):
+            problem = String(format: text("cli.agent.error.invalidAgent"), agent)
+        case .invalidStatus(let status):
+            problem = String(format: text("cli.agent.error.invalidStatus"), status)
+        case .missingStatus:
+            problem = text("cli.agent.error.missingStatus")
+        case .statusAndEnd:
+            problem = text("cli.agent.error.statusAndEnd")
+        }
+        return String(format: text("cli.agent.error.line"), problem, text("cli.agent.synopsis"))
     }
 }

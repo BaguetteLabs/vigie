@@ -13,7 +13,7 @@ import os
 /// (AD-4); this module never discovers adapters itself, so adding an agent needs no change here (NFR23).
 ///
 /// Event path (AD-5, AD-7): `agent.hook` messages are decoded (`HookPayload`) and normalized by the matching
-/// adapter off the main actor, then applied in arrival order to the `SessionStore` on the main actor. Replayed
+/// adapter (`agent.generic` ones by `GenericAgentMapping`) off the main actor, then applied in arrival order to the `SessionStore` on the main actor. Replayed
 /// messages go through the same path, so statuses converge. Status and membership changes are persisted to
 /// `sessions.json` off the main actor; heartbeats are not.
 ///
@@ -495,7 +495,8 @@ public enum WingEmptyState: Sendable, Equatable {
 
 /// Decodes `agent.hook` payloads and normalizes them with the matching adapter through the AD-23 version gate
 /// (`normalize(_:sentAt:support:)`): an adapter whose support was not set yet, or does not `emitsEvents`,
-/// yields nothing. Runs off the main actor; logs an unknown agent once per id.
+/// yields nothing. `agent.generic` payloads map through `GenericAgentMapping` (no adapter, no gate). Runs off
+/// the main actor; logs an unknown agent once per id.
 final class HookPipeline: Sendable {
     static let hookTopic = "agent.hook"
 
@@ -518,7 +519,7 @@ final class HookPipeline: Sendable {
     }
 
     func normalize(_ message: EventMessage) -> [AgentEvent] {
-        // TODO(generic path, AD-5): `agent.generic` from `vigie agent` / `vigie run`.
+        if message.topic == Topic.agentGeneric { return normalizeGeneric(message) }
         guard message.topic == Self.hookTopic else { return [] }
         let payload: HookPayload
         do {
@@ -535,6 +536,22 @@ final class HookPipeline: Sendable {
             return []
         }
         return adapter.normalize(payload, sentAt: message.sentAt, support: support(for: id))
+    }
+
+    /// `agent.generic` (`GenericAgentMapping`): no adapter, so no support gate.
+    private func normalizeGeneric(_ message: EventMessage) -> [AgentEvent] {
+        let payload: GenericAgentPayload
+        do {
+            payload = try JSONDecoder().decode(GenericAgentPayload.self, from: message.payload)
+        } catch {
+            log.error("agent.generic payload not decoded: \(String(describing: error), privacy: .public)")
+            return []
+        }
+        let events = GenericAgentMapping.normalize(payload, sentAt: message.sentAt)
+        if events.isEmpty {
+            log.notice("agent.generic from \(payload.agent, privacy: .public) ignored: invalid agent or session")
+        }
+        return events
     }
 }
 

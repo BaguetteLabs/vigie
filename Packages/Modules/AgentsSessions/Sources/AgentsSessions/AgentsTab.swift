@@ -60,9 +60,10 @@ extension AgentsSessionsModule {
             accessibilityLabel: text.accessibilityLabel(session, now: now))
     }
 
-    /// The agent adapter's name (`Claude Code`), else its id.
+    /// The agent adapter's name (`Claude Code`), the raw `--agent` value for a generic agent (`mytool`), else
+    /// its id.
     func agentName(_ id: AgentID) -> String {
-        adapters.adapter(for: id).map { String(localized: $0.name) } ?? id.rawValue
+        adapters.adapter(for: id).map { String(localized: $0.name) } ?? id.genericAgentName ?? id.rawValue
     }
 
     /// The terminal app of the session's chosen adapter (A55): the generic fallback names the app itself

@@ -1,6 +1,138 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "cli.agent.error.duplicateFlag" : {
+      "comment" : "vigie agent usage problem. %@ is the flag.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ given more than once"
+          }
+        }
+      }
+    },
+    "cli.agent.error.invalidAgent" : {
+      "comment" : "vigie agent usage problem. %@ is the agent id.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "invalid agent id “%@” (start with a-z, then a-z, 0-9, “_” or “-”)"
+          }
+        }
+      }
+    },
+    "cli.agent.error.invalidStatus" : {
+      "comment" : "vigie agent usage problem. %@ is the status.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "invalid status “%@”"
+          }
+        }
+      }
+    },
+    "cli.agent.error.line" : {
+      "comment" : "stderr line for a vigie agent usage error. %1$@ is the problem, %2$@ the synopsis.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "vigie agent: %1$@ (usage: %2$@)"
+          }
+        }
+      }
+    },
+    "cli.agent.error.missingAgent" : {
+      "comment" : "vigie agent usage problem.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "missing --agent"
+          }
+        }
+      }
+    },
+    "cli.agent.error.missingSession" : {
+      "comment" : "vigie agent usage problem.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "missing --session"
+          }
+        }
+      }
+    },
+    "cli.agent.error.missingStatus" : {
+      "comment" : "vigie agent usage problem.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "give --status or --end"
+          }
+        }
+      }
+    },
+    "cli.agent.error.missingValue" : {
+      "comment" : "vigie agent usage problem. %@ is the flag.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ needs a value"
+          }
+        }
+      }
+    },
+    "cli.agent.error.statusAndEnd" : {
+      "comment" : "vigie agent usage problem.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "give either --status or --end, not both"
+          }
+        }
+      }
+    },
+    "cli.agent.error.unknownFlag" : {
+      "comment" : "vigie agent usage problem. %@ is the argument.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "unknown option “%@”"
+          }
+        }
+      }
+    },
+    "cli.agent.synopsis" : {
+      "comment" : "One-line synopsis of vigie agent, appended to its usage errors. Flags and status values are not translated.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "vigie agent --agent <id> --session <id> (--status working|blocked|done|failed|idle | --end) [--cwd <path>] [--message <text>]"
+          }
+        }
+      }
+    },
     "cli.error.deliveryFailed" : {
       "comment" : "stderr line when vigie event/reload could neither reach the running app nor write its spool file.",
       "extractionState" : "manual",
@@ -92,7 +224,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Usage: vigie <command> [options]\n\nCommands:\n  event <topic> [json]  Send an event to Vigie (payload from the argument, else stdin, else {})\n  reload                Ask Vigie to reload its config from disk\n  hook <agent>          Forward an agent hook event (called by agent hooks)\n  version               Print the command name and bundle identifier"
+            "value" : "Usage: vigie <command> [options]\n\nCommands:\n  event <topic> [json]  Send an event to Vigie (payload from the argument, else stdin, else {})\n  reload                Ask Vigie to reload its config from disk\n  hook <agent>          Forward an agent hook event (called by agent hooks)\n  agent --agent <id> --session <id> (--status <status> | --end) [--cwd <path>] [--message <text>]\n                        Report a session of any other agent; status is working, blocked, done, failed or idle\n  version               Print the command name and bundle identifier"
           }
         }
       }
