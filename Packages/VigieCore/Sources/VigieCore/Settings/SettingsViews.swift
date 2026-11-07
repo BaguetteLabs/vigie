@@ -69,7 +69,8 @@ struct SettingsPaneView: View {
             switch pane.content {
             case .core(let sections):
                 if pane.id == "general" { LaunchAtLoginSection(controller: controller) }
-                ForEach(Array(sections.enumerated()), id: \.offset) { _, section in
+                if pane.id == "sounds" { SoundsPaneContent(controller: controller) }
+                ForEach(Array((pane.id == "sounds" ? [] : sections).enumerated()), id: \.offset) { _, section in
                     Section {
                         ForEach(section.keys.compactMap(controller.rowModel(for:))) { model in
                             SettingRow(model)

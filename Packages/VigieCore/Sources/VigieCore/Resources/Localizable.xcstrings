@@ -1620,6 +1620,126 @@
           }
         }
       }
+    },
+    "sounds.chooseFile" : {
+      "comment" : "Settings › Sounds picker item that opens a file chooser for a custom sound.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose file…"
+          }
+        }
+      }
+    },
+    "sounds.chooseFile.prompt" : {
+      "comment" : "Settings › Sounds: confirm button of the custom sound file chooser.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose"
+          }
+        }
+      }
+    },
+    "sounds.preview" : {
+      "comment" : "Settings › Sounds: button that plays the selected sound (help tag and VoiceOver label).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preview"
+          }
+        }
+      }
+    },
+    "sounds.footer" : {
+      "comment" : "Settings › Sounds footer under the sound events.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sounds play once with the alert and once more with its reminder. They stay silent during Do Not Disturb and Focus. Custom files can be any length."
+          }
+        }
+      }
+    },
+    "vigiecore.setup.category.sound" : {
+      "comment" : "Kicker category after SETUP, for sound problems. Uppercase.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SOUND"
+          }
+        }
+      }
+    },
+    "vigiecore.setup.body.sound" : {
+      "comment" : "Setup alert body for a sound that cannot play.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose another sound in Settings › Sounds, or turn this one off."
+          }
+        }
+      }
+    },
+    "vigiecore.setup.title.soundNotFound" : {
+      "comment" : "Setup alert title: a custom sound file is missing. %1$@ is the config key (sounds.blocked), %2$@ the path.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sound file for %1$@ not found: %2$@"
+          }
+        }
+      }
+    },
+    "vigiecore.setup.title.soundUnreadable" : {
+      "comment" : "Setup alert title: a custom sound file cannot be read or decoded. %1$@ is the config key, %2$@ the path.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sound file for %1$@ can't be played: %2$@"
+          }
+        }
+      }
+    },
+    "vigiecore.setup.title.soundUnknownBuiltIn" : {
+      "comment" : "Setup alert title: builtin:<name> names no bundled sound. %1$@ is the config key, %2$@ the name.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No built-in sound for %1$@ named %2$@"
+          }
+        }
+      }
+    },
+    "vigiecore.setup.title.soundInvalid" : {
+      "comment" : "Setup alert title: a [sounds] value is not off, builtin:<name> or a full path. %1$@ is the config key, %2$@ the value.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invalid sound for %1$@: %2$@"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

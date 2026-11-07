@@ -14,6 +14,7 @@ public final class NotifierSoundSink: SoundSink {
     private let player: any SoundPlayer
     private let catalog: SoundCatalog
     private let onProblem: @MainActor (SoundProblem) -> Void
+    private let onRecovered: @MainActor (String) -> Void
     private let log: Logger
     /// The last playback started (tests await it).
     private(set) var pending: Task<Void, Never>?
@@ -21,17 +22,20 @@ public final class NotifierSoundSink: SoundSink {
     /// - Parameters:
     ///   - config: `[sounds]` as it is now; the App passes `{ SoundSettings.read(from: configStore) }`.
     ///   - onProblem: a value that cannot play (missing file, unknown built-in, bad value, undecodable file).
+    ///   - onRecovered: the key played (or is off) again, so an earlier problem for it is over.
     public init(
         config: @escaping @MainActor () -> SoundSettings,
         player: any SoundPlayer,
         catalog: SoundCatalog = .bundled,
         onProblem: @escaping @MainActor (SoundProblem) -> Void = { _ in },
+        onRecovered: @escaping @MainActor (String) -> Void = { _ in },
         log: Logger = Logger(subsystem: "fr.baguettelabs.vigie", category: "sounds")
     ) {
         self.config = config
         self.player = player
         self.catalog = catalog
         self.onProblem = onProblem
+        self.onRecovered = onRecovered
         self.log = log
     }
 
@@ -41,7 +45,7 @@ public final class NotifierSoundSink: SoundSink {
         guard settings.enabled, let value = settings.value(for: key) else { return }
         switch catalog.resolve(value) {
         case .silent:
-            return
+            onRecovered(key)
         case .problem(let reason):
             report(SoundProblem(key: key, reason: reason))
         case .play(let url):
@@ -49,6 +53,7 @@ public final class NotifierSoundSink: SoundSink {
             pending = Task { @MainActor [weak self] in
                 do {
                     try await player.play(url: url)
+                    self?.onRecovered(key)
                 } catch {
                     self?.report(SoundProblem(key: key, reason: .unreadable(url.path)))
                 }

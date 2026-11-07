@@ -40,6 +40,8 @@ public final class SettingsController {
     public private(set) var cliPathHint: CLIPathHint?
     /// Activity log pane state (A80).
     public let activity: ActivityPaneModel
+    /// Settings › Sounds state (Story 10.2). The App sets `sounds.player` to the alert sound player.
+    public let sounds: SoundsPaneModel
 
     @ObservationIgnored public let configStore: ConfigStore
     @ObservationIgnored public let registry: ModuleRegistry
@@ -80,6 +82,7 @@ public final class SettingsController {
         self.loginItem = loginItem
         self.loginShellPath = loginShellPath
         self.activity = ActivityPaneModel(store: activityStore)
+        sounds = SoundsPaneModel(configStore: configStore)
         services = CoreSettingServices.make()
         loginItemStatus = loginItem.status
         for manifest in manifests { configStore.register(manifest: manifest) }
