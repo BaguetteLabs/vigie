@@ -58,7 +58,7 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - [ ] 3.9 Peek concurrency and suppression
 
 ### Epic 4 — Track Claude Code sessions
-- [ ] 4.1 Event Server
+- [x] 4.1 Event Server (App wiring pending: start after lock, releaseQueue after registry.start, stop before lock release)
 - [ ] 4.2 Durable spool and launch order
 - [ ] 4.3 CLI install on PATH, `vigie event` and `vigie reload`
 - [ ] 4.4 Agent adapter contracts and assembly
