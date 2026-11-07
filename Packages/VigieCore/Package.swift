@@ -12,6 +12,7 @@ let package = Package(
         .package(path: "../ModuleKit"),
         .package(path: "../VigieUI"),
         .package(path: "../Wire"),
+        .package(url: "https://github.com/sindresorhus/KeyboardShortcuts", from: "3.1.0"),
     ],
     targets: [
         .target(
@@ -20,6 +21,7 @@ let package = Package(
                 .product(name: "ModuleKit", package: "ModuleKit"),
                 .product(name: "VigieUI", package: "VigieUI"),
                 .product(name: "Wire", package: "Wire"),
+                .product(name: "KeyboardShortcuts", package: "KeyboardShortcuts"),
             ],
             resources: [.process("Resources")]
         ),

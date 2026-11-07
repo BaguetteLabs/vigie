@@ -66,20 +66,26 @@ public protocol ModuleContextFactory {
     func makeContext(for manifest: ModuleManifest, tracker: RegistrationTracker) -> any ModuleContext
 }
 
-/// The production factory: real storage, scheduler and event bus; the shared permissions coordinator; stubs for the rest.
+/// The production factory: real storage, scheduler, event bus and hotkeys; the shared permissions coordinator; stubs for the rest.
 public struct CoreModuleContextFactory: ModuleContextFactory {
     public let environment: AppEnvironment
     public let eventBus: InProcessEventBus
     public let permissions: PermissionsCoordinator?
+    public let hotkeyCenter: HotkeyCenter
 
-    /// - Parameter environment: injected by the App (`AppEnvironment.current`); VigieCore never reads `.current`.
-    /// - Parameter permissions: the shared coordinator; when nil each context gets its own system-backed one.
+    /// - Parameters:
+    ///   - environment: injected by the App (`AppEnvironment.current`); VigieCore never reads `.current`.
+    ///   - permissions: the shared coordinator; when nil each context gets its own system-backed one.
+    ///   - hotkeyCenter: the app-wide hotkey center (shared with `CoreHotkeys`); defaults to one bound to
+    ///     KeyboardShortcuts.
     public init(
-        environment: AppEnvironment, eventBus: InProcessEventBus, permissions: PermissionsCoordinator? = nil
+        environment: AppEnvironment, eventBus: InProcessEventBus, permissions: PermissionsCoordinator? = nil,
+        hotkeyCenter: HotkeyCenter? = nil
     ) {
         self.environment = environment
         self.eventBus = eventBus
         self.permissions = permissions
+        self.hotkeyCenter = hotkeyCenter ?? HotkeyCenter()
     }
 
     public func makeContext(for manifest: ModuleManifest, tracker: RegistrationTracker) -> any ModuleContext {
@@ -89,7 +95,7 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
             storage: ModuleStorageImpl(moduleID: manifest.id, environment: environment, logger: log),
             secrets: UnavailableSecretStore(),
             scheduler: CoreScheduler(tracker: tracker),
-            hotkeys: StubHotkeyRegistry(tracker: tracker),
+            hotkeys: CoreHotkeyRegistry(moduleID: manifest.id, center: hotkeyCenter, tracker: tracker),
             notifier: StubNotifier(log: log),
             events: ModuleEventBus(bus: eventBus, tracker: tracker),
             host: StubHostControl(),

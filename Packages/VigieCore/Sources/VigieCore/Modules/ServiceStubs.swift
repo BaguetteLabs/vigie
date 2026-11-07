@@ -25,19 +25,6 @@ struct UnavailableSecretStore: SecretStore {
     func write(_ value: String?, for key: String) async throws { throw ModuleServiceError.notAvailable }
 }
 
-/// Implemented in Story 2.9. Registrations are tracked (so lifecycle is exercised) but bind no shortcut.
-struct StubHotkeyRegistry: HotkeyRegistry {
-    let tracker: RegistrationTracker
-
-    func register(
-        name: String,
-        default shortcut: String?,
-        handler: @escaping @MainActor @Sendable (UserIntent) -> Void
-    ) throws -> RegistrationToken {
-        tracker.track(RegistrationToken {})
-    }
-}
-
 /// Implemented in Story 3.1. Logs the kind only (never title or body).
 struct StubNotifier: Notifier {
     let log: Logger

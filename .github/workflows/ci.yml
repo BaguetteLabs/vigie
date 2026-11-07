@@ -86,6 +86,10 @@ jobs:
         id: view-literals
         run: Scripts/check-view-literals.sh
 
+      - name: spi-host-guard
+        id: spi-host-guard
+        run: Scripts/check-spi-host.sh
+
       - name: adapter-fixtures
         id: adapter-fixtures
         run: echo "not yet"
