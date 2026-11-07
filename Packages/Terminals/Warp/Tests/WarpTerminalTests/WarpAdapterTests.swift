@@ -8,7 +8,7 @@ import os
 // MARK: - Fakes
 
 /// Records every system call; answers from fixed tables.
-final class FakeSystem: URLOpening, AppActivating, @unchecked Sendable {
+final class FakeSystem: URLOpening, WarpAppActivating, @unchecked Sendable {
     enum Call: Equatable {
         case open(URL)
         case activate(String)

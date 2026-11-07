@@ -9,15 +9,15 @@ public protocol URLOpening: Sendable {
 }
 
 /// Brings an app forward by bundle id. The seam over `NSRunningApplication` / `NSWorkspace.openApplication`.
-public protocol AppActivating: Sendable {
+public protocol WarpAppActivating: Sendable {
     /// Activates the running app with `bundleID`. False when no such app is running or it refused.
     @MainActor func activateRunning(bundleID: String) -> Bool
     /// Launches (or activates) the installed app with `bundleID`. False when it is not installed or fails to open.
     @MainActor func launch(bundleID: String) async -> Bool
 }
 
-/// The real `URLOpening` and `AppActivating`, on `NSWorkspace` and `NSRunningApplication`.
-public struct WorkspaceSystem: URLOpening, AppActivating {
+/// The real `URLOpening` and `WarpAppActivating`, on `NSWorkspace` and `NSRunningApplication`.
+public struct WorkspaceSystem: URLOpening, WarpAppActivating {
     public init() {}
 
     @MainActor public func open(_ url: URL) -> Bool {

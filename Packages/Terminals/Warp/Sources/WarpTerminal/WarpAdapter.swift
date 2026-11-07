@@ -45,7 +45,7 @@ public struct WarpAdapter: TerminalAdapter {
     }
 
     private let urlOpener: any URLOpening
-    private let activator: any AppActivating
+    private let activator: any WarpAppActivating
     private let focusDecision: WarpFocusDecision
 
     public init() {
@@ -55,7 +55,7 @@ public struct WarpAdapter: TerminalAdapter {
 
     /// `decision` is injectable for tests only; the app always uses `WarpAdapter.decision`.
     public init(
-        urlOpener: any URLOpening, activator: any AppActivating, decision: WarpFocusDecision = WarpAdapter.decision
+        urlOpener: any URLOpening, activator: any WarpAppActivating, decision: WarpFocusDecision = WarpAdapter.decision
     ) {
         self.urlOpener = urlOpener
         self.activator = activator

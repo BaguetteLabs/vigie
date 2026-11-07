@@ -9,7 +9,7 @@ Warp terminal adapter (SPEC §7.1.1, §14.1, AD-23, PRD FR-24). Depends on Agent
 - `capture` (pure, env only) stores `focusURL` (verbatim), `sessionUUID` (per pane), `bundleID`
   (`__CFBundleIdentifier` if it is a Warp id, else `dev.warp.Warp-Stable`), `tty` and `version`.
 - `focus`: opens `warp://session/<uuid>` (or `warppreview://` for Preview) through `URLOpening`, then activates
-  Warp through `AppActivating` and reports `.exact`. No usable URL, or the open is refused: activate the running
+  Warp through `WarpAppActivating` and reports `.exact`. No usable URL, or the open is refused: activate the running
   Warp (captured channel first, then `dev.warp.Warp-Stable`, `dev.warp.Warp`, `dev.warp.Warp-Preview`), else
   launch it, and report `.appOnly`. No Accessibility or Automation grant is needed.
 - `openTab`: not supported. Warp's `warp://action/new_tab?path=` opens a tab at a folder but cannot run a command
