@@ -53,7 +53,7 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - [x] 3.4 Setup-problem alerts (App wiring in integration pass 3)
 - [x] 3.5 Do Not Disturb and Focus modes (App wiring in integration pass 3; sandbox readability of Assertions.json to confirm on first run)
 - [x] 3.6 macOS notification output (App wiring in integration pass 3)
-- [ ] 3.7 Alert settings generated from declared kinds
+- [x] 3.7 Alert settings generated from declared kinds
 - [x] 3.8 Local activity log (store + API; Settings › Activity pane deferred to 2.14/17.x)
 - [ ] 3.9 Peek concurrency and suppression
 
@@ -120,6 +120,10 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - 2026-11-07 — Story 3.5: Focus detection reads `~/Library/DoNotDisturb/DB/Assertions.json` (undocumented; folder watch + 15 s poll; unreadable → "not active", logged once). `system` output is still delivered during Focus (macOS applies Focus itself). Notifier now records every outcome in the activity log (3.8 gap closed). `after_focus` option labels fixed to "Drop missed alerts" / "Show the latest per module".
 - 2026-11-07 — Story 3.6: `SystemOutputSink` protocol (renamed). Requests `[.alert, .badge]` once on first use. Nothing calls `retract` on resolve yet (AlertCenter owner to add). Clicks on notifications from before a restart are ignored (in-memory id map).
 - 2026-11-07 — Story 4.8/4.9: `ProcessLiveness` lives in AgentKit (`SystemProcessLiveness`: sysctl KERN_PROC_PID, start time within 0.5 s). Sessions without `agentProcess` are never removed by liveness. Stale is display-only (`displayStatus`), counts as ambient, recomputed every 10 s. `ignored_paths` matches whole path components; ignored keys capped at 256. Glyph loop animation must stay scoped to the glyph (`loopDoesNotLeakIntoSiblings` guards a SwiftUI pitfall). Accessibility time label is as fresh as the last wing rebuild. `LeftWingItem` → `WingItem` rename still open.
+
+- 2026-11-07 — Integration passes 2 and 3 landed: EventServer + spool replay + `host.ready`, ActivityStore, ExecutableResolver (+ `local.toml [executables]`), ConfigStore-backed notify rules, AlertCenter with PeekPresenter / SystemNotificationSink / SystemFocusModeMonitor / activity recorder, SetupProblemReporter, SettingsController (context menu, gear, ⌘, in the expanded view, alert router), expanded view hotkey + config closures, `AgentAdapters([ClaudeAdapter()])`, CLIInstaller at launch. ConfigStore gained `rawValue(at:in:)`/`rawTable(at:in:)` and reports unknown-table edits on `changes`. `Topic.hostReady` added to Wire. Debug flags: `-VigieSimulateNotch YES`, `-VigieSimulateFocus YES`.
+- 2026-11-07 — Known at launch on Romain's Mac: six `setup.problem` alerts from unknown keys in `~/.config/vigie/config.toml` under `modules."agents.sessions"` (`ask_cwd`, `priority`, …; `stale_after`/`ignored_paths` are declared since 4.8). Either declare the remaining SPEC keys in the module manifest as they are implemented, or decide that unknown-key problems should not peek. Also: nothing calls `SystemNotificationSink.retract` on resolve yet; `PeekPresenter` wiring and the ⌘, hook have no automated test.
+- 2026-11-07 — Story 3.7: Settings writes always use the `[modules."<id>".notify."<kind>"]` table form; rules in the SPEC §6 inline-table form resolve but cannot be edited (localized "unsupported location"). `ConfigSchema.register` adds `mute`/`outputs`/`reminder` per declared kind. Kind labels come from the catalog (`settings.alerts.kind.<kind>`); manifests declare kinds as plain strings (no per-kind reminder defaults).
 
 ## Notes for the next session
 
