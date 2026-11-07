@@ -13,11 +13,15 @@ let package = Package(
         .target(
             name: "Wire",
             dependencies: [],
-            resources: [.process("Resources")]
+            resources: [.process("Resources")],
+            // Debug = dev flavor, Release = release flavor (AD-17). Single source of truth;
+            // App/project.yml sets the same condition for the Debug app configuration.
+            swiftSettings: [.define("VIGIE_DEV", .when(configuration: .debug))]
         ),
         .testTarget(
             name: "WireTests",
-            dependencies: ["Wire"]
+            dependencies: ["Wire"],
+            swiftSettings: [.define("VIGIE_DEV", .when(configuration: .debug))]
         ),
     ],
     swiftLanguageModes: [.v6]

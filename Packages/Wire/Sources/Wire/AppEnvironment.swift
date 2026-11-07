@@ -1,0 +1,121 @@
+import Darwin
+import Foundation
+
+/// Every path and identity that differs between the release app and the dev app (AD-17).
+///
+/// Debug builds are the dev flavor and Release builds are the release flavor; the
+/// `VIGIE_DEV` compile condition (set for the debug configuration in `Wire/Package.swift`
+/// and in `App/project.yml`) is the single source of truth. Nothing outside `Wire`
+/// may spell a path literal.
+public struct AppEnvironment: Sendable {
+    public enum Flavor: Sendable {
+        case release
+        case dev
+    }
+
+    /// Longest socket path (UTF-8 bytes) we accept; `sun_path` is 104 bytes, minus a safety margin.
+    public static let maxSocketPathBytes = 100
+
+    /// Environment variable that overrides the config folder in dev builds.
+    public static let configDirVariable = "VIGIE_CONFIG_DIR"
+
+    /// The environment selected at compile time: dev in Debug, release otherwise.
+    public static let current: AppEnvironment = {
+        #if VIGIE_DEV
+            AppEnvironment(flavor: .dev)
+        #else
+            AppEnvironment(flavor: .release)
+        #endif
+    }()
+
+    public let flavor: Flavor
+    public let bundleID: String
+    public let displayName: String
+    public let cliName: String
+    public let applicationSupportURL: URL
+    public let socketURL: URL
+    public let spoolURL: URL
+    public let spoolReplayingURL: URL
+    public let instanceLockURL: URL
+    public let localConfigURL: URL
+    /// The folder used when no override applies: the release one, for both flavors.
+    public let defaultConfigFolderURL: URL
+    /// An explicit override (init parameter, or `VIGIE_CONFIG_DIR` in dev builds), if any.
+    public let configFolderOverride: URL?
+
+    public var logSubsystem: String { bundleID }
+
+    /// The config folder in effect: the override if present, else the default.
+    public var configFolderURL: URL { configFolderOverride ?? defaultConfigFolderURL }
+
+    public init(
+        flavor: Flavor,
+        applicationSupportURL: URL? = nil,
+        configFolderOverride: URL? = nil,
+        homeDirectoryURL: URL = FileManager.default.homeDirectoryForCurrentUser,
+        tempDirectoryProvider: @Sendable () -> URL? = AppEnvironment.darwinUserTempDirectory
+    ) {
+        self.flavor = flavor
+        switch flavor {
+        case .release:
+            bundleID = "fr.baguettelabs.vigie"
+            displayName = "Vigie"
+            cliName = "vigie"
+        case .dev:
+            bundleID = "fr.baguettelabs.vigie.dev"
+            displayName = "Vigie Dev"
+            cliName = "vigie-dev"
+        }
+
+        let support: URL
+        if let applicationSupportURL {
+            support = applicationSupportURL
+        } else {
+            let base =
+                FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
+                ?? homeDirectoryURL.appendingPathComponent("Library/Application Support", isDirectory: true)
+            support = base.appendingPathComponent(displayName, isDirectory: true)
+        }
+        self.applicationSupportURL = support
+        socketURL = Self.socketURL(
+            applicationSupportURL: support, bundleID: bundleID, tempDirectory: tempDirectoryProvider)
+        spoolURL = support.appendingPathComponent("spool.jsonl")
+        spoolReplayingURL = support.appendingPathComponent("spool.replaying.jsonl")
+        instanceLockURL = support.appendingPathComponent("instance.lock")
+        localConfigURL = support.appendingPathComponent("local.toml")
+        defaultConfigFolderURL = homeDirectoryURL.appendingPathComponent(".config/vigie", isDirectory: true)
+
+        if let configFolderOverride {
+            self.configFolderOverride = configFolderOverride
+        } else if flavor == .dev,
+            let value = ProcessInfo.processInfo.environment[Self.configDirVariable], !value.isEmpty
+        {
+            self.configFolderOverride = URL(fileURLWithPath: value, isDirectory: true)
+        } else {
+            self.configFolderOverride = nil
+        }
+    }
+
+    /// Pure socket path rule (AD-17): inside Application Support when it fits in
+    /// `maxSocketPathBytes`, else `<temp dir>/<bundle id>/vigie.sock`.
+    public static func socketURL(
+        applicationSupportURL: URL,
+        bundleID: String,
+        tempDirectory: () -> URL?
+    ) -> URL {
+        let preferred = applicationSupportURL.appendingPathComponent("vigie.sock")
+        if preferred.path.utf8.count <= maxSocketPathBytes { return preferred }
+        guard let temp = tempDirectory() else { return preferred }
+        return temp.appendingPathComponent(bundleID, isDirectory: true).appendingPathComponent("vigie.sock")
+    }
+
+    /// `confstr(_CS_DARWIN_USER_TEMP_DIR)`; deliberately not `$TMPDIR` or `NSTemporaryDirectory()`.
+    @Sendable public static func darwinUserTempDirectory() -> URL? {
+        var buffer = [CChar](repeating: 0, count: Int(PATH_MAX))
+        let length = confstr(_CS_DARWIN_USER_TEMP_DIR, &buffer, buffer.count)
+        guard length > 0, length <= buffer.count else { return nil }
+        return URL(
+            fileURLWithPath: String(decoding: buffer.prefix { $0 != 0 }.map { UInt8(bitPattern: $0) }, as: UTF8.self),
+            isDirectory: true)
+    }
+}
