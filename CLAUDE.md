@@ -17,7 +17,7 @@ Vigie is a GPLv3-licensed macOS 15+ notch companion in Swift 6 / SwiftUI. Read `
 - Views read colors, metrics, motion and fonts only from the theme (AD-14). No hex literals or durations in view code.
 - All paths come from `AppEnvironment` in `Wire` (AD-17). No `Application Support` literals elsewhere.
 - Config is read and written only by `ConfigStore`; secrets only by `SecretStore`; alerts only through `Notifier`.
-- Tests: `swift test` per package must pass. Add tests for every behavior the story's acceptance criteria name.
+- Tests: `swift test --build-system swiftbuild` per package must pass (the default SwiftPM build system does not compile `.xcstrings` on Swift 6.3, so catalog lookups fail under it). `Scripts/test-all.sh` runs everything. Add tests for every behavior the story's acceptance criteria name.
 - Commit messages: conventional (`feat(scope): …`, `test:`, `chore:`), one story per commit, body lists the story id. End with the attribution lines given by the harness.
 
 ## Local toolchain

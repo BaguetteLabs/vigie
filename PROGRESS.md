@@ -21,7 +21,7 @@ Resumable project state. Read this first. Story definitions live in `docs/epics.
 Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` parked (needs Romain) · `[-]` superseded
 
 ### Epic 1 — Foundation and risk spikes
-- [ ] 1.1 Scaffold the SwiftPM-first workspace
+- [x] 1.1 Scaffold the SwiftPM-first workspace
 - [ ] 1.2 AppEnvironment and dev build isolation
 - [ ] 1.3 Continuous integration for pull requests
 - [ ] 1.4 Spike — Claude Code hook reaches a socket listener
@@ -107,3 +107,5 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 ## Notes for the next session
 
 - Spike 1.4 plan: run Claude Code headless (`claude -p`) in a scratch project with **project-level** `.claude/settings.json` hooks, so Romain's global Claude Code settings are never touched.
+- 2026-11-07 — Tests run with `swift test --build-system swiftbuild`: the default SwiftPM build system on Swift 6.3 copies `.xcstrings` uncompiled, so catalog lookups return the key. The strict catalog test is kept. CI must use the same flag.
+- 2026-11-07 — Story 1.1 deliberately leaves `CFBundleURLTypes`, `NSServices` and `NSCalendarsFullAccessUsageDescription` out of Info.plist; they arrive with the stories that handle them (12.9, 9.10, 13.1). Ad-hoc signing conflicts with AD-17 "never ad-hoc" until a real identity is wired (Story 6.1).

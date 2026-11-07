@@ -1,0 +1,77 @@
+# XcodeGen spec for the thin Vigie app target (AD-2).
+# Generate with `xcodegen generate` in this folder; Vigie.xcodeproj is not committed.
+name: Vigie
+options:
+  bundleIdPrefix: fr.baguettelabs
+  developmentLanguage: en
+  deploymentTarget:
+    macOS: "15.0"
+  createIntermediateGroups: true
+
+packages:
+  Wire:
+    path: ../Packages/Wire
+  ModuleKit:
+    path: ../Packages/ModuleKit
+  VigieUI:
+    path: ../Packages/VigieUI
+  VigieCore:
+    path: ../Packages/VigieCore
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    MACOSX_DEPLOYMENT_TARGET: "15.0"
+    LOCALIZATION_PREFERS_STRING_CATALOGS: YES
+    SWIFT_EMIT_LOC_STRINGS: YES
+
+targets:
+  Vigie:
+    type: application
+    platform: macOS
+    deploymentTarget: "15.0"
+    sources:
+      - path: Sources
+      - path: Resources
+      - path: Assets.xcassets
+      # Info.plist and Vigie.entitlements are referenced through build settings below.
+    dependencies:
+      - package: VigieCore
+      - package: VigieUI
+      - package: ModuleKit
+      - package: Wire
+    settings:
+      base:
+        INFOPLIST_FILE: Info.plist
+        GENERATE_INFOPLIST_FILE: NO
+        PRODUCT_MODULE_NAME: Vigie
+        CODE_SIGN_ENTITLEMENTS: Vigie.entitlements
+        # Ad-hoc signing for now. AD-17/AD-20 require a stable Apple Development /
+        # Developer ID identity with a provisioning profile; that arrives together with
+        # the `keychain-access-groups` entitlement, which is deferred until real signing exists.
+        CODE_SIGN_IDENTITY: "-"
+        CODE_SIGN_STYLE: Manual
+        DEVELOPMENT_TEAM: ""
+        ENABLE_HARDENED_RUNTIME: YES
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        COMBINE_HIDPI_IMAGES: YES
+      configs:
+        Debug:
+          PRODUCT_BUNDLE_IDENTIFIER: fr.baguettelabs.vigie.dev
+          PRODUCT_NAME: Vigie Dev
+          VIGIE_DISPLAY_NAME: Vigie Dev
+        Release:
+          PRODUCT_BUNDLE_IDENTIFIER: fr.baguettelabs.vigie
+          PRODUCT_NAME: Vigie
+          VIGIE_DISPLAY_NAME: Vigie
+
+schemes:
+  Vigie:
+    build:
+      targets:
+        Vigie: all
+    run:
+      config: Debug
+    archive:
+      config: Release

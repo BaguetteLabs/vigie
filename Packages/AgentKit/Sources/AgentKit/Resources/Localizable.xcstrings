@@ -1,0 +1,18 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "agentkit.sample.name" : {
+      "comment" : "Sample string proving the AgentKit String Catalog is bundled.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agent"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

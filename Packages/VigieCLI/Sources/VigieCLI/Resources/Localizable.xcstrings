@@ -1,0 +1,18 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "cli.usage" : {
+      "comment" : "First line of the vigie CLI usage text.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usage: vigie <command> [options]"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

@@ -1,0 +1,18 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "vigieui.sample.appName" : {
+      "comment" : "Sample string proving the VigieUI String Catalog is bundled.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vigie"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}
