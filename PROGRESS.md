@@ -23,7 +23,7 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 ### Epic 1 — Foundation and risk spikes
 - [x] 1.1 Scaffold the SwiftPM-first workspace
 - [ ] 1.2 AppEnvironment and dev build isolation
-- [ ] 1.3 Continuous integration for pull requests
+- [x] 1.3 Continuous integration for pull requests (first GitHub run unverified until gh is authenticated)
 - [ ] 1.4 Spike — Claude Code hook reaches a socket listener
 - [ ] 1.5 Spike — focus a specific Warp tab
 - [ ] 1.6 Spike — Ghostty tab focus investigation (Ghostty not installed)
@@ -97,7 +97,7 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 
 ## Waiting on Romain
 
-(none yet)
+- **gh auth:** `gh` is installed but not logged in. Run `! gh auth login -w` in this session (or `gh auth login` in a terminal) so CI runs on BaguetteLabs/vigie can be checked. Until then the `ci.yml` first run is unverified.
 
 ## Decisions log
 
