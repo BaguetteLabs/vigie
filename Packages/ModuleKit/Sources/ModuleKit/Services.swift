@@ -399,3 +399,82 @@ public protocol ActivityLog: Sendable {
 public protocol AlertActionHandler: AnyObject {
     func handleAlertAction(_ actionID: String, payload: Data, intent: UserIntent?)
 }
+
+// MARK: - Integration installer (implemented in Story 4.7)
+
+/// Whether an integration edit connects or disconnects an agent.
+public enum IntegrationAction: String, Hashable, Sendable, Codable {
+    case install
+    case remove
+}
+
+/// One file of an ``IntegrationPreview``: the adapter's diff and a unified diff of it for display.
+public struct IntegrationFileChange: Hashable, Sendable {
+    public let diff: ConfigDiff
+    /// A unified diff (`---` / `+++` headers, `@@` hunks, three lines of context) of `diff.oldText` → `diff.newText`.
+    public let unifiedDiff: String
+    /// True when the target's current bytes no longer hash to `diff.baseHash` (or it appeared or vanished).
+    public let stale: Bool
+
+    public init(diff: ConfigDiff, unifiedDiff: String, stale: Bool) {
+        self.diff = diff
+        self.unifiedDiff = unifiedDiff
+        self.stale = stale
+    }
+}
+
+/// What the user confirms before ``IntegrationInstaller/apply(_:)`` (AD-22).
+public struct IntegrationPreview: Hashable, Sendable {
+    /// Adapter id (`claude`): the `local.toml` record is kept under `[integrations.<id>]`.
+    public let adapterID: String
+    public let action: IntegrationAction
+    public let files: [IntegrationFileChange]
+
+    public init(adapterID: String, action: IntegrationAction, files: [IntegrationFileChange]) {
+        self.adapterID = adapterID
+        self.action = action
+        self.files = files
+    }
+
+    public var diffs: [ConfigDiff] { files.map(\.diff) }
+    /// A target changed since the adapter planned: re-plan through the adapter and preview again.
+    public var stale: Bool { files.contains(where: \.stale) }
+}
+
+/// What ``IntegrationInstaller/apply(_:)`` wrote.
+public struct IntegrationResult: Hashable, Sendable {
+    public let appliedPaths: [URL]
+    /// `<target>.vigie-backup-<yyyyMMdd-HHmmss>`, one per target that existed before.
+    public let backupPaths: [URL]
+
+    public init(appliedPaths: [URL], backupPaths: [URL]) {
+        self.appliedPaths = appliedPaths
+        self.backupPaths = backupPaths
+    }
+}
+
+public enum IntegrationError: Error, Equatable, Sendable {
+    /// A target changed after the preview (its hash no longer matches the diff's base). Nothing was written;
+    /// re-plan through the adapter and show the new diff.
+    case targetChanged(paths: [URL])
+    /// The preview is stale; preview a fresh plan instead.
+    case stalePreview
+    /// Reading a target failed (other than "does not exist").
+    case readFailed(path: URL, reason: String)
+    /// Writing the backup or the target failed; the target is untouched (atomic rename).
+    case writeFailed(path: URL, reason: String)
+}
+
+/// The only writer of agent config files (AD-22). Adapters plan ``ConfigDiff``s; the installer shows them,
+/// re-reads each target and checks its hash against the diff's base, writes a timestamped backup next to the
+/// target, applies the change atomically (temp file + rename) and records the result in `local.toml`.
+public protocol IntegrationInstaller: Sendable {
+    /// Absolute path of `~/.local/bin/<cli name>`: the `cliPath` of `IntegrationInputs` (hooks always call it).
+    var cliPath: String { get }
+    /// Re-reads each target and builds the unified diffs. A preview whose `stale` is true must be re-planned.
+    func preview(_ diffs: [ConfigDiff], adapterID: String, action: IntegrationAction) async throws
+        -> IntegrationPreview
+    /// Re-checks every hash (throws ``IntegrationError/targetChanged(paths:)`` and writes nothing on a
+    /// mismatch), then backs up and writes each target and records the result.
+    func apply(_ preview: IntegrationPreview) async throws -> IntegrationResult
+}

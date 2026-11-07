@@ -21,6 +21,7 @@ public struct CoreModuleContext: ModuleContext {
     public let privacy: any PrivacyService
     public let away: any AwayService
     public let activity: any ActivityLog
+    public let integrations: any IntegrationInstaller
     public let log: Logger
 
     public init(
@@ -39,6 +40,7 @@ public struct CoreModuleContext: ModuleContext {
         privacy: any PrivacyService,
         away: any AwayService,
         activity: any ActivityLog,
+        integrations: any IntegrationInstaller,
         log: Logger
     ) {
         self.settings = settings
@@ -56,6 +58,7 @@ public struct CoreModuleContext: ModuleContext {
         self.privacy = privacy
         self.away = away
         self.activity = activity
+        self.integrations = integrations
         self.log = log
     }
 }
@@ -67,8 +70,8 @@ public protocol ModuleContextFactory {
 }
 
 /// The production factory: real settings (with a `ConfigStore`), storage, scheduler, event bus, hotkeys,
-/// notifier, activity log, executable resolver and host control; the shared permissions coordinator; stubs for
-/// the rest.
+/// notifier, activity log, executable resolver, integration installer (AD-22) and host control; the shared
+/// permissions coordinator; stubs for the rest.
 public struct CoreModuleContextFactory: ModuleContextFactory {
     public let environment: AppEnvironment
     public let eventBus: InProcessEventBus
@@ -128,6 +131,7 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
         } else {
             settings = DefaultsModuleSettings(descriptors: manifest.settings)
         }
+        let activity = CoreActivityLog(moduleID: manifest.id, store: activityStore)
         return CoreModuleContext(
             settings: settings,
             storage: ModuleStorageImpl(moduleID: manifest.id, environment: environment, logger: log),
@@ -143,7 +147,9 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
             executables: executables,
             privacy: StubPrivacyService(),
             away: StubAwayService(),
-            activity: CoreActivityLog(moduleID: manifest.id, store: activityStore),
+            activity: activity,
+            integrations: CoreIntegrationInstaller(
+                environment: environment, configStore: configStore, activity: activity),
             log: log
         )
     }

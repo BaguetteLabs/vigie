@@ -129,6 +129,8 @@ public final class AgentsSessionsModule: NotchModule, AlertActionHandler {
     @ObservationIgnored var permissionAlerts: [String: PermissionAlert] = [:]
     /// Sessions whose terminal was chosen before their env arrived; chosen again once it does.
     @ObservationIgnored var unhintedSelections: Set<SessionKey> = []
+    /// Settings › Agents connect flow (Story 4.7); built at start from `context.integrations`.
+    public private(set) var integrations: AgentIntegrationsModel?
 
     public init(
         adapters: AgentAdapters,
@@ -158,6 +160,9 @@ public final class AgentsSessionsModule: NotchModule, AlertActionHandler {
         fallbackTerminalContext = AdapterContextBox(
             settings: DefaultsReadOnlySettings(descriptors: []), secrets: context.secrets,
             executables: context.executables, http: URLSessionHTTPClient(), log: log)
+        integrations = AgentIntegrationsModel(
+            adapters: adapters, contexts: adapterContexts, installer: context.integrations,
+            settings: context.settings, homeDirectory: homeDirectory, log: log)
         let persister = SessionPersister(storage: context.storage, log: log)
         self.persister = persister
 
@@ -225,6 +230,14 @@ public final class AgentsSessionsModule: NotchModule, AlertActionHandler {
         await persister?.write(store.snapshot, generation: store.generation, force: true)
         resolveAllAlerts()
         resolveAllPermissionAlerts()
+        integrations = nil
+    }
+
+    /// Below the generated rows in Settings: each agent's version, connection status and Connect /
+    /// Disconnect with diff confirmation (Story 4.7).
+    public func settingsView() -> AnyView? {
+        guard let integrations, !adapters.adapters.isEmpty else { return nil }
+        return AnyView(AgentIntegrationsView(model: integrations))
     }
 
     /// The right-wing content (FR37, A19). `ClosedNotchArbiter` routes `agents.sessions` items to the trailing

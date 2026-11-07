@@ -81,6 +81,12 @@ public final class ConfigStore {
         if added { recompute() }
     }
 
+    /// Makes one agent integration's `local.toml` record keys known (Story 4.7). Idempotent.
+    public func registerIntegration(_ adapterID: String) {
+        let added = shared.update { $0.schema.registerIntegration(adapterID) }
+        if added { recompute() }
+    }
+
     // MARK: - Lifecycle
 
     /// Creates missing files (`config.toml` with the commented SPEC §11 defaults, an empty `local.toml`),

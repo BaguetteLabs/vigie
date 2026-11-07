@@ -175,6 +175,23 @@ public struct ConfigSchema: Sendable {
         return true
     }
 
+    /// Adds the `local.toml` record keys of one agent integration (`integrations."<id>".installed_at`, `target`,
+    /// `backup`, `cli_path`; strings). Returns whether anything was added.
+    @discardableResult
+    public mutating func registerIntegration(_ adapterID: String) -> Bool {
+        var added = false
+        for key in CoreSettings.integrationKeys {
+            let path = CoreSettings.integrationPath(adapterID, key)
+            guard entries[path] == nil else { continue }
+            let descriptor = SettingDescriptor(
+                key: key, label: CoreSettings.label("config.integrations.\(key)"), kind: .string(default: ""),
+                scope: .local)
+            entries[path] = ConfigSchemaEntry(path: path, descriptor: descriptor, moduleID: nil)
+            added = true
+        }
+        return added
+    }
+
     /// The path of a module's setting `key`, routed by its declared scope; nil when undeclared.
     public func path(module id: ModuleID, key: String) -> ConfigKeyPath? {
         if key == "enabled" { return .moduleEnabled(id) }

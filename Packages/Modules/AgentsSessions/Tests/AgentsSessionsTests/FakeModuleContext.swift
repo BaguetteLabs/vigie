@@ -12,14 +12,16 @@ final class FakeModuleContext: ModuleContext, @unchecked Sendable {
     let fakeScheduler = FakeScheduler()
     let fakeEvents = FakeEventBus()
     let fakeNotifier: any Notifier
+    let fakeIntegrations: any IntegrationInstaller
 
     init(
         settings: [String: any SettingValue] = [:], storage: FakeStorage = FakeStorage(),
-        notifier: any Notifier = NoNotifier()
+        notifier: any Notifier = NoNotifier(), integrations: any IntegrationInstaller = NoIntegrations()
     ) {
         fakeSettings = FakeSettings(values: settings)
         fakeStorage = storage
         fakeNotifier = notifier
+        fakeIntegrations = integrations
     }
 
     var settings: any ModuleSettings { fakeSettings }
@@ -37,13 +39,17 @@ final class FakeModuleContext: ModuleContext, @unchecked Sendable {
     var privacy: any PrivacyService { NoPrivacy() }
     var away: any AwayService { NoAway() }
     var activity: any ActivityLog { NoActivity() }
+    var integrations: any IntegrationInstaller { fakeIntegrations }
     var log: Logger { Logger(subsystem: "test", category: "agents.sessions") }
 }
 
-struct FakeSettings: ModuleSettings {
-    let values: [String: any SettingValue]
-    func value<T: SettingValue>(_ key: String, as type: T.Type) -> T? { values[key] as? T }
-    func set<T: SettingValue>(_ value: T?, for key: String) async throws {}
+/// Settings from a dictionary; `set` stores the value (nil removes it).
+final class FakeSettings: ModuleSettings, @unchecked Sendable {
+    private let lock = NSLock()
+    private var values: [String: any SettingValue]
+    init(values: [String: any SettingValue]) { self.values = values }
+    func value<T: SettingValue>(_ key: String, as type: T.Type) -> T? { lock.withLock { values[key] as? T } }
+    func set<T: SettingValue>(_ value: T?, for key: String) async throws { lock.withLock { values[key] = value } }
     func observe(_ key: String) -> AsyncStream<Void> { AsyncStream { $0.finish() } }
 }
 
@@ -205,6 +211,18 @@ struct NoAway: AwayService {
 
 struct NoActivity: ActivityLog {
     func record(_ entry: ActivityEntry) {}
+}
+
+struct NoIntegrations: IntegrationInstaller {
+    var cliPath: String { "/Users/test/.local/bin/vigie" }
+    func preview(_ diffs: [ConfigDiff], adapterID: String, action: IntegrationAction) async throws
+        -> IntegrationPreview
+    {
+        IntegrationPreview(adapterID: adapterID, action: action, files: [])
+    }
+    func apply(_ preview: IntegrationPreview) async throws -> IntegrationResult {
+        IntegrationResult(appliedPaths: [], backupPaths: [])
+    }
 }
 
 /// Maps `raw = {"event": "<SPEC name>", "session": "<id>", "tool"?: "...", "cwd"?: "..."}` to one event.

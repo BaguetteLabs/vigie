@@ -372,6 +372,282 @@
           }
         }
       }
+    },
+    "agentsSessions.integration.applied.backup" : {
+      "comment" : "Appended after Connected./Disconnected.: where the backup of the previous file is, e.g. ~/.claude/settings.json.vigie-backup-20261108-101500.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Backup: %@"
+          }
+        }
+      }
+    },
+    "agentsSessions.integration.applied.install" : {
+      "comment" : "Shown after the hooks were installed.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connected."
+          }
+        }
+      }
+    },
+    "agentsSessions.integration.applied.remove" : {
+      "comment" : "Shown after the hooks were removed.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disconnected."
+          }
+        }
+      }
+    },
+    "agentsSessions.integration.apply" : {
+      "comment" : "Button: apply the agent config changes shown above.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apply"
+          }
+        }
+      }
+    },
+    "agentsSessions.integration.cancel" : {
+      "comment" : "Button: discard the agent config changes shown above; nothing is written.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel"
+          }
+        }
+      }
+    },
+    "agentsSessions.integration.changed" : {
+      "comment" : "Shown when the agent config file changed after the diff was prepared, so a new diff is shown.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The file changed since these changes were prepared. Review the updated changes."
+          }
+        }
+      }
+    },
+    "agentsSessions.integration.connect" : {
+      "comment" : "Button: install Vigie's hooks in the agent's config after showing the diff.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connect…"
+          }
+        }
+      }
+    },
+    "agentsSessions.integration.disconnect" : {
+      "comment" : "Button: remove Vigie's hooks from the agent's config after showing the diff.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disconnect…"
+          }
+        }
+      }
+    },
+    "agentsSessions.integration.error.apply" : {
+      "comment" : "Shown when the agent config could not be written. The argument is the reason. The file is left as it was.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't apply the changes: %@. The file was left as it was."
+          }
+        }
+      }
+    },
+    "agentsSessions.integration.error.plan" : {
+      "comment" : "Shown when the changes to an agent's config could not be prepared (e.g. the file is not valid JSON). The argument is the reason.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't prepare the changes: %@"
+          }
+        }
+      }
+    },
+    "agentsSessions.integration.error.unstable" : {
+      "comment" : "Shown when the agent config file keeps changing while Vigie prepares its changes.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The file keeps changing. Try again in a moment."
+          }
+        }
+      }
+    },
+    "agentsSessions.integration.review" : {
+      "comment" : "Shown above the diff of an agent config file, before the user applies it.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vigie will make exactly these changes. Your other settings and hooks are kept, and a backup of the file is saved next to it."
+          }
+        }
+      }
+    },
+    "agentsSessions.integration.status.connected" : {
+      "comment" : "Connection status: Vigie's hooks are installed in the agent's config.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connected"
+          }
+        }
+      }
+    },
+    "agentsSessions.integration.status.none" : {
+      "comment" : "Connection status of an agent that has nothing to install.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing to install"
+          }
+        }
+      }
+    },
+    "agentsSessions.integration.status.notConnected" : {
+      "comment" : "Connection status: Vigie's hooks are not installed.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not connected"
+          }
+        }
+      }
+    },
+    "agentsSessions.integration.status.partial" : {
+      "comment" : "Connection status: only some of Vigie's hooks are installed.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Partly connected"
+          }
+        }
+      }
+    },
+    "agentsSessions.integration.status.unknown" : {
+      "comment" : "Connection status of an agent while it is being checked.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checking…"
+          }
+        }
+      }
+    },
+    "agentsSessions.integration.title" : {
+      "comment" : "Heading of the agent connections block in Settings › Agents.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agent connections"
+          }
+        }
+      }
+    },
+    "agentsSessions.integration.version.assumed" : {
+      "comment" : "Version line: the detected CLI version is newer than the tested ones but events still flow.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version %@ is newer than the versions Vigie was tested with. Sessions are tracked, but some states may be missing."
+          }
+        }
+      }
+    },
+    "agentsSessions.integration.version.checking" : {
+      "comment" : "Version line while the agent CLI version is detected.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checking version…"
+          }
+        }
+      }
+    },
+    "agentsSessions.integration.version.notInstalled" : {
+      "comment" : "Version line: the agent CLI was not found.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not installed"
+          }
+        }
+      }
+    },
+    "agentsSessions.integration.version.supported" : {
+      "comment" : "Version line: the detected CLI version (e.g. 2.1.319) is supported.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version %@ · supported"
+          }
+        }
+      }
+    },
+    "agentsSessions.integration.version.unsupported" : {
+      "comment" : "Version line: the detected CLI version is not supported; no events are used.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version %@ is not supported. Vigie ignores this agent's events until it is updated."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

@@ -265,6 +265,54 @@
         }
       }
     },
+    "config.integrations.backup": {
+      "comment": "Label for the local.toml key integrations.<agent>.backup, written when an agent integration is connected.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Backup"
+          }
+        }
+      }
+    },
+    "config.integrations.cli_path": {
+      "comment": "Label for the local.toml key integrations.<agent>.cli_path, written when an agent integration is connected.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CLI path"
+          }
+        }
+      }
+    },
+    "config.integrations.installed_at": {
+      "comment": "Label for the local.toml key integrations.<agent>.installed_at, written when an agent integration is connected.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Installed at"
+          }
+        }
+      }
+    },
+    "config.integrations.target": {
+      "comment": "Label for the local.toml key integrations.<agent>.target, written when an agent integration is connected.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edited file"
+          }
+        }
+      }
+    },
     "config.notify.after_focus": {
       "comment": "Settings label for the config key notify.after_focus.",
       "extractionState": "manual",

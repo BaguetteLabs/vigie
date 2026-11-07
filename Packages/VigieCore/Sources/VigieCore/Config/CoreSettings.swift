@@ -13,7 +13,17 @@ public struct CoreSetting: Sendable {
 /// and `general.launch_at_login`.
 public enum CoreSettings {
     /// Tables whose keys are free-form (`[appearance.colors]` overrides any status, pace or warning color).
-    public static let openTables: [ConfigKeyPath] = ["appearance.colors"]
+    /// `[integrations]` (local.toml) holds one table per connected agent adapter (Story 4.7, AD-22); its keys
+    /// become known when `IntegrationInstaller` registers the adapter (`ConfigSchema.registerIntegration`).
+    public static let openTables: [ConfigKeyPath] = ["appearance.colors", "integrations"]
+
+    /// `[integrations."<adapter id>"]` keys in `local.toml`, written only by `IntegrationInstaller` (AD-22).
+    public static let integrationKeys = ["installed_at", "target", "backup", "cli_path"]
+
+    /// `integrations."<adapter id>".<key>`.
+    public static func integrationPath(_ adapterID: String, _ key: String) -> ConfigKeyPath {
+        ConfigKeyPath(["integrations", adapterID, key])
+    }
 
     public static let all: [CoreSetting] = [
         // [general]
