@@ -35,8 +35,8 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - [x] 2.3 ConfigStore read path with live reload
 - [x] 2.4 Chrome Hologram theme engine
 - [x] 2.5 Notch Host on a physical notch (not yet seen on real notch hardware: lid was closed; see Waiting on Romain)
-- [ ] 2.6 Virtual notch on plain displays
-- [ ] 2.7 Display selection, multi-display and hot-plug
+- [x] 2.6 Virtual notch on plain displays (auto-hide menu bar + full-screen hiding verified with fakes only)
+- [x] 2.7 Display selection, multi-display and hot-plug (display prompt answered flag lives in UserDefaults `VigieDisplayPromptDone`)
 - [x] 2.8 Closed-notch arbitration with multi-slot sides
 - [x] 2.9 Hotkeys and user-intent focus control
 - [x] 2.10 Expanded view shell (App wiring in integration pass 3)
@@ -67,24 +67,24 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - [ ] 4.7 Hook installer with diff confirmation
 - [x] 4.8 Liveness, stale sessions and ignored paths (`host.ready` must be posted by the App; module also reconciles at start)
 - [x] 4.9 Session glyphs in the closed notch
-- [ ] 4.10 Agents tab
-- [ ] 4.11 Session alerts
+- [x] 4.10 Agents tab
+- [x] 4.11 Session alerts
 - [ ] 4.12 Sleep handling
 - [ ] 4.13 Generic `vigie agent` reporting
 - [ ] 4.14 Research — warning before manual sleep
 
 ### Epic 5 — Jump to the exact terminal tab
 - [ ] 5.1 Focus permissions and terminal selection
-- [ ] 5.2 Terminal.app focus
-- [ ] 5.3 iTerm2 focus
-- [ ] 5.4 Warp focus per spike decision
+- [x] 5.2 Terminal.app focus (manual 3×2 tab test blocked on the Automation prompt; see Packages/Terminals/TerminalApp/MANUAL-TEST.md)
+- [x] 5.3 iTerm2 focus (iTerm2 not installed: manual test pending; MANUAL-TEST.md)
+- [x] 5.4 Warp focus per spike decision (ships `.tabViaURL` unverified; one-line flip after Romain's check)
 - [ ] 5.5 Ghostty focus per spike decision
 
 ### Epic 6 — Signed releases that update themselves
 - [ ] 6.1 Signing and runtime envelope
 - [ ] 6.2 Tag-driven release workflow
 - [ ] 6.3 Sparkle auto-update
-- [ ] 6.4 Versioning and build numbers
+- [x] 6.4 Versioning and build numbers (run `Scripts/version.sh --xcconfig App/Config/Version.xcconfig` before a manual `xcodegen generate`)
 
 ### v0.2 — Epics 7 (Usage), 8 (Codex, `vigie run`), 9 (Shelf), 10 (Sounds), 21 (Privacy)
 - [ ] 7.1–7.10 · [ ] 8.1–8.4 · [ ] 9.1–9.10 · [ ] 10.1–10.2 · [ ] 21.1–21.3
@@ -126,6 +126,13 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - 2026-11-07 — Story 3.7: Settings writes always use the `[modules."<id>".notify."<kind>"]` table form; rules in the SPEC §6 inline-table form resolve but cannot be edited (localized "unsupported location"). `ConfigSchema.register` adds `mute`/`outputs`/`reminder` per declared kind. Kind labels come from the catalog (`settings.alerts.kind.<kind>`); manifests declare kinds as plain strings (no per-kind reminder defaults).
 
 - 2026-11-07 — Story 3.3/3.9: peek shortcuts are fixed Carbon hotkeys via KeyboardShortcuts (`peek:primary`, `peek:secondary`), outside `HotkeyCenter`, firing on key-up; conflicting user hotkeys are paused while a peek is visible. Module action entry point is the optional `AlertActionHandler` protocol (ModuleKit `Services.swift`), not a `NotchModule` requirement. `AlertUrgency` is the single rank table (`time.break_reminder` is the canonical break kind); unknown kinds rank after `setup.problem`. `AlertCenter.dismiss` cancels the reminder and keeps the alert active. While the expanded view is open new/queued peeks are suppressed; a peek already on screen stays (needs an expand hook on `NotchHost`).
+
+- 2026-11-07 — Romain asked to work slower (usage budget): from now on one or two agents at a time, merge each before the next.
+- 2026-11-07 — Story 2.6/2.7 follow SPEC, not the brief: `[display] display = notched|main|all|<name>` (no pointer mode), `[virtual_notch] width/idle/position/placement/style` (always shown on a selected plain display). `DisplayPrompt` (A60) overlays the expanded view; `HostConfigBridge` reloads the host on `display.*`/`virtual_notch.*`/`closed.max_side_width`/`general.hide_in_fullscreen`. `NotchHost.init(displays:)` replaced `screens:`.
+- 2026-11-07 — Story 4.10/4.11: fallback terminal lives in AgentKit (`TerminalAdapters(_:fallback:)`, Modules may not depend on Terminals packages); `GenericTerminalAdapter` activates the app by `__CFBundleIdentifier`/`TERM_PROGRAM`/ancestor, never selects a tab. Alert severities: blocked/failed `.critical`, done `.info`. Blocked body lacks the command (`AgentEvent` has no `tool_input`; Claude adapter follow-up). Failed category is `ERROR`. The tab does not grab keyboard focus on open (shell decision). Alert tint drawn in `Sessions/` (no `RowModifiers` helper).
+- 2026-11-07 — Story 5.2/5.3/5.4: `TerminalAdapter.focus` cannot throw, so permission failures surface through `PermissionReportingTerminalAdapter.attemptFocus` (Story 5.1 consumes it). AppleScript runs in-process (`NSAppleScriptRunner`); Automation prompts appear on first Focus and may not survive ad-hoc re-signing. Warp: `WarpAdapter.decision = .tabViaURL`, `decisionConfirmed = false` → Settings statement "Warp: tab focus via session URL (unverified)"; Warp's `AppActivating` renamed `WarpAppActivating` after AgentKit gained one. `openTab` unsupported everywhere so far.
+- 2026-11-07 — Story 6.4: `App/Config/Version.xcconfig` is generated (gitignored) and required by xcodegen; dev builds are `0.0.0` + git rev count; release = tag + CI run number. Sparkle (6.3) compares `CFBundleVersion`.
+- 2026-11-07 — Story 10.1/10.2: `SoundTable` is the AD-13 table (seven kinds; three keys `"off"` until 20.2/20.4/13.4 and hidden from the Sounds pane until then). WAVs generated by `Scripts/gen-sounds.py` (stdlib), bundled in VigieCore resources. `SoundProblemReporter` posts `setup.problem` category `SOUND`. `SettingsController.sounds` holds the pane model; the App must set its `player` to the shared `AVAudioPlayerSoundPlayer`.
 
 ## Notes for the next session
 
