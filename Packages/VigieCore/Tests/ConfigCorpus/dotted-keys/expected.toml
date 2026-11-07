@@ -1,0 +1,6 @@
+[modules.time]
+enabled = false
+breaks.enabled = false
+breaks.work = "1h"   # presence before a reminder
+breaks.length = "5m"
+style = "peek"

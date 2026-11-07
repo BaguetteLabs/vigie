@@ -42,8 +42,19 @@ public struct ConfigProblem: Sendable, Equatable, Identifiable {
 }
 
 public enum ConfigError: Error, Equatable, Sendable {
-    /// Writing settings arrives with the ConfigStore writer (Story 2.13).
-    case readOnlyUntilStory213
-    /// The module declares no setting with this key.
+    /// No core setting or registered module declares this key (module key, or canonical key path).
     case unknownSetting(String)
+    /// The value has the wrong type for the setting or is out of range; `reason` is English diagnostic text.
+    case invalidValue(key: String, reason: String)
+    /// The key is defined inside an inline table or an array of tables (or under a non-table value), which
+    /// the line patcher does not edit; the user has to change it by hand.
+    case unsupportedLocation(key: String)
+    /// The file could not be read or is not valid UTF-8 (or is an iCloud item not downloaded yet).
+    case fileUnavailable(file: String, reason: String)
+    /// The file has a TOML error; it must be fixed before Vigie writes to it.
+    case fileHasErrors(file: String)
+    /// The patched text did not parse, or decoded to something other than intended; nothing was written.
+    case verificationFailed(key: String)
+    /// The atomic write failed; the file is unchanged.
+    case writeFailed(file: String, reason: String)
 }

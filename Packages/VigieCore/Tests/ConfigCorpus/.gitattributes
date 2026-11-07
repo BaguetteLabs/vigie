@@ -1,0 +1,2 @@
+# Golden files: keep every byte (CRLF, BOM, missing final newline) exactly as written.
+* -text

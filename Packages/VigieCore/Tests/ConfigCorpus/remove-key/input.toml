@@ -1,0 +1,7 @@
+[closed]
+# comment kept
+slots = 4                     # items per side
+peek = true
+tags = [
+  "a",
+]

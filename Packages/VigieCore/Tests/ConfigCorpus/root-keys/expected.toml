@@ -1,0 +1,6 @@
+# Only comments at the top
+
+schema = 1
+
+[general]
+hide_in_fullscreen = true

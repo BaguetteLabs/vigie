@@ -1,0 +1,20 @@
+[
+  {
+    "kind": "set",
+    "path": "modules.\"agents.sessions\".adapters",
+    "value": [
+      "claude",
+      "codex"
+    ]
+  },
+  {
+    "kind": "set",
+    "path": "modules.\"agents.sessions\".ignored_paths",
+    "value": []
+  },
+  {
+    "kind": "set",
+    "path": "modules.\"agents.sessions\".enabled",
+    "value": false
+  }
+]

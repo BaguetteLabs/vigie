@@ -1,0 +1,12 @@
+[
+  {
+    "kind": "set",
+    "path": "modules.notes.template",
+    "value": "short"
+  },
+  {
+    "kind": "set",
+    "path": "modules.notes.folder",
+    "value": "~/Vigie Notes"
+  }
+]

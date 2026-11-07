@@ -32,6 +32,21 @@ public enum ConfigResolvedValue: Sendable, Equatable {
         }
     }
 
+    /// A Swift setting value (`Bool`, `Int`, `Double`, `String`, `Duration`, `URL`, `[String]`) as a resolved
+    /// value; a file URL is written as its path with the home folder abbreviated to `~`.
+    public init?(settingValue: any SettingValue) {
+        switch settingValue {
+        case let value as Bool: self = .bool(value)
+        case let value as Int: self = .int(value)
+        case let value as Double: self = .double(value)
+        case let value as String: self = .string(value)
+        case let value as Duration: self = .duration(value)
+        case let value as URL: self = .string((value.path as NSString).abbreviatingWithTildeInPath)
+        case let value as [String]: self = .strings(value)
+        default: return nil
+        }
+    }
+
     /// The default of a kind.
     public init(defaultOf kind: SettingKind) {
         switch kind {

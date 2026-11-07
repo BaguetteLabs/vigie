@@ -1,0 +1,15 @@
+future_root_key = "kept"
+
+[general]
+hide_in_fullscreen = true
+mystery = { a = 1 }
+
+[some.unknown."table"]
+x = 1979-05-27T07:32:00Z
+y = 1979-05-27 07:32:00Z   # date with a space
+z = '''
+multi
+line'''
+
+[general.nested]
+k = 0x1F

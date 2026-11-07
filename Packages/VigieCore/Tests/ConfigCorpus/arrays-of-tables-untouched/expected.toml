@@ -1,0 +1,13 @@
+[modules."scripts"]
+enabled = false
+
+[[modules."scripts".items]]
+name = "a"   # first
+run = "echo a"
+
+[[modules."scripts".items]]
+name = "b"
+
+[modules.shelf]
+enabled = true
+ttl = "7d"

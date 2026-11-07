@@ -1,0 +1,12 @@
+[
+  {
+    "kind": "set",
+    "path": "modules.shelf.ttl",
+    "value": "7d"
+  },
+  {
+    "kind": "set",
+    "path": "modules.scripts.enabled",
+    "value": false
+  }
+]

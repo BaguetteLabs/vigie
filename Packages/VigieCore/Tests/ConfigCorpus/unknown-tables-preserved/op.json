@@ -1,0 +1,12 @@
+[
+  {
+    "kind": "set",
+    "path": "general.hide_in_fullscreen",
+    "value": false
+  },
+  {
+    "kind": "set",
+    "path": "general.prevent_idle_sleep",
+    "value": true
+  }
+]

@@ -1,0 +1,10 @@
+[modules."agents.sessions"]
+enabled = true
+priority = 4
+
+[modules."agents.usage"]
+enabled = true
+
+[modules."agents.sessions".local]
+terminal = "warp"
+width = 2.5

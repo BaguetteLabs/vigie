@@ -1,0 +1,6 @@
+[modules.integrations]
+update_checks = true
+
+# Script modules use their id, for example:
+# [modules."github.prs"]
+# priority = 5

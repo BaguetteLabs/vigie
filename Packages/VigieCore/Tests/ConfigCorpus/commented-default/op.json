@@ -1,0 +1,7 @@
+[
+  {
+    "kind": "set",
+    "path": "modules.time.hotkey",
+    "value": "opt+cmd+t"
+  }
+]

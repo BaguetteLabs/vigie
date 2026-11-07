@@ -105,4 +105,4 @@ jobs:
 
       - name: config-corpus
         id: config-corpus
-        run: echo "not yet"
+        run: Scripts/config-corpus.sh

@@ -437,7 +437,8 @@ import Wire
         #expect(settings.value("enabled", as: Bool.self) == true)
         #expect(settings.value("undeclared", as: Int.self) == nil)
         #expect(settings.value("priority", as: String.self) == nil)
-        await #expect(throws: ConfigError.readOnlyUntilStory213) { try await settings.set(5, for: "priority") }
+        try await settings.set(5, for: "priority")
+        #expect(settings.value("priority", as: Int.self) == 5)
         await #expect(throws: ConfigError.unknownSetting("nope")) { try await settings.set(5, for: "nope") }
 
         let observed = StreamCounter(settings.observe("terminal"))

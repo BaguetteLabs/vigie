@@ -1,0 +1,10 @@
+# CRLF file
+[general]
+hover_delay = "1s"
+
+[closed]
+slots = 3
+peek = true
+
+[sounds]
+enabled = false

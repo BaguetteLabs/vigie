@@ -1,0 +1,10 @@
+# Top comment
+
+# Another comment block
+[general]
+# leading comment for hover_delay
+hover_delay = "150ms"
+
+    # indented comment
+
+hide_in_fullscreen = true

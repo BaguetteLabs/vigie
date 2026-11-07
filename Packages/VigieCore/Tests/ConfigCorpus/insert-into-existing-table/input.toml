@@ -1,0 +1,7 @@
+[closed]
+max_side_width = 120
+slots = 3                     # items per side
+
+# A comment about the next table
+[modules.shelf]
+enabled = true

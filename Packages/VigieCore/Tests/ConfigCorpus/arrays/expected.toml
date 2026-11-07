@@ -1,0 +1,4 @@
+[modules."agents.sessions"]
+adapters = ["claude", "codex"]  # order matters
+ignored_paths = []
+enabled = false

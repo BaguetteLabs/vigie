@@ -1,0 +1,5 @@
+[modules.time]
+enabled = false
+pomodoro = { work = "25m", short_break = "5m", long_break = "15m", long_every = 4 }  # inline
+closed_notch = "ring"
+priority = 5

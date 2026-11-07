@@ -1,0 +1,12 @@
+[
+  {
+    "kind": "set",
+    "path": "general.open_on_hover",
+    "value": true
+  },
+  {
+    "kind": "set",
+    "path": "general.close_on_leave",
+    "value": true
+  }
+]

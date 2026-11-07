@@ -1,0 +1,6 @@
+﻿# BOM file
+[sounds]
+blocked = "~/Sounds/a \"quoted\" \\ name.aiff"
+
+[notify]
+quiet_hours = "22:00-08:00"

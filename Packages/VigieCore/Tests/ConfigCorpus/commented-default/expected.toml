@@ -1,0 +1,10 @@
+[modules.time]
+enabled = false
+closed_notch = "off"          # off | time | ring | both
+# hotkey = "…"                # optional global hotkey, no default
+hotkey = "opt+cmd+t"
+priority = 3
+
+# Script modules use their id, for example:
+# [modules."github.prs"]
+# priority = 5

@@ -1,0 +1,7 @@
+[modules."agents.sessions"]
+adapters = ["claude", "codex", "gemini"]  # order matters
+ignored_paths = [
+  "~/tmp",   # scratch
+  "~/old",
+]
+enabled = true

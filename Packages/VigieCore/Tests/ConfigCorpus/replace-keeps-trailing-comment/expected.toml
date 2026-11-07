@@ -1,0 +1,3 @@
+[general]
+open_on_hover   =   true         # click to open by default
+  close_on_leave=true#tight

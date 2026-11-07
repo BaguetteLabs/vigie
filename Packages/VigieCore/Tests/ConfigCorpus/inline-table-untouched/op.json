@@ -1,0 +1,12 @@
+[
+  {
+    "kind": "set",
+    "path": "modules.time.priority",
+    "value": 5
+  },
+  {
+    "kind": "set",
+    "path": "modules.time.closed_notch",
+    "value": "ring"
+  }
+]

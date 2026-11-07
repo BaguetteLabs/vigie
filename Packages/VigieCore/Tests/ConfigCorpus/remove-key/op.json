@@ -1,0 +1,14 @@
+[
+  {
+    "kind": "remove",
+    "path": "closed.slots"
+  },
+  {
+    "kind": "remove",
+    "path": "closed.tags"
+  },
+  {
+    "kind": "remove",
+    "path": "closed.absent"
+  }
+]

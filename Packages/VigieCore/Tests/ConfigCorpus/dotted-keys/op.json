@@ -1,0 +1,12 @@
+[
+  {
+    "kind": "set",
+    "path": "modules.time.breaks.work",
+    "value": "1h"
+  },
+  {
+    "kind": "set",
+    "path": "modules.time.breaks.length",
+    "value": "5m"
+  }
+]

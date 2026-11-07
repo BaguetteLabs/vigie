@@ -31,6 +31,9 @@ Scripts/check-process-launch.sh
 echo "==> package-deps guard"
 Scripts/check-package-deps.sh
 
+echo "==> config corpus"
+Scripts/config-corpus.sh
+
 echo "==> xcodegen generate"
 (cd App && xcodegen generate)
 

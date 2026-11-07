@@ -1,0 +1,6 @@
+# CRLF file
+[general]
+hover_delay = "150ms"
+
+[closed]
+slots = 3

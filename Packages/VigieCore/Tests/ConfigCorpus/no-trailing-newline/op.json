@@ -1,0 +1,19 @@
+[
+  {
+    "kind": "set",
+    "path": "closed.slots",
+    "value": 2
+  },
+  {
+    "kind": "set",
+    "path": "closed.peek",
+    "value": false
+  },
+  {
+    "kind": "set",
+    "path": "home.cards",
+    "value": [
+      "shelf"
+    ]
+  }
+]

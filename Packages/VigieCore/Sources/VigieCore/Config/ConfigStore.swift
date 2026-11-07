@@ -4,11 +4,14 @@ import Observation
 import Wire
 import os
 
-/// The only reader (and, from Story 2.13, writer) of `config.toml` and `local.toml` (AD-8).
+/// The only reader and writer of `config.toml` and `local.toml` (AD-8).
 ///
 /// Resolution per known key: `.local` keys come from `local.toml`, `.synced` keys from `config.toml`, else the
 /// declared default. Both containing folders are watched (AD-12); edits apply live and observers hear only
 /// about keys whose resolved value changed. A file with a TOML parse error keeps its last valid content.
+///
+/// Writes (`set`, `remove`) go through `TOMLPatcher` and `ConfigWriter`: one line changes, everything else in
+/// the file stays byte-identical. Reloads and writes run one at a time, in call order.
 @MainActor @Observable
 public final class ConfigStore {
     /// Current problems in both files, sorted by file then key. Recomputed on every load.
@@ -39,6 +42,9 @@ public final class ConfigStore {
     @ObservationIgnored private var reloadTask: Task<Void, Never>?
     @ObservationIgnored private var debounceTask: Task<Void, Never>?
     @ObservationIgnored private var isStarted = false
+    @ObservationIgnored private let writer = ConfigWriter()
+    /// Tests only: rewrites the patched text before verification.
+    @ObservationIgnored var patchHook: (@Sendable (String) -> String)?
 
     public static let configFileName = "config.toml"
 
@@ -115,13 +121,18 @@ public final class ConfigStore {
 
     /// Re-reads both files now (also `vigie reload`). Unchanged files are not re-parsed.
     public func reload() async {
+        await serialized { await self.performReload() }
+    }
+
+    /// Runs `operation` after every reload or write already queued, before any queued later.
+    private func serialized<T: Sendable>(_ operation: @escaping @MainActor () async -> T) async -> T {
         let previous = reloadTask
         let task = Task {
             await previous?.value
-            await self.performReload()
+            return await operation()
         }
-        reloadTask = task
-        await task.value
+        reloadTask = Task { _ = await task.value }
+        return await task.value
     }
 
     /// Waits for a reload scheduled by a watcher event (tests).
@@ -168,6 +179,80 @@ public final class ConfigStore {
     /// Each element is the set of keys whose resolved value changed in one load. One stream per access.
     public var changes: AsyncStream<Set<ConfigKeyPath>> {
         shared.subscribeChanges()
+    }
+
+    // MARK: - Writing
+
+    /// Writes `value` for a known key into the file its scope names (`.local` → `local.toml`, else
+    /// `config.toml`), then applies it at once: observers of the key hear about it without waiting for the
+    /// watcher, and the watcher's event for this write is ignored (same bytes).
+    ///
+    /// For a `hotkey` or `path` setting, `.none` writes `""` (no shortcut, no path).
+    /// - Throws: `ConfigError.unknownSetting`, `.invalidValue` (wrong type or out of range; nothing written),
+    ///   `.unsupportedLocation` (the key is in an inline table or array of tables), `.fileUnavailable`,
+    ///   `.fileHasErrors` (fix the TOML error first), `.verificationFailed`, `.writeFailed`. The file is
+    ///   untouched on any error.
+    public func set(_ path: ConfigKeyPath, to value: ConfigResolvedValue) async throws(ConfigError) {
+        guard let entry = schema.entries[path] else { throw .unknownSetting(path.description) }
+        let scalar = try Self.scalar(for: value, kind: entry.descriptor.kind, key: path.description)
+        try await write(path, value: scalar, local: entry.scope == .local)
+    }
+
+    /// Removes a known key from its file, so its default applies again ("reset to default"). Removing a key
+    /// that is not in the file changes nothing. Throws as `set` does.
+    public func remove(_ path: ConfigKeyPath) async throws(ConfigError) {
+        guard let entry = schema.entries[path] else { throw .unknownSetting(path.description) }
+        try await write(path, value: nil, local: entry.scope == .local)
+    }
+
+    private func write(_ path: ConfigKeyPath, value: TOMLScalar?, local: Bool) async throws(ConfigError) {
+        let url = local ? localURL : configURL
+        let writer = writer
+        let hook = patchHook
+        let result: Result<ConfigWriteResult, ConfigError> = await serialized {
+            do throws(ConfigError) {
+                let written = try await writer.write(path, value: value, to: url, hook: hook)
+                return .success(written)
+            } catch {
+                return .failure(error)
+            }
+        }
+        switch result {
+        case .success(let written):
+            if written.wrote {
+                logger.info("Wrote \(path.description, privacy: .public) to \(url.lastPathComponent, privacy: .public)")
+            }
+            let state = FileState(data: written.data, document: written.document, problem: nil)
+            if local { localFile = state } else { configFile = state }
+            recompute()
+        case .failure(let error):
+            logger.error(
+                "Could not write \(path.description, privacy: .public): \(String(describing: error), privacy: .public)")
+            throw error
+        }
+    }
+
+    /// The TOML value to write for `value`, validated against `kind` like a value read from the file.
+    static func scalar(for value: ConfigResolvedValue, kind: SettingKind, key: String) throws(ConfigError)
+        -> TOMLScalar
+    {
+        let scalar: TOMLScalar
+        switch (value, kind) {
+        case (.none, .hotkey), (.none, .path): scalar = .string("")
+        case (.none, _): throw .invalidValue(key: key, reason: "a value is required")
+        case (.duration(let duration), .duration): scalar = .duration(duration)
+        case (.duration, _): throw .invalidValue(key: key, reason: "not a duration setting")
+        case (.bool(let bool), _): scalar = .bool(bool)
+        case (.int(let int), .double): scalar = .double(Double(int))
+        case (.int(let int), _): scalar = .int(int)
+        case (.double(let double), _): scalar = .double(double)
+        case (.string(let string), _): scalar = .string(string)
+        case (.strings(let strings), _): scalar = .array(strings.map(TOMLScalar.string))
+        }
+        if case .failure(let failure) = ConfigResolvedValue.coerce(scalar.configValue, to: kind) {
+            throw .invalidValue(key: key, reason: failure.message)
+        }
+        return scalar
     }
 
     // MARK: - Default file

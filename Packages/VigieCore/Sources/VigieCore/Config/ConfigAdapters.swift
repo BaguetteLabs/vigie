@@ -5,12 +5,14 @@ import ModuleKit
 /// each is routed by its declared scope to `modules."<id>".<key>` or `modules."<id>".local.<key>`.
 public struct ConfigModuleSettings: ModuleSettings {
     let shared: ConfigSharedState
+    let store: ConfigStore
     public let moduleID: ModuleID
     let tracker: RegistrationTracker?
 
     /// - Parameter tracker: when given, observation streams end when the module stops.
     public init(store: ConfigStore, moduleID: ModuleID, tracker: RegistrationTracker? = nil) {
         shared = store.shared
+        self.store = store
         self.moduleID = moduleID
         self.tracker = tracker
     }
@@ -24,9 +26,18 @@ public struct ConfigModuleSettings: ModuleSettings {
         return shared.value(at: path)?.typed(as: type)
     }
 
+    /// Writes through `ConfigStore.set` (nil: `ConfigStore.remove`, the default applies again). Only keys the
+    /// manifest declares can be written. Throws `ConfigError`.
     public func set<T: SettingValue>(_ value: T?, for key: String) async throws {
-        guard path(key) != nil else { throw ConfigError.unknownSetting(key) }
-        throw ConfigError.readOnlyUntilStory213
+        guard let path = path(key) else { throw ConfigError.unknownSetting(key) }
+        guard let value else {
+            try await store.remove(path)
+            return
+        }
+        guard let resolved = ConfigResolvedValue(settingValue: value) else {
+            throw ConfigError.invalidValue(key: path.description, reason: "unsupported value type \(T.self)")
+        }
+        try await store.set(path, to: resolved)
     }
 
     public func observe(_ key: String) -> AsyncStream<Void> {

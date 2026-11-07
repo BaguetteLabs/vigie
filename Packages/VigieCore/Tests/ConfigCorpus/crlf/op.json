@@ -1,0 +1,17 @@
+[
+  {
+    "kind": "set",
+    "path": "general.hover_delay",
+    "value": "1s"
+  },
+  {
+    "kind": "set",
+    "path": "closed.peek",
+    "value": true
+  },
+  {
+    "kind": "set",
+    "path": "sounds.enabled",
+    "value": false
+  }
+]

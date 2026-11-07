@@ -1,0 +1,12 @@
+[
+  {
+    "kind": "set",
+    "path": "sounds.blocked",
+    "value": "~/Sounds/a \"quoted\" \\ name.aiff"
+  },
+  {
+    "kind": "set",
+    "path": "notify.quiet_hours",
+    "value": "22:00-08:00"
+  }
+]

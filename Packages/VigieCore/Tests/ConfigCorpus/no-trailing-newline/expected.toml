@@ -1,0 +1,9 @@
+[general]
+hide_in_fullscreen = true
+
+[closed]
+slots = 2
+peek = false
+
+[home]
+cards = ["shelf"]

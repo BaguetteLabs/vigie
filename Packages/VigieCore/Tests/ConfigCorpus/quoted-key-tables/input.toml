@@ -1,0 +1,6 @@
+[modules."agents.sessions"]
+enabled = true
+priority = 1
+
+[modules."agents.usage"]
+enabled = true

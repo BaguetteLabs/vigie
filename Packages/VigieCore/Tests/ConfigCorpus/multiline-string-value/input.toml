@@ -1,0 +1,6 @@
+[modules.notes]
+template = """
+# Title = not a key
+[not.a.header]
+"""
+folder = "~/Notes"

@@ -1,0 +1,17 @@
+[
+  {
+    "kind": "set",
+    "path": "modules.\"agents.sessions\".priority",
+    "value": 4
+  },
+  {
+    "kind": "set",
+    "path": "modules.\"agents.sessions\".local.terminal",
+    "value": "warp"
+  },
+  {
+    "kind": "set",
+    "path": "modules.\"agents.sessions\".local.width",
+    "value": 2.5
+  }
+]
