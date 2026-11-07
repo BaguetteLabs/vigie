@@ -31,7 +31,7 @@ public protocol NotchModule: AnyObject, Observable {
     var dropZones: [DropZone] { get }
 
     /// Items this module offers to the closed notch's left-wing lane (SPEC §5). Default: none.
-    /// Each item's state is its module's `state`.
+    /// Each item's state is its module's `state` unless the item overrides it.
     func leftWingItems() -> [LeftWingItem]
 
     func start(context: any ModuleContext) async throws
@@ -51,12 +51,26 @@ extension NotchModule {
 public struct LeftWingItem: Identifiable, Sendable {
     /// Unique within the offering module.
     public let id: String
+    /// Lower number = higher in the lane (SPEC §5.1).
     public let priority: Int
+    /// This item's own state, when it differs from its module's (e.g. one provider ring in quota warning).
+    /// nil = the module's `state`.
+    public let state: ModuleState?
+    /// Tie-breaker after `priority` (e.g. the usage provider `order`).
+    public let order: Int
     public let compactView: @MainActor @Sendable (CompactSize) -> AnyView?
 
-    public init(id: String, priority: Int, compactView: @escaping @MainActor @Sendable (CompactSize) -> AnyView?) {
+    public init(
+        id: String,
+        priority: Int,
+        state: ModuleState? = nil,
+        order: Int = 0,
+        compactView: @escaping @MainActor @Sendable (CompactSize) -> AnyView?
+    ) {
         self.id = id
         self.priority = priority
+        self.state = state
+        self.order = order
         self.compactView = compactView
     }
 }

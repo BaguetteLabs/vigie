@@ -5,7 +5,8 @@
     import SwiftUI
 
     /// A debug-only module that exercises the host (Stories 2.5, 2.8): its state cycles `ambient → active`
-    /// every 5 s, it renders a short/wide compact view and offers one left-wing item.
+    /// every 5 s, it renders a short/wide compact view and offers two left-wing items: `sample` (priority 50,
+    /// short/wide) and `sample.icon` (priority 60, icon only), so overflow and size fallback are exercisable.
     @MainActor @Observable
     public final class DevSampleModule: NotchModule {
         public nonisolated static let staticManifest = ModuleManifest(
@@ -50,7 +51,10 @@
             [
                 LeftWingItem(id: "sample", priority: 50) { [weak self] size in
                     self?.compactView(size: size)
-                }
+                },
+                LeftWingItem(id: "sample.icon", priority: 60) { size in
+                    size == .icon ? AnyView(Image(systemName: "testtube.2")) : nil
+                },
             ]
         }
     }

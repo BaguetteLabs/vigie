@@ -90,7 +90,11 @@ import Testing
             #expect(module.compactView(size: .icon) == nil)
             #expect(module.compactView(size: .short) != nil)
             #expect(module.compactView(size: .wide) != nil)
-            #expect(module.leftWingItems().map(\.priority) == [50])
+            let items = module.leftWingItems()
+            #expect(items.map(\.priority) == [50, 60])
+            #expect(items[1].compactView(.icon) != nil)
+            #expect(items[1].compactView(.short) == nil)
+            #expect(items[1].compactView(.wide) == nil)
         }
 
         @Test func cyclesStateThroughTheScheduler() async throws {

@@ -133,6 +133,54 @@
         }
       }
     },
+    "closed.copied.lines" : {
+      "comment" : "Closed notch: transient Image to Text readout after copying recognized text; %lld is the line count.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "COPIED · %lld LINE"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "COPIED · %lld LINES"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "closed.noTextFound" : {
+      "comment" : "Closed notch: transient Image to Text readout when recognition found no text.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NO TEXT FOUND"
+          }
+        }
+      }
+    },
+    "closed.overflow" : {
+      "comment" : "Closed notch: count of lane items that did not fit, after the last visible one (+X).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "+%lld"
+          }
+        }
+      }
+    },
     "empty.agents.noAgent.label" : {
       "comment" : "Empty state label (uppercase).",
       "extractionState" : "manual",
