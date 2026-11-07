@@ -1,0 +1,100 @@
+import Foundation
+import ModuleKit
+import os
+
+// Placeholders for the AD-19 services that later stories implement. Each is replaced, not extended.
+
+/// Implemented in Story 2.3 (read) and 2.13 (write): returns each descriptor's declared default.
+struct DefaultsModuleSettings: ModuleSettings {
+    let descriptors: [SettingDescriptor]
+
+    func value<T: SettingValue>(_ key: String, as type: T.Type) -> T? {
+        descriptors.first { $0.key == key }?.defaultValue as? T
+    }
+
+    func set<T: SettingValue>(_ value: T?, for key: String) async throws {
+        throw ModuleServiceError.notAvailable
+    }
+
+    func observe(_ key: String) -> AsyncStream<Void> { AsyncStream { $0.finish() } }
+}
+
+/// Implemented in Story 7.2.
+struct UnavailableSecretStore: SecretStore {
+    func read(_ key: String) async throws -> String? { throw ModuleServiceError.notAvailable }
+    func write(_ value: String?, for key: String) async throws { throw ModuleServiceError.notAvailable }
+}
+
+/// Implemented in Story 2.9. Registrations are tracked (so lifecycle is exercised) but bind no shortcut.
+struct StubHotkeyRegistry: HotkeyRegistry {
+    let tracker: RegistrationTracker
+
+    func register(
+        name: String,
+        default shortcut: String?,
+        handler: @escaping @MainActor @Sendable (UserIntent) -> Void
+    ) throws -> RegistrationToken {
+        tracker.track(RegistrationToken {})
+    }
+}
+
+/// Implemented in Story 3.1. Logs the kind only (never title or body).
+struct StubNotifier: Notifier {
+    let log: Logger
+
+    func post(_ event: NotifierEvent) -> AlertHandle {
+        log.debug("Notifier not available; dropped alert of kind \(event.kind, privacy: .public)")
+        return AlertHandle {}
+    }
+}
+
+/// Implemented in Stories 2.5, 2.10, 3.2 and (dynamic modules) Epic 15.
+struct StubHostControl: HostControl {
+    func requestPeek() {}
+    func expand(focus: UserIntent?) {}
+    func openOwnTab(focus: UserIntent?) {}
+    func registerDynamicModule(_ module: any NotchModule) throws -> RegistrationToken {
+        throw ModuleServiceError.notAvailable
+    }
+}
+
+/// Implemented in Story 2.12.
+struct StubPermissionsService: PermissionsService {
+    func status(of permission: Permission) async -> PermissionStatus { .notDetermined }
+    func request(_ permission: Permission) async -> PermissionStatus { .notDetermined }
+}
+
+/// Implemented in Story 4.12. Assertions are tracked but hold nothing.
+struct StubPowerService: PowerService {
+    let tracker: RegistrationTracker
+
+    func preventIdleSleep(reason: String) -> RegistrationToken { tracker.track(RegistrationToken {}) }
+    var sleepWake: AsyncStream<SleepWakeEvent> { AsyncStream { $0.finish() } }
+}
+
+/// Implemented in Story 9.9.
+struct StubClipboardService: ClipboardService {
+    func copy(_ text: String, clearAfter: Duration?) {}
+}
+
+/// Implemented in Story 4.4.
+struct StubExecutableResolver: ExecutableResolver {
+    func resolve(_ name: String) async -> URL? { nil }
+}
+
+/// Implemented in Story 21.2.
+struct StubPrivacyService: PrivacyService {
+    var isActive: Bool { false }
+    var changes: AsyncStream<Bool> { AsyncStream { $0.finish() } }
+}
+
+/// Implemented in Story 20.3.
+struct StubAwayService: AwayService {
+    var presence: Presence { .present }
+    var changes: AsyncStream<Presence> { AsyncStream { $0.finish() } }
+}
+
+/// Implemented in Story 3.8.
+struct StubActivityLog: ActivityLog {
+    func record(_ entry: ActivityEntry) {}
+}

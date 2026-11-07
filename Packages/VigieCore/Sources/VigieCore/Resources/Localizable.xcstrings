@@ -1,6 +1,30 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "vigiecore.devSample.compact" : {
+      "comment" : "Closed-notch label of the debug-only sample module.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SAMPLE"
+          }
+        }
+      }
+    },
+    "vigiecore.devSample.name" : {
+      "comment" : "Name of the debug-only sample module (dev.sample).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dev sample"
+          }
+        }
+      }
+    },
     "vigiecore.sample.hostName" : {
       "comment" : "Sample string proving the VigieCore String Catalog is bundled.",
       "extractionState" : "manual",
