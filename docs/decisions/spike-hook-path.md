@@ -15,8 +15,8 @@ dev socket as one `agent.hook` envelope. With no listener, every invocation spoo
 - **Socket:** `AppEnvironment.current.socketURL`, i.e. `/Users/romain/Library/Application Support/Vigie Dev/vigie.sock`.
   That is 60 bytes here (61 with `romain`), under the 100-byte limit, so the temp-dir fallback was not used. The listener created it as
   `srw-------` (0600).
-- **Listener:** `spikes/hook-listener` (its own SwiftPM package) runs `VigieCore.SocketListener`
-  (`Packages/VigieCore/Sources/VigieCore/Spike/`, to be replaced by the Event Server in Story 4.1).
+- **Listener:** `spikes/hook-listener` (its own SwiftPM package) ran the spike `SocketListener`
+  (since replaced by `VigieCore.EventServer`, Story 4.1; the runner now uses it).
 - **Hook config:** a scratch project's `.claude/settings.json` (never the global one) registered
   `<abs path>/vigie hook claude` on `SessionStart`, `UserPromptSubmit`, `PreToolUse`, `PostToolUse`,
   `Notification`, `Stop`, `SubagentStop` and `SessionEnd`, with matcher `"*"` where the event takes a matcher.
