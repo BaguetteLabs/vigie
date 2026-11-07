@@ -8,3 +8,4 @@ Licensed under the GNU General Public License v3.0 (see `LICENSE`). Rules for co
 - Packages: `cd Packages/<Name> && swift test --build-system swiftbuild` (the native SwiftPM build system does not compile String Catalogs).
 - App: `cd App && xcodegen generate && xcodebuild -scheme Vigie -configuration Debug build`
 - Everything: `Scripts/test-all.sh`
+- CI: `.github/workflows/ci.yml` (macOS 26 runner, Xcode from `.xcode-version`) runs swift-format lint, `swift test` per package, the app build and a locale check on every PR and push to `master`. No secrets, no signing. Dry run locally: `Scripts/ci-local.sh`

@@ -6,7 +6,7 @@ let package = Package(
     defaultLocalization: "en",
     platforms: [.macOS(.v15)],
     products: [
-        .library(name: "ModuleKit", targets: ["ModuleKit"]),
+        .library(name: "ModuleKit", targets: ["ModuleKit"])
     ],
     dependencies: [],
     targets: [

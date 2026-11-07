@@ -1,5 +1,6 @@
 import Testing
 import Wire
+
 @testable import VigieCore
 
 @Suite struct VigieCoreTests {

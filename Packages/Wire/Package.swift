@@ -6,7 +6,7 @@ let package = Package(
     defaultLocalization: "en",
     platforms: [.macOS(.v15)],
     products: [
-        .library(name: "Wire", targets: ["Wire"]),
+        .library(name: "Wire", targets: ["Wire"])
     ],
     dependencies: [],
     targets: [

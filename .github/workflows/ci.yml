@@ -1,0 +1,91 @@
+# CI for pull requests and master (SPEC section 12.1).
+# No secrets, no signing, no deployment environment: fork PRs run safely.
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build-test:
+    runs-on: macos-26
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode from .xcode-version
+        run: |
+          version="$(tr -d '[:space:]' < .xcode-version)"
+          app="/Applications/Xcode_${version}.app"
+          if [ ! -d "$app" ]; then
+            echo "::error::$app not found on this runner. Installed Xcode versions:"
+            ls -d /Applications/Xcode* || true
+            exit 1
+          fi
+          sudo xcode-select -s "$app"
+          xcodebuild -version
+
+      - name: Cache SwiftPM
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/Library/Caches/org.swift.swiftpm
+            .build
+          key: spm-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('**/Package.swift', '**/Package.resolved') }}
+          restore-keys: |
+            spm-${{ runner.os }}-${{ runner.arch }}-
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Lint (swift-format)
+        run: xcrun swift format lint --strict --recursive Packages App/Sources
+
+      - name: Package tests
+        run: |
+          for manifest in Packages/*/Package.swift Packages/*/*/Package.swift; do
+            [ -f "$manifest" ] || continue
+            pkg="$(dirname "$manifest")"
+            echo "==> swift test: $pkg"
+            (cd "$pkg" && swift test --build-system swiftbuild)
+          done
+
+      - name: Generate Xcode project
+        run: cd App && xcodegen generate
+
+      - name: Build app
+        run: |
+          xcodebuild -project App/Vigie.xcodeproj -scheme Vigie -configuration Debug build \
+            CODE_SIGN_IDENTITY=- CODE_SIGNING_ALLOWED=NO -derivedDataPath App/DerivedData
+
+      # TODO: switch to `build test` (and merge with the step above) once the app has a test
+      # target; the scheme currently has no test action, so `xcodebuild test` errors out.
+      - name: xcodebuild-test
+        id: xcodebuild-test
+        run: echo "not yet - app scheme has no test target"
+
+      - name: Locale check
+        run: |
+          app="$(find App/DerivedData/Build/Products/Debug -maxdepth 1 -name '*.app' -print -quit)"
+          test -n "$app" || { echo "::error::no .app in build products"; exit 1; }
+          Scripts/check-locales.sh "$app"
+
+      - name: theme-regen-diff
+        id: theme-regen-diff
+        run: echo "not yet"
+
+      - name: adapter-fixtures
+        id: adapter-fixtures
+        run: echo "not yet"
+
+      - name: config-corpus
+        id: config-corpus
+        run: echo "not yet"

@@ -6,7 +6,7 @@ let package = Package(
     defaultLocalization: "en",
     platforms: [.macOS(.v15)],
     products: [
-        .library(name: "VigieCore", targets: ["VigieCore"]),
+        .library(name: "VigieCore", targets: ["VigieCore"])
     ],
     dependencies: [
         .package(path: "../ModuleKit"),

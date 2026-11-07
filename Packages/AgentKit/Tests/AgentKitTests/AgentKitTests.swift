@@ -1,5 +1,6 @@
 import Testing
 import Wire
+
 @testable import AgentKit
 
 @Suite struct AgentKitTests {

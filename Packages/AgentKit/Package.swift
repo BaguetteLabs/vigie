@@ -6,7 +6,7 @@ let package = Package(
     defaultLocalization: "en",
     platforms: [.macOS(.v15)],
     products: [
-        .library(name: "AgentKit", targets: ["AgentKit"]),
+        .library(name: "AgentKit", targets: ["AgentKit"])
     ],
     dependencies: [
         .package(path: "../ModuleKit"),

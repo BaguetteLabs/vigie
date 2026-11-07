@@ -6,16 +6,16 @@ let package = Package(
     defaultLocalization: "en",
     platforms: [.macOS(.v15)],
     products: [
-        .library(name: "VigieUI", targets: ["VigieUI"]),
+        .library(name: "VigieUI", targets: ["VigieUI"])
     ],
     dependencies: [
-        .package(path: "../ModuleKit"),
+        .package(path: "../ModuleKit")
     ],
     targets: [
         .target(
             name: "VigieUI",
             dependencies: [
-                .product(name: "ModuleKit", package: "ModuleKit"),
+                .product(name: "ModuleKit", package: "ModuleKit")
             ],
             resources: [.process("Resources")]
         ),

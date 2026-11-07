@@ -6,17 +6,17 @@ let package = Package(
     defaultLocalization: "en",
     platforms: [.macOS(.v15)],
     products: [
-        .executable(name: "vigie", targets: ["vigie"]),
+        .executable(name: "vigie", targets: ["vigie"])
     ],
     dependencies: [
-        .package(path: "../Wire"),
+        .package(path: "../Wire")
     ],
     targets: [
         // Testable command logic; the executable target stays a thin entry point.
         .target(
             name: "VigieCLI",
             dependencies: [
-                .product(name: "Wire", package: "Wire"),
+                .product(name: "Wire", package: "Wire")
             ],
             resources: [.process("Resources")]
         ),
