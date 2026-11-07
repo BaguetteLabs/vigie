@@ -42,7 +42,7 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - [ ] 2.10 Expanded view shell
 - [x] 2.11 Shared VigieUI components
 - [x] 2.12 Permissions service and needs-permission state
-- [ ] 2.13 ConfigStore writer (comment-preserving TOML patcher)
+- [x] 2.13 ConfigStore writer (comment-preserving TOML patcher)
 - [ ] 2.14 Generated Settings window
 - [ ] 2.15 Accessibility floor in v0.1
 
@@ -54,14 +54,14 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - [ ] 3.5 Do Not Disturb and Focus modes
 - [ ] 3.6 macOS notification output
 - [ ] 3.7 Alert settings generated from declared kinds
-- [ ] 3.8 Local activity log
+- [x] 3.8 Local activity log (store + API; Settings › Activity pane deferred to 2.14/17.x)
 - [ ] 3.9 Peek concurrency and suppression
 
 ### Epic 4 — Track Claude Code sessions
 - [x] 4.1 Event Server (App wiring pending: start after lock, releaseQueue after registry.start, stop before lock release)
 - [ ] 4.2 Durable spool and launch order
-- [ ] 4.3 CLI install on PATH, `vigie event` and `vigie reload`
-- [ ] 4.4 Agent adapter contracts and assembly
+- [x] 4.3 CLI install on PATH, `vigie event` and `vigie reload` (App wiring of CLIInstaller.install and app.expand/app.reload handling pending in the integration commit)
+- [x] 4.4 Agent adapter contracts and assembly (App assembly of AgentKit/AgentsSessions packages pending in the integration commit)
 - [ ] 4.5 SessionStore status engine
 - [ ] 4.6 Claude Code adapter with version gating
 - [ ] 4.7 Hook installer with diff confirmation
@@ -125,3 +125,6 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - 2026-11-07 — CI Xcode pin changed from 27.1 (spine) to 26.6: GitHub `macos-26` runners ship 26.0–26.6 only. Revisit when 27.x appears on runners.
 - 2026-11-07 — Story 3.1 decisions: quiet hours drop (not defer); default outputs `[peek, sound]` for every severity (never `system` by default, A70); reminders replay peek+sound only (FR29); `min_working_time` compares against metric `working_duration` in seconds (A54); events without `dedupe_key` share one cooldown per kind. Wiring left: ConfigStore → `NotifyRulesProvider`, PeekSink (3.2), SystemNotificationSink (3.6), SoundSink (10.1), a real `AlertActionRouter` in the App.
 - 2026-11-07 — Process note: after rebasing a worktree created before a story that added package resources (e.g. 2.3's `Resources/Config`), swiftbuild's incremental build may not copy the new resources into the test bundle, giving bogus 'resource not found' test failures. Always `rm -rf Packages/*/.build` in a worktree after a rebase that brought new resources, and gate merges on the literal `ci-local: OK` line.
+- 2026-11-07 — Integration commit landed (ConfigStore, permissions, hotkeys in the App). Still to wire in the next integration pass: EventServer (start after lock, `releaseQueue()` after `registry.start()`, `stop()` before lock release; handle `app.reload` → `configStore.reload()` and `app.expand` → expand, Story 2.10), `CLIInstaller.install()` at launch, `ActivityStore.startDailyPruning`, `AlertCenter` with a real `AlertActionRouter` + ConfigStore-backed `NotifyRulesProvider`, `ExecutableResolverImpl.prime()` + `overrides` from `local.toml [executables]`, AgentKit + AgentsSessions packages in `project.yml` with `AgentAdapters([])`/`TerminalAdapters([])`, `closedSlots` from `closed.slots`.
+- 2026-11-07 — Story 4.4 gap: `AdapterContextBox` needs a `SecretStore`; VigieCore's `UnavailableSecretStore` is internal. Story 7.2 (SecretStore) or a public unavailable store is needed before adapters with secrets.
+- 2026-11-07 — Story 4.3: CLI catalog lookups use `CLIResources.bundle` (not `bundle: .module`) because `Bundle.module` traps when run through the `~/.local/bin` symlink; the helper's catalog bundle is copied to `Contents/Resources`. `ENABLE_USER_SCRIPT_SANDBOXING = NO` on the app target for the embed step.
