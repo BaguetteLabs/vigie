@@ -12,6 +12,54 @@
           }
         }
       }
+    },
+    "agentsSessions.setting.doneToIdle" : {
+      "comment" : "Setting label: how long a finished agent session stays 'done' before it turns idle.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finished to idle after"
+          }
+        }
+      }
+    },
+    "agentsSessions.setting.doneToIdle.help" : {
+      "comment" : "Help text under the done-to-idle delay setting.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A finished session turns idle after this delay, unless you send a new prompt."
+          }
+        }
+      }
+    },
+    "agentsSessions.setting.terminal" : {
+      "comment" : "Setting label: the terminal app agent sessions are focused in.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminal app"
+          }
+        }
+      }
+    },
+    "agentsSessions.setting.adapters" : {
+      "comment" : "Setting label: the list of enabled agent adapters (Claude Code, Codex, Gemini).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agents"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"
