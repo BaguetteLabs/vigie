@@ -5,7 +5,8 @@ import os
 
 /// The App's `AlertActionRouter` (AD-13): carries out the actions of delivered alerts.
 ///
-/// - `.module(id, actionID, payload)`: `NotchModule` has no action entry point yet; logged until Story 3.3.
+/// - `.module(id, actionID, payload)`: delivered to the running module when it adopts `AlertActionHandler`
+///   (Story 3.3), with the gesture's `UserIntent` when there is one; otherwise logged and dropped.
 /// - `.openSettings(pane)`: opens the Settings window on `pane` (Story 2.14).
 /// - `.openURL`: opened with `NSWorkspace`.
 @MainActor
@@ -28,11 +29,17 @@ public final class AppAlertActionRouter: AlertActionRouter {
     }
 
     public func routeToModule(_ id: ModuleID, actionID: String, payload: Data) {
-        let running = registry()?.module(id) != nil
-        // TODO(Story 3.3): forward to the module once NotchModule exposes an alert action entry point.
-        logger.info(
-            "alert action \(actionID, privacy: .public) for \(id.rawValue, privacy: .public) (running: \(running, privacy: .public)); module action routing arrives with Story 3.3"
-        )
+        routeToModule(id, actionID: actionID, payload: payload, intent: nil)
+    }
+
+    public func routeToModule(_ id: ModuleID, actionID: String, payload: Data, intent: UserIntent?) {
+        let module = registry()?.module(id)
+        guard ModuleAlertActions.deliver(actionID, payload: payload, intent: intent, to: module) else {
+            logger.info(
+                "alert action \(actionID, privacy: .public) for \(id.rawValue, privacy: .public) dropped (running: \(module != nil, privacy: .public), no AlertActionHandler)"
+            )
+            return
+        }
     }
 
     public func openSettings(pane: String) {

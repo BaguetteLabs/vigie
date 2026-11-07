@@ -160,6 +160,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                     ?? PeekPresenter.defaultDwell
             },
             enabled: { _ in configStore.value(CoreSettings.path("closed", "peek"), as: Bool.self) ?? true },
+            // ⌥⌘↵ / ⌥⌘⌫ while a peek is visible; other Vigie shortcuts on those keys yield meanwhile (Story 3.3).
+            shortcuts: TemporaryShortcuts(others: { [hotkeyCenter] in hotkeyCenter.bound }),
+            // No peek while the expanded view is open (Story 3.9).
+            isSuppressed: { [hostLink] in hostLink.host?.isExpanded ?? false },
             logger: Logger(subsystem: environment.logSubsystem, category: "peek"))
         self.peekPresenter = peeks
         // Set once the core notifier exists; a denial is reported once, as a setup problem.
@@ -173,7 +177,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             focus: focusMonitor,
             activity: CoreActivityRecorder(store: activityStore),
             log: notifierLog)
-        peeks.onPrimary = { [weak alertCenter] alert in alertCenter?.activate(alert) }
         self.alertCenter = alertCenter
         let coreNotifier = alertCenter.makeNotifier(for: SetupProblemReporter.manifest)
         reportPermissionDenied = { [notifierLog] message in
