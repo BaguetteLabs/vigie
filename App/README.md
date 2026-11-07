@@ -11,3 +11,8 @@ xcodebuild -project Vigie.xcodeproj -scheme Vigie -configuration Debug build
 ```
 
 Debug builds are `Vigie Dev.app` (`fr.baguettelabs.vigie.dev`); Release builds are `Vigie.app` (`fr.baguettelabs.vigie`). Both are ad-hoc signed for now.
+
+## Manual checks
+
+- **Focus (NFR2, Story 2.5):** `Scripts/check-focus.sh` launches the Debug app, types a sentence into a new TextEdit document and checks it arrived, proving the island panel never takes key status. It needs Automation and Accessibility permission for your terminal, so it is not part of CI.
+- **No notch on this Mac?** Debug builds can draw the island around a simulated 200 pt cut-out at the top of the main screen: `open "Vigie Dev.app" --args -VigieSimulateNotch YES` (removed when the virtual notch lands in Story 2.6). The Notch Host logs the island frame under the `host` category: `/usr/bin/log show --predicate 'subsystem == "fr.baguettelabs.vigie.dev"' --info --last 5m`.

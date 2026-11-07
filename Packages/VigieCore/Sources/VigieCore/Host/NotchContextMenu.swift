@@ -1,7 +1,6 @@
 import AppKit
 
-/// Right-click menu of the closed notch (SPEC 10.1, A32). The closed notch panel arrives
-/// in Story 2.5; until then this only builds the menu.
+/// Right-click menu of the closed notch (SPEC 10.1, A32). `NotchPanel` opens it on right-click.
 @MainActor
 public final class NotchContextMenu: NSObject {
     public let menu = NSMenu()

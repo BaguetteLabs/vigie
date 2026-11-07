@@ -4,7 +4,7 @@ import VigieCore
 import Wire
 
 /// App assembly entry point (AD-2, AD-4). Agent app (`LSUIElement`): no Dock icon, no window.
-/// The Notch Host and module registry are composed here in later stories.
+/// The Notch Host and module registry are composed in `AppDelegate`.
 @main
 struct VigieApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
