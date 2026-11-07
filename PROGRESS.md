@@ -39,20 +39,20 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - [ ] 2.7 Display selection, multi-display and hot-plug
 - [x] 2.8 Closed-notch arbitration with multi-slot sides
 - [x] 2.9 Hotkeys and user-intent focus control
-- [ ] 2.10 Expanded view shell
+- [x] 2.10 Expanded view shell (App wiring in integration pass 3)
 - [x] 2.11 Shared VigieUI components
 - [x] 2.12 Permissions service and needs-permission state
 - [x] 2.13 ConfigStore writer (comment-preserving TOML patcher)
-- [ ] 2.14 Generated Settings window
+- [x] 2.14 Generated Settings window (App wiring in integration pass 3; not yet exercised in the running app)
 - [x] 2.15 Accessibility floor in v0.1 (contrast check in CI; docs/accessibility-floor.md)
 
 ### Epic 3 — Alerts that never steal focus
 - [x] 3.1 Notifier rules engine
-- [ ] 3.2 Peek presentation
+- [x] 3.2 Peek presentation (NotchHost ↔ PeekAnchorProvider conformance + AlertSinks wiring in integration pass 3)
 - [ ] 3.3 Peek actions with temporary global shortcuts
-- [ ] 3.4 Setup-problem alerts
-- [ ] 3.5 Do Not Disturb and Focus modes
-- [ ] 3.6 macOS notification output
+- [x] 3.4 Setup-problem alerts (App wiring in integration pass 3)
+- [x] 3.5 Do Not Disturb and Focus modes (App wiring in integration pass 3; sandbox readability of Assertions.json to confirm on first run)
+- [x] 3.6 macOS notification output (App wiring in integration pass 3)
 - [ ] 3.7 Alert settings generated from declared kinds
 - [x] 3.8 Local activity log (store + API; Settings › Activity pane deferred to 2.14/17.x)
 - [ ] 3.9 Peek concurrency and suppression
@@ -65,8 +65,8 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - [x] 4.5 SessionStore status engine
 - [x] 4.6 Claude Code adapter with version gating (App assembly of `ClaudeAdapter()` pending in the integration pass)
 - [ ] 4.7 Hook installer with diff confirmation
-- [ ] 4.8 Liveness, stale sessions and ignored paths
-- [ ] 4.9 Session glyphs in the closed notch
+- [x] 4.8 Liveness, stale sessions and ignored paths (`host.ready` must be posted by the App; module also reconciles at start)
+- [x] 4.9 Session glyphs in the closed notch
 - [ ] 4.10 Agents tab
 - [ ] 4.11 Session alerts
 - [ ] 4.12 Sleep handling
@@ -112,6 +112,14 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - 2026-11-07 — Story 4.6: support matrix = tested `2.1.0...2.1.319`; same minor with a newer patch → `.assumed` (events flow, settings should warn); other versions → `.unsupported` (no events). `Stop` with running `background_tasks` → `turn.end` (may cause a done→working flip; revisit if noisy). Removal plan matches managed entries by exact command only (AD-22). `CLAUDE_PID` is not on the Wire env whitelist, so the ancestor-name rule applies; consider adding it. SPEC §11 `usage_providers`/`plan_auth` keys deferred to Epic 7. `agents.sessions` must call `adapter.normalize(_:sentAt:support:)` (gated) and raise the setup-problem alert on `.unsupported` (4.11).
 - 2026-11-07 — Story 2.15: 259 DESIGN contrast pairs checked, 0 fail, 10 cited exceptions (`Packages/VigieUI/Sources/VigieUI/Theme/ContrastAudit.swift`). Reduce motion still forces Calm presence through `ThemeController` (pre-existing; formally Story 18.3). DESIGN issues for the UX doc: (1) alert-tinted row ratios in the Contrast table match `surface-card`, not `surface-panel` (A light blocked label on panel = 4.36:1, fails); (2) A light `status-done` on panel measures 5.21, not 4.9; (3) clarify whether alpha zone/chip borders are exempt from 3:1 outside Increase contrast.
 - 2026-11-07 — Story 4.2: CLI writer re-checks the spool inode after taking the lock (closes the open-before-rename gap). `releaseQueue()` is internal; `finishStartup(spool:)` replays then releases. A crash between publish and delete can replay lines twice (`replayed = true` lets receivers dedupe); never loses. Floor test runs the real `vigie` binary with `CFFIXED_USER_HOME`; ~10 s per run.
+
+- 2026-11-07 — Story 2.10: `KeySurface` is an adapter (`ExpandedSurface`), not the panel. Modules cannot expand without a `UserIntent` (`CoreHostControl.expand(focus: nil)` is a no-op). Hover-opened view + hotkey → focus (not close). Losing key focus (Cmd-Tab) does not collapse. No `expand` motion token: grows over `enter`. Panel scan animation not built (no AC). Live check pending: Tab/←→/⌘1…9 with real key events; possible faint hairlines on the active A tab pill in `cacheDisplay` renders.
+- 2026-11-07 — Story 2.14: `SettingControlValue` bridges VigieUI ↔ ConfigStore values (AD-1). Notifications deep link is `com.apple.preference.notifications`. Secret footnote: "Stored in the Keychain. Editing arrives in a later version." Activity log is its own sidebar entry. Login-item state is not reconciled at launch yet. Pane ids: general, activity, appearance, closed (Notch), display, home, notify (Alerts), sounds, sync, updates, then module ids; aliases privacy→general, notch→closed, alerts→notify, displays/virtual_notch→display.
+- 2026-11-07 — Story 3.2: `PeekAnchorProvider.anchor(forDisplayUnder:) -> PeekAnchor?` (nil = skip). `ActionButton` label now shrinks before the shortcut. Not built (no AC): live T+ in the kicker, hold-while-expanded, break peek Snooze, sleep-summary kind. Primary button only when the event has an action; Dismiss always shown. DrainLine made the A dwell line a solid hue (was a gradient into iris-3).
+- 2026-11-07 — Story 3.4: core alerts use `SetupProblemReporter.manifest` (module id `core`, kind `setup.problem`); the App must `makeNotifier(for:)` it or posts are dropped. `NotifierEvent.category` added (ModuleKit). ConfigStore reports `unknownKey` only for registered module tables.
+- 2026-11-07 — Story 3.5: Focus detection reads `~/Library/DoNotDisturb/DB/Assertions.json` (undocumented; folder watch + 15 s poll; unreadable → "not active", logged once). `system` output is still delivered during Focus (macOS applies Focus itself). Notifier now records every outcome in the activity log (3.8 gap closed). `after_focus` option labels fixed to "Drop missed alerts" / "Show the latest per module".
+- 2026-11-07 — Story 3.6: `SystemOutputSink` protocol (renamed). Requests `[.alert, .badge]` once on first use. Nothing calls `retract` on resolve yet (AlertCenter owner to add). Clicks on notifications from before a restart are ignored (in-memory id map).
+- 2026-11-07 — Story 4.8/4.9: `ProcessLiveness` lives in AgentKit (`SystemProcessLiveness`: sysctl KERN_PROC_PID, start time within 0.5 s). Sessions without `agentProcess` are never removed by liveness. Stale is display-only (`displayStatus`), counts as ambient, recomputed every 10 s. `ignored_paths` matches whole path components; ignored keys capped at 256. Glyph loop animation must stay scoped to the glyph (`loopDoesNotLeakIntoSiblings` guards a SwiftUI pitfall). Accessibility time label is as fresh as the last wing rebuild. `LeftWingItem` → `WingItem` rename still open.
 
 ## Notes for the next session
 
