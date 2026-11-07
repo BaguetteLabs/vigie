@@ -25,7 +25,7 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - [x] 1.2 AppEnvironment and dev build isolation
 - [x] 1.3 Continuous integration for pull requests (first GitHub run unverified until gh is authenticated)
 - [ ] 1.4 Spike — Claude Code hook reaches a socket listener
-- [ ] 1.5 Spike — focus a specific Warp tab
+- [P] 1.5 Spike — focus a specific Warp tab (record in docs/decisions/spike-warp-focus.md; deep link found; needs a visual check by Romain)
 - [ ] 1.6 Spike — Ghostty tab focus investigation (Ghostty not installed)
 - [x] 1.7 UX design pass (done in docs, 2026-11-07)
 
@@ -97,6 +97,8 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 
 ## Waiting on Romain
 
+- **Warp focus check (Story 1.5, 5 min, screen unlocked, no permission needed):** open three Warp tabs (one in a second window), run `echo $WARP_FOCUS_URL` in each, then from another tab run `open '<one of those urls>'`. Does the exact tab/pane come to the front? Yes → decision (a) exact focus via deep link; Warp activates but the tab does not switch → (c) app-level. Details and the prototype commands: `docs/decisions/spike-warp-focus.md` § How to re-run.
+- **Ghostty (Story 1.6):** Ghostty is not installed. OK to `brew install --cask ghostty` for the spike and later the adapter? Same question for iTerm2 (Story 5.3) and for the Codex and Gemini CLIs (Epics 8, 14).
 - **gh auth:** `gh` is installed but not logged in. Run `! gh auth login -w` in this session (or `gh auth login` in a terminal) so CI runs on BaguetteLabs/vigie can be checked. Until then the `ci.yml` first run is unverified.
 
 ## Decisions log
