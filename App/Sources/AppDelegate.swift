@@ -3,10 +3,13 @@ import AgentsSessions
 import AppKit
 import ClaudeAdapter
 import GenericTerminal
+import ITermTerminal
 import ModuleKit
 import OSLog
+import TerminalAppTerminal
 import VigieCore
 import VigieUI
+import WarpTerminal
 import Wire
 
 /// Owns process-level lifecycle: accessory policy and the single-instance lock (AD-21), then assembles the
@@ -90,10 +93,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let coordinator = PermissionsCoordinator(checker: SystemPermissionChecker())
         let hotkeyCenter = HotkeyCenter()
 
-        // Built once and shared by the agent modules (AD-4). Per-terminal adapters arrive with Epic 5; until then
-        // every Focus goes to the generic fallback, which activates the terminal app without a tab (A16).
+        // Built once and shared by the agent modules (AD-4). Terminal.app, iTerm2 and Warp focus their tab or
+        // window; any other terminal goes to the generic fallback, which activates the app without a tab (A16).
         let agentAdapters = AgentAdapters([ClaudeAdapter()])
-        let terminalAdapters = TerminalAdapters([], fallback: GenericTerminalAdapter())
+        let terminalAdapters = TerminalAdapters(
+            [TerminalAppAdapter(), ITermAdapter(), WarpAdapter()], fallback: GenericTerminalAdapter())
 
         var descriptors: [ModuleDescriptor] = [
             ModuleDescriptor(manifest: AgentsSessionsModule.staticManifest) {
@@ -177,14 +181,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let systemSink = SystemNotificationSink(
             client: UNUserNotificationCenterClient(), permissions: coordinator, router: actionRouter,
             onPermissionDenied: { message in reportPermissionDenied(message) })
+        // Sound problems post through the core notifier, which exists only after the center: late-bound.
+        var soundProblems: SoundProblemReporter?
+        let soundPlayer = AVAudioPlayerSoundPlayer()
+        let soundSink = NotifierSoundSink(
+            config: { SoundSettings.read(from: configStore) }, player: soundPlayer,
+            onProblem: { problem in soundProblems?.report(problem) },
+            onRecovered: { key in soundProblems?.clear(key: key) },
+            log: Logger(subsystem: environment.logSubsystem, category: "sounds"))
         let alertCenter = AlertCenter(
             rules: notifyRules,
-            sinks: AlertSinks(peek: peeks, system: systemSink, actionRouter: actionRouter),
+            sinks: AlertSinks(peek: peeks, system: systemSink, sound: soundSink, actionRouter: actionRouter),
             focus: focusMonitor,
             activity: CoreActivityRecorder(store: activityStore),
             log: notifierLog)
         self.alertCenter = alertCenter
         let coreNotifier = alertCenter.makeNotifier(for: SetupProblemReporter.manifest)
+        soundProblems = SoundProblemReporter(
+            notifier: coreNotifier, log: Logger(subsystem: environment.logSubsystem, category: "sounds"))
         reportPermissionDenied = { [notifierLog] message in
             notifierLog.error("macOS notifications are denied; reported as a setup problem")
             coreNotifier.post(
@@ -236,7 +250,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let cliInstaller = CLIInstaller.bundledCLIURL(in: .main, cliName: environment.cliName).map {
             CLIInstaller(environment: environment, bundledCLIURL: $0)
         }
-        self.settings = SettingsController(
+        let settings = SettingsController(
             configStore: configStore, registry: registry, permissions: coordinator, hotkeyCenter: hotkeyCenter,
             activityStore: activityStore, cliInstaller: cliInstaller, manifests: manifests,
             loginShellPath: {
@@ -244,6 +258,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 guard await executables.searchPathSource == .loginShell else { return nil }
                 return await executables.searchPath.joined(separator: ":")
             })
+        settings.sounds.player = soundPlayer
+        self.settings = settings
 
         let general = { (key: String) in CoreSettings.path("general", key) }
         let displayPrompt = DisplayPromptRecord()
