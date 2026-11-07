@@ -11,10 +11,15 @@ final class FakeModuleContext: ModuleContext, @unchecked Sendable {
     let fakeStorage: FakeStorage
     let fakeScheduler = FakeScheduler()
     let fakeEvents = FakeEventBus()
+    let fakeNotifier: any Notifier
 
-    init(settings: [String: any SettingValue] = [:], storage: FakeStorage = FakeStorage()) {
+    init(
+        settings: [String: any SettingValue] = [:], storage: FakeStorage = FakeStorage(),
+        notifier: any Notifier = NoNotifier()
+    ) {
         fakeSettings = FakeSettings(values: settings)
         fakeStorage = storage
+        fakeNotifier = notifier
     }
 
     var settings: any ModuleSettings { fakeSettings }
@@ -22,7 +27,7 @@ final class FakeModuleContext: ModuleContext, @unchecked Sendable {
     var secrets: any SecretStore { NoSecrets() }
     var scheduler: any Scheduler { fakeScheduler }
     var hotkeys: any HotkeyRegistry { NoHotkeys() }
-    var notifier: any Notifier { NoNotifier() }
+    var notifier: any Notifier { fakeNotifier }
     var events: any EventBus { fakeEvents }
     var host: any HostControl { NoHost() }
     var permissions: any PermissionsService { NoPermissions() }

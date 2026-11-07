@@ -23,7 +23,7 @@ import os
 /// adapter could not tie to a process (no `agentProcess`) are left to their `session.end`. The same tick
 /// refreshes the derived stale state (`stale_after`) and drops sessions under `ignored_paths`.
 @MainActor @Observable
-public final class AgentsSessionsModule: NotchModule {
+public final class AgentsSessionsModule: NotchModule, AlertActionHandler {
     nonisolated static let bundle = LocalizedStringResource.BundleDescription.atURL(Bundle.module.bundleURL)
 
     /// `sessions.json`, schema 1.
@@ -72,6 +72,7 @@ public final class AgentsSessionsModule: NotchModule {
                 scope: .synced,
                 help: LocalizedStringResource("agentsSessions.setting.ignoredPaths.help", bundle: bundle)),
         ],
+        alertKinds: AlertKind.allCases.map(\.rawValue),
         defaultEnabled: true
     )
 
@@ -115,6 +116,11 @@ public final class AgentsSessionsModule: NotchModule {
     @ObservationIgnored private var persister: SessionPersister?
     @ObservationIgnored var log: Logger?
     @ObservationIgnored var activity: (any ActivityLog)?
+    @ObservationIgnored var notifier: (any Notifier)?
+    /// The open alert per session and the status it was posted for (AD-13: resolved when the session leaves it).
+    @ObservationIgnored var alertHandles: [SessionKey: OpenAlert] = [:]
+    /// The focus started by the last alert action (tests await it).
+    @ObservationIgnored var alertActionTask: Task<FocusResult, Never>?
     /// Built at start from the module context, for terminal adapters without their own context.
     @ObservationIgnored var fallbackTerminalContext: (any AdapterContext)?
 
@@ -141,6 +147,7 @@ public final class AgentsSessionsModule: NotchModule {
         self.log = log
         settings = context.settings
         activity = context.activity
+        notifier = context.notifier
         fallbackTerminalContext = AdapterContextBox(
             settings: DefaultsReadOnlySettings(descriptors: []), secrets: context.secrets,
             executables: context.executables, http: URLSessionHTTPClient(), log: log)
@@ -168,7 +175,7 @@ public final class AgentsSessionsModule: NotchModule {
             for await message in stream {
                 let events = pipeline.normalize(message)
                 guard !events.isEmpty else { continue }
-                let save = await self?.apply(events)
+                let save = await self?.apply(events, replayed: message.replayed)
                 if let save { await persister.write(save.sessions, generation: save.generation) }
             }
         }
@@ -205,6 +212,7 @@ public final class AgentsSessionsModule: NotchModule {
         livenessToken = nil
         // Heartbeat metadata (last action, last event time) is saved once on the way out.
         await persister?.write(store.snapshot, generation: store.generation, force: true)
+        resolveAllAlerts()
     }
 
     /// The right-wing content (FR37, A19). `ClosedNotchArbiter` routes `agents.sessions` items to the trailing
@@ -295,8 +303,15 @@ public final class AgentsSessionsModule: NotchModule {
     /// Ignored paths (FR42, A44): an event whose `cwd` lies under `ignored_paths` marks its session key as
     /// ignored (and removes the session if it was tracked); every later event for that key is dropped, even
     /// without a `cwd`, until its `session.end`.
-    func apply(_ events: [AgentEvent], now: Date = Date()) -> (sessions: [Session], generation: Int)? {
+    ///
+    /// Alerts (Story 4.11): a session entering blocked, done or failed posts once, after the whole batch is
+    /// applied; `replayed` events older than ``replayAlertWindow`` update state without posting (AD-5).
+    @discardableResult
+    func apply(
+        _ events: [AgentEvent], replayed: Bool = false, now: Date = Date()
+    ) -> (sessions: [Session], generation: Int)? {
         var persist = false
+        var pending: [SessionKey: PendingAlert] = [:]
         let ignored = ignoredPaths
         for event in events {
             let key = event.context.sessionKey
@@ -309,9 +324,13 @@ public final class AgentsSessionsModule: NotchModule {
                 if !store.remove([key]).isEmpty { persist = true }
                 continue
             }
-            if store.apply(event).persists { persist = true }
+            let previous = store.table[key]
+            let change = store.apply(event)
+            if change.persists { persist = true }
+            noteAlert(change, previous: previous, at: event.context.at, replayed: replayed, now: now, in: &pending)
         }
         syncState(now: now)
+        postAlerts(pending, now: now)
         return persist ? (store.snapshot, store.generation) : nil
     }
 
@@ -371,6 +390,7 @@ public final class AgentsSessionsModule: NotchModule {
         if display != displaySessions { displaySessions = display }
         let next = SessionReducer.moduleState(statuses: statuses.values)
         if state != next { state = next }
+        resolveEndedAlerts()
     }
 }
 

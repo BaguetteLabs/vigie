@@ -144,6 +144,150 @@
           }
         }
       }
+    },
+    "agentsSessions.alert.kind.blocked" : {
+      "comment" : "Alert settings label of the session.blocked kind.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Blocked session"
+          }
+        }
+      }
+    },
+    "agentsSessions.alert.kind.done" : {
+      "comment" : "Alert settings label of the session.done kind.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finished session"
+          }
+        }
+      }
+    },
+    "agentsSessions.alert.kind.failed" : {
+      "comment" : "Alert settings label of the session.failed kind.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Failed session"
+          }
+        }
+      }
+    },
+    "agentsSessions.alert.title" : {
+      "comment" : "Session alert title: parent folder / project folder.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ / %2$@"
+          }
+        }
+      }
+    },
+    "agentsSessions.alert.blocked.tool" : {
+      "comment" : "Blocked alert detail: agent name, then the tool waiting for approval (e.g. Claude Code wants to run Bash).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ wants to run %2$@"
+          }
+        }
+      }
+    },
+    "agentsSessions.alert.blocked.input" : {
+      "comment" : "Blocked alert detail when the pending tool is unknown: agent name.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ needs input"
+          }
+        }
+      }
+    },
+    "agentsSessions.alert.blocked.question" : {
+      "comment" : "Blocked alert detail when the agent asks the user a question: agent name.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ asks a question"
+          }
+        }
+      }
+    },
+    "agentsSessions.alert.blocked.category" : {
+      "comment" : "Blocked alert reason shown after BLOCKED in the peek kicker. Uppercase.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NEEDS INPUT"
+          }
+        }
+      }
+    },
+    "agentsSessions.alert.done" : {
+      "comment" : "Done alert detail: agent name.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · Turn ended"
+          }
+        }
+      }
+    },
+    "agentsSessions.alert.failed" : {
+      "comment" : "Failed alert detail: agent name, then the agent's error message.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ · %2$@"
+          }
+        }
+      }
+    },
+    "agentsSessions.alert.failed.unknown" : {
+      "comment" : "Failed alert reason when the agent gave no message.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Session error"
+          }
+        }
+      }
+    },
+    "agentsSessions.alert.failed.category" : {
+      "comment" : "Failed alert reason shown after FAILED in the peek kicker. Uppercase.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ERROR"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"
