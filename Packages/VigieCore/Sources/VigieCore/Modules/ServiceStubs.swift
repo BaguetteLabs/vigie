@@ -47,11 +47,6 @@ struct StubClipboardService: ClipboardService {
     func copy(_ text: String, clearAfter: Duration?) {}
 }
 
-/// Implemented in Story 4.4.
-struct StubExecutableResolver: ExecutableResolver {
-    func resolve(_ name: String) async -> URL? { nil }
-}
-
 /// Implemented in Story 21.2.
 struct StubPrivacyService: PrivacyService {
     var isActive: Bool { false }

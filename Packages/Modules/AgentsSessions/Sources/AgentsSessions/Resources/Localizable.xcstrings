@@ -1,0 +1,18 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "agentsSessions.module.name" : {
+      "comment" : "Name of the agent sessions module, shown in Settings and as the Agents tab title.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agents"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

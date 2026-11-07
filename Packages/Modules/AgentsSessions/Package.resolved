@@ -1,0 +1,24 @@
+{
+  "originHash" : "9390bf28103eef24a76a68095224881f62b2b6af0c6fea700be9e19de12ac932",
+  "pins" : [
+    {
+      "identity" : "swift-toml",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/mattt/swift-toml",
+      "state" : {
+        "revision" : "8227201d741c82183c9b0531a7d9ec7fa9240a2f",
+        "version" : "2.1.0"
+      }
+    },
+    {
+      "identity" : "yams",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/jpsim/Yams",
+      "state" : {
+        "revision" : "a27b21e0c81c5bf42049b897a62aaf387e80f279",
+        "version" : "6.2.2"
+      }
+    }
+  ],
+  "version" : 3
+}

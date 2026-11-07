@@ -91,6 +91,14 @@ jobs:
         id: spi-host-guard
         run: Scripts/check-spi-host.sh
 
+      - name: process-launch-guard
+        id: process-launch-guard
+        run: Scripts/check-process-launch.sh
+
+      - name: package-deps-guard
+        id: package-deps-guard
+        run: Scripts/check-package-deps.sh
+
       - name: adapter-fixtures
         id: adapter-fixtures
         run: echo "not yet"

@@ -25,6 +25,12 @@ Scripts/check-view-literals.sh
 echo "==> spi-host guard"
 Scripts/check-spi-host.sh
 
+echo "==> process-launch guard"
+Scripts/check-process-launch.sh
+
+echo "==> package-deps guard"
+Scripts/check-package-deps.sh
+
 echo "==> xcodegen generate"
 (cd App && xcodegen generate)
 

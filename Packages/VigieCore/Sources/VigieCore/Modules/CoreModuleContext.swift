@@ -66,8 +66,8 @@ public protocol ModuleContextFactory {
     func makeContext(for manifest: ModuleManifest, tracker: RegistrationTracker) -> any ModuleContext
 }
 
-/// The production factory: real settings (with a `ConfigStore`), storage, scheduler, event bus, hotkeys and
-/// notifier; the shared permissions coordinator; stubs for the rest.
+/// The production factory: real settings (with a `ConfigStore`), storage, scheduler, event bus, hotkeys,
+/// notifier, activity log and executable resolver; the shared permissions coordinator; stubs for the rest.
 public struct CoreModuleContextFactory: ModuleContextFactory {
     public let environment: AppEnvironment
     public let eventBus: InProcessEventBus
@@ -76,6 +76,9 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
     public let hotkeyCenter: HotkeyCenter
     public let alertCenter: AlertCenter
     public let activityStore: ActivityStore
+    /// The one resolver of the launch, given to every module context. App assembly passes the same instance to
+    /// each adapter's `AdapterContextBox` (AD-4, AD-19).
+    public let executables: ExecutableResolverImpl
 
     /// - Parameters:
     ///   - environment: injected by the App (`AppEnvironment.current`); VigieCore never reads `.current`.
@@ -86,10 +89,12 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
     ///   - alertCenter: the app-wide Notifier; defaults to one with default rules (`StaticNotifyRules`) and
     ///     recording sinks until ConfigStore and the outputs are wired.
     ///   - activityStore: the app-wide activity log store (AD-26); defaults to one for `environment`.
+    ///   - executables: the launch's resolver; defaults to one that runs the user's login shell.
     public init(
         environment: AppEnvironment, eventBus: InProcessEventBus, configStore: ConfigStore? = nil,
         permissions: PermissionsCoordinator? = nil, hotkeyCenter: HotkeyCenter? = nil,
-        alertCenter: AlertCenter? = nil, activityStore: ActivityStore? = nil
+        alertCenter: AlertCenter? = nil, activityStore: ActivityStore? = nil,
+        executables: ExecutableResolverImpl? = nil
     ) {
         self.environment = environment
         self.eventBus = eventBus
@@ -101,6 +106,9 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
             ?? AlertCenter(
                 rules: StaticNotifyRules(), log: Logger(subsystem: environment.bundleID, category: "notifier"))
         self.activityStore = activityStore ?? ActivityStore(environment: environment)
+        self.executables =
+            executables
+            ?? ExecutableResolverImpl(log: Logger(subsystem: environment.logSubsystem, category: "executables"))
     }
 
     public func makeContext(for manifest: ModuleManifest, tracker: RegistrationTracker) -> any ModuleContext {
@@ -124,7 +132,7 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
             permissions: permissions ?? PermissionsCoordinator(checker: SystemPermissionChecker()),
             power: StubPowerService(tracker: tracker),
             clipboard: StubClipboardService(),
-            executables: StubExecutableResolver(),
+            executables: executables,
             privacy: StubPrivacyService(),
             away: StubAwayService(),
             activity: CoreActivityLog(moduleID: manifest.id, store: activityStore),
