@@ -49,13 +49,13 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 ### Epic 3 — Alerts that never steal focus
 - [x] 3.1 Notifier rules engine
 - [x] 3.2 Peek presentation (NotchHost ↔ PeekAnchorProvider conformance + AlertSinks wiring in integration pass 3)
-- [ ] 3.3 Peek actions with temporary global shortcuts
+- [x] 3.3 Peek actions with temporary global shortcuts
 - [x] 3.4 Setup-problem alerts (App wiring in integration pass 3)
 - [x] 3.5 Do Not Disturb and Focus modes (App wiring in integration pass 3; sandbox readability of Assertions.json to confirm on first run)
 - [x] 3.6 macOS notification output (App wiring in integration pass 3)
 - [x] 3.7 Alert settings generated from declared kinds
 - [x] 3.8 Local activity log (store + API; Settings › Activity pane deferred to 2.14/17.x)
-- [ ] 3.9 Peek concurrency and suppression
+- [x] 3.9 Peek concurrency and suppression
 
 ### Epic 4 — Track Claude Code sessions
 - [x] 4.1 Event Server (App wiring pending: start after lock, releaseQueue after registry.start, stop before lock release)
@@ -124,6 +124,8 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - 2026-11-07 — Integration passes 2 and 3 landed: EventServer + spool replay + `host.ready`, ActivityStore, ExecutableResolver (+ `local.toml [executables]`), ConfigStore-backed notify rules, AlertCenter with PeekPresenter / SystemNotificationSink / SystemFocusModeMonitor / activity recorder, SetupProblemReporter, SettingsController (context menu, gear, ⌘, in the expanded view, alert router), expanded view hotkey + config closures, `AgentAdapters([ClaudeAdapter()])`, CLIInstaller at launch. ConfigStore gained `rawValue(at:in:)`/`rawTable(at:in:)` and reports unknown-table edits on `changes`. `Topic.hostReady` added to Wire. Debug flags: `-VigieSimulateNotch YES`, `-VigieSimulateFocus YES`.
 - 2026-11-07 — Known at launch on Romain's Mac: six `setup.problem` alerts from unknown keys in `~/.config/vigie/config.toml` under `modules."agents.sessions"` (`ask_cwd`, `priority`, …; `stale_after`/`ignored_paths` are declared since 4.8). Either declare the remaining SPEC keys in the module manifest as they are implemented, or decide that unknown-key problems should not peek. Also: nothing calls `SystemNotificationSink.retract` on resolve yet; `PeekPresenter` wiring and the ⌘, hook have no automated test.
 - 2026-11-07 — Story 3.7: Settings writes always use the `[modules."<id>".notify."<kind>"]` table form; rules in the SPEC §6 inline-table form resolve but cannot be edited (localized "unsupported location"). `ConfigSchema.register` adds `mute`/`outputs`/`reminder` per declared kind. Kind labels come from the catalog (`settings.alerts.kind.<kind>`); manifests declare kinds as plain strings (no per-kind reminder defaults).
+
+- 2026-11-07 — Story 3.3/3.9: peek shortcuts are fixed Carbon hotkeys via KeyboardShortcuts (`peek:primary`, `peek:secondary`), outside `HotkeyCenter`, firing on key-up; conflicting user hotkeys are paused while a peek is visible. Module action entry point is the optional `AlertActionHandler` protocol (ModuleKit `Services.swift`), not a `NotchModule` requirement. `AlertUrgency` is the single rank table (`time.break_reminder` is the canonical break kind); unknown kinds rank after `setup.problem`. `AlertCenter.dismiss` cancels the reminder and keeps the alert active. While the expanded view is open new/queued peeks are suppressed; a peek already on screen stays (needs an expand hook on `NotchHost`).
 
 ## Notes for the next session
 
