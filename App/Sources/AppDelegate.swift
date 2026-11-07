@@ -30,6 +30,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var setupProblems: SetupProblemReporter?
     private var settings: SettingsController?
     private var appTopics: AppTopics?
+    private var hostConfig: HostConfigBridge?
     private var isShuttingDown = false
 
     private let environment = AppEnvironment.current
@@ -240,6 +241,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             })
 
         let general = { (key: String) in CoreSettings.path("general", key) }
+        let displayPrompt = DisplayPromptRecord()
         let host = NotchHost(
             themeController: themeController,
             registry: registry,
@@ -251,6 +253,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             closedSlots: {
                 configStore.value(CoreSettings.path("closed", "slots"), as: Int.self) ?? ClosedNotchArbiter.defaultSlots
             },
+            virtualNotch: { VirtualNotchSettings(configStore: configStore) },
+            displaySelection: { DisplaySelection(configStore: configStore) },
+            hideInFullScreen: { configStore.value(general("hide_in_fullscreen"), as: Bool.self) ?? true },
+            displayPromptPending: { displayPrompt.isPending },
+            onDisplayPromptAnswer: { [logger] answer in
+                Task { @MainActor in
+                    do {
+                        try await answer.apply(store: configStore, record: displayPrompt)
+                    } catch {
+                        logger.error("display prompt: \(String(describing: error), privacy: .public)")
+                    }
+                }
+            },
             openOnHover: { configStore.value(general("open_on_hover"), as: Bool.self) ?? false },
             hoverDelay: { configStore.value(general("hover_delay"), as: Duration.self) ?? NotchHost.defaultHoverDelay },
             closeOnLeave: { configStore.value(general("close_on_leave"), as: Bool.self) ?? false },
@@ -259,6 +274,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             logger: Logger(subsystem: environment.logSubsystem, category: "host"))
         hostLink.host = host
         self.notchHost = host
+        // Display selection and the virtual notch (Stories 2.6, 2.7): re-place or re-arbitrate on config edits.
+        let hostConfig = HostConfigBridge(store: configStore, host: host)
+        hostConfig.start()
+        self.hostConfig = hostConfig
 
         // `vigie reload` and `app.expand` (Story 4.3, AD-21). Subscribed before the server's queue is released.
         let appTopics = AppTopics(
@@ -317,6 +336,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             return .terminateNow
         }
         settings?.close()
+        hostConfig?.stop()
         notchHost?.stop()
         hotkeyBridge?.stop()
         setupProblems?.stop()

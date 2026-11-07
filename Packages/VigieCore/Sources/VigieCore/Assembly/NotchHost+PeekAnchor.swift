@@ -1,10 +1,11 @@
 import AppKit
 
 /// Peeks grow from the island on the display under the pointer, else from the main Vigie display (FR23,
-/// Story 3.2). The main display is the first island anchor (the notched display, or the one `display` names).
+/// Story 3.2). The main display is the first island (``NotchHost/activeDisplayID``: the one `[display] display`
+/// selects, Story 2.7).
 extension NotchHost: PeekAnchorProvider {
     public func anchor(forDisplayUnder pointer: NSPoint?) -> PeekAnchor? {
-        let islands = islandAnchors.map(Self.peekAnchor(for:))
+        let islands = anchorsOverride.map { $0.map(Self.peekAnchor(for:)) } ?? peekAnchors
         return PeekAnchor.select(pointer: pointer, islands: islands, main: islands.first)
     }
 
