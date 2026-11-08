@@ -51,11 +51,12 @@ public enum PeekContentMapper {
 
     // MARK: Copy
 
-    /// The kicker, with the event's category when it has one (`SETUP · CONFIG`, Story 3.4).
+    /// The kicker, with the event's category when it has one (`SETUP · CONFIG`, Story 3.4). A Timer end's
+    /// category is its end time, written after the kicker without a separator (`TIMER · ENDED 14:48`, Story 20.2).
     static func kicker(_ kind: PeekKind, category: String?) -> String {
         let base = string(kickerKey(kind))
         guard let category, !category.isEmpty else { return base }
-        return format("peek.kicker.withCategory", base, category)
+        return format(kind == .timerEnd ? "peek.kicker.withTime" : "peek.kicker.withCategory", base, category)
     }
 
     static func kickerKey(_ kind: PeekKind) -> String {

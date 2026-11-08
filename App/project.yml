@@ -25,6 +25,8 @@ packages:
     path: ../Packages/Modules/AgentsUsage
   Shelf:
     path: ../Packages/Modules/Shelf
+  Time:
+    path: ../Packages/Modules/Time
   ClaudeAdapter:
     path: ../Packages/Adapters/Claude
   GenericTerminal:
@@ -69,6 +71,7 @@ targets:
       - package: AgentsSessions
       - package: AgentsUsage
       - package: Shelf
+      - package: Time
       - package: ClaudeAdapter
       - package: GenericTerminal
       - package: TerminalAppTerminal

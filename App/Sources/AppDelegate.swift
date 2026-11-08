@@ -9,6 +9,7 @@ import ModuleKit
 import OSLog
 import Shelf
 import TerminalAppTerminal
+import Time
 import VigieCore
 import VigieUI
 import WarpTerminal
@@ -122,6 +123,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             },
             // Stash zone and the items it keeps (SPEC §7.3, Story 9.2).
             ModuleDescriptor(manifest: ShelfModule.staticManifest) { ShelfModule() },
+            // Timers and Countdowns, the Time tab and the Timer-end alert (SPEC §7.7, Story 20.2). Off by default.
+            ModuleDescriptor(manifest: TimeModule.staticManifest) { TimeModule() },
         ]
         #if DEBUG
             // The Debug build shows the sample module without touching the user's config.

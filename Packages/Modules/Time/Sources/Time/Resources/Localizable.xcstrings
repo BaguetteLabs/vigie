@@ -1,0 +1,342 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "time.module.name" : {
+      "comment" : "Module name (tab title, Settings).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Time"
+          }
+        }
+      }
+    },
+    "time.setting.hotkey" : {
+      "comment" : "Settings: the global hotkey that opens the Time tab with the quick start focused.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Time"
+          }
+        }
+      }
+    },
+    "time.setting.hotkey.help" : {
+      "comment" : "Settings help for the Time hotkey.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens the Time tab with the quick start focused. No shortcut by default."
+          }
+        }
+      }
+    },
+    "time.setting.presets" : {
+      "comment" : "Settings: preset lengths in minutes on the Time quick start.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quick-start presets"
+          }
+        }
+      }
+    },
+    "time.setting.presets.help" : {
+      "comment" : "Settings help for the presets list.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lengths in minutes, from 1 to 1440, shown as buttons on the quick start."
+          }
+        }
+      }
+    },
+    "time.label.timer" : {
+      "comment" : "Default name of a Timer started without one.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Timer"
+          }
+        }
+      }
+    },
+    "time.label.countdown" : {
+      "comment" : "Default name of a Countdown started without one.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Countdown"
+          }
+        }
+      }
+    },
+    "time.timeFormat" : {
+      "comment" : "Date format for clock times in the Time tab and alerts (14:52).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HH:mm"
+          }
+        }
+      }
+    },
+    "time.dateFormat" : {
+      "comment" : "Date format of a Countdown's day (FRI 14 NOV); uppercased.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EEE dd MMM"
+          }
+        }
+      }
+    },
+    "time.a11y.dateFormat" : {
+      "comment" : "Date format of a Countdown's day for VoiceOver (Friday 14 November).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EEEE d MMMM"
+          }
+        }
+      }
+    },
+    "time.kind.timer" : {
+      "comment" : "Time tab row kind of a Timer. Arg = minutes. Uppercase.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld MIN TIMER"
+          }
+        }
+      }
+    },
+    "time.kind.countdown" : {
+      "comment" : "Time tab row kind of a Countdown. Args = day, clock time. Uppercase.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "COUNTDOWN · %1$@ · %2$@"
+          }
+        }
+      }
+    },
+    "time.value.days" : {
+      "comment" : "Time tab remaining time of a day or more (7D 23H). Args = days, hours.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lldD %2$lldH"
+          }
+        }
+      }
+    },
+    "time.subline.ends" : {
+      "comment" : "Time tab row: when it ends. Arg = clock time. Uppercase.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ENDS %@"
+          }
+        }
+      }
+    },
+    "time.subline.inHours" : {
+      "comment" : "Time tab row: a Countdown more than a day away, in hours. Uppercase.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "IN %lld H"
+          }
+        }
+      }
+    },
+    "time.subline.paused" : {
+      "comment" : "Time tab row of a paused Timer. Uppercase.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PAUSED"
+          }
+        }
+      }
+    },
+    "time.subline.ended" : {
+      "comment" : "Time tab row of an ended item, until dismissed. Arg = end time. Uppercase.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ENDED %@"
+          }
+        }
+      }
+    },
+    "time.a11y.timerKind" : {
+      "comment" : "VoiceOver: kind of a Timer, e.g. Tea, 5 minute timer. Arg = minutes.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld minute timer"
+          }
+        }
+      }
+    },
+    "time.a11y.countdownKind" : {
+      "comment" : "VoiceOver: kind of a Countdown. Args = day, clock time.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "countdown to %1$@, %2$@"
+          }
+        }
+      }
+    },
+    "time.a11y.left" : {
+      "comment" : "VoiceOver: remaining time, e.g. 3 minutes, 12 seconds left.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ left"
+          }
+        }
+      }
+    },
+    "time.a11y.ends" : {
+      "comment" : "VoiceOver: when it ends. Arg = clock time.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ends %@"
+          }
+        }
+      }
+    },
+    "time.a11y.paused" : {
+      "comment" : "VoiceOver: a paused Timer.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "paused"
+          }
+        }
+      }
+    },
+    "time.a11y.ended" : {
+      "comment" : "VoiceOver: an ended item. Arg = clock time.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ended %@"
+          }
+        }
+      }
+    },
+    "time.a11y.join" : {
+      "comment" : "VoiceOver: joins two parts of a Time row label.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, %2$@"
+          }
+        }
+      }
+    },
+    "time.alert.title" : {
+      "comment" : "Timer-end alert title: name / length (Tea / 5 min).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ / %2$@"
+          }
+        }
+      }
+    },
+    "time.alert.minutes" : {
+      "comment" : "Timer-end alert title: a Timer's length in minutes.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld min"
+          }
+        }
+      }
+    },
+    "time.alert.countdown" : {
+      "comment" : "Timer-end alert title: the length part for a Countdown.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "countdown"
+          }
+        }
+      }
+    },
+    "time.alert.body" : {
+      "comment" : "Timer-end alert detail. Args = start and end clock times.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Started %1$@ · ended %2$@"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

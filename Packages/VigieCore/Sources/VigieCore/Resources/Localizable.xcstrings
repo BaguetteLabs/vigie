@@ -2004,6 +2004,18 @@
           }
         }
       }
+    },
+    "peek.kicker.withTime": {
+      "comment": "Timer-end peek kicker followed by the end clock time, e.g. TIMER · ENDED 14:48. %1$@ is the kicker, %2$@ the time; shown uppercase.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ %2$@"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

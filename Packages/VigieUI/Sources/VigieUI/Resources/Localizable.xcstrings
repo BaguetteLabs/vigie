@@ -2304,6 +2304,306 @@
           }
         }
       }
+    },
+    "time.quickStart.title" : {
+      "comment" : "Time tab: quick-start card title. Uppercase.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "QUICK START"
+          }
+        }
+      }
+    },
+    "time.quickStart.meta" : {
+      "comment" : "Time tab: quick-start card meta (Return starts). Uppercase.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "↵ START"
+          }
+        }
+      }
+    },
+    "time.quickStart.pomodoro" : {
+      "comment" : "Time tab quick start: Pomodoro button label. Uppercase.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "POMODORO"
+          }
+        }
+      }
+    },
+    "time.quickStart.pomodoro.a11y" : {
+      "comment" : "VoiceOver label of the disabled Pomodoro quick-start button.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pomodoro, not available yet"
+          }
+        }
+      }
+    },
+    "time.quickStart.pomodoro.later" : {
+      "comment" : "Tooltip of the disabled Pomodoro quick-start button.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pomodoro arrives in a later version."
+          }
+        }
+      }
+    },
+    "time.quickStart.min" : {
+      "comment" : "Time tab quick start: unit after a preset or the custom field. Uppercase.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MIN"
+          }
+        }
+      }
+    },
+    "time.quickStart.preset.a11y" : {
+      "comment" : "VoiceOver label of a quick-start preset. Arg = minutes.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start a %lld minute timer"
+          }
+        }
+      }
+    },
+    "time.quickStart.countdown" : {
+      "comment" : "Time tab quick start: opens the Countdown form (to a clock time). Uppercase.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "+ COUNTDOWN"
+          }
+        }
+      }
+    },
+    "time.quickStart.countdown.a11y" : {
+      "comment" : "VoiceOver label of the + COUNTDOWN button.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New countdown to a clock time"
+          }
+        }
+      }
+    },
+    "time.quickStart.field.prompt" : {
+      "comment" : "Placeholder of the custom minutes field (an example length).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "45"
+          }
+        }
+      }
+    },
+    "time.quickStart.field.a11y" : {
+      "comment" : "VoiceOver label of the custom minutes field.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Minutes, optionally followed by a name"
+          }
+        }
+      }
+    },
+    "time.quickStart.start" : {
+      "comment" : "Time tab: start the custom timer or the countdown. Uppercase.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "START"
+          }
+        }
+      }
+    },
+    "time.running.title" : {
+      "comment" : "Time tab running card title. Arg = running and paused items. Uppercase.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RUNNING · %lld"
+          }
+        }
+      }
+    },
+    "time.running.meta" : {
+      "comment" : "Time tab running card meta. Uppercase.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SORTED BY END TIME"
+          }
+        }
+      }
+    },
+    "time.action.pause" : {
+      "comment" : "Time tab row chip. Uppercase.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PAUSE"
+          }
+        }
+      }
+    },
+    "time.action.resume" : {
+      "comment" : "Time tab row chip. Uppercase.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RESUME"
+          }
+        }
+      }
+    },
+    "time.action.reset" : {
+      "comment" : "Time tab row chip. Uppercase.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RESET"
+          }
+        }
+      }
+    },
+    "time.action.remove" : {
+      "comment" : "Time tab row chip. Uppercase.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "REMOVE"
+          }
+        }
+      }
+    },
+    "time.action.dismiss" : {
+      "comment" : "Time tab row chip on an ended item: acknowledges it. Uppercase.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DISMISS"
+          }
+        }
+      }
+    },
+    "time.action.undo" : {
+      "comment" : "Time tab: put back the item just removed. Uppercase.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "UNDO"
+          }
+        }
+      }
+    },
+    "time.undo.removed" : {
+      "comment" : "Time tab: shown for 5 s after a Remove, beside UNDO. Uppercase.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "REMOVED"
+          }
+        }
+      }
+    },
+    "time.countdown.title" : {
+      "comment" : "Countdown form title. Uppercase.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "COUNTDOWN TO"
+          }
+        }
+      }
+    },
+    "time.countdown.date" : {
+      "comment" : "Countdown form: the date and clock time picker label.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "End time"
+          }
+        }
+      }
+    },
+    "time.countdown.name" : {
+      "comment" : "Countdown form: name field label.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Name"
+          }
+        }
+      }
+    },
+    "time.countdown.name.prompt" : {
+      "comment" : "Countdown form: name field placeholder.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Name (optional)"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

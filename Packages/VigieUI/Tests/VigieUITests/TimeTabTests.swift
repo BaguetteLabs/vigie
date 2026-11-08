@@ -1,0 +1,127 @@
+import AppKit
+import Foundation
+import ModuleKit
+import SwiftUI
+import Testing
+
+@testable import VigieUI
+
+@MainActor @Suite struct TimeTabTests {
+    static let ids = (0..<4).map { _ in UUID() }
+
+    static let ended = TimeRowModel(
+        id: ids[0], label: "Laundry", kind: "45 MIN TIMER", value: "0:00", subline: "ENDED 14:48", visual: .ended,
+        controls: [.dismiss], isEnded: true, accessibilityLabel: "Laundry, 45 minute timer, ended 14:48")
+    static let tea = TimeRowModel(
+        id: ids[1], label: "Tea", kind: "5 MIN TIMER", value: "3:06", subline: "ENDS 14:52",
+        visual: .ring(fractionLeft: 0.62, paused: false), controls: [.pause, .reset, .remove],
+        accessibilityLabel: "Tea, 5 minute timer, 3 minutes, 6 seconds left, ends 14:52")
+    static let paused = TimeRowModel(
+        id: ids[2], label: "Standup notes", kind: "25 MIN TIMER", value: "18:42", subline: "PAUSED",
+        visual: .ring(fractionLeft: 0.75, paused: true), controls: [.resume, .reset, .remove],
+        accessibilityLabel: "Standup notes, 25 minute timer, 18 minutes, 42 seconds left, ends 15:07, paused")
+    static let countdown = TimeRowModel(
+        id: ids[3], label: "Release 0.3", kind: "COUNTDOWN · SAT 14 NOV · 14:00", value: "7D 23H",
+        subline: "IN 191 H", visual: .track(fractionElapsed: 0.08), controls: [.remove],
+        accessibilityLabel: "Release 0.3, countdown to Saturday 14 November, 14:00")
+
+    static func snapshot(_ rows: [TimeRowModel], selected: UUID? = nil, canUndo: Bool = false) -> TimeTabSnapshot {
+        TimeTabSnapshot(
+            quickStart: TimeQuickStart(presets: [5, 10, 25], pomodoroLengths: "25 · 5 · 15"), rows: rows,
+            runningCount: rows.filter { !$0.isEnded }.count, selectedID: selected, canUndo: canUndo)
+    }
+
+    @Test func privacyMasksLabelsOnly() {
+        let snapshot = Self.snapshot([Self.tea]).privacy(true)
+        let row = snapshot.rows[0]
+        #expect(row.label == PrivacyMask.text)
+        #expect(row.value == "3:06")
+        #expect(row.accessibilityLabel.hasPrefix(PrivacyMask.text + ", 5 minute timer"))
+        #expect(Self.snapshot([Self.tea]).privacy(false).rows[0].label == "Tea")
+    }
+
+    @Test func arrowKeysMoveTheSelection() {
+        let snapshot = Self.snapshot([Self.ended, Self.tea, Self.paused], selected: Self.ids[1])
+        #expect(snapshot.moved(by: 1) == Self.ids[2])
+        #expect(snapshot.moved(by: -1) == Self.ids[0])
+        #expect(Self.snapshot([Self.ended, Self.tea], selected: Self.ids[1]).moved(by: 1) == Self.ids[1])
+        #expect(Self.snapshot([Self.ended, Self.tea]).moved(by: 1) == Self.ids[0])
+        #expect(Self.snapshot([Self.ended, Self.tea]).moved(by: -1) == Self.ids[1])
+        #expect(Self.snapshot([]).moved(by: 1) == nil)
+    }
+
+    @Test func spaceTogglesPauseOnlyWhereTheRowHasIt() {
+        #expect(Self.tea.pauseToggle == .pause)
+        #expect(Self.paused.pauseToggle == .resume)
+        #expect(Self.countdown.pauseToggle == nil)
+        #expect(Self.ended.pauseToggle == nil)
+    }
+
+    @Test func staticCopyIsInTheCatalog() {
+        #expect(L10n.string("time.quickStart.title") == "QUICK START")
+        #expect(L10n.string("time.quickStart.countdown") == "+ COUNTDOWN")
+        #expect(L10n.format("time.running.title", 3) == "RUNNING · 3")
+        #expect(
+            TimeRowModel.Control.allCases.map { L10n.string("time.action.\($0.rawValue)") }
+                == ["PAUSE", "RESUME", "RESET", "REMOVE", "DISMISS"])
+        #expect(String(localized: VigieCopy.nothingRunning.label) == "NOTHING RUNNING")
+        #expect(L10n.format("time.quickStart.preset.a11y", 5) == "Start a 5 minute timer")
+    }
+
+    nonisolated static let looks: [(Look, String)] = [
+        (.dark, ThemeLibrary.defaultVariantID), (.light, ThemeLibrary.defaultVariantID),
+        (.dark, "twin-metal-tactical"), (.light, "twin-metal-tactical"),
+    ]
+
+    /// The tab with an ended, a running and a paused Timer (running row selected), the mockup's Timer and
+    /// Countdown, and the empty list, at 720 × 350. Set `VIGIE_RENDER_DIR` to keep the PNGs.
+    @Test(arguments: looks)
+    func rendersTheTab(look: Look, variant: String) throws {
+        let theme = SessionsTabTests.theme(look, variant: variant)
+        let name = "time-\(variant)-\(look.rawValue)"
+        let three = Self.snapshot([Self.ended, Self.tea, Self.paused], selected: Self.ids[1])
+        let main = TimeTabView(snapshot: { three }, actions: TimeTabActions()).rendering(minutes: "45")
+        #expect(SessionGlyphTests.inkedPixels(try SessionsTabTests.render(main, theme: theme, name: name)) > 4000)
+
+        let mock = Self.snapshot([Self.tea, Self.countdown], canUndo: true)
+        let second = TimeTabView(snapshot: { mock }, actions: TimeTabActions()).rendering(minutes: "")
+        _ = try SessionsTabTests.render(second, theme: theme, name: "\(name)-countdown")
+
+        let none = Self.snapshot([])
+        let empty = TimeTabView(snapshot: { none }, actions: TimeTabActions()).rendering(minutes: "")
+        #expect(
+            SessionGlyphTests.inkedPixels(try SessionsTabTests.render(empty, theme: theme, name: "\(name)-empty")) > 500
+        )
+    }
+
+    /// The Timer-end peek (DESIGN "Time peeks": Time accent rim, ring beacon, kicker with the end time).
+    @Test(arguments: looks)
+    func rendersTheTimerEndPeek(look: Look, variant: String) throws {
+        let theme = SessionsTabTests.theme(look, variant: variant)
+        let content = PeekContent(
+            kind: .timerEnd, kicker: "Timer · ended 14:48", title: "Tea / 5 min", body: "Started 14:43 · ended 14:48",
+            primary: PeekAction(
+                label: LocalizedStringResource(stringLiteral: "Open time"), shortcut: PeekAction.primaryShortcut),
+            secondary: PeekAction(
+                label: LocalizedStringResource(stringLiteral: "Dismiss"), shortcut: PeekAction.secondaryShortcut),
+            accentRole: theme.usesCornerMarks ? .gold : .iris1)
+        let margin = theme.peekShadow.margin
+        let view = PeekView(
+            content: content, dwell: PeekDwellState(total: .seconds(5), remaining: .seconds(3), isRunning: false)
+        )
+        .padding(.horizontal, margin)
+        .padding(.bottom, margin)
+        .background(look == .dark ? Color(white: 0.22) : Color(white: 0.85))
+        .vigieTheme(theme)
+        let renderer = ImageRenderer(content: view)
+        renderer.scale = 2
+        let image = try #require(renderer.cgImage)
+        #expect(SessionGlyphTests.inkedPixels(image) > 1000)
+        if let directory = ProcessInfo.processInfo.environment["VIGIE_RENDER_DIR"] {
+            let data = try #require(NSBitmapImageRep(cgImage: image).representation(using: .png, properties: [:]))
+            try data.write(
+                to: URL(fileURLWithPath: directory).appendingPathComponent(
+                    "peek-timer-end-\(variant)-\(look.rawValue).png"))
+        }
+    }
+}

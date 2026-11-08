@@ -31,7 +31,7 @@ public final class SoundsPaneModel {
         chooseFile = SoundsPaneModel.openPanel
     }
 
-    /// The events listed, in order (four today; the table keeps room for the other three).
+    /// The events listed, in order (five today, timer end included; the table keeps room for the other two).
     public var keys: [String] { SoundTable.settingsKeys }
 
     public var isEnabled: Bool { configStore.value(SoundSettings.path("enabled"), as: Bool.self) ?? false }

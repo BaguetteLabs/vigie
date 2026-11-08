@@ -413,6 +413,24 @@ final class PeekHarness {
         #expect(content.accentRole == .gold)
     }
 
+    /// Story 20.2: the Time module's Timer-end alert as the peek shows it.
+    @Test func timerEndKickerCarriesTheEndTime() {
+        let alert = ActiveAlert(
+            id: UUID(), module: "time",
+            event: NotifierEvent(
+                kind: "time.timer_end", severity: .info, title: "Tea / 5 min", body: "Started 14:43 · ended 14:48",
+                action: .module(id: "time", actionID: "open-time", payload: Data()), category: "14:48"),
+            outputs: [.peek], postedAt: Date())
+        let content = PeekContentMapper.content(for: alert, theme: Self.theme)
+        #expect(content.kicker == "Timer · ended 14:48")
+        #expect(content.title == "Tea / 5 min")
+        #expect(content.body == "Started 14:43 · ended 14:48")
+        #expect(content.primary.map { String(localized: $0.label) } == "Open time")
+        #expect(content.secondary.map { String(localized: $0.label) } == "Dismiss")
+        #expect(
+            PeekContentMapper.announcement(for: content).contains("Timer · ended 14:48, Tea / 5 min"))
+    }
+
     @Test func breakPeekSecondaryIsSkip() {
         let content = PeekContentMapper.content(for: PeekHarness.alert("time.break_reminder"), theme: Self.theme)
         #expect(content.secondary.map { String(localized: $0.label) } == "Skip")

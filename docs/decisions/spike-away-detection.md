@@ -35,7 +35,7 @@
    `CGSessionCopyCurrentDictionary`, so a launch on a locked screen starts Away.
 2. **Polling:** **5 s while break reminders (or a Pomodoro, 20.5) need presence, nothing otherwise.** The
    screen notifications are push and cost nothing; idle time has no push form. 5 s keeps a 90 s threshold
-   within 5 % and costs 0.2 ms CPU per minute (below). 1 s buys nothing for a minutes-scale feature.
+   within 5 % and costs about 2.4 ms of process CPU per minute (0.004 %; 11.6 ms at 1 s, below). 1 s buys nothing for a minutes-scale feature.
 3. **Permission cost: none to ask for.** No prompt appeared; the idle value was correct with Input
    Monitoring *not* granted (`authValue=0`). AD-20 and AD-25 stand as written; no `Permission` case and no
    usage string are needed. Re-check on the first Developer ID / Hardened Runtime build (see "Unverified").

@@ -66,3 +66,16 @@ public enum PrivacyMask {
         return values.reduce(text) { $0.replacingOccurrences(of: $1, with: Self.text) }
     }
 }
+
+/// A sensitive field persists as its bare value (Story 20.2: Time item labels in the module's state file);
+/// the marking is a rendering rule, not part of the stored data.
+extension Sensitive: Codable where Value: Codable {
+    public init(from decoder: any Decoder) throws {
+        self.init(wrappedValue: try decoder.singleValueContainer().decode(Value.self))
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(wrappedValue)
+    }
+}
