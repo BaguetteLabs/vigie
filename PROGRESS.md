@@ -87,7 +87,7 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - [x] 6.4 Versioning and build numbers (run `Scripts/version.sh --xcconfig App/Config/Version.xcconfig` before a manual `xcodegen generate`)
 
 ### v0.2 — Epics 7 (Usage), 8 (Codex, `vigie run`), 9 (Shelf), 10 (Sounds), 21 (Privacy)
-- [x] 7.1, 7.2 (signed-build AC pending a real identity), 7.3 (live endpoint untested; AD-23 path ruling pending) , 7.4, 7.5, 7.6, 7.7, 7.8 (not yet seen live), 7.9, 7.10 (AD-23 wording rulings pending) · [ ] 8.1–8.4 · [ ] 9.1–9.10 · [x] 10.1–10.2 (listen to the WAVs once) · [ ] 21.1–21.3
+- [x] 7.1, 7.2 (signed-build AC pending a real identity), 7.3 (live endpoint untested; AD-23 path ruling pending) , 7.4, 7.5, 7.6, 7.7, 7.8 (not yet seen live), 7.9, 7.10 (AD-23 wording rulings pending) · [ ] 8.1–8.4 · [x] 9.1 (no real drag tested yet) · [ ] 9.2–9.10 · [x] 10.1–10.2 (listen to the WAVs once) · [ ] 21.1–21.3
 
 ### v0.3 — Epics 11 (Home), 12 (Scripts), 13 (Calendar), 14 (Gemini), 20 (Time)
 - [x] 11.1 · [x] 11.2 · [ ] 11.3 · [ ] 12.1–12.11 · [ ] 13.1–13.4 · [ ] 14.1–14.3 · [ ] 20.1–20.6
@@ -112,6 +112,8 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 
 - AD-23 wording after 7.10: (a) Accounts stored in the adapter table (`agents.sessions.adapter.<id>.account.*`) rather than under `agents.usage`; (b) Keychain owner `adapter.<id>` + per-Account key instead of an owner id that includes the Account. Confirm or ask for a change; then amend SPINE AD-23 and SPEC §8.2 (`CLAUDE_CONFIG_DIR`).
 - New story needed: hook installer per Account location (extra `CLAUDE_CONFIG_DIR` setups get no hooks today).
+
+- Drag a file from Finder over the notch once (Vigie Dev): the drop display should grow out without focus change; press Esc to cancel. Report if nothing appears.
 
 ## Decisions log
 
@@ -175,6 +177,8 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - 2026-11-08 — Story 11.2 (quota card): `UsageHomeCardView` bound to `usageTabSnapshot()`; rows 32 pt (3 fit, fade from 4); `STALE · HH:MM` replaces the reset line on a stale row; `homeCard()` task refreshes overview + plan like the tab. Epic 11.1/11.2 done; 11.3 (shelf widget) waits for Epic 9.
 
 - 2026-11-08 — Story 7.10: Accounts live in the adapter table (`[modules."agents.sessions".adapter.<id>] accounts = [...]` + `account.<id>.{label,location,usage_providers,plan_auth}`, local.toml), not under `agents.usage` (sessions must attribute too). ConfigSchema gained key templates (`account.*.label`). Keychain owner stays `adapter.<id>` with per-Account keys `plan_token.<account>` (AD-23 says "owner id includes the Account" — wording ruling). Consent ids `claude.claude_code_login[.<account>]`. Login item name for a custom `CLAUDE_CONFIG_DIR` is guessed as `Claude Code-credentials-<sha256[0:8]>` (unverified). Ring's "most recent Account" = latest usage record (`UsageStore.latestAccounts()`), not sessions. Card headers use the short provider name (`CLAUDE · WORK`). Cost card got a `PROJECTS · ACCOUNTS` switch (not in mockup). `CLAUDE_CONFIG_DIR` added to Wire's env whitelist (SPEC §8.2 list needs it). Store schema v2 (`account` column). **Gap:** hooks are installed only in `~/.claude/settings.json`; a Claude Code run with another `CLAUDE_CONFIG_DIR` reads `<dir>/settings.json` → extra Accounts never report sessions until the installer handles per-Account locations (new story needed). Privacy-mode marking of Account labels waits for Epic 21.
+
+- 2026-11-08 — Story 9.1: host-side drop display (`Host/Drop/`, VigieUI `Drop/`). `DropZone` gained `meta`, `releaseLine`, `accessibilityLabel`, `modifierHint`, `style(.standard|.target)`, `isEnabled`, `accepts(contentTypes:)` (AD-19 field list needs updating). Grid: Stash (1,1,2×2, order 0), Ask AI (3,1,1×2, order 10, `.target`), AirDrop (4,1, order 20), Image to Text (4,2, order 30, accepts image/pdf); accent token `iris-2`. File promises → `AppEnvironment.dropsDirectory/<UUID>/` (30 s timeout). `PeekPresenter(isDropDisplayOpen:)` + `resume()`. Debug flag `-VigieSimulateDrop YES` opens the display 5 s with sample zones. **Untested live:** a real file drag over the island (SwiftUI may override the hosting view's drag registration) and Esc (needs Accessibility for the key monitor; AppKit drag cancel still retracts). `DropResult` has no readout case yet (9.9 adds `COPIED`). Rim always static.
 
 ## Notes for the next session
 
