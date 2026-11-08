@@ -41,6 +41,10 @@ echo "==> module-pasteboard guard"
 Scripts/check-module-pasteboard.sh
 Scripts/tests/module-pasteboard-test.sh
 
+echo "==> module-away guard"
+Scripts/check-module-away.sh
+Scripts/tests/module-away-test.sh
+
 echo "==> services plist"
 Scripts/check-services-plist.sh
 

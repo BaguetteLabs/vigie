@@ -100,6 +100,9 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
     public let dropZones: (any DropZoneDirectory)?
     /// The launch's Privacy mode state (Story 21.2, AD-24); every module reads its ``CorePrivacyService/context``.
     public let privacy: CorePrivacyService
+    /// The launch's Away service (Story 20.3, AD-25); each module gets a ``TrackedAwayService`` on its
+    /// ``CoreAwayService/context``.
+    public let away: CoreAwayService
 
     /// - Parameters:
     ///   - environment: injected by the App (`AppEnvironment.current`); VigieCore never reads `.current`.
@@ -120,6 +123,9 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
     ///   - dropZones: `context.dropZones`; nil gives every module an empty directory.
     ///   - privacy: the launch's Privacy mode state, shared with the host and the Notifier outputs; defaults to
     ///     one that is off.
+    ///   - away: the launch's Away service; defaults to one on the real idle reader and screen signals, its
+    ///     threshold read from `[modules.time.breaks] away_after` (90 s without it), transitions recorded in
+    ///     `activityStore`.
     public init(
         environment: AppEnvironment, eventBus: InProcessEventBus, configStore: ConfigStore? = nil,
         permissions: PermissionsCoordinator? = nil, hotkeyCenter: HotkeyCenter? = nil,
@@ -130,7 +136,8 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
         hostControl: (@MainActor @Sendable (ModuleID) -> any HostControl)? = nil,
         clipboard: (any ClipboardService)? = nil,
         dropZones: (any DropZoneDirectory)? = nil,
-        privacy: CorePrivacyService? = nil
+        privacy: CorePrivacyService? = nil,
+        away: CoreAwayService? = nil
     ) {
         self.environment = environment
         self.eventBus = eventBus
@@ -152,6 +159,11 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
         self.clipboard = clipboard ?? CoreClipboardService()
         self.dropZones = dropZones
         self.privacy = privacy ?? CorePrivacyService()
+        self.away =
+            away
+            ?? Self.makeAway(
+                configStore: configStore, activity: CoreActivityRecorder(store: self.activityStore),
+                logger: Logger(subsystem: environment.logSubsystem, category: "away"))
     }
 
     public func makeContext(for manifest: ModuleManifest, tracker: RegistrationTracker) -> any ModuleContext {
@@ -178,13 +190,31 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
             clipboard: clipboard,
             executables: executables,
             privacy: privacy.context,
-            away: StubAwayService(),
+            away: TrackedAwayService(base: away.context, tracker: tracker),
             activity: activity,
             integrations: CoreIntegrationInstaller(
                 environment: environment, configStore: configStore, activity: activity),
             dropZones: dropZones ?? EmptyDropZoneDirectory(),
             log: log
         )
+    }
+
+    /// The `[modules.time.breaks] away_after` key the Away service reads (declared by the Time module, Story
+    /// 20.4; the spike placed the threshold there, SPEC §11).
+    static let awayAfterPath = ConfigKeyPath.module("time", "breaks.away_after")
+
+    /// A ``CoreAwayService`` on the real signals, its threshold re-read from `away_after` on every check.
+    static func makeAway(configStore: ConfigStore?, activity: any ActivityLog, logger: Logger) -> CoreAwayService {
+        let shared = configStore?.shared
+        let path = awayAfterPath
+        return CoreAwayService(
+            threshold: {
+                guard let value = shared?.value(at: path)?.typed(as: Duration.self), value > .zero else {
+                    return CoreAwayService.defaultThreshold
+                }
+                return value
+            },
+            activity: activity, logger: logger)
     }
 
     /// A ``CorePowerService`` bound to `[general] prevent_idle_sleep`.

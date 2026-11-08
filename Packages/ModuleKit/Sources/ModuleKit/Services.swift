@@ -354,13 +354,28 @@ public protocol PrivacyService: Sendable {
 
 // MARK: - Away (implemented in Story 20.3)
 
+/// Whether the user is at the Mac (SPEC §7.7, glossary "Away"): Present while input happened within
+/// `[modules.time.breaks] away_after` (default 90 s) and the screen can be seen; Away otherwise, at once on
+/// screen lock, screensaver, display sleep, a session switch or system sleep.
 public enum Presence: Hashable, Sendable {
     case present
+    /// `since`: the last input for an input-idle Away, or the moment the screen became unavailable.
     case away(since: Date)
+
+    public var isAway: Bool {
+        if case .away = self { return true }
+        return false
+    }
 }
 
+/// `context.away` (AD-25, Story 20.3): the one Present / Away signal. Modules never read input idle time or
+/// lock, screensaver or display-sleep notifications themselves (`Scripts/check-module-away.sh`).
+///
+/// The host watches the user only while at least one `changes` stream is open (PRD FR-4): nothing is polled or
+/// observed otherwise, and `presence` then reads `.present`. It never uses the camera and asks no permission.
 public protocol AwayService: Sendable {
     var presence: Presence { get }
+    /// Yields each transition. Each access returns a new stream (one subscriber); stop iterating to end it.
     var changes: AsyncStream<Presence> { get }
 }
 
@@ -368,6 +383,8 @@ public protocol AwayService: Sendable {
 
 public enum ActivityCategory: String, Codable, Hashable, Sendable {
     case alert, peek, reminder, focus, module
+    /// Present / Away transitions (A80, Story 20.3): kinds `away.present` and `away.away`.
+    case presence
 }
 
 /// What happened. Encoded as one string: `posted`, `suppressed:<reason>`, `focusFailed:<reason>`, `custom:<text>`.
