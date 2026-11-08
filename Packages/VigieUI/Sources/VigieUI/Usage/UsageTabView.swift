@@ -58,9 +58,18 @@ public struct UsageTabView: View {
     }
 
     @ViewBuilder private func providerList(_ snapshot: UsageTabSnapshot) -> some View {
+        let ids = snapshot.providers.map(\.id)
         let cards = VStack(spacing: theme.spacing(.gridGap)) {
             ForEach(snapshot.providers) { provider in
-                UsageProviderCard(model: provider)
+                UsageProviderCard(
+                    model: provider,
+                    onMove: { offset in
+                        onReorder(UsageProviderOrder.moving(provider.id, by: offset, in: ids))
+                    },
+                    onDrop: { dragged in
+                        let next = UsageProviderOrder.moving(dragged, onto: provider.id, in: ids)
+                        if next != ids { onReorder(next) }
+                    })
             }
         }
         if snapshot.overflows {

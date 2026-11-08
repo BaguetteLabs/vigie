@@ -22,8 +22,10 @@ extension AgentsUsageModule {
             UsageTabView(
                 snapshot: { [weak self] in self?.usageTabSnapshot() ?? UsageTabSnapshot(providers: []) },
                 onOpenSettings: settingsAction,
-                // Story 7.9 writes `order` from a drag.
-                onReorder: { _ in }
+                onReorder: { [weak self] ids in
+                    guard let self else { return }
+                    Task { await self.setProviderOrder(shown: ids) }
+                }
             )
             .task { [weak self] in
                 await self?.refreshOverview()
@@ -48,6 +50,43 @@ extension AgentsUsageModule {
                     < settings.orderIndex(of: $1.element.id, registrationIndex: $1.offset)
             }
             .map(\.element)
+    }
+
+    /// Every provider the user can order, in the current order: those the tab shows plus the ones with plan
+    /// limits available but off, so Settings lists them all.
+    var orderableProviders: [any AgentAdapter] {
+        let local = registry ?? UsageProviderRegistry(adapters: adapters, settings: adapterSettings)
+        let settings = ringSettings
+        return adapters.adapters.enumerated()
+            .filter { _, adapter in
+                local.source(for: adapter.id) != nil || adapter.usageProvider != nil || hasPlan(adapter)
+            }
+            .sorted {
+                settings.orderIndex(of: $0.element.id, registrationIndex: $0.offset)
+                    < settings.orderIndex(of: $1.element.id, registrationIndex: $1.offset)
+            }
+            .map(\.element)
+    }
+
+    /// Writes `[modules."agents.usage"] order` (Story 7.9) through the settings service: `shown` in its new
+    /// order, then the other known providers, then ids already stored, so no provider is lost. The settings
+    /// observer re-sorts the tab and the rings.
+    public func setProviderOrder(shown: [String]) async {
+        guard let moduleSettings else { return }
+        let next = UsageProviderOrder.merged(
+            shown: shown, current: orderableProviders.map(\.id.rawValue), existing: ringSettings.order)
+        guard next != ringSettings.order else { return }
+        do {
+            try await moduleSettings.set(next, for: RingSettings.orderKey)
+        } catch {
+            log?.error("agents.usage could not write order: \(String(describing: error), privacy: .public)")
+        }
+    }
+
+    /// Moves a provider one place (-1 up, 1 down) in the full list (Settings, VoiceOver).
+    public func moveProvider(_ id: String, by offset: Int) async {
+        let current = orderableProviders.map(\.id.rawValue)
+        await setProviderOrder(shown: UsageProviderOrder.moving(id, by: offset, in: current))
     }
 
     /// Plan limits are on (or windows are already known) for the adapter.

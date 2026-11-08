@@ -66,6 +66,8 @@ public final class AgentsUsageModule: NotchModule {
     /// Dedupe keys already posted: one alert per provider, window and reset time.
     @ObservationIgnored var postedQuotaKeys: Set<String> = []
     @ObservationIgnored var host: (any HostControl)?
+    /// The module's own settings, to write `order` (Story 7.9).
+    @ObservationIgnored var moduleSettings: (any ModuleSettings)?
     @ObservationIgnored var planAlerts: [AgentID: AlertHandle] = [:]
     @ObservationIgnored var planInFlight: Set<AgentID> = []
     @ObservationIgnored var planMissingContextLogged: Set<AgentID> = []
@@ -123,6 +125,7 @@ public final class AgentsUsageModule: NotchModule {
         self.log = log
         notifier = context.notifier
         host = context.host
+        moduleSettings = context.settings
         startRingSettings(context.settings, scheduler: context.scheduler)
         let store = try UsageStore(directory: context.storage.directory)
         let estimator = try CostEstimator.bundled()
@@ -146,9 +149,8 @@ public final class AgentsUsageModule: NotchModule {
     }
 
     public func settingsView() -> AnyView? {
-        let adapters = planAdapters
-        guard !adapters.isEmpty else { return nil }
-        return AnyView(PlanSettingsView(module: self, adapters: adapters.map(\.id)))
+        guard !orderableProviders.isEmpty else { return nil }
+        return AnyView(UsageSettingsView(module: self, planAdapters: planAdapters.map(\.id)))
     }
 
     public func stop() async {

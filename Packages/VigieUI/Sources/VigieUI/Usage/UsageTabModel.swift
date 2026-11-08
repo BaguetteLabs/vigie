@@ -202,6 +202,8 @@ public struct UsageTabSnapshot: Hashable, Sendable {
 /// Usage tab proportions from the mockup (`key-usage-tab.html`) that DESIGN states in prose, not tokens.
 enum UsageTabMetrics {
     static let separator = " · "
+    /// A card under a dragged provider.
+    static let dropOpacity = 0.6
     /// Providers shown before the list scrolls.
     static let visibleProviders = 2
     /// `.prov`: dial column gap.

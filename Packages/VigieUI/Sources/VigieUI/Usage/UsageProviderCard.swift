@@ -7,9 +7,37 @@ import SwiftUI
 struct UsageProviderCard: View {
     @Environment(\.vigieTheme) private var theme
     let model: UsageProviderCardModel
+    /// Moves the card one place (-1 up, 1 down); the VoiceOver alternative to dragging the grip. Nil: no drag.
+    var onMove: (@MainActor (Int) -> Void)?
+    /// Called with the dragged provider id when it is dropped on this card.
+    var onDrop: (@MainActor (String) -> Void)?
+    @State private var isTargeted = false
 
     var body: some View {
-        WidgetCard(title: Text(verbatim: model.name), meta: meta, leading: GripGlyph()) {
+        card
+            .opacity(isTargeted ? UsageTabMetrics.dropOpacity : 1)
+            .dropDestination(
+                for: String.self,
+                action: { items, _ in
+                    guard let id = items.first, let onDrop else { return false }
+                    onDrop(id)
+                    return true
+                }, isTargeted: { isTargeted = $0 }
+            )
+            .accessibilityAction(named: Text(L10n.resource("usage.card.moveUp"))) { onMove?(-1) }
+            .accessibilityAction(named: Text(L10n.resource("usage.card.moveDown"))) { onMove?(1) }
+    }
+
+    @ViewBuilder private var grip: some View {
+        if onDrop != nil {
+            GripGlyph().draggable(model.id)
+        } else {
+            GripGlyph()
+        }
+    }
+
+    private var card: some View {
+        WidgetCard(title: Text(verbatim: model.name), meta: meta, leading: grip) {
             switch model.content {
             case .readingLogs:
                 placeholder(VigieCopy.readingLogs.label)

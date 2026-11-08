@@ -181,6 +181,30 @@
         }
       }
     },
+    "usage.card.moveUp" : {
+      "comment" : "VoiceOver action on a Usage provider card moving it one place up.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move up"
+          }
+        }
+      }
+    },
+    "usage.card.moveDown" : {
+      "comment" : "VoiceOver action on a Usage provider card moving it one place down.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move down"
+          }
+        }
+      }
+    },
     "usage.card.noPlanWindows" : {
       "comment" : "Usage provider card of a provider without plan limits (tokens and cost from local logs only).",
       "extractionState" : "manual",

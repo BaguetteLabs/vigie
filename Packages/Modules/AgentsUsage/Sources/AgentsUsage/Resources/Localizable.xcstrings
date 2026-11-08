@@ -205,6 +205,54 @@
         }
       }
     },
+    "agentsUsage.order.title" : {
+      "comment" : "Settings › Usage: title of the provider order list.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Provider order"
+          }
+        }
+      }
+    },
+    "agentsUsage.order.help" : {
+      "comment" : "Settings › Usage: help under the provider order list.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drag to reorder, or use Move up and Move down. The Usage tab and the rings follow this order."
+          }
+        }
+      }
+    },
+    "agentsUsage.order.moveUp" : {
+      "comment" : "Settings › Usage: VoiceOver action moving a provider up.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move up"
+          }
+        }
+      }
+    },
+    "agentsUsage.order.moveDown" : {
+      "comment" : "Settings › Usage: VoiceOver action moving a provider down.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move down"
+          }
+        }
+      }
+    },
     "agentsUsage.setting.order" : {
       "comment" : "Settings › Usage: order of the usage providers (ids).",
       "extractionState" : "manual",
