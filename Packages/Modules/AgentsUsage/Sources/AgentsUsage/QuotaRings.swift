@@ -301,6 +301,7 @@ extension AgentsUsageModule {
         clock = now()
         updateRingState()
         evaluateQuotaWarnings()
+        refreshOverviewIfDayChanged()
     }
 
     /// Reads the ring keys now and again whenever one changes, and advances the dial clock every

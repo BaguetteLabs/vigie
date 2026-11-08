@@ -1,6 +1,126 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "usage.history.meta" : {
+      "comment" : "Usage tab: meta of the 7-day history card.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TOKENS"
+          }
+        }
+      }
+    },
+    "usage.history.allAgents" : {
+      "comment" : "Usage tab: label next to the 7-day token total.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ALL AGENTS"
+          }
+        }
+      }
+    },
+    "usage.history.a11y.total" : {
+      "comment" : "VoiceOver: the 7-day token total.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tokens, last 7 days: %@"
+          }
+        }
+      }
+    },
+    "usage.history.a11y.day" : {
+      "comment" : "VoiceOver: one day of the token history, weekday then tokens.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ %2$@"
+          }
+        }
+      }
+    },
+    "usage.cost.meta" : {
+      "comment" : "Usage tab: meta of today's cost card (an estimate, never a bill).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ESTIMATE"
+          }
+        }
+      }
+    },
+    "usage.cost.apiRate" : {
+      "comment" : "Usage tab: label next to today's estimated cost (priced at API rates).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "API RATE"
+          }
+        }
+      }
+    },
+    "usage.cost.apiRate.partial" : {
+      "comment" : "Usage tab: label next to today's cost when some records have no price and are left out.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "API RATE · SOME MODELS UNPRICED"
+          }
+        }
+      }
+    },
+    "usage.cost.approximate" : {
+      "comment" : "Usage tab: today's cost when some records are unpriced, e.g. ≈ $4.12.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "≈ %@"
+          }
+        }
+      }
+    },
+    "usage.cost.none" : {
+      "comment" : "Usage tab: today's cost when there is no record today.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "—"
+          }
+        }
+      }
+    },
+    "usage.cost.source" : {
+      "comment" : "Usage tab: source line of today's cost.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "FROM LOCAL LOGS · OFFLINE"
+          }
+        }
+      }
+    },
     "usage.tab.title" : {
       "comment" : "Usage tab: title of the card that holds the no-provider empty state.",
       "extractionState" : "manual",

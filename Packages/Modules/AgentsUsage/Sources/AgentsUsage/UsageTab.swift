@@ -25,12 +25,15 @@ extension AgentsUsageModule {
                 // Story 7.9 writes `order` from a drag.
                 onReorder: { _ in }
             )
-            .task { [weak self] in await self?.expandedViewDidAppear() })
+            .task { [weak self] in
+                await self?.refreshOverview()
+                await self?.expandedViewDidAppear()
+            })
     }
 
     /// What the tab shows at the dial clock.
     public func usageTabSnapshot() -> UsageTabSnapshot {
-        UsageTabSnapshot(providers: tabProviders.map(providerCard))
+        UsageTabSnapshot(providers: tabProviders.map(providerCard), history: historyPanel, cost: costPanel)
     }
 
     /// Every usage provider in the user's order (`order`, then registration order, A69): an adapter whose

@@ -174,12 +174,22 @@ public struct UsageProviderCardModel: Hashable, Sendable, Identifiable {
     }
 }
 
-/// What the Usage tab shows (Stories 7.7, 7.8): the provider cards in user order on the left half.
+/// What the Usage tab shows (Stories 7.7, 7.8): the provider cards in user order on the left half, the history
+/// and today's cost on the right.
 public struct UsageTabSnapshot: Hashable, Sendable {
     public var providers: [UsageProviderCardModel]
+    /// `HISTORY · 7D` on the right half (Story 7.8).
+    public var history: UsageHistoryPanel
+    /// `COST · TODAY` under it (Story 7.8).
+    public var cost: UsageCostPanel
 
-    public init(providers: [UsageProviderCardModel]) {
+    public init(
+        providers: [UsageProviderCardModel], history: UsageHistoryPanel = .readingLogs,
+        cost: UsageCostPanel = .readingLogs
+    ) {
         self.providers = providers
+        self.history = history
+        self.cost = cost
     }
 
     /// No usage provider at all: `NO USAGE PROVIDER`, its sentence and `Open settings ⌘,` (UX-DR44).
@@ -225,6 +235,25 @@ enum UsageTabMetrics {
     /// `.phint`: footer height and gap above it.
     static let footerHeight: CGFloat = 14
     static let footerSpacing: CGFloat = 6
+    /// `.big small`: gap after the big numeral.
+    static let bigLabelGap: CGFloat = 6
+    /// `.hist`: column gap, gap between stacked series, bar radius, top margin and the least visible bar.
+    static let historyGap: CGFloat = 6
+    static let historyStackGap: CGFloat = 1
+    static let historyRadius: CGFloat = 1.5
+    static let historyTop: CGFloat = 8
+    static let historyMinimumBar: CGFloat = 1
+    /// `.days`, `.lg`: axis and legend.
+    static let historyAxisTop: CGFloat = 5
+    static let legendTop: CGFloat = 7
+    static let legendGap: CGFloat = 5
+    static let legendSwatchWidth: CGFloat = 8
+    static let legendSwatchHeight: CGFloat = 3
+    /// `.cost`: rows and their 2 px bars.
+    static let costTop: CGFloat = 4
+    static let costRowGap: CGFloat = 3
+    static let costBarTop: CGFloat = 2
+    static let costBarHeight: CGFloat = 2
     /// Weekly / daily bars in A: the darker silver at this opacity of the history's second series.
     static let secondarySeriesOpacity = 0.85
 }

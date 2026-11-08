@@ -1,6 +1,18 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "agentsUsage.cost.more" : {
+      "comment" : "Usage tab cost list: the remaining projects of today summed in one row.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld MORE"
+          }
+        }
+      }
+    },
     "agentsUsage.setting.warnThreshold" : {
       "comment" : "Settings › Usage: quota warning threshold, percent used.",
       "extractionState" : "manual",

@@ -45,9 +45,8 @@ public struct UsageTabView: View {
                     providerList(snapshot)
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                     VStack(spacing: theme.spacing(.gridGap)) {
-                        // Filled by Story 7.8.
-                        WidgetCard(title: Text(L10n.resource("usage.history.title"))) { Color.clear }
-                        WidgetCard(title: Text(L10n.resource("usage.cost.title"))) { Color.clear }
+                        UsageHistoryCard(panel: snapshot.history)
+                        UsageCostCard(panel: snapshot.cost)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }

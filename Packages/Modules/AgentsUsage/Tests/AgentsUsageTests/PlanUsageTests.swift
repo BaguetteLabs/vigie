@@ -167,7 +167,8 @@ struct PlanHarness {
 
 /// Lets observer tasks run.
 func settle() async {
-    for _ in 0..<20 { await Task.yield() }
+    // Generous: an ingest pass also schedules the Usage tab overview reload (Story 7.8) on the main actor.
+    for _ in 0..<200 { await Task.yield() }
 }
 
 // MARK: - Tests

@@ -79,6 +79,8 @@ public final class AgentsUsageModule: NotchModule {
     public private(set) var history: UsageHistory?
     /// The last ingest pass.
     public internal(set) var lastIngest: IngestReport?
+    /// The Usage tab's history and today's cost (Story 7.8), reloaded after each ingest.
+    public internal(set) var overview: UsageOverview?
     public private(set) var registry: UsageProviderRegistry?
 
     @ObservationIgnored var ingestor: UsageIngestor?
@@ -175,5 +177,6 @@ public final class AgentsUsageModule: NotchModule {
 
     private func finished(_ report: IngestReport) {
         lastIngest = report
+        Task { await refreshOverview() }
     }
 }
