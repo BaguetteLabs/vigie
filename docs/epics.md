@@ -840,7 +840,35 @@ Users can hear the seven alert sound events (blocked, failed, done, quota warnin
 Users open Vigie onto a configurable Home grid summarizing sessions, quota and shelf.
 **FRs covered:** FR57, FR60, FR87, FR89, FR90
 
-### Epic 12: Script modules
+#### Story 11.4: Keep the current tab on quick re-open
+
+*Added 2026-11-08 (Romain's ruling after the first live session): Story 11.1 lands on Home on every expand; closing and immediately re-opening must come back to the tab the user was on.*
+
+As a user,
+I want the expanded view to come back to the tab I was on when I re-open it shortly after closing,
+So that a quick close does not throw away where I was.
+
+**Requirements:** PRD FR-6, AD-8 (`[general] home_after`), UX-DR83
+
+**Acceptance Criteria:**
+
+**Given** `[general] home_after` (duration, default `"2m"`; `"never"` = always keep the last tab; `"0s"` = always return to Home)
+**When** the expanded view opens
+**Then** it shows the last selected tab if it was closed less than `home_after` ago, and Home otherwise
+
+**Given** an explicit request (`vigie expand --tab <id>`, an alert's Open action, a module hotkey)
+**When** the view opens
+**Then** the requested tab wins regardless of `home_after`
+
+**Given** Settings › General
+**When** the control shows
+**Then** it reads `Return to Home after` with choices `Immediately`, `30 s`, `2 min`, `10 min`, `Never`
+
+**Given** unit tests with a fake clock
+**When** the view closes and re-opens inside and outside the window, and with `never` and `0s`
+**Then** the landing tab follows the rule
+
+## Epic 12: Script modules
 Users extend Vigie without Swift by dropping a Markdown script file into the config folder; scripts run only after per-Mac confirmation and render as Home widgets, side-slot items or full pages.
 **FRs covered:** FR1, FR5, FR62, FR63, FR64, FR65, FR66, FR67, FR68, FR69, FR89, FR100, FR107 · PRD FR-41 to FR-44 (Script repository, install from link, updates, Stories 12.8–12.10) · script page split into Story 12.11 (added 2026-11-07)
 
@@ -3382,6 +3410,34 @@ So that I can stash or ask from the dashboard.
 **Given** more stash items than fit the fixed 222 × 138 card (added 2026-11-07)
 **When** the widget renders
 **Then** the list fades under the bottom mask and the card keeps its size (UX-DR97)
+
+### Story 11.4: Keep the current tab on quick re-open
+
+*Added 2026-11-08 (Romain's ruling after the first live session): Story 11.1 lands on Home on every expand; closing and immediately re-opening must come back to the tab the user was on.*
+
+As a user,
+I want the expanded view to come back to the tab I was on when I re-open it shortly after closing,
+So that a quick close does not throw away where I was.
+
+**Requirements:** PRD FR-6, AD-8 (`[general] home_after`), UX-DR83
+
+**Acceptance Criteria:**
+
+**Given** `[general] home_after` (duration, default `"2m"`; `"never"` = always keep the last tab; `"0s"` = always return to Home)
+**When** the expanded view opens
+**Then** it shows the last selected tab if it was closed less than `home_after` ago, and Home otherwise
+
+**Given** an explicit request (`vigie expand --tab <id>`, an alert's Open action, a module hotkey)
+**When** the view opens
+**Then** the requested tab wins regardless of `home_after`
+
+**Given** Settings › General
+**When** the control shows
+**Then** it reads `Return to Home after` with choices `Immediately`, `30 s`, `2 min`, `10 min`, `Never`
+
+**Given** unit tests with a fake clock
+**When** the view closes and re-opens inside and outside the window, and with `never` and `0s`
+**Then** the landing tab follows the rule
 
 ## Epic 12: Script modules
 

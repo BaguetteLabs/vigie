@@ -696,6 +696,7 @@ expand_hotkey = "cmd+shift+space"
 prevent_idle_sleep = false    # while an agent is working (§7.1.2)
 launch_at_login = false       # local; onboarding preselects it on
 tab_order = []                # module ids in tab order after Home; empty = default order (A74)
+home_after = "2m"             # re-open within this delay keeps the last tab; "never" | "0s" (Story 11.4)
 
 [appearance]
 theme = "chrome-hologram"     # chrome-hologram | twin-metal-tactical | <custom>

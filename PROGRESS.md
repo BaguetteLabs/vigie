@@ -91,13 +91,14 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - [x] 7.1, 7.2 (signed-build AC pending a real identity), 7.3 (live endpoint untested; AD-23 path ruling pending) , 7.4, 7.5, 7.6, 7.7, 7.8 (not yet seen live), 7.9, 7.10 · [ ] 7.11 (added 2026-11-08) · [ ] 8.1–8.4 · [x] 9.1 (no real drag tested yet), 9.2, 9.3 (Quick Look + drag-out untested live), 9.4, 9.5, 9.6 (no live openTab yet), 9.7, 9.8, 9.9, 9.10 (live checks pending) — Epic 9 done · [x] 10.1–10.2 (listen to the WAVs once) · [x] 21.1 (desk research; checklist for Romain), 21.2, 21.3 — Epic 21 done (manual only)
 
 ### v0.3 — Epics 11 (Home), 12 (Scripts), 13 (Calendar), 14 (Gemini), 20 (Time)
-- [x] 11.1 · [x] 11.2 · [ ] 11.3 · [ ] 12.1–12.11 · [ ] 13.1–13.4 · [ ] 14.1–14.3 · [x] 20.1 (measured on 26.5 only, screen locked), 20.2, 20.3 (lock/unlock signals unverified live), 20.4 (break cycle not persisted) · [ ] 20.5, 20.6
+- [x] 11.1 · [x] 11.2 · [ ] 11.3, 11.4 (added 2026-11-08) · [ ] 12.1–12.11 · [ ] 13.1–13.4 · [ ] 14.1–14.3 · [x] 20.1 (measured on 26.5 only, screen locked), 20.2, 20.3 (lock/unlock signals unverified live), 20.4 (break cycle not persisted) · [ ] 20.5, 20.6
 
 ### v0.4 — Epics 15 (Notes), 16 (Sync), 17 (Onboarding/Settings), 18 (Themes), 19 (Public release)
 - [ ] 15.1–15.5 · [ ] 16.1–16.3 · [ ] 17.1, 17.2, 17.4, 17.5 ([-] 17.3 superseded) · [ ] 18.1–18.4 · [ ] 19.1–19.3
 
 ## Queued work (ruled by Romain)
 
+- 2026-11-08 — **Defect (live, Story 9.1):** pressing Esc while a drag is active cancels the drop display, but hovering the notch again during the same drag no longer re-opens it; the user must drop elsewhere and start a new drag. Expected: Esc dismisses this presentation only; a new hover during the same drag re-opens.
 - 2026-11-08 — **Defect: island and band a few px shorter than the physical notch on Romain's MacBook Air** (Story 2.5 live check). `NotchGeometry.physical` uses `max(safeAreaInsets.top, auxiliary area heights, band-height 34)`; the physical cut-out is taller than what macOS reports, so notch-black shows below the closed island and below the expanded band. No API gives the physical height. Fix candidates: a `[closed] notch_overlap` (local, pt added below the reported height, with a live stepper in Settings › Appearance), and a one-time debug log of `ScreenMetrics` at start so the reported values can be read from `log show`. Romain estimates the gap at 2–3 px (hard to judge; phone photo inconclusive because of parallax). The photo also shows the first letter of `NO ACTIVE SESSIONS` hidden under the glass, so the physical cut-out may also be a little **wider** than reported: pad the wing content inset next to the notch slot as well (`notch_overlap` vertical + `notch_side_inset` horizontal, both local, defaults 2 pt / 4 pt, steppers in Settings › Appearance).
 - 2026-11-08 — **Idea (Notchi screenshot):** settings as a page inside the open notch (Back / pin / close, rows with status chips `Not Verified`, `Connected`, `No Key`, `Up to date`, external links, a red Quit row). Worth considering for Epic 17 (Settings) as a quick-settings page in the expanded view, keeping the full Settings window for the generated panes.
 - 2026-11-08 — **Spike: Focus/DND detection route** (Story 3.5 follow-up). Romain ruled "research another route" instead of accepting no Focus suppression. Candidates: Full Disk Access to read `~/Library/DoNotDisturb/DB/Assertions.json`; `defaults`/`plutil` of the ModeConfigurations store; Shortcuts automation bridge (a Focus-triggered Shortcut that writes a flag Vigie watches or calls `vigie event`); `NSWorkspace`/private `DNDModeState` observers (rejected if private); menu-bar Focus item accessibility query. Record permission cost and latency; write `docs/decisions/spike-focus-detection.md`.
@@ -112,12 +113,12 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 
 
 
-- Drag a file from Finder over the notch once (Vigie Dev): the drop display should grow out without focus change; press Esc to cancel. Report if nothing appears.
 
 - Privacy detection checklist (`docs/decisions/spike-privacy-detection.md`): run the probe while sharing in Zoom / Meet / Teams / Slack huddle and recording with QuickTime / ⇧⌘5 / OBS; if titles match only while sharing, 21.3 can offer Automatic.
 
 ## Decisions log
 
+- 2026-11-08 — Romain, after the first live session: Finder drag → drop display works (Stash, zones, focus kept). Rulings: Home return gets a configurable cooldown incl. never (Story 11.4, `[general] home_after`); Esc-during-drag re-open defect queued.
 - 2026-11-08 — Romain verified Warp deep-link focus live: window, tab and pane all focus correctly → spike 1.5 decision (a); `WarpAdapter.decision = .tabViaURL` stays.
 - 2026-11-08 — Romain: adapter table path stays `[modules."agents.sessions".adapter.<id>]` (singular) with `adapters` as the list. AD-23 and SPEC §11 amended.
 - 2026-11-08 — Romain: 7.10 code confirmed — Accounts in the adapter table (`adapter.<id>.accounts` + `account.<id>.*`), Keychain owner `adapter.<id>` with per-Account keys. AD-23 and SPEC §7.2/§11 amended.
