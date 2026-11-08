@@ -62,6 +62,85 @@ public protocol SecretStore: Sendable {
     func read(_ key: String) async throws -> String?
     /// nil deletes the secret.
     func write(_ value: String?, for key: String) async throws
+
+    /// Whether a secret is stored under `key`, without reading its value (Story 7.3). Default: `read != nil`.
+    func contains(_ key: String) async throws -> Bool
+
+    /// Reads a credential another app stored on this Mac (AD-9 as amended 2026-11-06), into memory for the
+    /// request that needs it only: never copied, cached, written, renewed or deleted. Throws
+    /// ``SecretStoreError/consentRequired`` while the user has not allowed it on this Mac (``hasConsent(for:)``),
+    /// `.notFound` when the item does not exist. macOS may show its own Keychain prompt on the first read.
+    /// Default: throws `.unavailable`.
+    func readExternal(_ descriptor: ExternalCredentialDescriptor) async throws -> String
+    /// Whether the user allowed ``readExternal(_:)`` for `descriptor` on this Mac. Default: false.
+    func hasConsent(for descriptor: ExternalCredentialDescriptor) async -> Bool
+    /// Records the user's consent (per Mac, in `local.toml`, never synced). Call only from a user action.
+    /// Default: throws `.unavailable`.
+    func grantConsent(for descriptor: ExternalCredentialDescriptor) async throws
+    /// Removes the consent at once; later reads throw `.consentRequired`. Default: throws `.unavailable`.
+    func revokeConsent(for descriptor: ExternalCredentialDescriptor) async throws
+}
+
+extension SecretStore {
+    public func contains(_ key: String) async throws -> Bool { try await read(key) != nil }
+    public func readExternal(_ descriptor: ExternalCredentialDescriptor) async throws -> String {
+        throw SecretStoreError.unavailable(status: SecretStoreError.unimplementedStatus)
+    }
+    public func hasConsent(for descriptor: ExternalCredentialDescriptor) async -> Bool { false }
+    public func grantConsent(for descriptor: ExternalCredentialDescriptor) async throws {
+        throw SecretStoreError.unavailable(status: SecretStoreError.unimplementedStatus)
+    }
+    public func revokeConsent(for descriptor: ExternalCredentialDescriptor) async throws {
+        throw SecretStoreError.unavailable(status: SecretStoreError.unimplementedStatus)
+    }
+}
+
+/// A credential owned by another app that an adapter asks to read (AD-9 amended, Story 7.3), e.g. Claude Code's
+/// stored login. Declared by the adapter; its names are shown in the consent text.
+public struct ExternalCredentialDescriptor: Hashable, Sendable {
+    /// Stable id, `<adapter id>.<name>` (e.g. `claude.claude_code_login`); the consent is recorded under it.
+    public let id: String
+    /// The owning app as the user knows it, e.g. "Claude Code".
+    public let displayName: String
+    /// Keychain service (`kSecAttrService`) of the login-keychain generic password.
+    public let service: String
+    /// Keychain account (`kSecAttrAccount`); nil matches the first item of `service`.
+    public let accountHint: String?
+    /// What the credential is used for, shown under the consent button.
+    public let explanation: LocalizedStringResource
+
+    public init(
+        id: String, displayName: String, service: String, accountHint: String? = nil,
+        explanation: LocalizedStringResource
+    ) {
+        self.id = id
+        self.displayName = displayName
+        self.service = service
+        self.accountHint = accountHint
+        self.explanation = explanation
+    }
+
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.id == rhs.id && lhs.service == rhs.service && lhs.accountHint == rhs.accountHint
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+        hasher.combine(service)
+        hasher.combine(accountHint)
+    }
+}
+
+/// A user's consent to ``SecretStore/readExternal(_:)`` for one descriptor, on this Mac. Read and written only
+/// by VigieCore, in `local.toml` under `[consents."<descriptor id>"] granted_at` (never synced).
+public struct ExternalConsent: Hashable, Sendable {
+    public let descriptorID: String
+    public let grantedAt: Date
+
+    public init(descriptorID: String, grantedAt: Date) {
+        self.descriptorID = descriptorID
+        self.grantedAt = grantedAt
+    }
 }
 
 /// Why a `SecretStore` call failed (Story 7.2). `status` is the Keychain `OSStatus`. Never carries the value.
@@ -72,6 +151,11 @@ public enum SecretStoreError: Error, Equatable, Sendable {
     case notFound
     /// Any other Keychain failure.
     case failed(status: Int32)
+    /// ``SecretStore/readExternal(_:)`` without the user's consent on this Mac (Story 7.3).
+    case consentRequired
+
+    /// `errSecUnimplemented`: the store does not offer the call.
+    public static let unimplementedStatus: Int32 = -4
 }
 
 // MARK: - Scheduler (implemented in Story 2.2)

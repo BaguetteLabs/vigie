@@ -38,4 +38,39 @@ public protocol UsageProvider: Sendable {
     var refreshInterval: Duration { get }
 
     func fetch(context: any AdapterContext) async throws -> UsageSnapshot
+
+    /// Another app's credential `fetch` may read through `SecretStore.readExternal` (AD-9 amended, Story 7.3),
+    /// shown in the consent text by the module's Settings block. Default: nil.
+    var externalCredential: ExternalCredentialDescriptor? { get }
+}
+
+extension UsageProvider {
+    public var externalCredential: ExternalCredentialDescriptor? { nil }
+}
+
+/// Why a remote plan-limit fetch failed (Story 7.3, SPEC §14.2). `agents.usage` keeps the last good windows,
+/// shows them stale and raises one setup problem; it never shows a wrong number.
+public enum PlanUsageError: Error, Hashable, Sendable {
+    /// Network failure or a non-success HTTP status other than 401/403 (`status` nil for transport errors).
+    case unavailable(status: Int?)
+    /// The endpoint refused the credential (401/403).
+    case unauthorized
+    /// The response is not the shape the adapter knows (the unofficial endpoint changed).
+    case formatChanged
+    /// The other app's stored login has expired. Vigie never renews it.
+    case credentialExpired
+    /// No credential: no token pasted, or the other app's login is missing or unreadable.
+    case credentialMissing
+    /// The user has not allowed Vigie to read the other app's login on this Mac.
+    case consentRequired
+}
+
+extension PlanUsageError {
+    /// True when signing in again (or pasting a token) is the fix.
+    public var needsSignIn: Bool {
+        switch self {
+        case .unauthorized, .credentialExpired, .credentialMissing, .consentRequired: true
+        case .unavailable, .formatChanged: false
+        }
+    }
 }

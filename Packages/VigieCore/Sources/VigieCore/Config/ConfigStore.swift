@@ -87,6 +87,18 @@ public final class ConfigStore {
         if added { recompute() }
     }
 
+    /// Makes an agent adapter's declared settings known under `module` (Story 7.3). Idempotent.
+    public func registerAdapter(_ adapterID: String, module: ModuleID, settings: [SettingDescriptor]) {
+        let added = shared.update { $0.schema.registerAdapter(adapterID, module: module, settings: settings) }
+        if added { recompute() }
+    }
+
+    /// Makes one external-credential consent key known (Story 7.3). Idempotent.
+    public func registerConsent(_ descriptorID: String) {
+        let added = shared.update { $0.schema.registerConsent(descriptorID) }
+        if added { recompute() }
+    }
+
     // MARK: - Lifecycle
 
     /// Creates missing files (`config.toml` with the commented SPEC §11 defaults, an empty `local.toml`),

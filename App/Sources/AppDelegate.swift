@@ -99,17 +99,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let agentAdapters = AgentAdapters([ClaudeAdapter()])
         let terminalAdapters = TerminalAdapters(
             [TerminalAppAdapter(), ITermAdapter(), WarpAdapter()], fallback: GenericTerminalAdapter())
+        // Filled once ConfigStore, the resolver and the secret store exist; read when the modules are built.
+        let adapterAssembly = AgentAdapterAssembly()
 
         var descriptors: [ModuleDescriptor] = [
             ModuleDescriptor(manifest: AgentsSessionsModule.staticManifest) {
                 // The SettingsController is created later in the sequence; resolve it when the button is used.
                 AgentsSessionsModule(
-                    adapters: agentAdapters, terminals: terminalAdapters,
+                    adapters: agentAdapters, terminals: terminalAdapters, contexts: adapterAssembly.contexts,
                     openSettings: { [weak self] pane in self?.openSettings(pane: pane) })
             },
-            // Same adapter instances as agents.sessions (AD-23).
+            // Same adapter instances and contexts as agents.sessions (AD-23); it also owns the plan-usage block.
             ModuleDescriptor(manifest: AgentsUsageModule.staticManifest) {
-                AgentsUsageModule(adapters: agentAdapters)
+                AgentsUsageModule(
+                    adapters: agentAdapters, contexts: adapterAssembly.contexts,
+                    adapterSettingsStores: adapterAssembly.settings)
             },
         ]
         #if DEBUG
@@ -240,8 +244,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         // Secrets (Story 7.2, AD-9): one Keychain store, scoped per module; unentitled builds post a setup problem.
-        let secretStore = KeychainSecretStore(environment: environment)
+        // External-credential consents (Story 7.3) live in local.toml.
+        let secretStore = KeychainSecretStore(environment: environment, configStore: configStore)
         Task { await secretStore.reportAvailability(to: coreNotifier) }
+
+        // One AdapterContext per agent adapter (AD-19, Story 7.3): settings from ConfigStore at
+        // `[modules."agents.sessions".adapter.<id>]`, secrets scoped to `adapter.<id>`, the launch's resolver, one
+        // ephemeral HTTP client. Given to both agent modules.
+        let http = URLSessionHTTPClient()
+        for adapter in agentAdapters.adapters {
+            let settings = ConfigAdapterSettings(
+                store: configStore, module: AgentsSessionsModule.staticManifest.id, adapterID: adapter.id.rawValue,
+                settings: adapter.settings)
+            adapterAssembly.settings[adapter.id] = settings
+            adapterAssembly.contexts[adapter.id] = AdapterContextBox(
+                settings: ReadOnlyAdapterSettings(settings),
+                secrets: secretStore.scoped(to: KeychainSecretStore.adapterOwner(adapter.id.rawValue)),
+                executables: executables, http: http,
+                log: Logger(subsystem: environment.logSubsystem, category: "adapter.\(adapter.id.rawValue)"))
+        }
 
         let contextFactory = CoreModuleContextFactory(
             environment: environment, eventBus: eventBus, configStore: configStore,
@@ -390,4 +411,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         instanceLock?.release()
         instanceLock = nil
     }
+}
+
+/// The per-adapter contexts and writable settings App assembly builds once (Story 7.3) and hands to both agent
+/// modules when the Registry instantiates them.
+@MainActor
+final class AgentAdapterAssembly {
+    var contexts: [AgentID: any AdapterContext] = [:]
+    var settings: [AgentID: any AdapterSettingsStore] = [:]
 }

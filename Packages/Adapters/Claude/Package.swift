@@ -18,6 +18,7 @@ let package = Package(
             dependencies: [
                 .product(name: "AgentKit", package: "AgentKit")
             ],
+            exclude: ["Usage/PLAN-ENDPOINT.md"],
             resources: [.process("Resources")]
         ),
         .testTarget(

@@ -28,21 +28,31 @@ public actor KeychainSecretStore {
 
     public nonisolated let identity: SecretStoreIdentity
     private let client: any KeychainClient
+    /// Consents to read another app's credential (Story 7.3); nil: none can be granted.
+    private let consents: (any ExternalConsentRecords)?
+    private let now: @Sendable () -> Date
     private let log: Logger
     private var probed: Availability?
     private var problemPosted = false
 
-    public init(identity: SecretStoreIdentity, client: any KeychainClient = SystemKeychainClient(), log: Logger) {
+    public init(
+        identity: SecretStoreIdentity, client: any KeychainClient = SystemKeychainClient(), log: Logger,
+        consents: (any ExternalConsentRecords)? = nil, now: @escaping @Sendable () -> Date = { Date() }
+    ) {
         self.identity = identity
         self.client = client
         self.log = log
+        self.consents = consents
+        self.now = now
     }
 
-    /// The store for the running app: its signing team, `environment`'s bundle id, the real Keychain.
-    public init(environment: AppEnvironment) {
+    /// The store for the running app: its signing team, `environment`'s bundle id, the real Keychain; consents in
+    /// `local.toml` when a `ConfigStore` is given.
+    public init(environment: AppEnvironment, configStore: ConfigStore? = nil) {
         self.init(
             identity: SecretStoreIdentity(environment: environment),
-            log: Logger(subsystem: environment.logSubsystem, category: "secrets"))
+            log: Logger(subsystem: environment.logSubsystem, category: "secrets"),
+            consents: configStore.map(ConfigConsentRecords.init(store:)))
     }
 
     // MARK: - Availability
@@ -130,6 +140,64 @@ public actor KeychainSecretStore {
         try check(status, "delete", owner: owner, key: key)
     }
 
+    // MARK: - External credentials (Story 7.3, AD-9 amended 2026-11-06)
+
+    /// The consent recorded for `descriptor` on this Mac, if any.
+    public func consent(for descriptor: ExternalCredentialDescriptor) async -> ExternalConsent? {
+        await consents?.consent(for: descriptor.id)
+    }
+
+    /// Records the user's consent in `local.toml`. Throws `.unavailable` without consent records.
+    public func grantConsent(for descriptor: ExternalCredentialDescriptor) async throws {
+        guard let consents else { throw SecretStoreError.unavailable(status: SecretStoreError.unimplementedStatus) }
+        try await consents.grant(descriptor.id, at: now())
+        log.notice("Consent granted for external credential \(descriptor.id, privacy: .public)")
+    }
+
+    /// Removes the consent; the next ``readExternal(_:)`` throws `.consentRequired`.
+    public func revokeConsent(for descriptor: ExternalCredentialDescriptor) async throws {
+        guard let consents else { throw SecretStoreError.unavailable(status: SecretStoreError.unimplementedStatus) }
+        try await consents.revoke(descriptor.id)
+        log.notice("Consent revoked for external credential \(descriptor.id, privacy: .public)")
+    }
+
+    /// Reads another app's generic password from the login keychain, only with consent, into the returned string
+    /// only: nothing is stored, cached or logged, and the item is never written, renewed or deleted. A separate
+    /// path from Vigie's own items: no data-protection flag, no access group, so it works when ``availability()``
+    /// is unavailable (ad-hoc builds). macOS may show its Keychain access prompt.
+    public func readExternal(_ descriptor: ExternalCredentialDescriptor) async throws -> String {
+        guard await consent(for: descriptor) != nil else { throw SecretStoreError.consentRequired }
+        let (status, data) = client.copyMatching(Self.externalQuery(descriptor))
+        switch status {
+        case errSecSuccess:
+            guard let data, let value = String(data: data, encoding: .utf8) else {
+                log.error("External credential \(descriptor.id, privacy: .public) is not UTF-8 text")
+                throw SecretStoreError.failed(status: errSecDecode)
+            }
+            return value
+        case errSecItemNotFound:
+            log.notice("External credential \(descriptor.id, privacy: .public) not found")
+            throw SecretStoreError.notFound
+        default:
+            log.error(
+                "External credential \(descriptor.id, privacy: .public) read failed: \(status, privacy: .public)")
+            throw SecretStoreError.failed(status: status)
+        }
+    }
+
+    /// The login-keychain query for an external item: class, service, optional account, data. Deliberately
+    /// without `kSecUseDataProtectionKeychain` or an access group (the item belongs to another app).
+    nonisolated static func externalQuery(_ descriptor: ExternalCredentialDescriptor) -> [CFString: Any] {
+        var query: [CFString: Any] = [
+            kSecClass: kSecClassGenericPassword,
+            kSecAttrService: descriptor.service,
+            kSecMatchLimit: kSecMatchLimitOne,
+            kSecReturnData: true,
+        ]
+        if let account = descriptor.accountHint { query[kSecAttrAccount] = account }
+        return query
+    }
+
     // MARK: - Owner scoping
 
     /// The `SecretStore` for one owner: a module id (`context.secrets`) or `adapter.<adapter id>`
@@ -211,6 +279,39 @@ struct OwnerSecretStore: SecretStore {
             return try await store.get(owner: owner, key: key)
         } catch .notFound {
             return nil
+        }
+    }
+
+    func contains(_ key: String) async throws -> Bool {
+        try await store.exists(owner: owner, key: key)
+    }
+
+    /// An adapter owner (`adapter.<id>`) may read only the descriptors it declares (`<id>.<name>`); other owners
+    /// none.
+    func readExternal(_ descriptor: ExternalCredentialDescriptor) async throws -> String {
+        try checkDescriptor(descriptor)
+        return try await store.readExternal(descriptor)
+    }
+
+    func hasConsent(for descriptor: ExternalCredentialDescriptor) async -> Bool {
+        guard (try? checkDescriptor(descriptor)) != nil else { return false }
+        return await store.consent(for: descriptor) != nil
+    }
+
+    func grantConsent(for descriptor: ExternalCredentialDescriptor) async throws {
+        try checkDescriptor(descriptor)
+        try await store.grantConsent(for: descriptor)
+    }
+
+    func revokeConsent(for descriptor: ExternalCredentialDescriptor) async throws {
+        try checkDescriptor(descriptor)
+        try await store.revokeConsent(for: descriptor)
+    }
+
+    private func checkDescriptor(_ descriptor: ExternalCredentialDescriptor) throws(SecretStoreError) {
+        let prefix = "adapter."
+        guard owner.hasPrefix(prefix), descriptor.id.hasPrefix("\(owner.dropFirst(prefix.count)).") else {
+            throw .consentRequired
         }
     }
 

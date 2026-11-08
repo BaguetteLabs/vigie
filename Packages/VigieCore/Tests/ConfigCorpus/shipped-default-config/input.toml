@@ -62,10 +62,10 @@ ask_default_agent = "claude"
 ask_cwd = "file_folder"       # home | file_folder | "<path>"
 ask_alt_cwd = "~/Code"        # used when ⌥ is held on drop
 
-# Per-adapter settings (layout decided with the adapters, Epic 4):
-# [modules."agents.sessions".adapters.claude]
-# usage_providers = ["local", "plan"]
-# plan_auth = "token"         # local, per Account: token | claude_code (reuse Claude Code's login, after Allow)
+# Per-adapter settings. The table is `adapter` (singular): `adapters` above is the list of enabled adapters.
+# [modules."agents.sessions".adapter.claude]
+# usage_providers = ["local", "plan"]   # plan: opt-in plan limits (Settings › Usage)
+# plan_auth goes in local.toml (per Mac): token | claude_code (reuse Claude Code's login, after Allow)
 
 [modules."agents.usage"]
 enabled = true

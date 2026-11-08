@@ -63,7 +63,7 @@ public struct SecretWriteError: LocalizedError, Equatable {
     public var errorDescription: String? {
         switch underlying {
         case .unavailable: SettingsText.string("settings.error.secretsUnavailable")
-        case .notFound, .failed: SettingsText.string("settings.error.secretFailed")
+        case .notFound, .failed, .consentRequired: SettingsText.string("settings.error.secretFailed")
         }
     }
 }

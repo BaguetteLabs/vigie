@@ -12,6 +12,318 @@
           }
         }
       }
+    },
+    "agentsUsage.plan.error.consent" : {
+      "comment" : "Settings status: the user has not clicked Allow yet.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waiting for Allow"
+          }
+        }
+      }
+    },
+    "agentsUsage.plan.error.expired" : {
+      "comment" : "Settings status: the other app's stored login has expired.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Login expired: sign in again"
+          }
+        }
+      }
+    },
+    "agentsUsage.plan.error.formatChanged" : {
+      "comment" : "Settings status: the plan usage response has an unknown shape.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unknown response format"
+          }
+        }
+      }
+    },
+    "agentsUsage.plan.error.missing" : {
+      "comment" : "Settings status: no token or no stored login found.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No credential yet"
+          }
+        }
+      }
+    },
+    "agentsUsage.plan.error.network" : {
+      "comment" : "Settings status: the plan usage service could not be reached.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Service unreachable"
+          }
+        }
+      }
+    },
+    "agentsUsage.plan.error.unauthorized" : {
+      "comment" : "Settings status: the credential was refused.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sign-in refused"
+          }
+        }
+      }
+    },
+    "agentsUsage.plan.problem.category" : {
+      "comment" : "Short uppercase category of the plan usage setup problem, shown as SETUP · USAGE.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "USAGE"
+          }
+        }
+      }
+    },
+    "agentsUsage.plan.problem.formatChanged" : {
+      "comment" : "Alert body: the unofficial plan usage endpoint changed shape.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The plan usage service changed. Vigie keeps the last values; local usage keeps working until an update fixes it."
+          }
+        }
+      }
+    },
+    "agentsUsage.plan.problem.network" : {
+      "comment" : "Alert body: the plan usage endpoint could not be reached or failed.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vigie could not reach the plan usage service. It keeps the last values and retries every 5 minutes; local usage keeps working."
+          }
+        }
+      }
+    },
+    "agentsUsage.plan.problem.signIn" : {
+      "comment" : "Alert body when the credential is refused, expired or missing. %@ is the app whose login is used, e.g. Claude Code.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sign in to %@ again, or paste a token."
+          }
+        }
+      }
+    },
+    "agentsUsage.plan.problem.title" : {
+      "comment" : "Setup-problem alert title when plan usage cannot be fetched. %@ is the provider, e.g. Claude.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ plan usage unavailable"
+          }
+        }
+      }
+    },
+    "agentsUsage.plan.problem.token" : {
+      "comment" : "Alert body when a pasted token is refused and no other sign-in exists.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paste a new token in Settings › Usage."
+          }
+        }
+      }
+    },
+    "agentsUsage.plan.settings.allow" : {
+      "comment" : "Button: allow Vigie to read the other app's stored login.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allow"
+          }
+        }
+      }
+    },
+    "agentsUsage.plan.settings.allow.note" : {
+      "comment" : "Note under Allow: macOS may ask for Keychain access next.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "macOS may then ask whether Vigie can use this Keychain item. Nothing is read until you click Allow."
+          }
+        }
+      }
+    },
+    "agentsUsage.plan.settings.auth" : {
+      "comment" : "Label of the picker choosing how plan usage signs in.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sign in with"
+          }
+        }
+      }
+    },
+    "agentsUsage.plan.settings.auth.external" : {
+      "comment" : "Picker option: reuse another app's stored login. %@ is the app, e.g. Claude Code.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use %@'s login"
+          }
+        }
+      }
+    },
+    "agentsUsage.plan.settings.auth.token" : {
+      "comment" : "Picker option: paste a token.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paste a token"
+          }
+        }
+      }
+    },
+    "agentsUsage.plan.settings.keychainItem" : {
+      "comment" : "Names the Keychain item Vigie will read. First %@ is the item name, second the app.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keychain item: “%1$@” in your login keychain, stored by %2$@."
+          }
+        }
+      }
+    },
+    "agentsUsage.plan.settings.stop" : {
+      "comment" : "Button: revoke the consent to read the other app's login. %@ is the app, e.g. Claude Code.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stop using %@'s login"
+          }
+        }
+      }
+    },
+    "agentsUsage.plan.settings.title" : {
+      "comment" : "Heading of the plan usage block in Settings › Usage. %@ is the provider, e.g. Claude.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ plan usage"
+          }
+        }
+      }
+    },
+    "agentsUsage.plan.settings.toggle" : {
+      "comment" : "Toggle: fetch the plan limits (5-hour and weekly windows) from the provider.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show plan limits"
+          }
+        }
+      }
+    },
+    "agentsUsage.plan.settings.toggle.help" : {
+      "comment" : "Help under the plan limits toggle.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fetches your 5-hour and weekly usage every 5 minutes. Off by default: no request is made while off."
+          }
+        }
+      }
+    },
+    "agentsUsage.plan.settings.writeFailed" : {
+      "comment" : "Inline error when a plan setting could not be saved.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Could not save this setting."
+          }
+        }
+      }
+    },
+    "agentsUsage.plan.stale" : {
+      "comment" : "Stale indicator of plan usage: the values are from the last good fetch at this time (HH:MM).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "STALE · %@"
+          }
+        }
+      }
+    },
+    "agentsUsage.plan.status.never" : {
+      "comment" : "Status line in Settings: plan usage not fetched yet.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not fetched yet."
+          }
+        }
+      }
+    },
+    "agentsUsage.plan.status.updated" : {
+      "comment" : "Status line in Settings: time of the last good plan usage fetch.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Updated at %@."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

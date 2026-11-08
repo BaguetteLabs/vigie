@@ -192,6 +192,34 @@ public struct ConfigSchema: Sendable {
         return added
     }
 
+    /// Adds the settings an agent adapter declares (`AgentAdapter.settings`) under its owning module, at
+    /// ``CoreSettings/adapterPath(module:adapter:_:)`` (Story 7.3). Returns whether anything was added.
+    @discardableResult
+    public mutating func registerAdapter(_ adapterID: String, module: ModuleID, settings: [SettingDescriptor])
+        -> Bool
+    {
+        var added = false
+        for descriptor in settings {
+            let path = CoreSettings.adapterPath(module: module, adapter: adapterID, descriptor.key)
+            guard entries[path] == nil else { continue }
+            entries[path] = ConfigSchemaEntry(path: path, descriptor: descriptor, moduleID: module)
+            added = true
+        }
+        return added
+    }
+
+    /// Adds `consents."<descriptor id>".granted_at` (a local string, Story 7.3). Returns whether it was added.
+    @discardableResult
+    public mutating func registerConsent(_ descriptorID: String) -> Bool {
+        let path = CoreSettings.consentPath(descriptorID)
+        guard entries[path] == nil else { return false }
+        let descriptor = SettingDescriptor(
+            key: CoreSettings.consentGrantedAtKey, label: CoreSettings.label("config.consents.granted_at"),
+            kind: .string(default: ""), scope: .local)
+        entries[path] = ConfigSchemaEntry(path: path, descriptor: descriptor, moduleID: nil)
+        return true
+    }
+
     /// The path of a module's setting `key`, routed by its declared scope; nil when undeclared.
     public func path(module id: ModuleID, key: String) -> ConfigKeyPath? {
         if key == "enabled" { return .moduleEnabled(id) }

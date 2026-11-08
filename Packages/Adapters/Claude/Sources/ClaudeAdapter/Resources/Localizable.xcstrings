@@ -13,6 +13,18 @@
         }
       }
     },
+    "claude.plan.consent.explanation" : {
+      "comment" : "Consent text shown before Vigie reads Claude Code's stored login. Explains the use and limits.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vigie will read the login Claude Code already stored on this Mac, only to fetch your plan usage. It reads it at each refresh, keeps it in memory only, never copies, renews or changes it, and never syncs this choice."
+          }
+        }
+      }
+    },
     "claude.plan.install.summary" : {
       "comment" : "Integration diff summary. %1$lld = number of hook events, %2$@ = settings file path.",
       "extractionState" : "manual",
@@ -21,6 +33,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Add Vigie hooks for %1$lld events to %2$@"
+          }
+        }
+      }
+    },
+    "claude.plan.name" : {
+      "comment" : "Name of the Claude plan as a usage provider, e.g. in Claude plan usage unavailable.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude"
           }
         }
       }
@@ -81,6 +105,78 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Install hooks in"
+          }
+        }
+      }
+    },
+    "claude.settings.planAuth.help" : {
+      "comment" : "Help for the Claude plan sign-in setting.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paste a token, or use the login Claude Code stored on this Mac. Set per Mac."
+          }
+        }
+      }
+    },
+    "claude.settings.planAuth.label" : {
+      "comment" : "Label of the Claude setting choosing how plan usage signs in.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plan sign-in"
+          }
+        }
+      }
+    },
+    "claude.settings.planToken.help" : {
+      "comment" : "Help for the Claude plan token setting.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stored in the Keychain on this Mac only."
+          }
+        }
+      }
+    },
+    "claude.settings.planToken.label" : {
+      "comment" : "Label of the secret Claude plan token setting.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plan token"
+          }
+        }
+      }
+    },
+    "claude.settings.usageProviders.help" : {
+      "comment" : "Help for the Claude usage sources setting.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "local reads Claude Code's logs on this Mac; plan also fetches your plan limits from Anthropic."
+          }
+        }
+      }
+    },
+    "claude.settings.usageProviders.label" : {
+      "comment" : "Label of the Claude adapter setting listing usage sources (local logs, plan limits).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usage sources"
           }
         }
       }

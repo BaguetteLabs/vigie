@@ -385,14 +385,22 @@ extension AgentEvent {
     @Test func identityAndSettings() {
         let adapter = ClaudeAdapter()
         #expect(adapter.id == "claude")
-        #expect(adapter.capabilities == [.hooks, .launch, .logReader])
-        #expect(adapter.settings.map(\.key) == ["executable", "hooks_scope"])
+        #expect(adapter.capabilities == [.hooks, .launch, .logReader, .usage])
+        #expect(
+            adapter.settings.map(\.key) == ["executable", "hooks_scope", "usage_providers", "plan_auth", "plan_token"])
         #expect(adapter.settings[0].kind == .path(default: nil))
         #expect(adapter.settings[0].scope == .local)
         #expect(adapter.settings[1].kind == .enumeration(options: ["user", "project"], default: "user"))
+        #expect(adapter.settings[2].kind == .list(of: .string, default: ["local"]))
+        #expect(adapter.settings[2].scope == .synced)
+        #expect(adapter.settings[3].kind == .enumeration(options: ["token", "claude_code"], default: "token"))
+        #expect(adapter.settings[3].scope == .local)
+        #expect(adapter.settings[4].kind == .secret)
         #expect(adapter.launchCommand(files: [], cwd: nil) == LaunchCommand(executable: "claude", arguments: []))
         #expect(
-            adapter.transcriptWatcher == nil && adapter.logReader is ClaudeLogReader && adapter.usageProvider == nil)
+            adapter.transcriptWatcher == nil && adapter.logReader is ClaudeLogReader)
+        #expect(adapter.usageProvider?.id == "claude")
+        #expect(adapter.usageProvider?.refreshInterval == .seconds(300))
     }
 
     @Test func stringsResolveFromCatalog() {

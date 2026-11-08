@@ -8,6 +8,7 @@ import os
 final class FakeModuleContext: ModuleContext, @unchecked Sendable {
     let fakeStorage: FolderStorage
     let fakeScheduler = FakeScheduler()
+    let recordingNotifier = RecordingNotifier()
 
     init(directory: URL) {
         fakeStorage = FolderStorage(directory: directory)
@@ -18,7 +19,7 @@ final class FakeModuleContext: ModuleContext, @unchecked Sendable {
     var secrets: any SecretStore { NoSecrets() }
     var scheduler: any Scheduler { fakeScheduler }
     var hotkeys: any HotkeyRegistry { NoHotkeys() }
-    var notifier: any Notifier { NoNotifier() }
+    var notifier: any Notifier { recordingNotifier }
     var events: any EventBus { NoEvents() }
     var host: any HostControl { NoHost() }
     var permissions: any PermissionsService { NoPermissions() }
@@ -85,8 +86,19 @@ struct NoHotkeys: HotkeyRegistry {
     ) throws -> RegistrationToken { RegistrationToken {} }
 }
 
-struct NoNotifier: Notifier {
-    func post(_ event: NotifierEvent) -> AlertHandle { AlertHandle {} }
+/// Records posts and resolutions.
+final class RecordingNotifier: Notifier, @unchecked Sendable {
+    private let lock = NSLock()
+    private var _posted: [NotifierEvent] = []
+    private var _resolved = 0
+
+    var posted: [NotifierEvent] { lock.withLock { _posted } }
+    var resolved: Int { lock.withLock { _resolved } }
+
+    func post(_ event: NotifierEvent) -> AlertHandle {
+        lock.withLock { _posted.append(event) }
+        return AlertHandle { [weak self] in self?.lock.withLock { self?._resolved += 1 } }
+    }
 }
 
 struct NoHost: HostControl {

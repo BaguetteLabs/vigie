@@ -10,7 +10,7 @@ import Testing
         let manifest = AgentsUsageModule.staticManifest
         #expect(manifest.id == "agents.usage")
         #expect(String(localized: manifest.name) == "Usage")
-        #expect(manifest.alertKinds.isEmpty && manifest.settings.isEmpty)
+        #expect(manifest.alertKinds == ["setup.problem"] && manifest.settings.isEmpty)
     }
 
     @Test func startOwnsTheDatabaseInItsStorageFolderAndIngests() async throws {

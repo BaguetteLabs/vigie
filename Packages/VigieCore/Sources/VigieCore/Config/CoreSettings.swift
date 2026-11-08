@@ -15,7 +15,29 @@ public enum CoreSettings {
     /// Tables whose keys are free-form (`[appearance.colors]` overrides any status, pace or warning color).
     /// `[integrations]` (local.toml) holds one table per connected agent adapter (Story 4.7, AD-22); its keys
     /// become known when `IntegrationInstaller` registers the adapter (`ConfigSchema.registerIntegration`).
-    public static let openTables: [ConfigKeyPath] = ["appearance.colors", "integrations"]
+    /// `[consents]` (local.toml) holds one table per external credential the user allowed (Story 7.3, AD-9); its
+    /// keys become known when the secret store first touches the descriptor (`ConfigSchema.registerConsent`).
+    public static let openTables: [ConfigKeyPath] = ["appearance.colors", "integrations", "consents"]
+
+    /// `[consents."<descriptor id>"] granted_at` in `local.toml`, written only by the secret store (AD-9).
+    public static let consentGrantedAtKey = "granted_at"
+
+    /// `consents."<descriptor id>".granted_at`.
+    public static func consentPath(_ descriptorID: String) -> ConfigKeyPath {
+        ConfigKeyPath(["consents", descriptorID, consentGrantedAtKey])
+    }
+
+    /// The table segment under `[modules."<module id>"]` that holds one table per agent adapter (Story 7.3).
+    ///
+    /// AD-23 / SPEC §11 name `[modules."agents.sessions".adapters.<id>]`, but `[modules."agents.sessions"]
+    /// adapters` is already the list of enabled adapters, and TOML cannot hold both (`adapters` would be an array
+    /// and a table). Until the spine is amended, adapter tables live under `adapter` (singular). Change it here only.
+    public static let adapterTableSegment = "adapter"
+
+    /// `modules."<module id>".adapter."<adapter id>".<key>`, in `config.toml` or `local.toml` by scope.
+    public static func adapterPath(module: ModuleID, adapter adapterID: String, _ key: String) -> ConfigKeyPath {
+        ConfigKeyPath(["modules", module.rawValue, adapterTableSegment, adapterID, key])
+    }
 
     /// `[integrations."<adapter id>"]` keys in `local.toml`, written only by `IntegrationInstaller` (AD-22).
     public static let integrationKeys = ["installed_at", "target", "backup", "cli_path"]

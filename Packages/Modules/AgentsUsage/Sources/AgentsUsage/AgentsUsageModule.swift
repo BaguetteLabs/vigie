@@ -2,10 +2,11 @@ import AgentKit
 import Foundation
 import ModuleKit
 import Observation
+import SwiftUI
 import os
 
-/// `agents.usage` (SPEC §7.2): token and cost history from agents' local logs (Story 7.1). Plan limits (7.3),
-/// the Usage tab and rings (7.4+) build on it.
+/// `agents.usage` (SPEC §7.2): token and cost history from agents' local logs (Story 7.1) and opt-in plan limits
+/// merged into the same provider (Story 7.3, `PlanUsage.swift`). The Usage tab and rings (7.4+) build on it.
 ///
 /// App assembly passes the same `AgentAdapters` value as `agents.sessions` (AD-4, AD-23). The module owns the
 /// only SQLite database (AD-11), `usage.sqlite` in its `context.storage` folder, filled by ``UsageIngestor`` off
@@ -21,6 +22,7 @@ public final class AgentsUsageModule: NotchModule {
         id: "agents.usage",
         name: LocalizedStringResource("agentsUsage.module.name", bundle: bundle),
         icon: "chart.bar",
+        alertKinds: [setupProblemKind],
         defaultEnabled: true
     )
 
@@ -29,9 +31,26 @@ public final class AgentsUsageModule: NotchModule {
     public private(set) var state: ModuleState = .hidden
 
     public let adapters: AgentAdapters
-    /// Each adapter's read-only settings at `[modules."agents.sessions".adapters.<id>]` (AD-23).
+    /// The same per-adapter contexts App assembly gives `agents.sessions` (AD-23): `http` and the adapter-scoped
+    /// `secrets` for plan usage.
+    public let adapterContexts: [AgentID: any AdapterContext]
+    /// Writable adapter settings for the plan block of Settings (`usage_providers`, `plan_auth`).
+    @ObservationIgnored let adapterSettingsStores: [AgentID: any AdapterSettingsStore]
+    /// Each adapter's read-only settings at `[modules."agents.sessions".adapter.<id>]` (AD-23).
     @ObservationIgnored let adapterSettings: @Sendable (any AgentAdapter) -> any ReadOnlySettings
     @ObservationIgnored let calendar: Calendar
+    @ObservationIgnored let now: @Sendable () -> Date
+
+    /// Plan windows per provider (Story 7.3); absent while `plan` is off.
+    public internal(set) var planStates: [AgentID: PlanState] = [:]
+    @ObservationIgnored var planAlerts: [AgentID: AlertHandle] = [:]
+    @ObservationIgnored var planInFlight: Set<AgentID> = []
+    @ObservationIgnored var planMissingContextLogged: Set<AgentID> = []
+    @ObservationIgnored var planTask: Task<Void, Never>?
+    @ObservationIgnored var planJob: RegistrationToken?
+    @ObservationIgnored var planObservers: [Task<Void, Never>] = []
+    @ObservationIgnored var notifier: (any Notifier)?
+    @ObservationIgnored var log: Logger?
 
     /// The query API, available once started.
     public private(set) var history: UsageHistory?
@@ -43,19 +62,37 @@ public final class AgentsUsageModule: NotchModule {
     @ObservationIgnored var ingestTask: Task<Void, Never>?
     @ObservationIgnored var ingestToken: RegistrationToken?
 
+    /// - Parameters:
+    ///   - contexts: per-adapter contexts (the same as `agents.sessions`'s); an adapter without one gets no plan
+    ///     usage.
+    ///   - adapterSettingsStores: writable adapter settings for the Settings block.
+    ///   - adapterSettings: overrides how adapter settings are read; default: the store, else the context's
+    ///     settings, else the declared defaults.
     public init(
         adapters: AgentAdapters,
+        contexts: [AgentID: any AdapterContext] = [:],
+        adapterSettingsStores: [AgentID: any AdapterSettingsStore] = [:],
         adapterSettings: (@Sendable (any AgentAdapter) -> any ReadOnlySettings)? = nil,
-        calendar: Calendar = .current
+        calendar: Calendar = .current,
+        now: @escaping @Sendable () -> Date = { Date() }
     ) {
         self.adapters = adapters
+        self.adapterContexts = contexts
+        self.adapterSettingsStores = adapterSettingsStores
         self.adapterSettings =
-            adapterSettings ?? { adapter in DefaultsReadOnlySettings(descriptors: adapter.settings) }
+            adapterSettings ?? { adapter in
+                if let store = adapterSettingsStores[adapter.id] { return ReadOnlyAdapterSettings(store) }
+                if let context = contexts[adapter.id] { return context.settings }
+                return DefaultsReadOnlySettings(descriptors: adapter.settings)
+            }
         self.calendar = calendar
+        self.now = now
     }
 
     public func start(context: any ModuleContext) async throws {
         let log = context.log
+        self.log = log
+        notifier = context.notifier
         let store = try UsageStore(directory: context.storage.directory)
         let estimator = try CostEstimator.bundled()
         let registry = UsageProviderRegistry(adapters: adapters, settings: adapterSettings)
@@ -74,9 +111,17 @@ public final class AgentsUsageModule: NotchModule {
             let report = await ingestor.ingest()
             await self?.finished(report)
         }
+        startPlanRefresh(scheduler: context.scheduler)
+    }
+
+    public func settingsView() -> AnyView? {
+        let adapters = planAdapters
+        guard !adapters.isEmpty else { return nil }
+        return AnyView(PlanSettingsView(module: self, adapters: adapters.map(\.id)))
     }
 
     public func stop() async {
+        stopPlanRefresh()
         ingestTask?.cancel()
         ingestTask = nil
         ingestToken?.cancel()

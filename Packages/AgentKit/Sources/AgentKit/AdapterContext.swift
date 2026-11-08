@@ -78,3 +78,22 @@ public struct URLSessionHTTPClient: HTTPClient {
         return (data, http)
     }
 }
+
+/// Read and write access to one adapter's settings at `[modules."agents.sessions".adapter.<id>]` (Story 7.3):
+/// the `ModuleSettings` shape, so VigieCore serves it from ConfigStore. Given by App assembly to the module that
+/// owns the adapter's Settings block (e.g. `agents.usage` for `usage_providers` and `plan_auth`), never to the
+/// adapter itself.
+public typealias AdapterSettingsStore = ModuleSettings
+
+/// The adapter's read-only view of an ``AdapterSettingsStore``.
+public struct ReadOnlyAdapterSettings: ReadOnlySettings {
+    public let store: any AdapterSettingsStore
+
+    public init(_ store: any AdapterSettingsStore) {
+        self.store = store
+    }
+
+    public func value<T: SettingValue>(_ key: String, as type: T.Type) -> T? {
+        store.value(key, as: type)
+    }
+}

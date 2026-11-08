@@ -18,12 +18,32 @@ public struct ClaudeAdapter: AgentAdapter {
         testedRanges: [AgentVersion.Semver(2, 1, 0)...AgentVersion.Semver(2, 1, 319)],
         assumesNewerPatches: true)
 
-    /// Setting keys at `[modules."agents.sessions".adapters.claude]` (SPEC §11).
+    /// Setting keys at `[modules."agents.sessions".adapter.claude]` (SPEC §11 `adapters.claude`; see `CoreSettings.adapterTableSegment`).
     public enum SettingKey {
         /// Absolute path (or `~/…`) of the `claude` executable; unset → resolved by name. Local (per Mac).
         public static let executable = "executable"
         /// `user` (`~/.claude/settings.json`) or `project` (`<project>/.claude/settings.json`).
         public static let hooksScope = "hooks_scope"
+        /// Usage sources (SPEC §11): `local` (logs, Story 7.1) and `plan` (remote limits, Story 7.3). Synced.
+        public static let usageProviders = "usage_providers"
+        /// How plan usage signs in: ``PlanAuth``. Local (per Mac).
+        public static let planAuth = "plan_auth"
+        /// The pasted plan token (`secret`: SecretStore only, owner `adapter.claude`).
+        public static let planToken = "plan_token"
+    }
+
+    /// `usage_providers` entries.
+    public enum UsageSource {
+        public static let local = "local"
+        public static let plan = "plan"
+    }
+
+    /// `plan_auth` values (A57).
+    public enum PlanAuth: String, CaseIterable, Sendable {
+        /// A token the user pasted (`plan_token`).
+        case token
+        /// Claude Code's stored login, read with the user's consent.
+        case claudeCode = "claude_code"
     }
 
     /// Where the hooks are installed.
@@ -51,8 +71,11 @@ public struct ClaudeAdapter: AgentAdapter {
 
     public var name: LocalizedStringResource { L10n.resource("claude.adapter.name") }
 
-    /// Hooks, Ask AI and local log reading (Story 7.1). Plan-limit usage arrives with Story 7.3.
-    public var capabilities: Set<AgentCapability> { [.hooks, .launch, .logReader] }
+    /// Hooks, Ask AI, local log reading (Story 7.1) and opt-in plan limits (Story 7.3).
+    public var capabilities: Set<AgentCapability> { [.hooks, .launch, .logReader, .usage] }
+
+    /// Plan windows from the unofficial endpoint (Story 7.3); called only while `usage_providers` has `plan`.
+    public var usageProvider: (any UsageProvider)? { ClaudePlanUsageProvider() }
 
     /// `~/.claude/projects/**/*.jsonl` (Story 7.1, AD-23).
     public var logReader: (any AgentLogReader)? { ClaudeLogReader(homeDirectory: homeDirectory) }
@@ -67,6 +90,17 @@ public struct ClaudeAdapter: AgentAdapter {
                 key: SettingKey.hooksScope, label: L10n.resource("claude.settings.hooksScope.label"),
                 kind: .enumeration(options: HooksScope.allCases.map(\.rawValue), default: HooksScope.user.rawValue),
                 help: L10n.resource("claude.settings.hooksScope.help")),
+            SettingDescriptor(
+                key: SettingKey.usageProviders, label: L10n.resource("claude.settings.usageProviders.label"),
+                kind: .list(of: .string, default: [UsageSource.local]),
+                help: L10n.resource("claude.settings.usageProviders.help")),
+            SettingDescriptor(
+                key: SettingKey.planAuth, label: L10n.resource("claude.settings.planAuth.label"),
+                kind: .enumeration(options: PlanAuth.allCases.map(\.rawValue), default: PlanAuth.token.rawValue),
+                scope: .local, help: L10n.resource("claude.settings.planAuth.help")),
+            SettingDescriptor(
+                key: SettingKey.planToken, label: L10n.resource("claude.settings.planToken.label"), kind: .secret,
+                scope: .local, help: L10n.resource("claude.settings.planToken.help")),
         ]
     }
 

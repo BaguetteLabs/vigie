@@ -145,6 +145,18 @@
         }
       }
     },
+    "config.consents.granted_at": {
+      "comment": "Label for the local.toml key consents.<credential>.granted_at, written when the user allows Vigie to read another app's stored login.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allowed on"
+          }
+        }
+      }
+    },
     "config.display.display": {
       "comment": "Settings label for the config key display.display.",
       "extractionState": "manual",
