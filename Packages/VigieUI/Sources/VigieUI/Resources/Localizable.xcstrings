@@ -133,6 +133,18 @@
         }
       }
     },
+    "usage.home.title" : {
+      "comment" : "Home usage card title (Story 11.2).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usage"
+          }
+        }
+      }
+    },
     "usage.tab.noProviders" : {
       "comment" : "Usage tab: meta of the no-provider card.",
       "extractionState" : "manual",

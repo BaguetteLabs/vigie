@@ -33,6 +33,20 @@ extension AgentsUsageModule {
             })
     }
 
+    /// The Home card (Story 11.2): one compact row per provider, bound to the live snapshot. Appearing is the
+    /// expanded view opening, so it refreshes plan windows the same way the tab does. The Home grid's button
+    /// around the card opens the tab (and its empty state's Settings button).
+    public func homeCard() -> AnyView? {
+        AnyView(
+            UsageHomeCardView(snapshot: { [weak self] in
+                self?.usageTabSnapshot() ?? UsageTabSnapshot(providers: [])
+            })
+            .task { [weak self] in
+                await self?.refreshOverview()
+                await self?.expandedViewDidAppear()
+            })
+    }
+
     /// What the tab shows at the dial clock.
     public func usageTabSnapshot() -> UsageTabSnapshot {
         UsageTabSnapshot(providers: tabProviders.map(providerCard), history: historyPanel, cost: costPanel)

@@ -170,3 +170,80 @@ import Testing
         }
     }
 }
+
+/// Story 11.2 (quota card): the `agents.usage` Home card (UX-DR78, UX-DR97, UX-DR99).
+@MainActor @Suite struct UsageHomeCardTests {
+    static func stale(_ model: UsageProviderCardModel, _ label: String) -> UsageProviderCardModel {
+        var copy = model
+        copy.meta.stale = label
+        return copy
+    }
+
+    static func card(_ providers: [UsageProviderCardModel]) -> UsageHomeCardView {
+        UsageHomeCardView(snapshot: { UsageTabSnapshot(providers: providers) })
+    }
+
+    @Test func rowsFollowProviderOrder() {
+        let rows = Self.card([UsageTabTests.codex, UsageTabTests.gemini, UsageTabTests.claude]).rowsValue()
+        #expect(rows.map(\.id) == ["codex", "gemini", "claude"])
+        guard case .window(_, let percent, let reset) = rows[0].value else {
+            Issue.record("no window")
+            return
+        }
+        #expect(percent == 84)
+        #expect(reset == UsageReset(time: "16:40", remaining: "1H52"))
+    }
+
+    @Test func warningMetaWinsElseFirstProviderMeta() {
+        #expect(Self.card([UsageTabTests.claude, UsageTabTests.codex]).metaValue() == "WARN · ≥ 80%")
+        #expect(Self.card([UsageTabTests.claude]).metaValue() == "MAX · WARN 80%")
+        #expect(Self.card([]).metaValue() == nil)
+    }
+
+    @Test func staleLabelOnTheRightRow() {
+        let rows = Self.card([UsageTabTests.claude, Self.stale(UsageTabTests.gemini, "STALE · 14:02")]).rowsValue()
+        #expect(rows[0].stale == nil)
+        #expect(rows[1].stale == "STALE · 14:02")
+    }
+
+    @Test func readingLogsAndNoPlanWindowsRows() {
+        let reading = UsageProviderCardModel(
+            id: "claude", name: "Claude Code", meta: UsageCardMeta(kind: .warn(threshold: 80)), content: .readingLogs)
+        let local = UsageProviderCardModel(
+            id: "codex", name: "Codex", meta: UsageCardMeta(kind: .localOnly), content: .noPlanWindows)
+        let rows = Self.card([reading, local]).rowsValue()
+        #expect(rows[0].value == .readingLogs)
+        #expect(rows[1].value == .noPlanWindows)
+        #expect(Self.card([]).rowsValue().isEmpty)
+        #expect(L10n.string("usage.home.title") == "Usage")
+        #expect(VigieCopy.noUsageProvider.sentence != nil)
+    }
+
+    @Test(arguments: [0, 1, 3], [Look.dark, .light])
+    func rendersInsideTheCell(count: Int, look: Look) throws {
+        let theme = SessionsHomeCardTests.theme(look)
+        let size = HomeMetrics.cardSize(theme)
+        let providers = Array([UsageTabTests.claude, UsageTabTests.codex, UsageTabTests.gemini].prefix(count))
+        let stale =
+            providers.isEmpty
+            ? providers : [providers[0]] + providers.dropFirst().map { Self.stale($0, "STALE · 14:02") }
+        var card = Self.card(stale)
+        card.scrolls = false
+        let view =
+            card
+            .frame(width: size.width, height: size.height)
+            .padding(20)
+            .background(look == .dark ? Color(white: 0.22) : Color(white: 0.85))
+            .vigieTheme(theme)
+        let hosting = NSHostingView(rootView: view)
+        hosting.frame = CGRect(x: 0, y: 0, width: size.width + 40, height: size.height + 40)
+        hosting.layoutSubtreeIfNeeded()
+        #expect(hosting.fittingSize.height <= size.height + 40 + 0.5)
+        let rep = try #require(hosting.bitmapImageRepForCachingDisplay(in: hosting.bounds))
+        hosting.cacheDisplay(in: hosting.bounds, to: rep)
+        let png = try #require(rep.representation(using: .png, properties: [:]))
+        let dir = "/private/tmp/claude-501/-Users-me-www-vigie/03a97dc6-097f-4d60-a649-a2f93afa8536/scratchpad/s11.2b"
+        try FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true)
+        try png.write(to: URL(fileURLWithPath: dir).appendingPathComponent("usage-card-\(count)-\(look.rawValue).png"))
+    }
+}

@@ -143,6 +143,7 @@ import VigieUI
         let opened = PaneLog()
         let module = AgentsUsageModule(adapters: AgentAdapters([]), openSettings: { opened.panes.append($0) })
         #expect(module.expandedView() != nil)
+        #expect(module.homeCard() != nil)
         module.openSettings?(AgentsUsageModule.settingsPane)
         #expect(opened.panes == ["agents.usage"])
         #expect(String(localized: module.manifest.name) == "Usage")
