@@ -752,7 +752,39 @@ Users install a signed, notarized Vigie from the public release host, and Sparkl
 Users see one quota ring per provider in the left wing, a pace marker, a quota warning at their threshold, and a Usage tab with per-window bars, 7-day history and today's cost — starting with Claude Code.
 **FRs covered:** FR5, FR15, FR47, FR48, FR49, FR50, FR51, FR52, FR53, FR54 · PRD FR-29, FR-30 (multiple Accounts, Story 7.10)
 
-### Epic 8: Codex CLI support
+#### Story 7.11: Hook installation per Account location
+
+*Added 2026-11-08 (Romain's ruling): Story 4.7 installs hooks only into the default `~/.claude/settings.json`; an extra Account (Story 7.10) with its own `CLAUDE_CONFIG_DIR` reports usage from its logs but no Sessions.*
+
+As a user with several Accounts on one Provider,
+I want Vigie's hooks installed in each Account's config location,
+So that Sessions from every Account reach the notch.
+
+**Requirements:** PRD FR-23, AD-22 (IntegrationInstaller, diff confirmation), AD-23 (Accounts bound to a location), A82
+
+**Acceptance Criteria:**
+
+**Given** an Account with a `location` (Story 7.10)
+**When** the user connects the Provider's integration, or adds the Account while it is connected
+**Then** the installer shows the same unified diff for `<location>/settings.json` and writes it only after confirmation; the hook command carries the Account's location so the hook CLI attributes events to it (A82)
+
+**Given** a connected Provider with several Accounts
+**When** Settings › Agents › Integrations renders
+**Then** the status line lists each Account's location as installed, missing or modified, and `Install` repairs every missing one
+
+**Given** Disconnect, or an Account removed
+**When** confirmed
+**Then** the hooks are removed from that location only, with a diff
+
+**Given** a location that does not exist or has no `settings.json`
+**When** the installer runs
+**Then** it creates the file with only Vigie's hooks after confirmation, or reports the missing folder as a setup problem naming the path (sensitive in Privacy mode)
+
+**Given** unit tests with two fake Account locations
+**When** install, repair and remove run
+**Then** each location is touched independently and the default location is unchanged by the others
+
+## Epic 8: Codex CLI support
 Users who run Codex CLI get its sessions and usage in Vigie through the same modules, with honest reporting of what the integration can detect; any long command can report like an agent with `vigie run`.
 **FRs covered:** FR31, FR35, FR47, FR55, FR80, FR81, FR83, FR85 · PRD FR-23 (`vigie run`, Story 8.4)
 
@@ -2661,6 +2693,38 @@ So that I pace each plan on its own.
 **Given** Privacy mode (Epic 21)
 **When** it is active
 **Then** Account labels are treated as sensitive fields
+
+### Story 7.11: Hook installation per Account location
+
+*Added 2026-11-08 (Romain's ruling): Story 4.7 installs hooks only into the default `~/.claude/settings.json`; an extra Account (Story 7.10) with its own `CLAUDE_CONFIG_DIR` reports usage from its logs but no Sessions.*
+
+As a user with several Accounts on one Provider,
+I want Vigie's hooks installed in each Account's config location,
+So that Sessions from every Account reach the notch.
+
+**Requirements:** PRD FR-23, AD-22 (IntegrationInstaller, diff confirmation), AD-23 (Accounts bound to a location), A82
+
+**Acceptance Criteria:**
+
+**Given** an Account with a `location` (Story 7.10)
+**When** the user connects the Provider's integration, or adds the Account while it is connected
+**Then** the installer shows the same unified diff for `<location>/settings.json` and writes it only after confirmation; the hook command carries the Account's location so the hook CLI attributes events to it (A82)
+
+**Given** a connected Provider with several Accounts
+**When** Settings › Agents › Integrations renders
+**Then** the status line lists each Account's location as installed, missing or modified, and `Install` repairs every missing one
+
+**Given** Disconnect, or an Account removed
+**When** confirmed
+**Then** the hooks are removed from that location only, with a diff
+
+**Given** a location that does not exist or has no `settings.json`
+**When** the installer runs
+**Then** it creates the file with only Vigie's hooks after confirmation, or reports the missing folder as a setup problem naming the path (sensitive in Privacy mode)
+
+**Given** unit tests with two fake Account locations
+**When** install, repair and remove run
+**Then** each location is touched independently and the default location is unchanged by the others
 
 ## Epic 8: Codex CLI support
 

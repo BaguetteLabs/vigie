@@ -87,7 +87,7 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - [x] 6.4 Versioning and build numbers (run `Scripts/version.sh --xcconfig App/Config/Version.xcconfig` before a manual `xcodegen generate`)
 
 ### v0.2 — Epics 7 (Usage), 8 (Codex, `vigie run`), 9 (Shelf), 10 (Sounds), 21 (Privacy)
-- [x] 7.1, 7.2 (signed-build AC pending a real identity), 7.3 (live endpoint untested; AD-23 path ruling pending) , 7.4, 7.5, 7.6, 7.7, 7.8 (not yet seen live), 7.9, 7.10 (AD-23 wording rulings pending) · [ ] 8.1–8.4 · [x] 9.1 (no real drag tested yet), 9.2, 9.3 (Quick Look + drag-out untested live), 9.4, 9.5, 9.6 (no live openTab yet), 9.7, 9.8, 9.9, 9.10 (live checks pending) — Epic 9 done · [x] 10.1–10.2 (listen to the WAVs once) · [x] 21.1 (desk research; checklist for Romain), 21.2, 21.3 — Epic 21 done (manual only)
+- [x] 7.1, 7.2 (signed-build AC pending a real identity), 7.3 (live endpoint untested; AD-23 path ruling pending) , 7.4, 7.5, 7.6, 7.7, 7.8 (not yet seen live), 7.9, 7.10 · [ ] 7.11 (added 2026-11-08) · [ ] 8.1–8.4 · [x] 9.1 (no real drag tested yet), 9.2, 9.3 (Quick Look + drag-out untested live), 9.4, 9.5, 9.6 (no live openTab yet), 9.7, 9.8, 9.9, 9.10 (live checks pending) — Epic 9 done · [x] 10.1–10.2 (listen to the WAVs once) · [x] 21.1 (desk research; checklist for Romain), 21.2, 21.3 — Epic 21 done (manual only)
 
 ### v0.3 — Epics 11 (Home), 12 (Scripts), 13 (Calendar), 14 (Gemini), 20 (Time)
 - [x] 11.1 · [x] 11.2 · [ ] 11.3 · [ ] 12.1–12.11 · [ ] 13.1–13.4 · [ ] 14.1–14.3 · [x] 20.1 (measured on 26.5 only, screen locked), 20.2, 20.3 (lock/unlock signals unverified live), 20.4 (break cycle not persisted) · [ ] 20.5, 20.6
@@ -111,7 +111,6 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 
 - Test the live Claude plan endpoint once: Settings › Usage › Claude plan usage › Use Claude Code's login › Allow (macOS Keychain prompt), then check the status line / `log show … | grep "Plan usage"`. Patch `PLAN-ENDPOINT.md` + client + fixtures if the shape differs.
 
-- New story needed: hook installer per Account location (extra `CLAUDE_CONFIG_DIR` setups get no hooks today).
 
 - Drag a file from Finder over the notch once (Vigie Dev): the drop display should grow out without focus change; press Esc to cancel. Report if nothing appears.
 
@@ -121,6 +120,7 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 
 - 2026-11-08 — Romain: adapter table path stays `[modules."agents.sessions".adapter.<id>]` (singular) with `adapters` as the list. AD-23 and SPEC §11 amended.
 - 2026-11-08 — Romain: 7.10 code confirmed — Accounts in the adapter table (`adapter.<id>.accounts` + `account.<id>.*`), Keychain owner `adapter.<id>` with per-Account keys. AD-23 and SPEC §7.2/§11 amended.
+- 2026-11-08 — Romain: hook installation per Account location added to Epic 7 as Story 7.11 (not deferred to v0.4).
 
 - 2026-11-07 — Working mode, signing, installs, remote: see "Working mode" above.
 - 2026-11-07 — XcodeGen chosen for the App target project (AD-2 keeps the target thin; no hand-edited pbxproj in git).
