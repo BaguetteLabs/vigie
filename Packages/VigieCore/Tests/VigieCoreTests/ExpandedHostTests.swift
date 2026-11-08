@@ -63,6 +63,7 @@ final class ExpandedFixture {
     let registry: ModuleRegistry
     let focus = FocusPolicy()
     let enablement: TestEnablement
+    let clock = TestClock()
     let panel = FakeExpandedPanel()
     var openOnHover = false
     var closeOnLeave = false
@@ -98,6 +99,7 @@ final class ExpandedFixture {
             logger: testLogger)
         let library = try! ThemeLoader.loadBundled()
         let panel = panel
+        let clock = clock
         host = NotchHost(
             themeController: ThemeController(library: library, accessibility: .init(reduceMotion: true)),
             registry: registry, contextMenu: NotchContextMenu(), displays: { [] },
@@ -110,7 +112,7 @@ final class ExpandedFixture {
             homeCardOrder: { [unowned self] in self.homeCards },
             pointerLocation: { [unowned self] in self.pointer },
             makeExpandedPanel: { _ in panel },
-            logger: testLogger)
+            clock: clock, logger: testLogger)
         host.anchorsOverride = [
             IslandAnchor(screenFrame: Self.screen, islandFrame: Self.island, notchRect: Self.notch)
         ]
@@ -271,6 +273,8 @@ final class ExpandedFixture {
         await f.start()
         f.host.islandHoverChanged(true)
         #expect(!f.host.isExpanded)
+        #expect(await eventually { f.clock.sleeperCount == 1 })
+        f.clock.advance(by: .milliseconds(20))
         #expect(await eventually { f.host.isExpanded })
         #expect(!f.panel.isKey)
         #expect(f.focus.keySurfaceID == nil)

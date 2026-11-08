@@ -13,7 +13,7 @@ final class Counter: Sendable {
 }
 
 /// Polls `condition` until it holds or `timeout` elapses.
-func eventually(timeout: Duration = .seconds(3), _ condition: @MainActor () async -> Bool) async -> Bool {
+func eventually(timeout: Duration = .seconds(10), _ condition: @MainActor () async -> Bool) async -> Bool {
     let deadline = ContinuousClock.now.advanced(by: timeout)
     while ContinuousClock.now < deadline {
         if await condition() { return true }

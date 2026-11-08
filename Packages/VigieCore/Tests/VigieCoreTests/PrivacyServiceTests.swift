@@ -149,7 +149,7 @@ import VigieUI
 }
 
 /// The host's roots set `privacyActive`: the eye-slash shows in the expanded tab row only while active.
-@MainActor @Suite struct PrivacyHostTests {
+@MainActor @Suite(.serialized) struct PrivacyHostTests {
     @Test func expandedRootShowsTheIndicatorWhilePrivate() async {
         let f = ExpandedFixture()
         await f.start()
@@ -187,7 +187,7 @@ import VigieUI
             with: "AXEnhancedUserInterface")
         window.orderFrontRegardless()
         hosting.layoutSubtreeIfNeeded()
-        RunLoop.main.run(until: Date().addingTimeInterval(0.05))
+        RunLoop.main.run(until: Date().addingTimeInterval(0.01))
         var strings: [String] = []
         func visit(_ element: Any, depth: Int) {
             guard depth < 40, let object = element as? NSObject else { return }

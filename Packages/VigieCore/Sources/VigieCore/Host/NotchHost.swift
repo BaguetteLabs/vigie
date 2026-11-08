@@ -134,6 +134,8 @@ public final class NotchHost {
     @ObservationIgnored let focusPolicy: FocusPolicy
     @ObservationIgnored let openOnHover: @MainActor () -> Bool
     @ObservationIgnored let hoverDelay: @MainActor () -> Duration
+    /// Drives the transient readout duration and the hover-open delay.
+    @ObservationIgnored let clock: any Clock<Duration>
     @ObservationIgnored let closeOnLeave: @MainActor () -> Bool
     @ObservationIgnored let tabOrder: @MainActor () -> [String]
     @ObservationIgnored let pointerLocation: @MainActor () -> CGPoint
@@ -223,8 +225,10 @@ public final class NotchHost {
         makeDropDisplayPanel: (@MainActor (DropDisplayController) -> any DropDisplayPanelDriver)? = nil,
         announce: (@MainActor (String) -> Void)? = nil,
         privacy: CorePrivacyService? = nil,
+        clock: any Clock<Duration> = ContinuousClock(),
         logger: Logger
     ) {
+        self.clock = clock
         self.privacy = privacy ?? CorePrivacyService()
         self.announce = announce ?? NotchHost.postAnnouncement
         self.themeController = themeController
@@ -650,8 +654,9 @@ public final class NotchHost {
         transientTrigger += 1
         transientDrain = transient.drains ? .draining(duration, trigger: transientTrigger) : nil
         transientTask?.cancel()
+        let clock = clock
         transientTask = Task { @MainActor [weak self] in
-            try? await Task.sleep(for: duration)
+            try? await clock.sleep(for: duration)
             guard !Task.isCancelled, let self else { return }
             self.transientTask = nil
             self.clearTransient()

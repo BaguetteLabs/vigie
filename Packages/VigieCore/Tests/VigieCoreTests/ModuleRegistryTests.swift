@@ -133,8 +133,11 @@ struct Harness {
         #expect(h.spies.made["dev.sample"] == nil)
 
         h.enablement.set("dev.sample", true)
-        #expect(await eventually { h.registry.status(of: "dev.sample") == .running })
+        #expect(await eventually { h.registry.changesObserved == 1 })  // the stream hop
+        await h.registry.settle()  // the transition itself is awaited, not polled
+        #expect(h.registry.status(of: "dev.sample") == .running)
         h.enablement.set("dev.sample", true)  // a repeated change is not a second start
+        #expect(await eventually { h.registry.changesObserved == 2 })
         await h.registry.settle()
 
         let module = try #require(h.spies.last("dev.sample"))

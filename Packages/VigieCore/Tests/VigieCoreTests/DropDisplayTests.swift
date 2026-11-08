@@ -120,6 +120,7 @@ final class DropFixture {
     let agents: DropModule
     let registry: ModuleRegistry
     let enablement = TestEnablement()
+    let clock = TestClock()
     let driver = RecordingDropDriver()
     let escape = FakeEscape()
     let drops = makeTempDirectory().appendingPathComponent("drops", isDirectory: true)
@@ -150,6 +151,7 @@ final class DropFixture {
                 environment: makeEnvironment(makeTempDirectory()), eventBus: InProcessEventBus()),
             logger: testLogger)
         let driver = driver
+        let clock = clock
         host = NotchHost(
             themeController: ThemeController(
                 library: try! ThemeLoader.loadBundled(), accessibility: .init(reduceMotion: true)),
@@ -157,7 +159,7 @@ final class DropFixture {
             pointerLocation: { CGPoint(x: 700, y: 980) },
             dropsDirectory: drops, dropEscape: escape, dropModifierFlags: { [unowned self] in self.modifiers },
             dropExitGrace: .milliseconds(20), makeDropDisplayPanel: { _ in driver },
-            announce: { [unowned self] text in self.announced.append(text) }, logger: testLogger)
+            announce: { [unowned self] text in self.announced.append(text) }, clock: clock, logger: testLogger)
         host.anchorsOverride = [IslandAnchor(screenFrame: Self.screen, islandFrame: Self.island, notchRect: Self.notch)]
     }
 

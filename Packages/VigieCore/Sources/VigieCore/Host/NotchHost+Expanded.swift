@@ -125,8 +125,9 @@ extension NotchHost {
         hoverTask = nil
         guard hovering, !isExpanded, openOnHover() else { return }
         let delay = hoverDelay()
+        let clock = clock
         hoverTask = Task { @MainActor [weak self] in
-            try? await Task.sleep(for: delay)
+            try? await clock.sleep(for: delay)
             guard !Task.isCancelled, let self else { return }
             self.hoverTask = nil
             self.expand(focus: nil)

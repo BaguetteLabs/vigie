@@ -143,7 +143,8 @@ import VigieUI
         }
         f.host.islandHoverChanged(true)
         #expect(f.host.transientDrain == .held)
-        try? await Task.sleep(for: .milliseconds(150))
+        f.clock.advance(by: .seconds(1))
+        await Task.yield()
         #expect(f.host.transient == .copied(lines: 2), "held while hovered")
         f.host.islandHoverChanged(false)
         guard case .draining(_, let second) = f.host.transientDrain else {
@@ -151,6 +152,8 @@ import VigieUI
             return
         }
         #expect(second != first, "the drain restarts from full")
+        #expect(await eventually { f.clock.sleeperCount == 1 })
+        f.clock.advance(by: .milliseconds(60))
         #expect(await eventually { f.host.transient == nil })
         #expect(f.host.transientDrain == nil)
     }
@@ -162,9 +165,12 @@ import VigieUI
         f.host.showTransient(.noTextFound, duration: .milliseconds(30))
         #expect(f.host.transientDrain == .held)
         #expect(f.announced == ["No text found"])
-        try? await Task.sleep(for: .milliseconds(80))
+        f.clock.advance(by: .seconds(1))
+        await Task.yield()
         #expect(f.host.transient == .noTextFound)
         f.host.islandHoverChanged(false)
+        #expect(await eventually { f.clock.sleeperCount == 1 })
+        f.clock.advance(by: .milliseconds(30))
         #expect(await eventually { f.host.transient == nil })
     }
 
@@ -174,6 +180,8 @@ import VigieUI
         f.host.showTransient(.message("NOT STASHED"), duration: .milliseconds(30))
         #expect(f.host.transientDrain == nil)
         #expect(f.announced.isEmpty)
+        #expect(await eventually { f.clock.sleeperCount == 1 })
+        f.clock.advance(by: .milliseconds(30))
         #expect(await eventually { f.host.transient == nil })
     }
 

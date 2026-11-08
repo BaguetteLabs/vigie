@@ -58,6 +58,8 @@ public final class ModuleRegistry {
     @ObservationIgnored private var running: [ModuleID: Running] = [:]
     @ObservationIgnored private var lastTransition: Task<Void, Never>?
     @ObservationIgnored private var changesTask: Task<Void, Never>?
+    /// Enablement changes taken off the stream so far (a test seam for the stream hop).
+    @ObservationIgnored private(set) var changesObserved = 0
     @ObservationIgnored private var isShutDown = false
 
     public init(
@@ -96,6 +98,7 @@ public final class ModuleRegistry {
         changesTask = Task { [weak self] in
             for await id in changes {
                 guard let self else { return }
+                self.changesObserved += 1
                 self.enqueue(id)
             }
         }

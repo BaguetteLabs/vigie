@@ -217,8 +217,10 @@ final class LaneModule: NotchModule {
         let modules: [ModuleID: LaneModule]
         let registry: ModuleRegistry
         let host: NotchHost
+        let clock = TestClock()
 
         init(ids: [ModuleID], slots: Int = 3) {
+            let clock = clock
             var modules: [ModuleID: LaneModule] = [:]
             for id in ids { modules[id] = LaneModule(id) }
             let made = modules
@@ -234,7 +236,8 @@ final class LaneModule: NotchModule {
             let library = try! ThemeLoader.loadBundled()
             host = NotchHost(
                 themeController: ThemeController(library: library), registry: registry,
-                contextMenu: NotchContextMenu(), closedSlots: { slots }, displays: { [] }, logger: testLogger)
+                contextMenu: NotchContextMenu(), closedSlots: { slots }, displays: { [] }, clock: clock,
+                logger: testLogger)
         }
     }
 
@@ -274,6 +277,11 @@ final class LaneModule: NotchModule {
         #expect(f.host.transient == .copied(lines: 3))
         #expect(f.host.leadingLayout.ids == ["scripts/a", "transient"])
         #expect(f.host.leadingLayout.overflowCount == 1)
+        #expect(await eventually { f.clock.sleeperCount == 1 })
+        f.clock.advance(by: .milliseconds(49))
+        await Task.yield()
+        #expect(f.host.transient == .copied(lines: 3), "still showing before its duration")
+        f.clock.advance(by: .milliseconds(1))
         #expect(await eventually { f.host.leadingLayout.ids == ["scripts/a", "scripts/b"] })
         #expect(f.host.transient == nil)
         await f.registry.shutdown()
