@@ -75,7 +75,9 @@ struct ProviderAdapter: AgentAdapter {
 
     @Test func defaultsArePriorityTwoAndRegistrationOrder() {
         let module = Self.module([.plan("claude", "Claude"), .plan("codex", "Codex"), .plan("gemini", "Gemini")])
-        for id in ["gemini", "claude", "codex"] { module.planStates[AgentID(id)!] = PlanState(windows: [fiveHour]) }
+        for id in ["gemini", "claude", "codex"] {
+            module.planStates[UsageAccountKey(stringLiteral: id)] = PlanState(windows: [fiveHour])
+        }
         let items = module.leftWingItems()
         #expect(items.map(\.id) == ["ring.claude", "ring.codex", "ring.gemini"])
         #expect(items.map(\.priority) == [2, 2, 2])
@@ -84,7 +86,9 @@ struct ProviderAdapter: AgentAdapter {
 
     @Test func orderAndPerProviderPriorityOverride() {
         let module = Self.module([.plan("claude", "Claude"), .plan("codex", "Codex"), .plan("gemini", "Gemini")])
-        for id in ["claude", "codex", "gemini"] { module.planStates[AgentID(id)!] = PlanState(windows: [fiveHour]) }
+        for id in ["claude", "codex", "gemini"] {
+            module.planStates[UsageAccountKey(stringLiteral: id)] = PlanState(windows: [fiveHour])
+        }
         module.ringSettings = RingSettings(priority: 4, order: ["gemini", "claude"], providerPriority: ["codex": 1])
         let items = module.leftWingItems()
         #expect(items.map(\.id) == ["ring.codex", "ring.gemini", "ring.claude"])

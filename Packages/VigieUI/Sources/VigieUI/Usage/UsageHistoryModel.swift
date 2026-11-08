@@ -93,11 +93,15 @@ public struct UsageCostList: Hashable, Sendable {
     public var total: Double
     /// Some records have no price: the total is a floor, shown `≈ $4.12` with a footnote.
     public var isApproximate: Bool
+    /// The same total split by provider Account (`CLAUDE · WORK`), when some provider has several Accounts
+    /// (Story 7.10); empty otherwise. The card then offers a `PROJECTS` / `ACCOUNTS` switch.
+    public var accountRows: [Row]
 
-    public init(rows: [Row], total: Double, isApproximate: Bool) {
+    public init(rows: [Row], total: Double, isApproximate: Bool, accountRows: [Row] = []) {
         self.rows = rows
         self.total = total
         self.isApproximate = isApproximate
+        self.accountRows = accountRows
     }
 
     /// `$4.12`, or `≈ $4.12` when some records are unpriced.

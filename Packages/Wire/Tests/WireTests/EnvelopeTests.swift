@@ -129,11 +129,12 @@ import Testing
             "TERM_PROGRAM": "WarpTerminal", "WARP_IS_LOCAL_SHELL_SESSION": "1", "ITERM_SESSION_ID": "w0t0p0:X",
             "HOME": "/Users/x", "PATH": "/bin", "ANTHROPIC_API_KEY": "secret", "TMUX": "/tmp/t,1,0",
             "GHOSTTY_BIN_DIR": "/g", "XWARP_": "no", "SHELL": "/bin/zsh", "PWD": "/w",
+            "CLAUDE_CONFIG_DIR": "/Users/x/.claude-work", "CLAUDE_CODE_OAUTH_TOKEN": "secret",
         ])
         #expect(
             Set(filtered.keys) == [
                 "TERM_PROGRAM", "WARP_IS_LOCAL_SHELL_SESSION", "ITERM_SESSION_ID", "TMUX", "GHOSTTY_BIN_DIR",
-                "SHELL", "PWD",
+                "SHELL", "PWD", "CLAUDE_CONFIG_DIR",
             ])
     }
 }

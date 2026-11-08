@@ -299,6 +299,17 @@ public final class SessionStore {
         return true
     }
 
+    /// Records the Account a new session runs under (Story 7.10). Persisted. Returns true when it changed.
+    @discardableResult
+    public func setAccount(_ key: SessionKey, to account: AccountID) -> Bool {
+        guard var session = table[key], session.accountID != account else { return false }
+        session.accountID = account
+        table[key] = session
+        refresh()
+        generation += 1
+        return true
+    }
+
     /// The table to persist, in urgency order.
     public var snapshot: [Session] { sessions }
 

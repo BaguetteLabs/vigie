@@ -21,24 +21,33 @@ public struct IngestReport: Hashable, Sendable {
 
 /// Incremental ingest of agent logs into `UsageStore` (AD-11, Story 7.1), off the main actor. Per file it keeps
 /// the read offset, size and mtime: an unchanged file is skipped, a grown one is read from its offset, a shrunk
-/// one from the start. Records are upserted by provider + session + message, so a pass over unchanged files
-/// adds nothing and re-reading converges.
+/// one from the start. Records are upserted by provider + Account + session + message, so a pass over unchanged
+/// files adds nothing and re-reading converges. Each Account's location is read separately (Story 7.10).
 public actor UsageIngestor {
     public let store: UsageStore
-    public let registry: UsageProviderRegistry
+    /// The sources of each pass: re-read every pass, so an Account added or a `local` toggled applies at the
+    /// next pass without a restart.
+    let sources: @Sendable () -> UsageProviderRegistry
     let log: Logger
 
     public init(store: UsageStore, registry: UsageProviderRegistry, log: Logger) {
+        self.init(store: store, sources: { registry }, log: log)
+    }
+
+    public init(store: UsageStore, sources: @escaping @Sendable () -> UsageProviderRegistry, log: Logger) {
         self.store = store
-        self.registry = registry
+        self.sources = sources
         self.log = log
     }
+
+    /// The registry the next pass uses.
+    public var registry: UsageProviderRegistry { sources() }
 
     /// One pass over every source. Never throws: failures are logged and counted.
     @discardableResult
     public func ingest() async -> IngestReport {
         var report = IngestReport()
-        for source in registry.sources {
+        for source in sources().sources {
             await ingest(source, into: &report)
         }
         log.info(
@@ -56,7 +65,7 @@ public actor UsageIngestor {
         let states: [String: IngestFileState]
         do {
             files = try await source.reader.logFiles()
-            states = try await store.fileStates(provider: source.id)
+            states = try await store.fileStates(provider: source.id, account: source.account)
         } catch {
             log.error(
                 "agents.usage ingest \(source.id.rawValue, privacy: .public): \(String(describing: error), privacy: .public)"
@@ -84,7 +93,7 @@ public actor UsageIngestor {
             do {
                 let chunk = try await source.reader.readUsage(from: file, offset: offset)
                 try await store.commit(
-                    provider: source.id, path: path,
+                    provider: source.id, account: source.account, path: path,
                     state: IngestFileState(offset: chunk.nextOffset, size: UInt64(size), mtime: mtime),
                     records: chunk.records)
                 report.changedFiles += 1

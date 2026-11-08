@@ -1,6 +1,138 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "agentsUsage.account.default" : {
+      "comment" : "Name of a provider's default Account when the user has not named it (Story 7.10).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Default"
+          }
+        }
+      }
+    },
+    "agentsUsage.account.join" : {
+      "comment" : "Provider name followed by an Account label, e.g. Claude · Work (UX-DR99).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ · %2$@"
+          }
+        }
+      }
+    },
+    "agentsUsage.accounts.add" : {
+      "comment" : "Settings › Usage: button adding an Account.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add account"
+          }
+        }
+      }
+    },
+    "agentsUsage.accounts.add.label" : {
+      "comment" : "Settings › Usage: placeholder of a new Account's label.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Label"
+          }
+        }
+      }
+    },
+    "agentsUsage.accounts.add.location" : {
+      "comment" : "Settings › Usage: placeholder of a new Account's config folder.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Config folder, e.g. ~/.claude-work"
+          }
+        }
+      }
+    },
+    "agentsUsage.accounts.defaultBadge" : {
+      "comment" : "Settings › Usage: marks the default Account.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DEFAULT"
+          }
+        }
+      }
+    },
+    "agentsUsage.accounts.error.duplicate" : {
+      "comment" : "Settings › Usage: error when adding an Account.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Another account already uses this folder."
+          }
+        }
+      }
+    },
+    "agentsUsage.accounts.help" : {
+      "comment" : "Settings › Usage: explanation under the Accounts list.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Each account reads the logs in its own config folder. Sessions started with that folder (for Claude Code, CLAUDE_CONFIG_DIR) count for it; the others count for the default. Stays on this Mac."
+          }
+        }
+      }
+    },
+    "agentsUsage.accounts.remove" : {
+      "comment" : "Settings › Usage: button removing an Account.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove"
+          }
+        }
+      }
+    },
+    "agentsUsage.accounts.rename" : {
+      "comment" : "Settings › Usage: accessibility label of an Account's editable name (Story 7.10).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Account name"
+          }
+        }
+      }
+    },
+    "agentsUsage.accounts.title" : {
+      "comment" : "Settings › Usage: heading of a provider's Accounts (Story 7.10).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ accounts"
+          }
+        }
+      }
+    },
     "agentsUsage.cost.more" : {
       "comment" : "Usage tab cost list: the remaining projects of today summed in one row.",
       "extractionState" : "manual",

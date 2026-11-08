@@ -1,6 +1,78 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "agentkit.accounts.label" : {
+      "comment" : "Config key label: an Account's name.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Account label"
+          }
+        }
+      }
+    },
+    "agentkit.accounts.label.help" : {
+      "comment" : "Config key help (Story 7.10).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The name shown next to the provider when it has several Accounts."
+          }
+        }
+      }
+    },
+    "agentkit.accounts.list" : {
+      "comment" : "Config key label: the extra Accounts of an agent (Story 7.10).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accounts"
+          }
+        }
+      }
+    },
+    "agentkit.accounts.list.help" : {
+      "comment" : "Config key help (Story 7.10).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extra Accounts of this agent on this Mac, by id. The default Account is always there."
+          }
+        }
+      }
+    },
+    "agentkit.accounts.location" : {
+      "comment" : "Config key label: an Account's agent config folder.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Account location"
+          }
+        }
+      }
+    },
+    "agentkit.accounts.location.help" : {
+      "comment" : "Config key help (Story 7.10).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The agent's config folder for this Account (for Claude Code, its CLAUDE_CONFIG_DIR)."
+          }
+        }
+      }
+    },
     "agentkit.sample.name" : {
       "comment" : "Sample string proving the AgentKit String Catalog is bundled.",
       "extractionState" : "manual",

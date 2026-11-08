@@ -1836,6 +1836,30 @@
           }
         }
       }
+    },
+    "usage.cost.split.accounts" : {
+      "comment" : "Usage tab COST · TODAY: show the cost per provider Account (Story 7.10).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ACCOUNTS"
+          }
+        }
+      }
+    },
+    "usage.cost.split.projects" : {
+      "comment" : "Usage tab COST · TODAY: show the cost per project (Story 7.10).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PROJECTS"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

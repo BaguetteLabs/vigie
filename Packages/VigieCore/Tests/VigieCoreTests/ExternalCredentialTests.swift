@@ -216,3 +216,90 @@ extension FakeKeychainClient {
         config.stop()
     }
 }
+
+/// Story 7.10: per-Account adapter keys are templates (`account.*.<key>`) whose instances ConfigStore registers on
+/// first write or when a file holds them; Account keys, locations and credentials stay in `local.toml`.
+@MainActor @Suite struct AccountSettingsConfigTests {
+    let descriptors = [
+        SettingDescriptor(key: "usage_providers", label: "Sources", kind: .list(of: .string, default: ["local"])),
+        SettingDescriptor(
+            key: "plan_auth", label: "Auth", kind: .enumeration(options: ["token", "claude_code"], default: "token"),
+            scope: .local),
+        SettingDescriptor(key: "plan_token", label: "Token", kind: .secret, scope: .local),
+        // What `AgentAccounts.descriptors(perAccount:)` declares (AgentKit; VigieCore cannot import it).
+        SettingDescriptor(key: "accounts", label: "Accounts", kind: .list(of: .string, default: []), scope: .local),
+        SettingDescriptor(key: "account.*.label", label: "Label", kind: .string(default: ""), scope: .local),
+        SettingDescriptor(key: "account.*.location", label: "Location", kind: .path(default: nil), scope: .local),
+        SettingDescriptor(
+            key: "account.*.usage_providers", label: "Sources", kind: .list(of: .string, default: ["local"]),
+            scope: .local),
+        SettingDescriptor(
+            key: "account.*.plan_auth", label: "Auth",
+            kind: .enumeration(options: ["token", "claude_code"], default: "token"), scope: .local),
+    ]
+
+    @Test func accountKeysAreWrittenToLocalTomlOnlyAndReadBack() async throws {
+        let fixture = ConfigFixture()
+        let (config, watcher) = try await fixture.makeStore(manifests: [testManifest], config: "# synced\n")
+        let settings = ConfigAdapterSettings(
+            store: config, module: "agents.sessions", adapterID: "claude", settings: descriptors)
+        // Unwritten instances read their template's default.
+        #expect(settings.value("account.work.usage_providers", as: [String].self) == ["local"])
+        #expect(settings.value("account.work.label", as: String.self) == "")
+        #expect(settings.value("account.work.unknown", as: String.self) == nil)
+
+        try await settings.set(["work"], for: "accounts")
+        try await settings.set("Work", for: "account.work.label")
+        try await settings.set("~/.claude-work", for: "account.work.location")
+        try await settings.set(["local", "plan"], for: "account.work.usage_providers")
+        try await settings.set("claude_code", for: "account.work.plan_auth")
+        try await settings.set(["local", "plan"], for: "usage_providers")
+        #expect(settings.value("accounts", as: [String].self) == ["work"])
+        #expect(settings.value("account.work.label", as: String.self) == "Work")
+        #expect(settings.value("account.work.location", as: String.self) == "~/.claude-work")
+        #expect(settings.value("account.work.plan_auth", as: String.self) == "claude_code")
+        #expect(config.problems.isEmpty)
+
+        // Scan: nothing about Accounts, locations or credentials reaches the synced file.
+        let synced = try String(contentsOf: fixture.configURL, encoding: .utf8)
+        for needle in ["account", "claude-work", "Work", "plan_auth", "plan_token", "claude_code"] {
+            #expect(!synced.contains(needle), "config.toml holds \(needle)")
+        }
+        let local = try String(contentsOf: fixture.localURL, encoding: .utf8)
+        #expect(local.contains(#"accounts = ["work"]"#))
+        #expect(local.contains(#"location = "~/.claude-work""#))
+        #expect(local.contains("[modules.\"agents.sessions\".adapter.claude.account.work]"))
+
+        // A relaunch (new store over the same files) knows the instances from the file alone.
+        config.stop()
+        let (reopened, _) = try await fixture.makeStore(manifests: [testManifest])
+        let again = ConfigAdapterSettings(
+            store: reopened, module: "agents.sessions", adapterID: "claude", settings: descriptors)
+        #expect(again.value("account.work.location", as: String.self) == "~/.claude-work")
+        #expect(reopened.problems.isEmpty)
+
+        // A hand-added Account is seen after a reload; removing a key brings its default back.
+        try fixture.writeLocal(
+            local + "\n[modules.\"agents.sessions\".adapter.claude.account.perso]\nlocation = \"/p\"\n")
+        await reopened.fireAndSettle(watcher)
+        try await again.set(nil as String?, for: "account.work.plan_auth")
+        #expect(again.value("account.work.plan_auth", as: String.self) == "token")
+        reopened.stop()
+    }
+
+    @Test func accountKeysInConfigTomlAreRefused() async throws {
+        let fixture = ConfigFixture()
+        let (config, _) = try await fixture.makeStore(
+            manifests: [testManifest],
+            config: """
+                [modules."agents.sessions".adapter.claude.account.work]
+                location = "~/.claude-work"
+
+                """)
+        let settings = ConfigAdapterSettings(
+            store: config, module: "agents.sessions", adapterID: "claude", settings: descriptors)
+        #expect(settings.value("account.work.location", as: String.self) == nil)
+        #expect(config.problems.contains { $0.kind == .wrongFile })
+        config.stop()
+    }
+}

@@ -15,7 +15,10 @@ struct PlanSettingsView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: PlanSettingsMetrics.blockSpacing) {
             ForEach(adapters, id: \.self) { id in
-                PlanProviderBlock(module: module, id: id)
+                // One block per Account (Story 7.10); a single Account keeps the 7.3 block as it was.
+                ForEach(module.accounts(of: id)) { account in
+                    PlanProviderBlock(module: module, key: UsageAccountKey(provider: id, account: account.id))
+                }
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -27,10 +30,12 @@ enum PlanSettingsMetrics {
     static let rowSpacing: CGFloat = 8
 }
 
-/// The block of one provider.
+/// The block of one provider Account.
 struct PlanProviderBlock: View {
     let module: AgentsUsageModule
-    let id: AgentID
+    let key: UsageAccountKey
+    private var id: AgentID { key.provider }
+    private var account: AgentAccount? { module.accounts(of: key.provider).first { $0.id == key.account } }
     @State private var enabled = false
     @State private var auth = PlanSettings.tokenAuth
     @State private var consent = false
@@ -38,7 +43,9 @@ struct PlanProviderBlock: View {
 
     private var adapter: (any AgentAdapter)? { module.adapters.adapter(for: id) }
     private var provider: (any UsageProvider)? { adapter?.usageProvider }
-    private var credential: ExternalCredentialDescriptor? { provider?.externalCredential }
+    private var credential: ExternalCredentialDescriptor? {
+        account.flatMap { provider?.externalCredential(for: $0) }
+    }
     private var authOptions: [String] {
         let descriptor = adapter?.settings.first { $0.key == PlanSettings.authKey }
         if case .enumeration(let options, _) = descriptor?.kind { return options }
@@ -47,11 +54,11 @@ struct PlanProviderBlock: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: PlanSettingsMetrics.rowSpacing) {
-            Text(verbatim: PlanSettingsText.title(provider))
+            Text(verbatim: PlanSettingsText.title(provider, account: account, several: module.hasSeveralAccounts(id)))
                 .font(.headline)
             Toggle(
                 isOn: Binding(
-                    get: { enabled }, set: { value in run { try await module.setPlanEnabled(value, for: id) } })
+                    get: { enabled }, set: { value in run { try await module.setPlanEnabled(value, for: key) } })
             ) {
                 Text(UsageText.resource("agentsUsage.plan.settings.toggle"))
                 Text(UsageText.resource("agentsUsage.plan.settings.toggle.help"))
@@ -62,7 +69,7 @@ struct PlanProviderBlock: View {
                     LabeledContent {
                         Picker(
                             selection: Binding(
-                                get: { auth }, set: { value in run { try await module.setPlanAuth(value, for: id) } })
+                                get: { auth }, set: { value in run { try await module.setPlanAuth(value, for: key) } })
                         ) {
                             ForEach(authOptions, id: \.self) { option in
                                 Text(verbatim: PlanSettingsText.authOption(option, credential: credential)).tag(option)
@@ -81,9 +88,9 @@ struct PlanProviderBlock: View {
                 } else if let credential {
                     consentRows(credential)
                 }
-                Text(verbatim: PlanSettingsText.status(module.planState(for: id)))
+                Text(verbatim: PlanSettingsText.status(module.planState(for: key)))
                     .font(.caption)
-                    .foregroundStyle(module.planState(for: id)?.isStale == true ? .primary : .secondary)
+                    .foregroundStyle(module.planState(for: key)?.isStale == true ? .primary : .secondary)
             }
             if let error {
                 Text(verbatim: error)
@@ -98,9 +105,9 @@ struct PlanProviderBlock: View {
         if let descriptor = adapter?.settings.first(where: { $0.key == PlanSettings.tokenKey }) {
             SettingRow(
                 SettingRowModel(
-                    id: "\(id.rawValue).\(PlanSettings.tokenKey)", label: descriptor.label, help: descriptor.help,
+                    id: "\(key).\(PlanSettings.tokenKey)", label: descriptor.label, help: descriptor.help,
                     kind: .secret, binding: SettingBinding(get: { nil }, set: { _ in }),
-                    secret: module.planTokenBinding(for: id)))
+                    secret: module.planTokenBinding(for: key)))
         }
     }
 
@@ -114,13 +121,13 @@ struct PlanProviderBlock: View {
             .fixedSize(horizontal: false, vertical: true)
         if consent {
             Button {
-                run { try await module.revokePlanConsent(for: id) }
+                run { try await module.revokePlanConsent(for: key) }
             } label: {
                 Text(verbatim: UsageText.format("agentsUsage.plan.settings.stop", credential.displayName))
             }
         } else {
             Button {
-                run { try await module.grantPlanConsent(for: id) }
+                run { try await module.grantPlanConsent(for: key) }
             } label: {
                 Text(UsageText.resource("agentsUsage.plan.settings.allow"))
             }
@@ -144,16 +151,27 @@ struct PlanProviderBlock: View {
     }
 
     private func reload() async {
-        enabled = module.isPlanEnabled(id)
-        auth = adapter.map(module.planAuth) ?? PlanSettings.tokenAuth
-        consent = await module.hasPlanConsent(for: id)
+        enabled = module.isPlanEnabled(key)
+        if let adapter, let account {
+            auth = module.planAuth(adapter, account: account)
+        } else {
+            auth = PlanSettings.tokenAuth
+        }
+        consent = await module.hasPlanConsent(for: key)
     }
 }
 
 /// Copy of the plan block.
 enum PlanSettingsText {
     static func title(_ provider: (any UsageProvider)?) -> String {
-        UsageText.format("agentsUsage.plan.settings.title", provider.map { String(localized: $0.name) } ?? "")
+        title(provider, account: nil, several: false)
+    }
+
+    /// `Claude plan limits`, or `Claude · Work plan limits` with several Accounts.
+    static func title(_ provider: (any UsageProvider)?, account: AgentAccount?, several: Bool) -> String {
+        let name = provider.map { String(localized: $0.name) } ?? ""
+        return UsageText.format(
+            "agentsUsage.plan.settings.title", AgentsUsageModule.displayName(name, account: account, several: several))
     }
 
     static func authOption(_ option: String, credential: ExternalCredentialDescriptor?) -> String {
@@ -203,14 +221,17 @@ extension PlanState {
 }
 
 extension AgentsUsageModule {
-    /// The pasted token, through the adapter's own SecretStore (owner `adapter.<id>`). Never read back.
-    func planTokenBinding(for id: AgentID) -> SecretSettingBinding? {
-        guard let secrets = adapterContexts[id]?.secrets else { return nil }
+    /// The pasted token, through the adapter's own SecretStore (owner `adapter.<id>`), never read back. One
+    /// Account's pasted token: its own Keychain item (`plan_token` for the default Account,
+    /// `plan_token.<account>` for another; AD-9: one item per Account).
+    func planTokenBinding(for key: UsageAccountKey) -> SecretSettingBinding? {
+        guard let secrets = adapterContexts[key.provider]?.secrets, let account = account(key) else { return nil }
+        let secretKey = account.secretKey(PlanSettings.tokenKey)
         return SecretSettingBinding(
-            isSet: { try await secrets.contains(PlanSettings.tokenKey) },
+            isSet: { try await secrets.contains(secretKey) },
             set: { [weak self] value in
-                try await secrets.write(value, for: PlanSettings.tokenKey)
-                await self?.refreshPlan(id)
+                try await secrets.write(value, for: secretKey)
+                await self?.refreshPlan(key)
             })
     }
 }

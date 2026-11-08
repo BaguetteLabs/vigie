@@ -47,8 +47,8 @@ public final class AgentsUsageModule: NotchModule {
     /// Opens a Settings pane by id (`Open settings ⌘,` of the Usage tab's empty state); nil hides the button.
     @ObservationIgnored public let openSettings: (@MainActor @Sendable (String) -> Void)?
 
-    /// Plan windows per provider (Story 7.3); absent while `plan` is off.
-    public internal(set) var planStates: [AgentID: PlanState] = [:] {
+    /// Plan windows per provider Account (Story 7.3; per Account since 7.10); absent while `plan` is off.
+    public internal(set) var planStates: [UsageAccountKey: PlanState] = [:] {
         didSet {
             clock = now()
             updateRingState()
@@ -68,8 +68,8 @@ public final class AgentsUsageModule: NotchModule {
     @ObservationIgnored var host: (any HostControl)?
     /// The module's own settings, to write `order` (Story 7.9).
     @ObservationIgnored var moduleSettings: (any ModuleSettings)?
-    @ObservationIgnored var planAlerts: [AgentID: AlertHandle] = [:]
-    @ObservationIgnored var planInFlight: Set<AgentID> = []
+    @ObservationIgnored var planAlerts: [UsageAccountKey: AlertHandle] = [:]
+    @ObservationIgnored var planInFlight: Set<UsageAccountKey> = []
     @ObservationIgnored var planMissingContextLogged: Set<AgentID> = []
     @ObservationIgnored var planTask: Task<Void, Never>?
     @ObservationIgnored var planJob: RegistrationToken?
@@ -83,7 +83,14 @@ public final class AgentsUsageModule: NotchModule {
     public internal(set) var lastIngest: IngestReport?
     /// The Usage tab's history and today's cost (Story 7.8), reloaded after each ingest.
     public internal(set) var overview: UsageOverview?
+    /// The Account of each provider's latest local record (Story 7.10): the ring shows that Account. Reloaded
+    /// after each ingest. `agents.usage` cannot read sessions (AD-1); the logs tell the same thing.
+    public internal(set) var recentAccounts: [AgentID: AccountID] = [:]
+    /// The sources at start; each ingest pass rebuilds them from the settings.
     public private(set) var registry: UsageProviderRegistry?
+    @ObservationIgnored var store: UsageStore?
+    /// Expands `~` in Account locations.
+    @ObservationIgnored let homeDirectory: URL
 
     @ObservationIgnored var ingestor: UsageIngestor?
     @ObservationIgnored var ingestTask: Task<Void, Never>?
@@ -103,8 +110,10 @@ public final class AgentsUsageModule: NotchModule {
         adapterSettings: (@Sendable (any AgentAdapter) -> any ReadOnlySettings)? = nil,
         calendar: Calendar = .current,
         now: @escaping @Sendable () -> Date = { Date() },
+        homeDirectory: URL = FileManager.default.homeDirectoryForCurrentUser,
         openSettings: (@MainActor @Sendable (String) -> Void)? = nil
     ) {
+        self.homeDirectory = homeDirectory
         self.adapters = adapters
         self.adapterContexts = contexts
         self.adapterSettingsStores = adapterSettingsStores
@@ -128,11 +137,15 @@ public final class AgentsUsageModule: NotchModule {
         moduleSettings = context.settings
         startRingSettings(context.settings, scheduler: context.scheduler)
         let store = try UsageStore(directory: context.storage.directory)
+        self.store = store
         let estimator = try CostEstimator.bundled()
         let registry = UsageProviderRegistry(adapters: adapters, settings: adapterSettings)
         self.registry = registry
         history = UsageHistory(store: store, estimator: estimator, calendar: calendar)
-        let ingestor = UsageIngestor(store: store, registry: registry, log: log)
+        let adapters = adapters
+        let settings = adapterSettings
+        let ingestor = UsageIngestor(
+            store: store, sources: { UsageProviderRegistry(adapters: adapters, settings: settings) }, log: log)
         self.ingestor = ingestor
         log.info(
             "agents.usage started: providers \(registry.ids.map(\.rawValue).joined(separator: ","), privacy: .public)"
@@ -179,6 +192,20 @@ public final class AgentsUsageModule: NotchModule {
 
     private func finished(_ report: IngestReport) {
         lastIngest = report
-        Task { await refreshOverview() }
+        Task {
+            await refreshRecentAccounts()
+            await refreshOverview()
+        }
+    }
+
+    /// Reloads ``recentAccounts`` from the database.
+    func refreshRecentAccounts() async {
+        guard let store else { return }
+        do {
+            let latest = try await store.latestAccounts()
+            if latest != recentAccounts { recentAccounts = latest }
+        } catch {
+            log?.error("agents.usage latest accounts: \(String(describing: error), privacy: .public)")
+        }
     }
 }

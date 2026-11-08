@@ -137,6 +137,10 @@ public struct ConfigSchemaEntry: Sendable {
 /// (`modules."<id>".<key>`, or `modules."<id>".local.<key>` for `.local` settings).
 public struct ConfigSchema: Sendable {
     public private(set) var entries: [ConfigKeyPath: ConfigSchemaEntry] = [:]
+    /// Keys with a ``wildcard`` segment (Story 7.10: `account.*.label` of an adapter). Each concrete key is
+    /// registered when a file holds its table (``expandTemplates(in:)``) or when it is written
+    /// (``concretize(_:)``).
+    public private(set) var templates: [ConfigKeyPath: ConfigSchemaEntry] = [:]
     public private(set) var registeredModules: Set<ModuleID> = []
     public private(set) var openTables: [ConfigKeyPath]
 
@@ -201,11 +205,73 @@ public struct ConfigSchema: Sendable {
         var added = false
         for descriptor in settings {
             let path = CoreSettings.adapterPath(module: module, adapter: adapterID, descriptor.key)
+            if path.segments.contains(Self.wildcard) {
+                guard templates[path] == nil else { continue }
+                templates[path] = ConfigSchemaEntry(path: path, descriptor: descriptor, moduleID: module)
+                added = true
+                continue
+            }
             guard entries[path] == nil else { continue }
             entries[path] = ConfigSchemaEntry(path: path, descriptor: descriptor, moduleID: module)
             added = true
         }
         return added
+    }
+
+    /// The template segment that matches any one key (Story 7.10).
+    public static let wildcard = "*"
+
+    /// The template `path` is an instance of: same length, equal segments except where the template has
+    /// ``wildcard`` (which never matches `*` itself).
+    public func template(matching path: ConfigKeyPath) -> ConfigSchemaEntry? {
+        guard !path.segments.contains(Self.wildcard) else { return nil }
+        return templates.first { template, _ in
+            template.segments.count == path.segments.count
+                && zip(template.segments, path.segments).allSatisfy { $0 == Self.wildcard || $0 == $1 }
+        }?.value
+    }
+
+    /// Registers `path` from its template (the template's kind and scope, the concrete dotted key). Returns
+    /// whether it was added; false when already known or no template matches.
+    @discardableResult
+    public mutating func concretize(_ path: ConfigKeyPath) -> Bool {
+        guard entries[path] == nil, let template = template(matching: path) else { return false }
+        let keyLength = template.descriptor.key.split(separator: ".", omittingEmptySubsequences: false).count
+        let descriptor = SettingDescriptor(
+            key: path.segments.suffix(keyLength).joined(separator: "."), label: template.descriptor.label,
+            kind: template.descriptor.kind, scope: template.descriptor.scope, help: template.descriptor.help)
+        entries[path] = ConfigSchemaEntry(path: path, descriptor: descriptor, moduleID: template.moduleID)
+        return true
+    }
+
+    /// Registers every instance of every template whose table exists in `documents` (each child table name at a
+    /// ``wildcard`` position). Returns whether anything was added.
+    @discardableResult
+    public mutating func expandTemplates(in documents: [ConfigDocument]) -> Bool {
+        var added = false
+        for template in templates.keys.sorted() {
+            for path in Self.instances(of: template.segments[...], prefix: [], in: documents) where concretize(path) {
+                added = true
+            }
+        }
+        return added
+    }
+
+    private static func instances(
+        of rest: ArraySlice<String>, prefix: [String], in documents: [ConfigDocument]
+    ) -> [ConfigKeyPath] {
+        guard let index = rest.firstIndex(of: wildcard) else { return [ConfigKeyPath(prefix + rest)] }
+        let head = prefix + rest[rest.startIndex..<index]
+        var names: Set<String> = []
+        for document in documents {
+            guard case .table(let table) = document.value(at: ConfigKeyPath(head)) else { continue }
+            for (name, value) in table where name != wildcard {
+                if case .table = value { names.insert(name) }
+            }
+        }
+        return names.sorted().flatMap { name in
+            instances(of: rest[(index + 1)...], prefix: head + [name], in: documents)
+        }
     }
 
     /// Adds `consents."<descriptor id>".granted_at` (a local string, Story 7.3). Returns whether it was added.

@@ -58,16 +58,17 @@ public struct UsageTabView: View {
     }
 
     @ViewBuilder private func providerList(_ snapshot: UsageTabSnapshot) -> some View {
-        let ids = snapshot.providers.map(\.id)
+        // Cards of one provider's Accounts stay grouped; a drag moves the provider (Story 7.10).
+        let ids = snapshot.providerOrder
         let cards = VStack(spacing: theme.spacing(.gridGap)) {
             ForEach(snapshot.providers) { provider in
                 UsageProviderCard(
                     model: provider,
                     onMove: { offset in
-                        onReorder(UsageProviderOrder.moving(provider.id, by: offset, in: ids))
+                        onReorder(UsageProviderOrder.moving(provider.providerID, by: offset, in: ids))
                     },
                     onDrop: { dragged in
-                        let next = UsageProviderOrder.moving(dragged, onto: provider.id, in: ids)
+                        let next = UsageProviderOrder.moving(dragged, onto: provider.providerID, in: ids)
                         if next != ids { onReorder(next) }
                     })
             }

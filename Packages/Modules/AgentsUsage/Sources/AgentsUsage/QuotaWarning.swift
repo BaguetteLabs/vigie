@@ -28,15 +28,16 @@ extension AgentsUsageModule: AlertActionHandler {
     nonisolated static let openUsageActionID = "open-usage"
 
     /// `quota:<provider>:<window>:<resets_at ISO 8601>` (`none` without a reset time): one alert per provider,
-    /// window and reset.
-    nonisolated static func quotaDedupeKey(_ id: AgentID, window: QuotaDialModel.Window) -> String {
+    /// window and reset. Another Account than the default: `quota:<provider>.<account>:…` (Story 7.10).
+    nonisolated static func quotaDedupeKey(_ key: UsageAccountKey, window: QuotaDialModel.Window) -> String {
         let reset = window.resetsAt.map { $0.formatted(.iso8601) } ?? "none"
-        return "quota:\(id.rawValue):\(window.kind.rawValue):\(reset)"
+        return "quota:\(key):\(window.kind.rawValue):\(reset)"
     }
 
-    /// A provider window in quota warning.
+    /// A provider Account's window in quota warning.
     struct QuotaCrossing {
         let provider: AgentID
+        /// `Claude`, or `Claude · Work` with several Accounts.
         let name: String
         let window: QuotaDialModel.Window
     }
@@ -50,16 +51,22 @@ extension AgentsUsageModule: AlertActionHandler {
         var crossings: [String: QuotaCrossing] = [:]
         var current: Set<String> = []
         for adapter in adapters.adapters {
-            guard let provider = adapter.usageProvider, let plan = planStates[adapter.id] else { continue }
+            guard let provider = adapter.usageProvider else { continue }
             let threshold = settings.warnThreshold(for: adapter.id)
-            var seen: Set<QuotaWindowKind> = []
-            for raw in plan.windows {
-                guard let window = QuotaDialModel.Window(raw), seen.insert(window.kind).inserted else { continue }
-                let key = Self.quotaDedupeKey(adapter.id, window: window)
-                current.insert(key)
-                if window.isAtOrOver(threshold, now: now) {
-                    crossings[key] = QuotaCrossing(
-                        provider: adapter.id, name: String(localized: provider.name), window: window)
+            let accounts = accounts(adapter)
+            for account in accounts {
+                let accountKey = UsageAccountKey(provider: adapter.id, account: account.id)
+                guard let plan = planStates[accountKey] else { continue }
+                let name = Self.displayName(
+                    String(localized: provider.name), account: account, several: accounts.count > 1)
+                var seen: Set<QuotaWindowKind> = []
+                for raw in plan.windows {
+                    guard let window = QuotaDialModel.Window(raw), seen.insert(window.kind).inserted else { continue }
+                    let key = Self.quotaDedupeKey(accountKey, window: window)
+                    current.insert(key)
+                    if window.isAtOrOver(threshold, now: now) {
+                        crossings[key] = QuotaCrossing(provider: adapter.id, name: name, window: window)
+                    }
                 }
             }
         }
@@ -82,7 +89,8 @@ extension AgentsUsageModule: AlertActionHandler {
         for handle in open { handle.resolve() }
     }
 
-    /// The `usage.quota_warning` event (UX-DR91): title `CLAUDE · 5H 82 %`, detail `RESET 16:40 · IN 1H52`,
+    /// The `usage.quota_warning` event (UX-DR91): title `CLAUDE · 5H 82 %` (`CLAUDE · WORK · 5H 82 %` with
+    /// several Accounts, UX-DR99), detail `RESET 16:40 · IN 1H52`,
     /// primary action Open usage. The kicker (`QUOTA · WARN`), triangle beacon and `quota-warning` hue come from
     /// the host's peek mapping for the kind.
     func quotaWarningEvent(_ crossing: QuotaCrossing, key: String, now: Date) -> NotifierEvent {

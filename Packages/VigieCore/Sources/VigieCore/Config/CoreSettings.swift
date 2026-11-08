@@ -34,9 +34,11 @@ public enum CoreSettings {
     /// and a table). Until the spine is amended, adapter tables live under `adapter` (singular). Change it here only.
     public static let adapterTableSegment = "adapter"
 
-    /// `modules."<module id>".adapter."<adapter id>".<key>`, in `config.toml` or `local.toml` by scope.
+    /// `modules."<module id>".adapter."<adapter id>".<key>`, in `config.toml` or `local.toml` by scope. A dotted
+    /// `key` is a sub-table path (`account.work.label`, Story 7.10).
     public static func adapterPath(module: ModuleID, adapter adapterID: String, _ key: String) -> ConfigKeyPath {
-        ConfigKeyPath(["modules", module.rawValue, adapterTableSegment, adapterID, key])
+        let keySegments = key.split(separator: ".", omittingEmptySubsequences: false).map(String.init)
+        return ConfigKeyPath(["modules", module.rawValue, adapterTableSegment, adapterID] + keySegments)
     }
 
     /// `[integrations."<adapter id>"]` keys in `local.toml`, written only by `IntegrationInstaller` (AD-22).

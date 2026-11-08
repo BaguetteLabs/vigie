@@ -1,4 +1,5 @@
 import AgentKit
+import CryptoKit
 import Foundation
 
 /// Claude Code's stored login (Story 7.3, A57): a generic password in the login keychain, service
@@ -15,6 +16,40 @@ public enum ClaudeCodeCredential {
     public static let descriptor = ExternalCredentialDescriptor(
         id: "claude.claude_code_login", displayName: "Claude Code", service: service, accountHint: nil,
         explanation: L10n.resource("claude.plan.consent.explanation"))
+
+    /// The login of one Account (Story 7.10): the default Account's is ``descriptor``; an Account bound to
+    /// another `CLAUDE_CONFIG_DIR` has Claude Code's item for that folder, service
+    /// `Claude Code-credentials-<first 8 hex of SHA-256(config dir)>`, and its own consent
+    /// (`claude.claude_code_login.<account id>`). nil for a non-default Account without a location.
+    ///
+    /// The suffix follows Claude Code's own naming for a custom config folder (not documented by Anthropic;
+    /// checked against no live item yet): the folder as the shell expands it, `~` resolved, no trailing slash.
+    public static func descriptor(for account: AgentAccount, home: URL) -> ExternalCredentialDescriptor? {
+        if account.isDefault { return descriptor }
+        guard let location = account.location else { return nil }
+        return ExternalCredentialDescriptor(
+            id: account.credentialID(descriptor.id), displayName: descriptor.displayName,
+            service: service(configDirectory: expanded(location.path, home: home)), accountHint: nil,
+            explanation: descriptor.explanation)
+    }
+
+    /// `Claude Code-credentials-<8 hex>` for a custom config folder.
+    public static func service(configDirectory path: String) -> String {
+        let digest = SHA256.hash(data: Data(path.utf8))
+        let hex = digest.map { String(format: "%02x", $0) }.joined()
+        return "\(service)-\(hex.prefix(8))"
+    }
+
+    static func expanded(_ raw: String, home: URL) -> String {
+        var path = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        if path == "~" {
+            path = home.path
+        } else if path.hasPrefix("~/") {
+            path = home.path + "/" + path.dropFirst(2)
+        }
+        while path.count > 1, path.hasSuffix("/") { path.removeLast() }
+        return path
+    }
 
     /// Pure: the access token in the item's JSON. Throws `.credentialMissing` when there is none (or the JSON is
     /// not the known shape), `.credentialExpired` when `expiresAt` is at or before `now`. Never logs.

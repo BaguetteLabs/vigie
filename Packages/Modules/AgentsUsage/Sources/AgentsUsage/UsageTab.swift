@@ -47,15 +47,34 @@ extension AgentsUsageModule {
             })
     }
 
-    /// What the tab shows at the dial clock.
+    /// What the tab shows at the dial clock: one card per Account, grouped under its provider (Story 7.10).
     public func usageTabSnapshot() -> UsageTabSnapshot {
-        UsageTabSnapshot(providers: tabProviders.map(providerCard), history: historyPanel, cost: costPanel)
+        UsageTabSnapshot(
+            providers: tabProviders.flatMap { adapter in tabAccounts(adapter).map { providerCard(adapter, account: $0) }
+            },
+            history: historyPanel, cost: costPanel)
+    }
+
+    /// The sources as the settings stand now (an Account added since start included).
+    var currentRegistry: UsageProviderRegistry { UsageProviderRegistry(adapters: adapters, settings: adapterSettings) }
+
+    /// The Accounts of a shown provider that have something to show: local logs read, or plan limits on. The
+    /// default Account always shows when the provider has a single Account.
+    func tabAccounts(_ adapter: any AgentAdapter) -> [AgentAccount] {
+        let all = accounts(adapter)
+        guard all.count > 1 else { return all }
+        let local = currentRegistry
+        let shown = all.filter { account in
+            local.source(for: adapter.id, account: account.id) != nil
+                || hasPlan(adapter, key: UsageAccountKey(provider: adapter.id, account: account.id))
+        }
+        return shown.isEmpty ? [all[0]] : shown
     }
 
     /// Every usage provider in the user's order (`order`, then registration order, A69): an adapter whose
     /// local logs are ingested (`usage_providers` has `local`) or whose plan limits are on.
     var tabProviders: [any AgentAdapter] {
-        let local = registry ?? UsageProviderRegistry(adapters: adapters, settings: adapterSettings)
+        let local = currentRegistry
         let settings = ringSettings
         return adapters.adapters.enumerated()
             .filter { _, adapter in local.source(for: adapter.id) != nil || hasPlan(adapter) }
@@ -69,7 +88,7 @@ extension AgentsUsageModule {
     /// Every provider the user can order, in the current order: those the tab shows plus the ones with plan
     /// limits available but off, so Settings lists them all.
     var orderableProviders: [any AgentAdapter] {
-        let local = registry ?? UsageProviderRegistry(adapters: adapters, settings: adapterSettings)
+        let local = currentRegistry
         let settings = ringSettings
         return adapters.adapters.enumerated()
             .filter { _, adapter in
@@ -103,22 +122,35 @@ extension AgentsUsageModule {
         await setProviderOrder(shown: UsageProviderOrder.moving(id, by: offset, in: current))
     }
 
-    /// Plan limits are on (or windows are already known) for the adapter.
+    /// Plan limits are on (or windows are already known) for one of the adapter's Accounts.
     func hasPlan(_ adapter: any AgentAdapter) -> Bool {
-        planStates[adapter.id] != nil || (adapter.usageProvider != nil && isPlanEnabled(adapter.id))
+        accounts(adapter).contains { hasPlan(adapter, key: UsageAccountKey(provider: adapter.id, account: $0.id)) }
+    }
+
+    /// Plan limits are on (or windows are already known) for the Account.
+    func hasPlan(_ adapter: any AgentAdapter, key: UsageAccountKey) -> Bool {
+        planStates[key] != nil || (adapter.usageProvider != nil && isPlanEnabled(key))
     }
 
     /// One card: before the first log read `READING LOGS…` (UX-DR100); a provider without plan windows
     /// `NO PLAN WINDOWS` (`LOCAL LOGS ONLY` when plan limits are off); else the dial and one bar per window.
     func providerCard(_ adapter: any AgentAdapter) -> UsageProviderCardModel {
+        providerCard(adapter, account: accounts(adapter).first ?? AgentAccount(id: .default, label: "", location: nil))
+    }
+
+    /// One Account's card: header `<PROVIDER> · <ACCOUNT>` when the provider has several Accounts, its own
+    /// `STALE · HH:MM` (UX-DR99).
+    func providerCard(_ adapter: any AgentAdapter, account: AgentAccount) -> UsageProviderCardModel {
         let settings = ringSettings
         let now = clock
         let threshold = settings.warnThreshold(for: adapter.id)
-        let plan = planStates[adapter.id]
+        let key = UsageAccountKey(provider: adapter.id, account: account.id)
+        let several = hasSeveralAccounts(adapter.id)
+        let plan = planStates[key]
         let windows = Self.tabWindows(plan, settings: settings, threshold: threshold, now: now)
         let kinds = Set(windows.map(\.kind))
         let kind: UsageCardMeta.Kind
-        if !hasPlan(adapter) {
+        if !hasPlan(adapter, key: key) {
             kind = .localOnly
         } else if kinds.contains(.fiveHour) || kinds.isEmpty {
             kind = .warn(threshold: threshold)
@@ -128,7 +160,9 @@ extension AgentsUsageModule {
             kind = .dailyOnly
         }
         let meta = UsageCardMeta(kind: kind, stale: plan?.staleLabel)
-        let name = String(localized: adapter.name)
+        // With several Accounts the header reads `<PROVIDER> · <ACCOUNT>` with the plan provider's short name
+        // (`CLAUDE · WORK`, UX-DR99), as on the wing and in the peek.
+        let name = String(localized: several ? (adapter.usageProvider?.name ?? adapter.name) : adapter.name)
         let content: UsageProviderCardModel.Content
         if lastIngest == nil {
             content = .readingLogs
@@ -139,7 +173,8 @@ extension AgentsUsageModule {
             let primary = byKind[.fiveHour] ?? byKind[.weekly] ?? byKind[.daily]
             let secondary = byKind[.fiveHour] == nil ? nil : byKind[.weekly]
             let dial = QuotaDialModel(
-                providerName: name, primary: primary, secondary: secondary, stale: plan?.isStale ?? false)
+                providerName: name, primary: primary, secondary: secondary, stale: plan?.isStale ?? false,
+                accountLabel: several ? Self.label(of: account) : nil)
             let timeZone = calendar.timeZone
             let bars = windows.map { window in
                 UsageBarModel(
@@ -149,7 +184,9 @@ extension AgentsUsageModule {
             }
             content = .windows(dial: dial, bars: bars)
         }
-        return UsageProviderCardModel(id: adapter.id.rawValue, name: name, meta: meta, content: content)
+        return UsageProviderCardModel(
+            id: key.description, name: name, meta: meta, content: content, providerID: adapter.id.rawValue,
+            account: several ? Self.label(of: account) : nil)
     }
 
     /// The plan's windows the tab knows, in `5h`, weekly, daily order. Unlike the closed-notch ring (pace on

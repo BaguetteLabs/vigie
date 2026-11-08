@@ -387,7 +387,11 @@ extension AgentEvent {
         #expect(adapter.id == "claude")
         #expect(adapter.capabilities == [.hooks, .launch, .logReader, .usage])
         #expect(
-            adapter.settings.map(\.key) == ["executable", "hooks_scope", "usage_providers", "plan_auth", "plan_token"])
+            adapter.settings.map(\.key) == [
+                "executable", "hooks_scope", "usage_providers", "plan_auth", "plan_token", "accounts",
+                "account.*.label",
+                "account.*.location", "account.*.usage_providers", "account.*.plan_auth",
+            ])
         #expect(adapter.settings[0].kind == .path(default: nil))
         #expect(adapter.settings[0].scope == .local)
         #expect(adapter.settings[1].kind == .enumeration(options: ["user", "project"], default: "user"))

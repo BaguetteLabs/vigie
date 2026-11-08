@@ -159,18 +159,33 @@ public struct UsageProviderCardModel: Hashable, Sendable, Identifiable {
         case windows(dial: QuotaDialModel, bars: [UsageBarModel])
     }
 
-    /// The provider id (`claude`), the unit of `order`.
+    /// The card id: the provider id (`claude`) for its default Account, `claude.work` for another (Story 7.10).
     public var id: String
     /// `Claude Code`; shown uppercase.
     public var name: String
     public var meta: UsageCardMeta
     public var content: Content
+    /// The provider id, the unit of `order` (drag and Move up / down move the provider with all its Accounts).
+    public var providerID: String
+    /// The Account label (`Work`), set only when the provider has several Accounts (UX-DR99).
+    public var account: String?
 
-    public init(id: String, name: String, meta: UsageCardMeta, content: Content) {
+    public init(
+        id: String, name: String, meta: UsageCardMeta, content: Content, providerID: String? = nil,
+        account: String? = nil
+    ) {
         self.id = id
         self.name = name
         self.meta = meta
         self.content = content
+        self.providerID = providerID ?? id
+        self.account = account.flatMap { $0.isEmpty ? nil : $0 }
+    }
+
+    /// The header: `CLAUDE CODE`, or `CLAUDE CODE · WORK` with several Accounts (UX-DR99); uppercased by the
+    /// card title style.
+    public var title: String {
+        account.map { L10n.format("usage.readout.label", name, $0) } ?? name
     }
 }
 
@@ -195,8 +210,14 @@ public struct UsageTabSnapshot: Hashable, Sendable {
     /// No usage provider at all: `NO USAGE PROVIDER`, its sentence and `Open settings ⌘,` (UX-DR44).
     public var isEmpty: Bool { providers.isEmpty }
 
-    /// More than two providers: the list scrolls, with the fade, the 3 px track and the footer (UX-DR29).
+    /// More than two cards: the list scrolls, with the fade, the 3 px track and the footer (UX-DR29).
     public var overflows: Bool { providers.count > UsageTabMetrics.visibleProviders }
+
+    /// Provider ids in card order, once each (the unit of `order`).
+    public var providerOrder: [String] {
+        var seen: Set<String> = []
+        return providers.map(\.providerID).filter { seen.insert($0).inserted }
+    }
 }
 
 /// Usage tab proportions from the mockup (`key-usage-tab.html`) that DESIGN states in prose, not tokens.

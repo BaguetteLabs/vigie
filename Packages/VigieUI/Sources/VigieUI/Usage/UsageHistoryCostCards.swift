@@ -103,6 +103,8 @@ struct UsageHistoryCard: View {
 struct UsageCostCard: View {
     @Environment(\.vigieTheme) private var theme
     let panel: UsageCostPanel
+    /// `ACCOUNTS` selected in the split switch (only offered when the list has Account rows).
+    @State var byAccount = false
 
     var body: some View {
         WidgetCard(title: Text(L10n.resource("usage.cost.title")), meta: Text(L10n.resource("usage.cost.meta"))) {
@@ -126,8 +128,9 @@ struct UsageCostCard: View {
             UsageBigValue(
                 value: list.totalText,
                 label: Text(L10n.resource(list.isApproximate ? "usage.cost.apiRate.partial" : "usage.cost.apiRate")))
+            if !list.accountRows.isEmpty { splitSwitch }
             VStack(spacing: UsageTabMetrics.costRowGap) {
-                ForEach(list.rows) { row in
+                ForEach(byAccount && !list.accountRows.isEmpty ? list.accountRows : list.rows) { row in
                     VStack(spacing: UsageTabMetrics.costBarTop) {
                         HStack(spacing: theme.spacing(.actionGap)) {
                             Text(verbatim: row.name)
@@ -159,6 +162,30 @@ struct UsageCostCard: View {
             Spacer(minLength: 0)
             source
         }
+    }
+
+    /// `PROJECTS · ACCOUNTS`: the selected one in `ink-1`, the other in `ink-3` (Story 7.10).
+    private var splitSwitch: some View {
+        HStack(spacing: theme.spacing(.glyphGap)) {
+            splitButton(L10n.resource("usage.cost.split.projects"), selected: !byAccount) { byAccount = false }
+            Text(verbatim: UsageTabMetrics.separator.trimmingCharacters(in: .whitespaces))
+            splitButton(L10n.resource("usage.cost.split.accounts"), selected: byAccount) { byAccount = true }
+        }
+        .font(theme.font(.readoutLabel))
+        .tracking(theme.tracking(.readoutLabel))
+        .foregroundStyle(theme.color(.ink3))
+        .lineLimit(1)
+        .padding(.top, UsageTabMetrics.costTop)
+    }
+
+    private func splitButton(
+        _ label: LocalizedStringResource, selected: Bool, action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            Text(label).foregroundStyle(theme.color(selected ? .ink1 : .ink3))
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(selected ? .isSelected : [])
     }
 
     private var source: some View {

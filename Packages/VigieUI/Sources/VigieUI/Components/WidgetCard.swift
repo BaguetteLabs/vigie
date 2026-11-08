@@ -80,6 +80,8 @@ public struct WidgetCard<Content: View>: View {
                     .textCase(.uppercase)
                     .foregroundStyle(theme.color(.ink3))
                     .lineLimit(1)
+                    // The title truncates first: the meta carries state (`STALE · HH:MM`, UX-DR99).
+                    .layoutPriority(1)
             }
         }
     }

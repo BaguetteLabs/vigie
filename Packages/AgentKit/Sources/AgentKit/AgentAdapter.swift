@@ -77,6 +77,19 @@ public protocol AgentAdapter: Sendable {
 
     /// The Ask AI command for `files`, started in `cwd` (SPEC §7.1, §14.16). Default: nil (Ask AI unavailable).
     func launchCommand(files: [URL], cwd: URL?) -> LaunchCommand?
+
+    // MARK: Accounts (Story 7.10, A82)
+
+    /// The agent's default config location, the default Account's (Claude Code: `~/.claude`). Default: nil (the
+    /// adapter has no Accounts beyond the implicit default).
+    var defaultAccountLocation: AccountLocation? { get }
+    /// Pure: the config location the hook's whitelisted environment names (Claude Code: `CLAUDE_CONFIG_DIR`,
+    /// else the default location). Sessions are attributed to the Account with that location (A82). Default:
+    /// nil (the default Account).
+    func accountLocationHint(env: [String: String]) -> AccountLocation?
+    /// The log parser of one Account's location (AD-23: still the one parser of the format). Default:
+    /// `logReader` for ``defaultAccountLocation`` (or when the adapter has none), else nil.
+    func logReader(for location: AccountLocation) -> (any AgentLogReader)?
 }
 
 extension AgentAdapter {
@@ -98,6 +111,26 @@ extension AgentAdapter {
     public var logReader: (any AgentLogReader)? { nil }
     public var usageProvider: (any UsageProvider)? { nil }
     public func launchCommand(files: [URL], cwd: URL?) -> LaunchCommand? { nil }
+    public var defaultAccountLocation: AccountLocation? { nil }
+    public func accountLocationHint(env: [String: String]) -> AccountLocation? { nil }
+    public func logReader(for location: AccountLocation) -> (any AgentLogReader)? {
+        guard let defaultLocation = defaultAccountLocation else { return logReader }
+        return defaultLocation == location ? logReader : nil
+    }
+}
+
+extension AgentAdapter {
+    /// The adapter's Accounts from its settings (``AgentAccounts/accounts(in:defaultLocation:)``): the default
+    /// first, then the listed ones. Always at least the default.
+    public func accounts(settings: any ReadOnlySettings) -> [AgentAccount] {
+        AgentAccounts.accounts(in: settings, defaultLocation: defaultAccountLocation)
+    }
+
+    /// The log reader of `account`: the default Account reads `logReader`; another reads its own location.
+    public func logReader(for account: AgentAccount) -> (any AgentLogReader)? {
+        if account.isDefault { return logReader }
+        return account.location.flatMap { logReader(for: $0) }
+    }
 }
 
 extension AgentAdapter {

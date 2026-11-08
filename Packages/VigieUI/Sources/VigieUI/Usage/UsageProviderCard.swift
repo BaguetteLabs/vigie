@@ -30,14 +30,14 @@ struct UsageProviderCard: View {
 
     @ViewBuilder private var grip: some View {
         if onDrop != nil {
-            GripGlyph().draggable(model.id)
+            GripGlyph().draggable(model.providerID)
         } else {
             GripGlyph()
         }
     }
 
     private var card: some View {
-        WidgetCard(title: Text(verbatim: model.name), meta: meta, leading: grip) {
+        WidgetCard(title: Text(verbatim: model.title), meta: meta, leading: grip) {
             switch model.content {
             case .readingLogs:
                 placeholder(VigieCopy.readingLogs.label)

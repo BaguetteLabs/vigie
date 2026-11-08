@@ -270,13 +270,14 @@ struct FakeAdapter: AgentAdapter {
 enum Hook {
     static func message(
         _ event: String, session: String = "s1", agent: String = "fake", at: Date, tool: String? = nil,
-        cwd: String? = nil, replayed: Bool = false
+        cwd: String? = nil, replayed: Bool = false, env: [String: String] = [:]
     ) throws -> EventMessage {
         var raw: [String: JSONValue] = ["event": .string(event), "session": .string(session)]
         if let tool { raw["tool"] = .string(tool) }
         if let cwd { raw["cwd"] = .string(cwd) }
         let payload = HookPayload(
-            agent: agent, raw: .object(raw), tty: "/dev/ttys003", env: ["TERM_PROGRAM": "WarpTerminal"],
+            agent: agent, raw: .object(raw), tty: "/dev/ttys003",
+            env: ["TERM_PROGRAM": "WarpTerminal"].merging(env) { _, new in new },
             ancestors: [])
         let data = try JSONEncoder().encode(payload)
         return EventMessage(

@@ -12,8 +12,14 @@ public struct ClaudePlanUsageProvider: UsageProvider {
     public static let refreshInterval: Duration = .seconds(300)
 
     let now: @Sendable () -> Date
+    /// Expands `~` in Account locations (the credential of a non-default Account).
+    let homeDirectory: URL
 
-    public init(now: @escaping @Sendable () -> Date = { Date() }) {
+    public init(
+        homeDirectory: URL = FileManager.default.homeDirectoryForCurrentUser,
+        now: @escaping @Sendable () -> Date = { Date() }
+    ) {
+        self.homeDirectory = homeDirectory
         self.now = now
     }
 
@@ -23,18 +29,33 @@ public struct ClaudePlanUsageProvider: UsageProvider {
     public var refreshInterval: Duration { Self.refreshInterval }
     public var externalCredential: ExternalCredentialDescriptor? { ClaudeCodeCredential.descriptor }
 
+    /// The default Account's login item, or the one Claude Code keeps for the Account's `CLAUDE_CONFIG_DIR`.
+    public func externalCredential(for account: AgentAccount) -> ExternalCredentialDescriptor? {
+        ClaudeCodeCredential.descriptor(for: account, home: homeDirectory)
+    }
+
     public func fetch(context: any AdapterContext) async throws -> UsageSnapshot {
-        let token = try await credential(context: context)
+        try await fetch(context: context, account: AgentAccount(id: .default, label: "", location: nil))
+    }
+
+    /// One Account: its `plan_auth` (`account.<id>.plan_auth` past the default), its pasted token
+    /// (`plan_token.<id>`) or its Claude Code login.
+    public func fetch(context: any AdapterContext, account: AgentAccount) async throws -> UsageSnapshot {
+        let token = try await credential(context: context, account: account)
         return try await ClaudePlanUsageClient(http: context.http).fetch(token: token, now: now())
     }
 
     func credential(context: any AdapterContext) async throws(PlanUsageError) -> String {
-        let raw = context.settings.value(ClaudeAdapter.SettingKey.planAuth, as: String.self)
+        try await credential(context: context, account: AgentAccount(id: .default, label: "", location: nil))
+    }
+
+    func credential(context: any AdapterContext, account: AgentAccount) async throws(PlanUsageError) -> String {
+        let raw = context.settings.value(account.settingKey(ClaudeAdapter.SettingKey.planAuth), as: String.self)
         switch ClaudeAdapter.PlanAuth(rawValue: raw ?? "") ?? .token {
         case .token:
             let token: String?
             do {
-                token = try await context.secrets.read(ClaudeAdapter.SettingKey.planToken)
+                token = try await context.secrets.read(account.secretKey(ClaudeAdapter.SettingKey.planToken))
             } catch {
                 throw .credentialMissing
             }
@@ -43,9 +64,10 @@ public struct ClaudePlanUsageProvider: UsageProvider {
             }
             return token
         case .claudeCode:
+            guard let descriptor = externalCredential(for: account) else { throw .credentialMissing }
             let text: String
             do {
-                text = try await context.secrets.readExternal(ClaudeCodeCredential.descriptor)
+                text = try await context.secrets.readExternal(descriptor)
             } catch SecretStoreError.consentRequired {
                 throw .consentRequired
             } catch {

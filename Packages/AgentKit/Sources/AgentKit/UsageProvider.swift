@@ -29,8 +29,9 @@ public struct UsageSnapshot: Hashable, Sendable, Codable {
     }
 }
 
-/// An adapter's usage source for `agents.usage` (SPEC §7.2, AD-23). `id` equals the adapter id. Multiple
-/// Accounts are added with Epic 7.
+/// An adapter's usage source for `agents.usage` (SPEC §7.2, AD-23). `id` equals the adapter id. One provider
+/// serves every Account of the adapter (Story 7.10): `agents.usage` calls ``fetch(context:account:)`` once per
+/// Account with plan limits on.
 public protocol UsageProvider: Sendable {
     var id: AgentID { get }
     var name: LocalizedStringResource { get }
@@ -42,10 +43,28 @@ public protocol UsageProvider: Sendable {
     /// Another app's credential `fetch` may read through `SecretStore.readExternal` (AD-9 amended, Story 7.3),
     /// shown in the consent text by the module's Settings block. Default: nil.
     var externalCredential: ExternalCredentialDescriptor? { get }
+
+    /// Plan windows of one Account (Story 7.10): its own settings keys (``AgentAccount/settingKey(_:)``), its
+    /// own secret (``AgentAccount/secretKey(_:)``) and credential. Default: ``fetch(context:)`` for the default
+    /// Account; other Accounts throw `PlanUsageError.credentialMissing`.
+    func fetch(context: any AdapterContext, account: AgentAccount) async throws -> UsageSnapshot
+
+    /// The external credential of one Account (its consent is recorded per Account, AD-9). Default:
+    /// ``externalCredential`` for the default Account, nil for the others.
+    func externalCredential(for account: AgentAccount) -> ExternalCredentialDescriptor?
 }
 
 extension UsageProvider {
     public var externalCredential: ExternalCredentialDescriptor? { nil }
+
+    public func fetch(context: any AdapterContext, account: AgentAccount) async throws -> UsageSnapshot {
+        guard account.isDefault else { throw PlanUsageError.credentialMissing }
+        return try await fetch(context: context)
+    }
+
+    public func externalCredential(for account: AgentAccount) -> ExternalCredentialDescriptor? {
+        account.isDefault ? externalCredential : nil
+    }
 }
 
 /// Why a remote plan-limit fetch failed (Story 7.3, SPEC §14.2). `agents.usage` keeps the last good windows,

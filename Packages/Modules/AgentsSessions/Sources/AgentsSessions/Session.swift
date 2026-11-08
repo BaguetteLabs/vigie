@@ -37,6 +37,10 @@ public struct Session: Hashable, Sendable, Identifiable {
     /// What that adapter's `capture(env:pid:tty:)` returned, once, when the adapter was chosen. nil when the env
     /// did not identify a tab (Focus then activates the app).
     public internal(set) var terminalLocator: TerminalLocator?
+    /// The Provider Account the session runs under (Story 7.10, A82): chosen once, when the session is created,
+    /// from the config location the hook's environment names (`AgentAdapter.accountLocationHint(env:)`) matched
+    /// against the configured Accounts; no match → `default`.
+    public internal(set) var accountID: AccountID = .default
 
     public var id: SessionKey { key }
     public var agentID: AgentID { key.agentID }
@@ -62,7 +66,8 @@ public struct Session: Hashable, Sendable, Identifiable {
         lastMessage: String? = nil,
         failureReason: FailureReason? = nil,
         terminalAdapterID: TerminalID? = nil,
-        terminalLocator: TerminalLocator? = nil
+        terminalLocator: TerminalLocator? = nil,
+        accountID: AccountID = .default
     ) {
         self.key = key
         self.status = status
@@ -79,6 +84,7 @@ public struct Session: Hashable, Sendable, Identifiable {
         self.failureReason = failureReason
         self.terminalAdapterID = terminalAdapterID
         self.terminalLocator = terminalLocator
+        self.accountID = accountID
     }
 }
 
@@ -107,6 +113,7 @@ extension Session: Codable {
         case failureReason = "failure_reason"
         case terminalAdapterID = "terminal_adapter"
         case terminalLocator = "terminal_locator"
+        case accountID = "account"
     }
 
     public init(from decoder: any Decoder) throws {
@@ -131,6 +138,8 @@ extension Session: Codable {
         failureReason = try container.decodeIfPresent(FailureReason.self, forKey: .failureReason)
         terminalAdapterID = try container.decodeIfPresent(TerminalID.self, forKey: .terminalAdapterID)
         terminalLocator = try container.decodeIfPresent(TerminalLocator.self, forKey: .terminalLocator)
+        // Sessions saved before Story 7.10 belong to the default Account.
+        accountID = try container.decodeIfPresent(AccountID.self, forKey: .accountID) ?? .default
     }
 
     public func encode(to encoder: any Encoder) throws {
@@ -150,5 +159,6 @@ extension Session: Codable {
         try container.encodeIfPresent(failureReason, forKey: .failureReason)
         try container.encodeIfPresent(terminalAdapterID, forKey: .terminalAdapterID)
         try container.encodeIfPresent(terminalLocator, forKey: .terminalLocator)
+        if !accountID.isDefault { try container.encode(accountID, forKey: .accountID) }
     }
 }

@@ -165,9 +165,12 @@ public struct RingSettings: Equatable, Sendable {
     }
 }
 
-/// One provider's ring as offered to the left-wing lane.
+/// One provider's ring as offered to the left-wing lane: one ring per provider, for the Account of its most
+/// recent Session (Story 7.10, AD-23).
 public struct QuotaRing: Sendable, Equatable {
     public let provider: AgentID
+    /// The Account the ring shows.
+    public var account: AccountID = .default
     public let model: QuotaDialModel
     public let priority: Int
     public let order: Int
@@ -203,7 +206,8 @@ extension QuotaDialModel {
     /// 7.6); a warning on a window the dial does not draw sets `hiddenWarning`.
     init?(
         providerName: String, plan: PlanState, rings: RingsMode, pace: Bool = false,
-        paceTolerance: Int = QuotaDialModel.defaultPaceTolerance, warnThreshold: Int? = nil, now: Date = Date()
+        paceTolerance: Int = QuotaDialModel.defaultPaceTolerance, warnThreshold: Int? = nil, now: Date = Date(),
+        accountLabel: String? = nil
     ) {
         var windows: [QuotaWindowKind: QuotaDialModel.Window] = [:]
         for window in plan.windows {
@@ -235,7 +239,7 @@ extension QuotaDialModel {
         let hidden = windows.values.contains { !drawn.contains($0.kind) && $0.isWarning }
         self.init(
             providerName: providerName, primary: primary, secondary: secondary, stale: plan.isStale,
-            hiddenWarning: hidden)
+            hiddenWarning: hidden, accountLabel: accountLabel)
     }
 }
 
@@ -243,20 +247,32 @@ extension QuotaDialModel {
 
 extension AgentsUsageModule {
     /// The rings to show, in lane order: one per provider with plan windows (local-only providers draw none,
-    /// A18). Reads `planStates` and `ringSettings`, both observed, so the host re-arbitrates on change.
+    /// A18). A provider with several Accounts shows the Account of its most recent Session (``recentAccounts``),
+    /// else its first Account with windows, labeled `CLAUDE · WORK` (UX-DR99). Reads `planStates`,
+    /// `recentAccounts` and `ringSettings`, all observed, so the host re-arbitrates on change.
     public var quotaRings: [QuotaRing] {
         let settings = ringSettings
         let now = clock
         return adapters.adapters.enumerated().compactMap { index, adapter -> QuotaRing? in
-            guard let provider = adapter.usageProvider, let plan = planStates[adapter.id],
-                let model = QuotaDialModel(
-                    providerName: String(localized: provider.name), plan: plan, rings: settings.rings,
-                    pace: settings.pace, paceTolerance: settings.paceTolerance,
-                    warnThreshold: settings.warnThreshold(for: adapter.id), now: now)
-            else { return nil }
-            return QuotaRing(
-                provider: adapter.id, model: model, priority: settings.priority(for: adapter.id),
-                order: settings.orderIndex(of: adapter.id, registrationIndex: index))
+            guard let provider = adapter.usageProvider else { return nil }
+            let accounts = accounts(adapter)
+            let several = accounts.count > 1
+            let recent = recentAccounts[adapter.id]
+            let candidates = accounts.filter { $0.id == recent } + accounts.filter { $0.id != recent }
+            for account in candidates {
+                guard let plan = planStates[UsageAccountKey(provider: adapter.id, account: account.id)],
+                    let model = QuotaDialModel(
+                        providerName: String(localized: provider.name), plan: plan, rings: settings.rings,
+                        pace: settings.pace, paceTolerance: settings.paceTolerance,
+                        warnThreshold: settings.warnThreshold(for: adapter.id), now: now,
+                        accountLabel: several ? Self.label(of: account) : nil)
+                else { continue }
+                return QuotaRing(
+                    provider: adapter.id, account: account.id, model: model,
+                    priority: settings.priority(for: adapter.id),
+                    order: settings.orderIndex(of: adapter.id, registrationIndex: index))
+            }
+            return nil
         }
         .sorted { ($0.priority, $0.order) < ($1.priority, $1.order) }
     }

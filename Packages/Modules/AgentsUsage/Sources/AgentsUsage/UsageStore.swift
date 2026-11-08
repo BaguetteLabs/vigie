@@ -17,9 +17,11 @@ public struct IngestFileState: Hashable, Sendable {
     }
 }
 
-/// One aggregated row: tokens of one model and project in one 15-minute slot.
+/// One aggregated row: tokens of one Account, model and project in one 15-minute slot.
 struct UsageAggregate: Hashable, Sendable {
     let slotStart: Date
+    let provider: AgentID
+    let account: AccountID
     let model: String
     let project: String
     let tokens: TokenCounts
@@ -31,6 +33,9 @@ struct UsageAggregate: Hashable, Sendable {
 ///
 /// Schema v1: `ingest_files` (per-file ingest offset, size, mtime) and `usage_records` (one row per model
 /// response, id = provider + session + message, so streaming repeats of a response replace each other).
+/// Schema v2 (Story 7.10): an `account` column on both tables, `'default'` for every row written before, so a
+/// pre-7.10 history is the default Account's. Records of another Account have id provider + account + session +
+/// message.
 public final class UsageStore: Sendable {
     public static let fileName = "usage.sqlite"
     /// Aggregation slot: 15 minutes, so local-time buckets work in every time zone.
@@ -79,16 +84,28 @@ public final class UsageStore: Sendable {
                     CREATE INDEX usage_records_provider_at ON usage_records(provider, at);
                     """)
         }
+        migrator.registerMigration("v2") { db in
+            try db.execute(
+                sql: """
+                    ALTER TABLE ingest_files ADD COLUMN account TEXT NOT NULL DEFAULT 'default';
+                    ALTER TABLE usage_records ADD COLUMN account TEXT NOT NULL DEFAULT 'default';
+                    CREATE INDEX ingest_files_provider_account ON ingest_files(provider, account);
+                    CREATE INDEX usage_records_provider_account_at ON usage_records(provider, account, at);
+                    """)
+        }
         return migrator
     }
 
-    /// The stored ingest state of every file of `provider`, by path.
-    public func fileStates(provider: AgentID) async throws -> [String: IngestFileState] {
+    /// The stored ingest state of every file of one Account of `provider`, by path.
+    public func fileStates(provider: AgentID, account: AccountID = .default) async throws
+        -> [String: IngestFileState]
+    {
         try await pool.read { db in
             var states: [String: IngestFileState] = [:]
             let rows = try Row.fetchAll(
-                db, sql: "SELECT path, read_offset, size, mtime FROM ingest_files WHERE provider = ?",
-                arguments: [provider.rawValue])
+                db,
+                sql: "SELECT path, read_offset, size, mtime FROM ingest_files WHERE provider = ? AND account = ?",
+                arguments: [provider.rawValue, account.rawValue])
             for row in rows {
                 let offset: Int64 = row["read_offset"]
                 let size: Int64 = row["size"]
@@ -101,16 +118,17 @@ public final class UsageStore: Sendable {
 
     /// Upserts `records` (a later write of a response replaces the earlier one) and records `state` for `path`,
     /// in one transaction.
-    public func commit(provider: AgentID, path: String, state: IngestFileState, records: [UsageRecord])
-        async throws
-    {
+    public func commit(
+        provider: AgentID, account: AccountID = .default, path: String, state: IngestFileState,
+        records: [UsageRecord]
+    ) async throws {
         try await pool.write { db in
             let upsert = try db.cachedStatement(
                 sql: """
                     INSERT INTO usage_records
-                        (id, at, provider, model, project, session_id, message_id, request_id,
+                        (id, at, provider, account, model, project, session_id, message_id, request_id,
                          input, output, cache_create, cache_read)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     ON CONFLICT(id) DO UPDATE SET
                         at = excluded.at, model = excluded.model, project = excluded.project,
                         request_id = excluded.request_id, input = excluded.input, output = excluded.output,
@@ -118,43 +136,72 @@ public final class UsageStore: Sendable {
                     """)
             for record in records {
                 try upsert.execute(arguments: [
-                    Self.recordID(provider: provider, record: record), record.at.timeIntervalSince1970,
-                    provider.rawValue, record.model, record.project, record.sessionID, record.messageID,
+                    Self.recordID(provider: provider, account: account, record: record),
+                    record.at.timeIntervalSince1970, provider.rawValue, account.rawValue, record.model, record.project,
+                    record.sessionID, record.messageID,
                     record.requestID, record.inputTokens, record.outputTokens, record.cacheCreationTokens,
                     record.cacheReadTokens,
                 ])
             }
             try db.execute(
                 sql: """
-                    INSERT INTO ingest_files (path, provider, read_offset, size, mtime) VALUES (?, ?, ?, ?, ?)
+                    INSERT INTO ingest_files (path, provider, account, read_offset, size, mtime)
+                    VALUES (?, ?, ?, ?, ?, ?)
                     ON CONFLICT(path) DO UPDATE SET
-                        provider = excluded.provider, read_offset = excluded.read_offset,
+                        provider = excluded.provider, account = excluded.account, read_offset = excluded.read_offset,
                         size = excluded.size, mtime = excluded.mtime
                     """,
                 arguments: [
-                    path, provider.rawValue, Int64(clamping: state.offset), Int64(clamping: state.size),
+                    path, provider.rawValue, account.rawValue, Int64(clamping: state.offset),
+                    Int64(clamping: state.size),
                     state.mtime,
                 ])
         }
     }
 
-    /// Number of stored records (all providers when nil).
-    public func recordCount(provider: AgentID? = nil) async throws -> Int {
+    /// Number of stored records (all providers when nil; every Account of the provider when `account` is nil).
+    public func recordCount(provider: AgentID? = nil, account: AccountID? = nil) async throws -> Int {
         try await pool.read { db in
+            var sql = "SELECT COUNT(*) FROM usage_records WHERE 1 = 1"
+            var arguments: StatementArguments = []
             if let provider {
-                return try Int.fetchOne(
-                    db, sql: "SELECT COUNT(*) FROM usage_records WHERE provider = ?",
-                    arguments: [provider.rawValue]) ?? 0
+                sql += " AND provider = ?"
+                arguments += [provider.rawValue]
             }
-            return try Int.fetchOne(db, sql: "SELECT COUNT(*) FROM usage_records") ?? 0
+            if let account {
+                sql += " AND account = ?"
+                arguments += [account.rawValue]
+            }
+            return try Int.fetchOne(db, sql: sql, arguments: arguments) ?? 0
         }
     }
 
-    /// Records in `[since, until)`, summed per 15-minute slot, model and project.
-    func aggregates(since: Date, until: Date, provider: AgentID?) async throws -> [UsageAggregate] {
+    /// The Account of each provider's latest record: the one its most recent Session ran under, as far as local
+    /// logs tell (Story 7.10: the closed-notch ring shows it).
+    public func latestAccounts() async throws -> [AgentID: AccountID] {
+        try await pool.read { db in
+            var result: [AgentID: AccountID] = [:]
+            let providers = try String.fetchAll(db, sql: "SELECT DISTINCT provider FROM usage_records")
+            for raw in providers {
+                guard let provider = AgentID(raw),
+                    let account = try String.fetchOne(
+                        db, sql: "SELECT account FROM usage_records WHERE provider = ? ORDER BY at DESC LIMIT 1",
+                        arguments: [raw]
+                    ).flatMap(AccountID.init)
+                else { continue }
+                result[provider] = account
+            }
+            return result
+        }
+    }
+
+    /// Records in `[since, until)`, summed per 15-minute slot, provider, Account, model and project.
+    func aggregates(since: Date, until: Date, provider: AgentID?, account: AccountID? = nil) async throws
+        -> [UsageAggregate]
+    {
         try await pool.read { db in
             var sql = """
-                SELECT CAST(at / \(Int(Self.slotSeconds)) AS INTEGER) AS slot, model, project,
+                SELECT CAST(at / \(Int(Self.slotSeconds)) AS INTEGER) AS slot, provider, account, model, project,
                     SUM(input) AS input, SUM(output) AS output, SUM(cache_create) AS cache_create,
                     SUM(cache_read) AS cache_read, COUNT(*) AS records
                 FROM usage_records WHERE at >= ? AND at < ?
@@ -164,11 +211,19 @@ public final class UsageStore: Sendable {
                 sql += " AND provider = ?"
                 arguments += [provider.rawValue]
             }
-            sql += " GROUP BY slot, model, project ORDER BY slot"
-            return try Row.fetchAll(db, sql: sql, arguments: arguments).map { row in
+            if let account {
+                sql += " AND account = ?"
+                arguments += [account.rawValue]
+            }
+            sql += " GROUP BY slot, provider, account, model, project ORDER BY slot"
+            return try Row.fetchAll(db, sql: sql, arguments: arguments).compactMap { row in
                 let slot: Int64 = row["slot"]
+                let rawProvider: String = row["provider"]
+                let rawAccount: String = row["account"]
+                guard let provider = AgentID(rawProvider), let account = AccountID(rawAccount) else { return nil }
                 return UsageAggregate(
-                    slotStart: Date(timeIntervalSince1970: Double(slot) * Self.slotSeconds), model: row["model"],
+                    slotStart: Date(timeIntervalSince1970: Double(slot) * Self.slotSeconds), provider: provider,
+                    account: account, model: row["model"],
                     project: row["project"],
                     tokens: TokenCounts(
                         input: row["input"], output: row["output"], cacheCreation: row["cache_create"],
@@ -178,7 +233,11 @@ public final class UsageStore: Sendable {
         }
     }
 
-    static func recordID(provider: AgentID, record: UsageRecord) -> String {
-        "\(provider.rawValue)/\(record.sessionID)/\(record.messageID)"
+    /// `<provider>/<session>/<message>` for the default Account (the v1 id, so its history converges),
+    /// `<provider>/<account>/<session>/<message>` for the others.
+    static func recordID(provider: AgentID, account: AccountID = .default, record: UsageRecord) -> String {
+        account.isDefault
+            ? "\(provider.rawValue)/\(record.sessionID)/\(record.messageID)"
+            : "\(provider.rawValue)/\(account.rawValue)/\(record.sessionID)/\(record.messageID)"
     }
 }

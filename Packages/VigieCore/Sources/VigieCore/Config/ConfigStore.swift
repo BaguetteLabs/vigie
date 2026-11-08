@@ -93,6 +93,15 @@ public final class ConfigStore {
         if added { recompute() }
     }
 
+    /// Registers a template instance (Story 7.10: `account.<id>.<key>` of an adapter) before it is first
+    /// written, so `set` accepts it. Idempotent; false when no template matches.
+    @discardableResult
+    public func concretize(_ path: ConfigKeyPath) -> Bool {
+        let added = shared.update { $0.schema.concretize(path) }
+        if added { recompute() }
+        return added
+    }
+
     /// Makes one external-credential consent key known (Story 7.3). Idempotent.
     public func registerConsent(_ descriptorID: String) {
         let added = shared.update { $0.schema.registerConsent(descriptorID) }
@@ -247,6 +256,7 @@ public final class ConfigStore {
     ///   `.fileHasErrors` (fix the TOML error first), `.verificationFailed`, `.writeFailed`. The file is
     ///   untouched on any error.
     public func set(_ path: ConfigKeyPath, to value: ConfigResolvedValue) async throws(ConfigError) {
+        concretize(path)
         guard let entry = schema.entries[path] else { throw .unknownSetting(path.description) }
         if case .secret = entry.descriptor.kind { throw .secretKey(path.description) }
         let scalar = try Self.scalar(for: value, kind: entry.descriptor.kind, key: path.description)
@@ -256,6 +266,7 @@ public final class ConfigStore {
     /// Removes a known key from its file, so its default applies again ("reset to default"). Removing a key
     /// that is not in the file changes nothing. Throws as `set` does.
     public func remove(_ path: ConfigKeyPath) async throws(ConfigError) {
+        concretize(path)
         guard let entry = schema.entries[path] else { throw .unknownSetting(path.description) }
         if case .secret = entry.descriptor.kind { throw .secretKey(path.description) }
         try await write(path, value: nil, local: entry.scope == .local)
@@ -424,6 +435,9 @@ public final class ConfigStore {
     /// `rawChanged`: leaf paths whose parsed value changed in this load; reported on `changes` and bump
     /// `revision` even when no schema key changed.
     private func recompute(rawChanged: Set<ConfigKeyPath> = []) {
+        // Template instances the files hold (Story 7.10: one table per Account) become known keys first.
+        let documents = [configFile.document, localFile.document]
+        shared.update { _ = $0.schema.expandTemplates(in: documents) }
         let schema = shared.read { $0.schema }
         let resolution = ConfigResolver.resolve(
             schema: schema, config: configFile.document, local: localFile.document,

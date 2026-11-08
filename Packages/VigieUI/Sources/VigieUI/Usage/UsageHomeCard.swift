@@ -18,7 +18,7 @@ struct UsageHomeRowModel: Hashable, Identifiable {
 
     init(_ provider: UsageProviderCardModel) {
         id = provider.id
-        name = provider.name
+        name = provider.title
         stale = provider.meta.stale
         switch provider.content {
         case .readingLogs:

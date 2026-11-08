@@ -222,9 +222,10 @@ public final class AgentsSessionsModule: NotchModule, AlertActionHandler {
         eventTask = Task.detached { [weak self] in
             await self?.refreshAdapterSupport()
             for await message in stream {
-                let events = pipeline.normalize(message)
-                guard !events.isEmpty else { continue }
-                let save = await self?.apply(events, replayed: message.replayed)
+                let batch = pipeline.normalizeBatch(message)
+                guard !batch.events.isEmpty else { continue }
+                let save = await self?.apply(
+                    batch.events, replayed: message.replayed, accountLocation: batch.accountLocation)
                 if let save { await persister.write(save.sessions, generation: save.generation) }
             }
         }
@@ -385,9 +386,12 @@ public final class AgentsSessionsModule: NotchModule, AlertActionHandler {
     ///
     /// Alerts (Story 4.11): a session entering blocked, done or failed posts once, after the whole batch is
     /// applied; `replayed` events older than ``replayAlertWindow`` update state without posting (AD-5).
+    ///
+    /// Accounts (Story 7.10, A82): a session created by this batch is attributed to the Account whose location
+    /// matches `accountLocation` (what the hook's environment named), else the default Account.
     @discardableResult
     func apply(
-        _ events: [AgentEvent], replayed: Bool = false, now: Date = Date()
+        _ events: [AgentEvent], replayed: Bool = false, accountLocation: AccountLocation? = nil, now: Date = Date()
     ) -> (sessions: [Session], generation: Int)? {
         var persist = false
         var pending: [SessionKey: PendingAlert] = [:]
@@ -406,12 +410,26 @@ public final class AgentsSessionsModule: NotchModule, AlertActionHandler {
             let previous = store.table[key]
             let change = store.apply(event)
             if change.persists { persist = true }
+            if case .created(let created, _) = change,
+                store.setAccount(created, to: account(for: created.agentID, location: accountLocation))
+            {
+                persist = true
+            }
             if selectTerminalIfNeeded(after: change) { persist = true }
             noteAlert(change, previous: previous, at: event.context.at, replayed: replayed, now: now, in: &pending)
         }
         syncState(now: now)
         postAlerts(pending, now: now)
         return persist ? (store.snapshot, store.generation) : nil
+    }
+
+    /// The configured Account of `agent` whose location matches `location`, else the default (A82). The Accounts
+    /// come from the adapter's settings (`[modules."agents.sessions".adapter.<id>]`, local), read through its
+    /// context.
+    func account(for agent: AgentID, location: AccountLocation?) -> AccountID {
+        guard let location, let adapter = adapters.adapter(for: agent) else { return .default }
+        let settings = adapterContexts[agent]?.settings ?? DefaultsReadOnlySettings(descriptors: adapter.settings)
+        return AgentAccounts.attribute(location, among: adapter.accounts(settings: settings), home: homeDirectory)
     }
 
     /// One liveness pass with the processes checked off the main actor; persists any removal.
@@ -518,24 +536,36 @@ final class HookPipeline: Sendable {
         supports.withLock { $0[id] } ?? .notInstalled
     }
 
+    /// The normalized events of one message and the Account location its environment names (Story 7.10).
+    struct Batch {
+        var events: [AgentEvent]
+        var accountLocation: AccountLocation?
+    }
+
     func normalize(_ message: EventMessage) -> [AgentEvent] {
-        if message.topic == Topic.agentGeneric { return normalizeGeneric(message) }
-        guard message.topic == Self.hookTopic else { return [] }
+        normalizeBatch(message).events
+    }
+
+    func normalizeBatch(_ message: EventMessage) -> Batch {
+        if message.topic == Topic.agentGeneric { return Batch(events: normalizeGeneric(message)) }
+        guard message.topic == Self.hookTopic else { return Batch(events: []) }
         let payload: HookPayload
         do {
             payload = try JSONDecoder().decode(HookPayload.self, from: message.payload)
         } catch {
             log.error("agent.hook payload not decoded: \(String(describing: error), privacy: .public)")
-            return []
+            return Batch(events: [])
         }
         guard let id = AgentID(payload.agent), let adapter = adapters.adapter(for: id) else {
             let first = reported.withLock { $0.insert(payload.agent).inserted }
             if first {
                 log.notice("agent.hook from unknown agent \(payload.agent, privacy: .public): ignored")
             }
-            return []
+            return Batch(events: [])
         }
-        return adapter.normalize(payload, sentAt: message.sentAt, support: support(for: id))
+        return Batch(
+            events: adapter.normalize(payload, sentAt: message.sentAt, support: support(for: id)),
+            accountLocation: adapter.accountLocationHint(env: payload.env))
     }
 
     /// `agent.generic` (`GenericAgentMapping`): no adapter, so no support gate.

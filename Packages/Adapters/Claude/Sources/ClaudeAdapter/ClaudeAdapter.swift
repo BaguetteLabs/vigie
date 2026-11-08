@@ -74,13 +74,49 @@ public struct ClaudeAdapter: AgentAdapter {
     /// Hooks, Ask AI, local log reading (Story 7.1) and opt-in plan limits (Story 7.3).
     public var capabilities: Set<AgentCapability> { [.hooks, .launch, .logReader, .usage] }
 
-    /// Plan windows from the unofficial endpoint (Story 7.3); called only while `usage_providers` has `plan`.
-    public var usageProvider: (any UsageProvider)? { ClaudePlanUsageProvider() }
+    /// Plan windows from the unofficial endpoint (Story 7.3); called only while `usage_providers` has `plan`
+    /// (per Account, Story 7.10).
+    public var usageProvider: (any UsageProvider)? { ClaudePlanUsageProvider(homeDirectory: homeDirectory) }
 
     /// `~/.claude/projects/**/*.jsonl` (Story 7.1, AD-23).
     public var logReader: (any AgentLogReader)? { ClaudeLogReader(homeDirectory: homeDirectory) }
 
+    // MARK: Accounts (Story 7.10, A82)
+
+    /// The environment variable Claude Code reads its config folder from.
+    public static let configDirectoryVariable = "CLAUDE_CONFIG_DIR"
+
+    /// `~/.claude`.
+    public var defaultAccountLocation: AccountLocation? {
+        .configDirectory(homeDirectory.appendingPathComponent(".claude", isDirectory: true).path)
+    }
+
+    /// `CLAUDE_CONFIG_DIR` from the hook's environment (whitelisted by Wire), else `~/.claude`.
+    public func accountLocationHint(env: [String: String]) -> AccountLocation? {
+        if let value = env[Self.configDirectoryVariable]?.trimmingCharacters(in: .whitespacesAndNewlines),
+            !value.isEmpty
+        {
+            return .configDirectory(value)
+        }
+        return defaultAccountLocation
+    }
+
+    /// `<config dir>/projects/**/*.jsonl`: the same parser over the Account's own folder.
+    public func logReader(for location: AccountLocation) -> (any AgentLogReader)? {
+        ClaudeLogReader(
+            roots: [location.url(home: homeDirectory).appendingPathComponent("projects", isDirectory: true)])
+    }
+
     public var settings: [SettingDescriptor] {
+        baseSettings
+            + AgentAccounts.descriptors(perAccount: baseSettings.filter { Self.perAccountKeys.contains($0.key) })
+    }
+
+    /// The keys each Account has its own copy of (`account.<id>.<key>`, local); the default Account keeps the
+    /// 7.3 keys. `plan_token` is per Account in SecretStore (`plan_token.<id>`).
+    static let perAccountKeys: Set<String> = [SettingKey.usageProviders, SettingKey.planAuth]
+
+    private var baseSettings: [SettingDescriptor] {
         [
             SettingDescriptor(
                 key: SettingKey.executable, label: L10n.resource("claude.settings.executable.label"),

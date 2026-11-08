@@ -23,7 +23,9 @@ import VigieUI
         let sandbox = try Sandbox()
         try await module.start(context: FakeModuleContext(directory: sandbox.storage, settings: settings))
         await settle()
-        for id in ["claude", "codex", "gemini"] { module.planStates[AgentID(id)!] = PlanState(windows: [fiveHour]) }
+        for id in ["claude", "codex", "gemini"] {
+            module.planStates[UsageAccountKey(stringLiteral: id)] = PlanState(windows: [fiveHour])
+        }
         module.lastIngest = IngestReport()
         return (module, settings)
     }

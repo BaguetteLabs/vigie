@@ -69,10 +69,11 @@ public struct HookPayload: Codable, Sendable, Equatable {
         self.ancestors = ancestors
     }
 
-    /// Exact environment keys forwarded with a hook event (SPEC §8.2).
+    /// Exact environment keys forwarded with a hook event (SPEC §8.2). `CLAUDE_CONFIG_DIR` (Story 7.10, A82)
+    /// attributes the session to the Account whose config location it names.
     public static let environmentKeys: Set<String> = [
         "TERM_PROGRAM", "TERM_PROGRAM_VERSION", "TERM_SESSION_ID", "ITERM_SESSION_ID",
-        "GHOSTTY_RESOURCES_DIR", "GHOSTTY_BIN_DIR", "TMUX", "SHELL", "PWD",
+        "GHOSTTY_RESOURCES_DIR", "GHOSTTY_BIN_DIR", "TMUX", "SHELL", "PWD", "CLAUDE_CONFIG_DIR",
     ]
 
     /// Key prefixes forwarded with a hook event.

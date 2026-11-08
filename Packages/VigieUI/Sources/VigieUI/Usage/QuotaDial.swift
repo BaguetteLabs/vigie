@@ -97,11 +97,18 @@ public struct QuotaDialModel: Hashable, Sendable {
     /// A window the dial does not draw (weekly with `rings = "5h"`) is at or over the threshold: the triangle
     /// still replaces the value.
     public var hiddenWarning: Bool
+    /// The Account shown (`Work`), set only when the provider has several Accounts (UX-DR99, Story 7.10): the
+    /// name under the ring reads `CLAUDE · WORK`, the Account cut to ``wingAccountLength`` characters.
+    public var accountLabel: String?
+
+    /// Characters of the Account label on the closed notch (UX-DR99).
+    public static let wingAccountLength = 6
 
     public init(
         providerName: String, primary: Window?, secondary: Window? = nil, stale: Bool = false,
-        hiddenWarning: Bool = false
+        hiddenWarning: Bool = false, accountLabel: String? = nil
     ) {
+        self.accountLabel = accountLabel.flatMap { $0.isEmpty ? nil : $0 }
         self.providerName = providerName
         self.primary = primary ?? secondary
         self.secondary = primary == nil ? nil : secondary
@@ -123,8 +130,13 @@ public struct QuotaDialModel: Hashable, Sendable {
     /// The value inside the ring (and in the single-provider readout): the primary window's percent.
     public var valueText: String? { primary.map { String($0.percent) } }
 
-    /// `CLAUDE` under the ring (readout-label style).
-    public var nameLabel: String { providerName.uppercased(with: L10n.catalogLocale) }
+    /// `CLAUDE` under the ring (readout-label style); `CLAUDE · WORK` with several Accounts.
+    public var nameLabel: String {
+        let provider = providerName.uppercased(with: L10n.catalogLocale)
+        guard let accountLabel else { return provider }
+        let account = String(accountLabel.prefix(Self.wingAccountLength)).uppercased(with: L10n.catalogLocale)
+        return L10n.format("usage.readout.label", provider, account)
+    }
 
     /// Single-provider readout value: `38 %`.
     public var readoutValue: String? { primary.map { L10n.format("usage.readout.percent", $0.percent) } }
@@ -144,7 +156,7 @@ public struct QuotaDialModel: Hashable, Sendable {
             let base = L10n.format("usage.dial.a11y.window", window.kind.spokenName, window.percent)
             return !window.isWarning && window.pace == .ahead ? L10n.format("usage.dial.a11y.ahead", base) : base
         }
-        var label = providerName
+        var label = accountLabel.map { L10n.format("usage.readout.label", providerName, $0) } ?? providerName
         for window in windows {
             label = L10n.format("usage.dial.a11y.join", label, window)
         }

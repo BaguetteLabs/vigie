@@ -123,7 +123,7 @@ import VigieUI
         ]
         let module = Self.module(adapters, settings: RingSettings(order: ["gemini", "claude"]))
         for id in ["claude", "codex", "gemini"] {
-            module.planStates[AgentID(stringLiteral: id)] = PlanState(windows: [
+            module.planStates[UsageAccountKey(stringLiteral: id)] = PlanState(windows: [
                 Self.window("5h", used: 5, resetIn: 3600)
             ])
         }

@@ -2,7 +2,8 @@ import AgentKit
 import SwiftUI
 import VigieUI
 
-/// Settings › Usage custom block (Story 7.9, then 7.3): the provider order list, then the plan block. The
+/// Settings › Usage custom block (Story 7.9, then 7.3, 7.10): the provider order list, each provider's Accounts,
+/// then the plan block of each Account. The
 /// list is every provider in the user's order: drag to reorder, or Move up / Move down (VoiceOver); it writes
 /// the same `order` key as the Usage tab. Its rows are direct children so `onMove` works in the Form.
 struct UsageSettingsView: View {
@@ -32,6 +33,10 @@ struct UsageSettingsView: View {
             Task { await module.setProviderOrder(shown: moved) }
         }
         Text(UsageText.resource("agentsUsage.order.help")).font(.caption).foregroundStyle(.secondary)
+        // Accounts first (Story 7.10), then each Account's plan block.
+        ForEach(module.accountAdapters, id: \.self) { id in
+            AccountSettingsView(module: module, id: id)
+        }
         if !planAdapters.isEmpty {
             PlanSettingsView(module: module, adapters: planAdapters)
         }
