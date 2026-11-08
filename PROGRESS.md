@@ -87,7 +87,7 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - [x] 6.4 Versioning and build numbers (run `Scripts/version.sh --xcconfig App/Config/Version.xcconfig` before a manual `xcodegen generate`)
 
 ### v0.2 — Epics 7 (Usage), 8 (Codex, `vigie run`), 9 (Shelf), 10 (Sounds), 21 (Privacy)
-- [x] 7.1 · [ ] 7.2–7.10 · [ ] 8.1–8.4 · [ ] 9.1–9.10 · [x] 10.1–10.2 (listen to the WAVs once) · [ ] 21.1–21.3
+- [x] 7.1, 7.2 (signed-build AC pending a real identity) · [ ] 7.3–7.10 · [ ] 8.1–8.4 · [ ] 9.1–9.10 · [x] 10.1–10.2 (listen to the WAVs once) · [ ] 21.1–21.3
 
 ### v0.3 — Epics 11 (Home), 12 (Scripts), 13 (Calendar), 14 (Gemini), 20 (Time)
 - [x] 11.1 · [~] 11.2 (sessions card done; quota card waits for Epic 7) · [ ] 11.3 · [ ] 12.1–12.11 · [ ] 13.1–13.4 · [ ] 14.1–14.3 · [ ] 20.1–20.6
@@ -153,6 +153,8 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - 2026-11-08 — Story 11.2 (sessions card): `SessionsHomeCardView` bound to the module's `tabSnapshot(now:)`, rows on `18 | 92max | 1fr | 64` with `minimumScaleFactor`; in a 222 cell the agent name ("Claude Code") eats most of the project column — polish candidate: short agent label ("Claude") or glyph-only agent column on Home. Row buttons nest inside the Home card button; manual check that a row press does not also open the tab. Empty states have no Settings button on Home (nested button). Quota card: do it with Epic 7 (7.x module `homeCard()`).
 
 - 2026-11-08 — Story 7.1: `Packages/Modules/AgentsUsage` (first remote dependency: GRDB 7.12.x, `Package.resolved` committed; CI needs GitHub access as for the other packages). `UsageStore` (GRDB pool, WAL) under `modules/agents.usage/usage.sqlite`; `UsageIngestor` at start + every 60 s (no FSEvents); id = provider/session/message, upsert keeps the last streaming write. Real logs: 404 files, ~15.8k records, first pass ~7 s. `ClaudeLogReader` in the Claude adapter; `usageProvider` stays nil until 7.3. `usage_providers` is read through adapter defaults only (ConfigStore does not serve adapter settings yet) and the sessions `adapters` list is not consulted. `Scripts/check-locales.sh` exempts `GRDB_GRDB.bundle`. **Verify the bundled `prices.json`** (4.x rows and sonnet-5 cache-read from memory). Romain's config has `[modules."agents.usage"]` keys (order, pace, pace_tolerance, priority, rings, warn_action, warn_threshold) that now log unknown-key problems until 7.4+ declares them.
+
+- 2026-11-08 — Story 7.2: `KeychainSecretStore` (data-protection keychain, access group `<TeamID>.<bundle id>` read from the code signature, service `<bundle id>.secrets`, account `<owner>/<key>`). Under ad-hoc signing the probe reports unavailable (-34018) and posts one `setup.problem` `secrets.unavailable`; every call throws `.unavailable`. The entitlement lives in `App/Vigie.signed.entitlements` (adding it to the ad-hoc build kills the app at launch); switch `CODE_SIGN_ENTITLEMENTS` + `DEVELOPMENT_TEAM` in Story 6.1. `ConfigStore.set/remove` refuse `.secret` keys; Settings secret rows go through `SecretSettingBinding`. Adapters have no `AdapterContext` of their own yet (secrets fall back to the agents.sessions scope) — wire `adapterOwner(_:)` in 7.3. `Scripts/check-cli-no-keychain.sh` guards VigieCLI/Wire.
 
 ## Notes for the next session
 
