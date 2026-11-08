@@ -1,6 +1,102 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "agentsUsage.setting.order" : {
+      "comment" : "Settings › Usage: order of the usage providers (ids).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Provider order"
+          }
+        }
+      }
+    },
+    "agentsUsage.setting.order.help" : {
+      "comment" : "Settings › Usage: help under the provider order.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Provider ids in order, for example claude, codex. Providers not listed follow in their default order."
+          }
+        }
+      }
+    },
+    "agentsUsage.setting.priority" : {
+      "comment" : "Settings › Usage: left-wing priority of every provider quota ring.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ring priority"
+          }
+        }
+      }
+    },
+    "agentsUsage.setting.priority.help" : {
+      "comment" : "Settings › Usage: help under the ring priority.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Position of the quota rings among left-wing items; a lower number shows first."
+          }
+        }
+      }
+    },
+    "agentsUsage.setting.providerPriority.claude" : {
+      "comment" : "Settings › Usage: per-provider override of the ring priority for Claude.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude ring priority"
+          }
+        }
+      }
+    },
+    "agentsUsage.setting.providerPriority.help" : {
+      "comment" : "Settings › Usage: help under a per-provider ring priority.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "0 uses the ring priority above."
+          }
+        }
+      }
+    },
+    "agentsUsage.setting.rings" : {
+      "comment" : "Settings › Usage: which plan windows a quota ring shows (5h, or 5h with weekly around it).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quota rings"
+          }
+        }
+      }
+    },
+    "agentsUsage.setting.rings.help" : {
+      "comment" : "Settings › Usage: help under the rings choice.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "5h shows the 5-hour window; 5h+weekly nests the weekly window around it. A plan without a 5-hour window shows its only window."
+          }
+        }
+      }
+    },
     "agentsUsage.module.name" : {
       "comment" : "Name of the AI usage module, shown in Settings and as the Usage tab title.",
       "extractionState" : "manual",

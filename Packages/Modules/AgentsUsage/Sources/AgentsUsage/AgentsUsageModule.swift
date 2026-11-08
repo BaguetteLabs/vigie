@@ -6,7 +6,8 @@ import SwiftUI
 import os
 
 /// `agents.usage` (SPEC §7.2): token and cost history from agents' local logs (Story 7.1) and opt-in plan limits
-/// merged into the same provider (Story 7.3, `PlanUsage.swift`). The Usage tab and rings (7.4+) build on it.
+/// merged into the same provider (Story 7.3, `PlanUsage.swift`); one quota ring per provider with plan windows on the
+/// closed notch's left wing (Story 7.4, `QuotaRings.swift`). The Usage tab (7.7) builds on it.
 ///
 /// App assembly passes the same `AgentAdapters` value as `agents.sessions` (AD-4, AD-23). The module owns the
 /// only SQLite database (AD-11), `usage.sqlite` in its `context.storage` folder, filled by ``UsageIngestor`` off
@@ -22,13 +23,14 @@ public final class AgentsUsageModule: NotchModule {
         id: "agents.usage",
         name: LocalizedStringResource("agentsUsage.module.name", bundle: bundle),
         icon: "chart.bar",
+        settings: RingSettings.descriptors(bundle: bundle),
         alertKinds: [setupProblemKind],
         defaultEnabled: true
     )
 
     public let manifest = AgentsUsageModule.staticManifest
-    /// No closed-notch presence until the rings arrive (Story 7.4).
-    public private(set) var state: ModuleState = .hidden
+    /// Ambient while a quota ring is offered, else hidden (FR53; Story 7.4 `updateRingState`).
+    public internal(set) var state: ModuleState = .hidden
 
     public let adapters: AgentAdapters
     /// The same per-adapter contexts App assembly gives `agents.sessions` (AD-23): `http` and the adapter-scoped
@@ -42,7 +44,12 @@ public final class AgentsUsageModule: NotchModule {
     @ObservationIgnored let now: @Sendable () -> Date
 
     /// Plan windows per provider (Story 7.3); absent while `plan` is off.
-    public internal(set) var planStates: [AgentID: PlanState] = [:]
+    public internal(set) var planStates: [AgentID: PlanState] = [:] {
+        didSet { updateRingState() }
+    }
+    /// `priority`, `order`, `rings` and the per-provider overrides (Story 7.4); defaults until `start`.
+    public internal(set) var ringSettings = RingSettings()
+    @ObservationIgnored var ringObservers: [Task<Void, Never>] = []
     @ObservationIgnored var planAlerts: [AgentID: AlertHandle] = [:]
     @ObservationIgnored var planInFlight: Set<AgentID> = []
     @ObservationIgnored var planMissingContextLogged: Set<AgentID> = []
@@ -93,6 +100,7 @@ public final class AgentsUsageModule: NotchModule {
         let log = context.log
         self.log = log
         notifier = context.notifier
+        startRingSettings(context.settings)
         let store = try UsageStore(directory: context.storage.directory)
         let estimator = try CostEstimator.bundled()
         let registry = UsageProviderRegistry(adapters: adapters, settings: adapterSettings)
@@ -121,6 +129,7 @@ public final class AgentsUsageModule: NotchModule {
     }
 
     public func stop() async {
+        stopRingSettings()
         stopPlanRefresh()
         ingestTask?.cancel()
         ingestTask = nil

@@ -1,6 +1,138 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "usage.dial.a11y.join" : {
+      "comment" : "VoiceOver: joins the quota dial label so far and the next window.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, %2$@"
+          }
+        }
+      }
+    },
+    "usage.dial.a11y.stale" : {
+      "comment" : "VoiceOver: quota dial whose last refresh failed; the values are the last known ones.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@, stale"
+          }
+        }
+      }
+    },
+    "usage.dial.a11y.window" : {
+      "comment" : "VoiceOver part for one plan window: window name, percent used (5 hour window 38 percent).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ %2$lld percent"
+          }
+        }
+      }
+    },
+    "usage.readout.label" : {
+      "comment" : "Closed notch single-provider readout label: provider name and window, uppercase (CLAUDE · 5H).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ · %2$@"
+          }
+        }
+      }
+    },
+    "usage.readout.percent" : {
+      "comment" : "Closed notch single-provider readout value: percent of the window used (38 %).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld %%"
+          }
+        }
+      }
+    },
+    "usage.window.5h.short" : {
+      "comment" : "Quota readout label: the 5-hour plan window, after the provider name (CLAUDE · 5H).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "5H"
+          }
+        }
+      }
+    },
+    "usage.window.5h.spoken" : {
+      "comment" : "VoiceOver: name of the 5-hour plan window, before its percent.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "5 hour window"
+          }
+        }
+      }
+    },
+    "usage.window.daily.short" : {
+      "comment" : "Quota readout label: the daily plan window (CLAUDE · DAY).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DAY"
+          }
+        }
+      }
+    },
+    "usage.window.daily.spoken" : {
+      "comment" : "VoiceOver: name of the daily plan window, before its percent.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "daily"
+          }
+        }
+      }
+    },
+    "usage.window.weekly.short" : {
+      "comment" : "Quota readout label: the weekly plan window (CLAUDE · WEEK).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WEEK"
+          }
+        }
+      }
+    },
+    "usage.window.weekly.spoken" : {
+      "comment" : "VoiceOver: name of the weekly plan window, before its percent.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "weekly"
+          }
+        }
+      }
+    },
     "settings.secret.set": {
       "comment": "Button on a secret setting: stores the typed value in the Keychain.",
       "extractionState": "manual",

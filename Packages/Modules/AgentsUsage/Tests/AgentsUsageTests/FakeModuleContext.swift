@@ -10,11 +10,15 @@ final class FakeModuleContext: ModuleContext, @unchecked Sendable {
     let fakeScheduler = FakeScheduler()
     let recordingNotifier = RecordingNotifier()
 
-    init(directory: URL) {
+    /// The module's own settings (`[modules."agents.usage"]`); none by default.
+    let moduleSettings: any ModuleSettings
+
+    init(directory: URL, settings: any ModuleSettings = NoSettings()) {
         fakeStorage = FolderStorage(directory: directory)
+        moduleSettings = settings
     }
 
-    var settings: any ModuleSettings { NoSettings() }
+    var settings: any ModuleSettings { moduleSettings }
     var storage: any ModuleStorage { fakeStorage }
     var secrets: any SecretStore { NoSecrets() }
     var scheduler: any Scheduler { fakeScheduler }
