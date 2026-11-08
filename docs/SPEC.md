@@ -734,6 +734,7 @@ auto_check = true
 check_interval = "24h"
 auto_install = false
 channel = "stable"          # stable | beta (beta available from the public release)
+prices = true               # fetch the signed per-provider price table at check_interval (Story 6.5); false = bundled table only
 
 [closed]
 max_side_width = 120

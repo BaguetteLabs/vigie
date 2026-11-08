@@ -748,7 +748,47 @@ Users press `⌥⌘↵` on a peek or `↵` on a session row and the session's ex
 Users install a signed, notarized Vigie from the public release host, and Sparkle offers every later version and installs it once they agree, from a reproducible tag-driven pipeline in the private code repository.
 **FRs covered:** FR105, FR106, FR107 · PRD FR-61
 
-### Epic 7: AI usage at a glance
+#### Story 6.5: Remote price table for every provider
+
+*Added 2026-11-08 (Romain's ruling): the bundled `prices.json` (A56) goes stale between releases and cannot price a new model family. Placed in Epic 6 because it rides the release pipeline and the Sparkle signing key.*
+
+As a user,
+I want cost estimates to use current list prices for every provider without waiting for an app update,
+So that the Usage tab stays right when a provider releases or reprices a model.
+
+**Requirements:** PRD FR-48 (cost), A56 (superseded by this story), AD-16 (amended 2026-11-08: price-table fetch allowed), AD-23 (prices keyed by adapter id), AD-8 (`[updates] prices`), NFR24
+
+**Acceptance Criteria:**
+
+**Given** the price table schema
+**When** it is defined
+**Then** one JSON document holds a `providers` map keyed by adapter id (`claude`, `codex`, `gemini` today; any future adapter adds a key, nothing else changes), each with its `currency`, `unit`, `updated` date and a `models` map of ids to `input`, `output`, `cache_write`, `cache_read` and optional tiers (e.g. long-context thresholds); `AgentAdapter` exposes `priceProviderID` so an adapter maps its models to one provider section; the schema is versioned and the bundled file in `AgentsUsage` follows it
+
+**Given** the release workflow (Story 6.2)
+**When** a release is tagged, or the `prices/` folder of the private repository changes on `master`
+**Then** CI publishes `prices.json` and a detached EdDSA signature made with the Sparkle private key to a fixed public HTTPS location (the public releases repository or its Pages site), and the app knows only that location
+
+**Given** `[updates] prices = true` (default) and `check_interval`
+**When** the interval elapses, or the user presses `Check now` in Settings › Usage
+**Then** the app fetches the table and its signature, verifies the signature with the embedded Sparkle public key, rejects a lower `version` or a bad signature (logged as a setup problem once), and otherwise stores it in `context.storage` of `agents.usage`; no other data is sent, no cookies or identifiers beyond the HTTPS request
+
+**Given** a stored table
+**When** `CostEstimator` is built
+**Then** it uses the stored table when its `version` is newer than the bundled one, else the bundled one; the Usage tab footer reads `PRICES <date>` with `BUNDLED` or `UPDATED`; a provider section missing from the stored table falls back to the bundled section
+
+**Given** `[updates] prices = false`, or the Mac offline
+**When** Vigie runs
+**Then** no request is made and the newest table already on disk is used
+
+**Given** a model id with no price in any table
+**When** cost is summed
+**Then** it stays unpriced as today (no invented number)
+
+**Given** unit tests
+**When** run with a fake HTTP client and a test key pair
+**Then** they cover: valid update applied, bad signature rejected, downgrade rejected, offline fallback, per-provider fallback, `prices = false` makes no request, adapters mapped to provider sections, schema round-trip of the bundled file
+
+## Epic 7: AI usage at a glance
 Users see one quota ring per provider in the left wing, a pace marker, a quota warning at their threshold, and a Usage tab with per-window bars, 7-day history and today's cost — starting with Claude Code.
 **FRs covered:** FR5, FR15, FR47, FR48, FR49, FR50, FR51, FR52, FR53, FR54 · PRD FR-29, FR-30 (multiple Accounts, Story 7.10)
 
@@ -2406,6 +2446,46 @@ So that Sparkle always recognises newer builds.
 **Given** the script module schema and the wire/adapter event format
 **When** they change incompatibly
 **Then** their own version numbers (`schema`, `v`) are bumped and a note in `docs/` says breaking changes need a major app version (no CONTRIBUTING file: the app takes no outside contributions, PRD §9 Q1)
+
+### Story 6.5: Remote price table for every provider
+
+*Added 2026-11-08 (Romain's ruling): the bundled `prices.json` (A56) goes stale between releases and cannot price a new model family. Placed in Epic 6 because it rides the release pipeline and the Sparkle signing key.*
+
+As a user,
+I want cost estimates to use current list prices for every provider without waiting for an app update,
+So that the Usage tab stays right when a provider releases or reprices a model.
+
+**Requirements:** PRD FR-48 (cost), A56 (superseded by this story), AD-16 (amended 2026-11-08: price-table fetch allowed), AD-23 (prices keyed by adapter id), AD-8 (`[updates] prices`), NFR24
+
+**Acceptance Criteria:**
+
+**Given** the price table schema
+**When** it is defined
+**Then** one JSON document holds a `providers` map keyed by adapter id (`claude`, `codex`, `gemini` today; any future adapter adds a key, nothing else changes), each with its `currency`, `unit`, `updated` date and a `models` map of ids to `input`, `output`, `cache_write`, `cache_read` and optional tiers (e.g. long-context thresholds); `AgentAdapter` exposes `priceProviderID` so an adapter maps its models to one provider section; the schema is versioned and the bundled file in `AgentsUsage` follows it
+
+**Given** the release workflow (Story 6.2)
+**When** a release is tagged, or the `prices/` folder of the private repository changes on `master`
+**Then** CI publishes `prices.json` and a detached EdDSA signature made with the Sparkle private key to a fixed public HTTPS location (the public releases repository or its Pages site), and the app knows only that location
+
+**Given** `[updates] prices = true` (default) and `check_interval`
+**When** the interval elapses, or the user presses `Check now` in Settings › Usage
+**Then** the app fetches the table and its signature, verifies the signature with the embedded Sparkle public key, rejects a lower `version` or a bad signature (logged as a setup problem once), and otherwise stores it in `context.storage` of `agents.usage`; no other data is sent, no cookies or identifiers beyond the HTTPS request
+
+**Given** a stored table
+**When** `CostEstimator` is built
+**Then** it uses the stored table when its `version` is newer than the bundled one, else the bundled one; the Usage tab footer reads `PRICES <date>` with `BUNDLED` or `UPDATED`; a provider section missing from the stored table falls back to the bundled section
+
+**Given** `[updates] prices = false`, or the Mac offline
+**When** Vigie runs
+**Then** no request is made and the newest table already on disk is used
+
+**Given** a model id with no price in any table
+**When** cost is summed
+**Then** it stays unpriced as today (no invented number)
+
+**Given** unit tests
+**When** run with a fake HTTP client and a test key pair
+**Then** they cover: valid update applied, bad signature rejected, downgrade rejected, offline fallback, per-provider fallback, `prices = false` makes no request, adapters mapped to provider sections, schema round-trip of the bundled file
 
 ## Epic 7: AI usage at a glance
 
@@ -4777,7 +4857,7 @@ Every judgement call made while running the workflow unattended. Format: **id �
 - **A53** **[RULED 2026-11-06: accepted as proposed]** — Story 3.1 — New global `[notify]` table; `quiet_hours` format `"22:00-08:00"`. · *Alternative: rely on macOS Focus schedules only.*
 - **A54** **[RULED 2026-11-06: accepted as proposed]** — Stories 3.1, 4.11 — SPEC §6's `min_working_time` is a Notifier rule condition checked against a `working_duration` metric sent with the event (keeps Notifier the only reader of notify config). · *Alternative: check it inside `agents.sessions`.*
 - **A55** **[RULED 2026-11-06: accepted as proposed]** — Story 4.10 — The Agents terminal column shows the app name of the matched terminal adapter. · *Alternative: show `TERM_PROGRAM` as-is.*
-- **A56** **[RULED 2026-11-06: accepted as proposed]** — Story 7.1 — Cost is estimated from a per-model price table bundled with the app (no online pricing, per AD-16). · *Alternative: fetch prices, which would need a new architecture decision.*
+- **A56** **[RULED 2026-11-06: accepted as proposed; SUPERSEDED 2026-11-08 by Story 6.5: a signed remote price table for every provider, bundled copy as fallback]** — Story 7.1 — Cost is estimated from a per-model price table bundled with the app (no online pricing, per AD-16). · *Alternative: fetch prices, which would need a new architecture decision.*
 - **A57** **[RULED 2026-11-06: user chooses in Settings: paste a token (Keychain) or explicitly allow reuse of Claude Code's stored login (per Mac, revocable, read in memory only, never copied or synced); Story 7.3, AD-9 amended]** — Story 7.3 — Claude plan limits use the unofficial claude.ai endpoint with a credential the user pastes into Settings (stored as a secret). · *Alternative: reuse Claude Code's own stored OAuth credentials.*
 - **A58** **[RULED 2026-11-06: accepted as proposed]** — Story 4.7 — Settings › Agents in v0.1 is the generated pane plus Connect/Disconnect buttons per adapter. · *Alternative: hooks installed only via onboarding (v0.4).*
 - **A59** **[RULED 2026-11-06: accepted as proposed]** — Stories 4.12, 5.4, 9.6, 16.3, 17.1 — The five UX key flows are used as acceptance journeys on the story that completes each flow. · *Alternative: a separate end-to-end test story per release.*

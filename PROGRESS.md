@@ -85,6 +85,7 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - [ ] 6.2 Tag-driven release workflow
 - [ ] 6.3 Sparkle auto-update
 - [x] 6.4 Versioning and build numbers (run `Scripts/version.sh --xcconfig App/Config/Version.xcconfig` before a manual `xcodegen generate`)
+- [ ] 6.5 Remote price table for every provider (added 2026-11-08)
 
 ### v0.2 — Epics 7 (Usage), 8 (Codex, `vigie run`), 9 (Shelf), 10 (Sounds), 21 (Privacy)
 - [x] 7.1, 7.2 (signed-build AC pending a real identity), 7.3 (live endpoint untested; AD-23 path ruling pending) , 7.4, 7.5, 7.6, 7.7, 7.8 (not yet seen live), 7.9, 7.10 · [ ] 7.11 (added 2026-11-08) · [ ] 8.1–8.4 · [x] 9.1 (no real drag tested yet), 9.2, 9.3 (Quick Look + drag-out untested live), 9.4, 9.5, 9.6 (no live openTab yet), 9.7, 9.8, 9.9, 9.10 (live checks pending) — Epic 9 done · [x] 10.1–10.2 (listen to the WAVs once) · [x] 21.1 (desk research; checklist for Romain), 21.2, 21.3 — Epic 21 done (manual only)
@@ -121,6 +122,7 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - 2026-11-08 — Romain: 7.10 code confirmed — Accounts in the adapter table (`adapter.<id>.accounts` + `account.<id>.*`), Keychain owner `adapter.<id>` with per-Account keys. AD-23 and SPEC §7.2/§11 amended.
 - 2026-11-08 — Romain: hook installation per Account location added to Epic 7 as Story 7.11 (not deferred to v0.4).
 - 2026-11-08 — `prices.json` checked against platform.claude.com pricing: Sonnet 5.5 cache read fixed to $0.10; Mythos 5/5.1 added; Haiku 5.5 >100K tier not modeled. Prices stay bundled (A56, AD-16); app cannot update them without a release.
+- 2026-11-08 — Romain: add a remote price table covering every provider (Anthropic, OpenAI, Google, extensible) → Story 6.5; A56 superseded; AD-16 amended to allow the signed fetch; SPEC `[updates] prices`.
 
 - 2026-11-07 — Working mode, signing, installs, remote: see "Working mode" above.
 - 2026-11-07 — XcodeGen chosen for the App target project (AD-2 keeps the target thin; no hand-edited pbxproj in git).
