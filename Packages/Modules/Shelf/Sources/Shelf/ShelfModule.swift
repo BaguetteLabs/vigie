@@ -13,6 +13,8 @@ import os
 /// A Stash drop that cannot be stored adds nothing, returns `DropResult.readout("NOT STASHED")` (the host shows
 /// it on the left wing for 2 s) and writes a `shelf.stash` activity entry; no alert, peek or sound (UX-DR101).
 ///
+/// AirDrop (Story 9.8, `AirDrop.swift`): files dropped on it open the system AirDrop picker; nothing is stashed.
+///
 /// Image to Text (Story 9.9, `ImageToText.swift`): an image or PDF dropped on it is recognized on the Mac and
 /// its text copied through `context.clipboard`, with a `COPIED · <n> LINES` / `NO TEXT FOUND` readout.
 ///
@@ -55,6 +57,12 @@ public final class ShelfModule: NotchModule {
                 kind: .bool(default: false),
                 scope: .synced,
                 help: LocalizedStringResource("shelf.setting.expiryNotification.help", bundle: bundle)),
+            SettingDescriptor(
+                key: airDropSetting,
+                label: LocalizedStringResource("shelf.setting.airdrop", bundle: bundle),
+                kind: .bool(default: true),
+                scope: .synced,
+                help: LocalizedStringResource("shelf.setting.airdrop.help", bundle: bundle)),
             SettingDescriptor(
                 key: imageToTextSetting,
                 label: LocalizedStringResource("shelf.setting.imageToText", bundle: bundle),
@@ -126,15 +134,25 @@ public final class ShelfModule: NotchModule {
     /// `context.clipboard` (copy-only), for Image to Text.
     @ObservationIgnored var clipboard: (any ClipboardService)?
     @ObservationIgnored let recognizer: any TextRecognizing
+    @ObservationIgnored private let airDropOverride: (any AirDropSharing)?
+    @ObservationIgnored private var airDropStorage: (any AirDropSharing)?
+    /// The AirDrop service, created on first use.
+    var airDropService: any AirDropSharing {
+        if let airDropStorage { return airDropStorage }
+        let made = airDropOverride ?? SystemAirDrop()
+        airDropStorage = made
+        return made
+    }
     @ObservationIgnored var observeTasks: [Task<Void, Never>] = []
 
     public init(
         scope: any SecurityScopedResources = SystemSecurityScope(), recycler: any Recycler = WorkspaceRecycler(),
         revealer: any FileRevealer = WorkspaceRevealer(), quickLook: (any QuickLookPresenting)? = nil,
-        recognizer: any TextRecognizing = VisionTextRecognizer(),
+        recognizer: any TextRecognizing = VisionTextRecognizer(), airDrop: (any AirDropSharing)? = nil,
         now: @escaping @Sendable () -> Date = { Date() }
     ) {
         self.recognizer = recognizer
+        self.airDropOverride = airDrop
         self.scope = scope
         self.recycler = recycler
         self.revealer = revealer
@@ -278,8 +296,9 @@ public final class ShelfModule: NotchModule {
 
     // MARK: Drop zones
 
-    /// Stash, then Image to Text (hidden unless `image_to_text` is on). Zones are read each time a drag arrives.
-    public var dropZones: [DropZone] { [stashZone, imageToTextZone] }
+    /// Stash, AirDrop (hidden when `airdrop` is off) and Image to Text (hidden unless `image_to_text` is on).
+    /// Zones are read each time a drag arrives.
+    public var dropZones: [DropZone] { [stashZone, airDropZone, imageToTextZone] }
 
     /// Stash (SPEC §4.6, DESIGN layout B): column 1 row 1, 2 × 2, primary; takes anything.
     public var stashZone: DropZone {

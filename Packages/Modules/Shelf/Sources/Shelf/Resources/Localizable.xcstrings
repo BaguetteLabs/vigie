@@ -932,6 +932,102 @@
           }
         }
       }
+    },
+    "shelf.setting.airdrop" : {
+      "comment" : "Settings › Shelf: toggle for the AirDrop drop zone.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AirDrop"
+          }
+        }
+      }
+    },
+    "shelf.setting.airdrop.help" : {
+      "comment" : "Settings › Shelf: help under the AirDrop toggle.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shows a drop zone that sends files to a nearby device with AirDrop."
+          }
+        }
+      }
+    },
+    "shelf.airdrop.label" : {
+      "comment" : "Drop display: AirDrop zone label.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AIRDROP"
+          }
+        }
+      }
+    },
+    "shelf.airdrop.meta" : {
+      "comment" : "Drop display: AirDrop zone meta line.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NEARBY DEVICES"
+          }
+        }
+      }
+    },
+    "shelf.airdrop.miniMeta" : {
+      "comment" : "Shelf tab SEND TO card: AirDrop mini zone meta.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SHARE"
+          }
+        }
+      }
+    },
+    "shelf.airdrop.release" : {
+      "comment" : "Drop display: AirDrop release line while files hover it.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RELEASE TO SHARE"
+          }
+        }
+      }
+    },
+    "shelf.airdrop.a11y" : {
+      "comment" : "VoiceOver label of the AirDrop drop zone.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AirDrop, share with nearby devices"
+          }
+        }
+      }
+    },
+    "shelf.airdrop.unavailable" : {
+      "comment" : "Closed notch: transient readout when an AirDrop share can't start.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AIRDROP UNAVAILABLE"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

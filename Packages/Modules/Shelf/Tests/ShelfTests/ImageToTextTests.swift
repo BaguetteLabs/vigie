@@ -230,12 +230,12 @@ extension DropResult {
     @Test func shelfDeclaredSetForTheReflow() async throws {
         let off = Self.harness(on: false)
         try await off.start()
-        #expect(off.module.dropZones.filter(\.isEnabled).map(\.id) == ["shelf.stash"])
+        #expect(!off.module.dropZones.filter(\.isEnabled).map(\.id).contains("shelf.image_to_text"))
         let on = Self.harness()
         try await on.start()
         let enabled = on.module.dropZones.filter(\.isEnabled)
-        #expect(enabled.map(\.id) == ["shelf.stash", "shelf.image_to_text"])
-        #expect(enabled.map(\.cell.preferredColumn) == [1, 4])
-        #expect(enabled.map(\.cell.preferredRow) == [1, 2])
+        #expect(enabled.map(\.id) == ["shelf.stash", "shelf.airdrop", "shelf.image_to_text"])
+        #expect(enabled.map(\.cell.preferredColumn) == [1, 4, 4])
+        #expect(enabled.map(\.cell.preferredRow) == [1, 1, 2])
     }
 }
