@@ -256,6 +256,20 @@ public final class SettingsController {
         }
     }
 
+    // MARK: - Privacy mode (Story 21.3)
+
+    /// True when a detector exists, so `Automatic (when sharing or recording)` can be turned on.
+    public var privacyDetectionAvailable: Bool { privacy?.detector.isAvailable ?? false }
+
+    /// The permission the detector needs but macOS denied, while automatic detection is on; nil otherwise.
+    public var privacyDeniedPermission: Permission? {
+        guard let permission = privacy?.detector.requiredPermission,
+            configStore.value(CoreSettings.path("privacy", "auto"), as: Bool.self) == true,
+            permissions.statuses[permission] == .denied
+        else { return nil }
+        return permission
+    }
+
     // MARK: - Modules
 
     public func moduleStatus(_ id: ModuleID) -> ModuleStatus {

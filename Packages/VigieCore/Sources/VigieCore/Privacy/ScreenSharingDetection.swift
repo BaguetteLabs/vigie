@@ -26,13 +26,20 @@ public enum ScreenSharingVerdict: Hashable, Sendable {
 public protocol ScreenSharingDetecting: Sendable {
     /// The permission the method needs; nil when it needs none.
     var requiredPermission: Permission? { get }
+    /// False when the method cannot run on this macOS version (Settings then offers only `Force on`).
+    var isAvailable: Bool { get }
     func detect() async -> ScreenSharingVerdict
+}
+
+extension ScreenSharingDetecting {
+    public var isAvailable: Bool { true }
 }
 
 /// The default: no automatic detection (spike decision "manual only"). Always `.notDetected`.
 public struct NoScreenSharingDetection: ScreenSharingDetecting {
     public init() {}
     public var requiredPermission: Permission? { nil }
+    public var isAvailable: Bool { false }
     public func detect() async -> ScreenSharingVerdict { .notDetected }
 }
 

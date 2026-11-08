@@ -78,7 +78,8 @@ public enum CoreSettings {
         make("notify", "min_severity", .enumeration(options: ["info", "warn", "critical"], default: "info")),
         make("notify", "cooldown", .duration(default: .zero)),
         // [privacy] (local)
-        make("privacy", "auto", .bool(default: true), .local),
+        // Default false: spike 21.1 chose manual-only (no detector ships); A88 keeps it off whenever the method needs Screen Recording.
+        make("privacy", "auto", .bool(default: false), .local),
         make("privacy", "force", .bool(default: false), .local),
         // [home]
         make("home", "cards", .list(of: .string, default: [])),

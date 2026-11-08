@@ -74,7 +74,11 @@ struct SettingsPaneView: View {
                 ForEach(Array((pane.id == "sounds" ? [] : sections).enumerated()), id: \.offset) { _, section in
                     Section {
                         ForEach(section.keys.compactMap(controller.rowModel(for:))) { model in
-                            SettingRow(model)
+                            if model.id == "privacy.auto" {
+                                PrivacyAutoRow(controller: controller, model: model)
+                            } else {
+                                SettingRow(model)
+                            }
                             if model.id == "appearance.presence",
                                 NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
                             {
@@ -104,6 +108,45 @@ struct SettingsPaneView: View {
             }
         }
         .formStyle(.grouped)
+    }
+}
+
+/// `Automatic (when sharing or recording)` (Story 21.3): a toggle that is disabled, with an explanatory line,
+/// while no detector exists (spike 21.1: manual only), and a needs-permission line when Screen Recording is denied.
+struct PrivacyAutoRow: View {
+    let controller: SettingsController
+    let model: SettingRowModel
+    @State private var isOn = false
+
+    var body: some View {
+        let available = controller.privacyDetectionAvailable
+        VStack(alignment: .leading, spacing: 4) {
+            Toggle(isOn: Binding(get: { isOn }, set: { newValue in apply(newValue) })) {
+                Text(model.label)
+            }
+            .disabled(!available)
+            if !available {
+                Text(SettingsText.resource("settings.privacy.unavailable"))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            } else if let permission = controller.privacyDeniedPermission {
+                Text(SettingsText.resource("settings.privacy.needsPermission"))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Button {
+                    controller.openSystemSettings(for: permission)
+                } label: {
+                    Text(SettingsText.resource("settings.permission.openSystemSettings"))
+                }
+                .controlSize(.small)
+            }
+        }
+        .onAppear { isOn = model.binding.get() == .bool(true) }
+    }
+
+    private func apply(_ value: Bool) {
+        isOn = value
+        Task { try? await model.binding.set(.bool(value)) }
     }
 }
 

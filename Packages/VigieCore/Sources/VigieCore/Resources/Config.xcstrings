@@ -446,25 +446,25 @@
       }
     },
     "config.privacy.auto": {
-      "comment": "Settings label for the config key privacy.auto.",
+      "comment": "Settings label for the config key privacy.auto (UX-DR98).",
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Detect screen sharing"
+            "value": "Automatic (when sharing or recording)"
           }
         }
       }
     },
     "config.privacy.force": {
-      "comment": "Settings label for the config key privacy.force.",
+      "comment": "Settings label for the config key privacy.force (UX-DR98).",
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Always private"
+            "value": "Force on"
           }
         }
       }

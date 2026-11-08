@@ -1417,6 +1417,30 @@
         }
       }
     },
+    "settings.privacy.unavailable": {
+      "comment": "Settings › General line under the disabled automatic Privacy mode row.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Screen sharing can't be detected on this macOS version."
+          }
+        }
+      }
+    },
+    "settings.privacy.needsPermission": {
+      "comment": "Settings › General line when automatic Privacy mode lacks the Screen Recording permission.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Automatic detection needs Screen Recording access. Force on still works."
+          }
+        }
+      }
+    },
     "settings.section.privacy": {
       "comment": "Settings › General section heading for the privacy keys.",
       "extractionState": "manual",

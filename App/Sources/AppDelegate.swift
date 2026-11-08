@@ -37,6 +37,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var settings: SettingsController?
     private var appTopics: AppTopics?
     private var hostConfig: HostConfigBridge?
+    private var privacyConfig: PrivacyConfigBridge?
     private var stashService: StashServiceProvider?
     private var privacy: CorePrivacyService?
     private var isShuttingDown = false
@@ -168,7 +169,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let hostLink = NotchHostLink()
 
         // Privacy mode (Story 21.2, AD-24): one state for the host, the Notifier outputs and every module.
-        let privacy = makePrivacy()
+        let privacy = CorePrivacyService()
         self.privacy = privacy
 
         // Notifier (AD-13): config rules, Focus modes, peek / system outputs, action routing.
@@ -356,6 +357,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let hostConfig = HostConfigBridge(store: configStore, host: host)
         hostConfig.start()
         self.hostConfig = hostConfig
+        // Privacy mode (Story 21.3): `[privacy] force` / `auto` from the config store. Detection is manual-only
+        // (spike 21.1), so `auto` has no effect and Settings shows the row disabled.
+        let privacyConfig = PrivacyConfigBridge(store: configStore, privacy: privacy, permissions: coordinator)
+        privacyConfig.start()
+        self.privacyConfig = privacyConfig
 
         // `vigie reload` and `app.expand` (Story 4.3, AD-21). Subscribed before the server's queue is released.
         let appTopics = AppTopics(
@@ -395,19 +401,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         #endif
     }
 
-    /// `-VigiePrivacy YES` (Debug) forces Privacy mode on at launch (Story 21.2), until the Settings toggle
-    /// arrives with Story 21.3.
-    private func makePrivacy() -> CorePrivacyService {
-        let privacy = CorePrivacyService()
-        #if DEBUG
-            if UserDefaults.standard.bool(forKey: "VigiePrivacy") {
-                logger.info("Privacy mode forced on by -VigiePrivacy")
-                privacy.setForced(true)
-            }
-        #endif
-        return privacy
-    }
-
     /// `-VigieSimulateFocus YES` (Debug) pretends a Focus mode is on, to exercise FR17 without changing the
     /// system's Focus.
     private func makeFocusMonitor(log: Logger) -> any FocusModeMonitor {
@@ -445,6 +438,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         settings?.close()
         hostConfig?.stop()
+        privacyConfig?.stop()
         notchHost?.stop()
         hotkeyBridge?.stop()
         setupProblems?.stop()

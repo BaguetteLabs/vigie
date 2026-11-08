@@ -133,7 +133,7 @@ update_checks = true          # scripts installed from a link, at most once a da
 # launch_at_login = false
 #
 # [privacy]
-# auto = true                 # detect screen sharing/recording
+# auto = false                # detect screen sharing/recording (not available yet: manual only)
 # force = false               # always on
 #
 # [sync]

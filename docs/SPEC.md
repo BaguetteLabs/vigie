@@ -719,7 +719,7 @@ min_severity = "info"         # info | warn | critical; also per kind in [module
 cooldown = "0s"               # per dedupe_key
 
 [privacy]                     # local (§10.3)
-auto = true                   # detect screen sharing/recording; manual toggle where impossible. Default true only if the detection method needs no new permission; false if it needs Screen Recording (A88, method from spike 21.1)
+auto = false                  # detect screen sharing/recording; manual toggle where impossible. Default true only if the detection method needs no new permission; false if it needs Screen Recording (A88, method from spike 21.1)
 force = false                 # always on
 
 [home]

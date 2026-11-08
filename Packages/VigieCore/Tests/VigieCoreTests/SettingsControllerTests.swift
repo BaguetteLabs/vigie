@@ -444,6 +444,7 @@ struct SettingsHarness {
             ]
         }
         await h.controller.home.setOn("x", true)
+        h.controller.privacy = CorePrivacyService()
         h.controller.open(pane: "general")
         let window = try #require(h.controller.window)
         for pane in ["general", "custom.test", "calendar.test", "display", "activity", "home"] {
