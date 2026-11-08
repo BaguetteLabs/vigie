@@ -41,13 +41,16 @@ public struct PeekAction: Sendable, Equatable {
     public static let primaryShortcut = "⌥⌘↵"
     /// `⌥⌘⌫`, the secondary (Dismiss) peek shortcut.
     public static let secondaryShortcut = "⌥⌘⌫"
+    /// `⌥⌘Z`, the break peek's Snooze (Story 20.4); bound only while the break peek is visible.
+    public static let tertiaryShortcut = "⌥⌘Z"
 
     public static func == (lhs: PeekAction, rhs: PeekAction) -> Bool {
         lhs.label.key == rhs.label.key && lhs.shortcut == rhs.shortcut
     }
 }
 
-/// What a peek shows: kicker (state line, shown uppercase), title, optional detail and up to two actions.
+/// What a peek shows: kicker (state line, shown uppercase), title, optional detail and up to two actions; the
+/// break peek alone has a third (``tertiary``, DESIGN "Break": the one scoped exception).
 /// Built by the Notch Host from an alert; the view draws it with the theme.
 public struct PeekContent: Sendable, Equatable {
     public var kind: PeekKind
@@ -59,13 +62,16 @@ public struct PeekContent: Sendable, Equatable {
     @Sensitive public var body: String?
     public var primary: PeekAction?
     public var secondary: PeekAction?
+    /// The break peek's Snooze, drawn left of ``secondary`` under a full-width primary in the 196px column.
+    public var tertiary: PeekAction?
     /// The alert hue: rim, beacon, kicker and dwell line (`status-blocked`, `quota-warning`, `iris-1`...).
     public var accentRole: ColorRole
 
     public init(
         kind: PeekKind, kicker: String, title: String, body: String? = nil, primary: PeekAction? = nil,
-        secondary: PeekAction? = nil, accentRole: ColorRole
+        secondary: PeekAction? = nil, accentRole: ColorRole, tertiary: PeekAction? = nil
     ) {
+        self.tertiary = tertiary
         self.kind = kind
         self.kicker = kicker
         self.title = title
@@ -143,6 +149,17 @@ extension Theme {
         return (leading, trailing)
     }
 
+    /// `components.peek-panel.columns-three-actions` (`44px 1fr 196px`), the break peek's wider action column.
+    public var peekColumnsThreeActions: (leading: CGFloat, trailing: CGFloat) {
+        let lengths = (component("peek-panel", "columns-three-actions") ?? "")
+            .split(separator: " ")
+            .map { ThemeValue.length(String($0)) }
+        guard lengths.count == 3, let leading = lengths[0], let trailing = lengths[2] else {
+            return (PeekMetrics.beaconColumn, PeekMetrics.threeActionColumn)
+        }
+        return (leading, trailing)
+    }
+
     /// The neutral drop shadow of the panel (`components.peek-panel.shadow-dark` / `shadow-light`), first
     /// layer only.
     public var peekShadow: PeekShadow {
@@ -190,6 +207,7 @@ enum PeekMetrics {
     static let height: CGFloat = 150
     static let beaconColumn: CGFloat = 44
     static let actionColumn: CGFloat = 176
+    static let threeActionColumn: CGFloat = 196
     /// Beacon glyph (`components.status-glyph.size-large`).
     static let glyph: CGFloat = 26
     /// Beacon tint and inner ring opacities (A), alert-hue tint from below (A dark).

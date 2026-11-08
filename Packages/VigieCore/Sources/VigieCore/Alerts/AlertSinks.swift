@@ -56,6 +56,12 @@ public struct PeekToken: Hashable, Sendable {
     /// A more urgent alert replaced the alert's visible peek (Story 3.9). It keeps its state and peeks again only
     /// through its reminder.
     func peekPreempted(_ alert: ActiveAlert)
+    /// The user took the break peek's third action, Snooze (`⌥⌘Z` or a click, Story 20.4). The peek has retracted.
+    func peekTertiary(_ alert: ActiveAlert, intent: UserIntent)
+}
+
+extension PeekSinkEvents {
+    public func peekTertiary(_ alert: ActiveAlert, intent: UserIntent) {}
 }
 
 /// macOS notification output.

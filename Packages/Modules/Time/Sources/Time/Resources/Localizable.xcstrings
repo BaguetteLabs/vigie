@@ -336,6 +336,258 @@
           }
         }
       }
+    },
+    "time.break.alert.name" : {
+      "comment" : "Break reminder alert title, first part (Story 20.4): Time for a break / 5 min break.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Time for a break"
+          }
+        }
+      }
+    },
+    "time.break.length" : {
+      "comment" : "Break reminder alert title, second part. Arg = break length in minutes.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld min break"
+          }
+        }
+      }
+    },
+    "time.break.alert.body" : {
+      "comment" : "Break reminder alert detail (UX-DR90): Focused 1 h 40 min since 13:05. %1$@ = work time, %2$@ = cycle start clock time.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Focused %1$@ since %2$@"
+          }
+        }
+      }
+    },
+    "time.duration.minutes" : {
+      "comment" : "A work duration under an hour: 55 min.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld min"
+          }
+        }
+      }
+    },
+    "time.duration.hours" : {
+      "comment" : "A work duration of whole hours: 2 h.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld h"
+          }
+        }
+      }
+    },
+    "time.duration.hoursMinutes" : {
+      "comment" : "A work duration: 1 h 40 min.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld h %2$lld min"
+          }
+        }
+      }
+    },
+    "time.break.label" : {
+      "comment" : "Time tab row label of a due or running break.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Break"
+          }
+        }
+      }
+    },
+    "time.break.kind" : {
+      "comment" : "Time tab row kind of a break. Arg = break length in minutes. Uppercase.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld MIN BREAK"
+          }
+        }
+      }
+    },
+    "time.break.subline.due" : {
+      "comment" : "Time tab row subline while a break is due. Uppercase.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "BREAK DUE"
+          }
+        }
+      }
+    },
+    "time.break.a11y.due" : {
+      "comment" : "VoiceOver label of the due break row and of the closed-notch BREAK DUE readout. Arg = minutes.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Break due, %lld minute break"
+          }
+        }
+      }
+    },
+    "time.break.a11y.running" : {
+      "comment" : "VoiceOver label of a running break row: Break, 3 minutes, 12 seconds left, ends 14:52.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Break, %1$@ left, ends %2$@"
+          }
+        }
+      }
+    },
+    "time.setting.breaks.enabled" : {
+      "comment" : "Settings › Time: turns break reminders on (off by default).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Break reminders"
+          }
+        }
+      }
+    },
+    "time.setting.breaks.enabled.help" : {
+      "comment" : "Settings help for break reminders.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "After a stretch of work at the Mac, remind me to take a break. Time away from the Mac counts as a break on its own."
+          }
+        }
+      }
+    },
+    "time.setting.breaks.work" : {
+      "comment" : "Settings › Time: time at the Mac before a break reminder (default 55 min).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Work before a break"
+          }
+        }
+      }
+    },
+    "time.setting.breaks.work.help" : {
+      "comment" : "Settings help for the work length.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only time at the Mac counts; time away does not."
+          }
+        }
+      }
+    },
+    "time.setting.breaks.length" : {
+      "comment" : "Settings › Time: break length (default 5 min).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Break length"
+          }
+        }
+      }
+    },
+    "time.setting.breaks.length.help" : {
+      "comment" : "Settings help for the break length.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Being away for this long counts as a break."
+          }
+        }
+      }
+    },
+    "time.setting.breaks.awayAfter" : {
+      "comment" : "Settings › Time: how long without input before Vigie counts you as away (default 90 s).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Away after"
+          }
+        }
+      }
+    },
+    "time.setting.breaks.awayAfter.help" : {
+      "comment" : "Settings help for away_after.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No keyboard, mouse or trackpad input for this long, or a locked or sleeping screen, counts as away. Vigie never uses the camera."
+          }
+        }
+      }
+    },
+    "time.setting.breaks.style" : {
+      "comment" : "Settings › Time: peek (the break peek, and its sound if set) or quiet (no peek, no sound: BREAK DUE on the closed notch).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Break reminder strength"
+          }
+        }
+      }
+    },
+    "time.setting.breaks.style.help" : {
+      "comment" : "Settings help for the break reminder strength.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "peek shows the break peek; quiet shows only BREAK DUE in the closed notch, with no sound."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

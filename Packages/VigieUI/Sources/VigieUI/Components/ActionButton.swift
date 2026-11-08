@@ -16,17 +16,22 @@ public struct ActionButton: View {
     private let accessibilityText: String
     private let shortcut: String?
     private let role: Role
+    private let compact: Bool
     private let action: @MainActor () -> Void
 
     /// - Parameters:
     ///   - label: catalog string from the caller's package (`Open settings`).
     ///   - shortcut: key glyphs shown on the right (`⌥⌘↵`, `⌘,`), or nil.
+    ///   - compact: the half-width buttons of the break peek's three-action column (mockup `.acts3`: 11px side
+    ///     padding, the label may shrink a little before it truncates).
     public init(
         label: LocalizedStringResource,
         shortcut: String? = nil,
         role: Role = .secondary,
+        compact: Bool = false,
         action: @escaping @MainActor () -> Void
     ) {
+        self.compact = compact
         self.label = Text(label)
         self.accessibilityText = AccessibilityLabel.control(String(localized: label), shortcut: shortcut)
         self.shortcut = shortcut
@@ -36,7 +41,7 @@ public struct ActionButton: View {
 
     public var body: some View {
         Button(action: action) { label }
-            .buttonStyle(ActionButtonStyle(shortcut: shortcut, role: role))
+            .buttonStyle(ActionButtonStyle(shortcut: shortcut, role: role, compact: compact))
             .focusEffectDisabled()
             .accessibilityLabel(Text(verbatim: accessibilityText))
     }
@@ -45,9 +50,12 @@ public struct ActionButton: View {
 struct ActionButtonStyle: ButtonStyle {
     let shortcut: String?
     let role: ActionButton.Role
+    var compact = false
 
     func makeBody(configuration: Configuration) -> some View {
-        ActionButtonBody(label: configuration.label, shortcut: shortcut, role: role, isPressed: configuration.isPressed)
+        ActionButtonBody(
+            label: configuration.label, shortcut: shortcut, role: role, compact: compact,
+            isPressed: configuration.isPressed)
     }
 }
 
@@ -58,31 +66,25 @@ private struct ActionButtonBody: View {
     let label: ButtonStyleConfiguration.Label
     let shortcut: String?
     let role: ActionButton.Role
+    let compact: Bool
     let isPressed: Bool
 
     var body: some View {
         let height = theme.actionHeight
         let shape = RoundedRectangle(cornerRadius: theme.actionRadius(height: height), style: .continuous)
-        HStack(spacing: theme.spacing(.actionGap)) {
-            label
-                .font(theme.font(.action))
-                .tracking(theme.tracking(.action))
-                .textCase(.uppercase)
-                .foregroundStyle(theme.color(labelRole))
-                .lineLimit(1)
-                .allowsTightening(true)
-                // Label left, shortcut right, one action gap between them at least (`FOCUS TERMINAL ⌥⌘↵`
-                // fits the 176px peek action column).
-                .frame(maxWidth: shortcut == nil ? nil : .infinity, alignment: .leading)
-            if let shortcut {
-                Text(verbatim: shortcut)
-                    .font(theme.font(.body))
-                    .foregroundStyle(theme.color(.ink2))
-                    .lineLimit(1)
-                    .fixedSize()
+        Group {
+            if compact {
+                // Half-width (break peek): label and shortcut when both fit whole, else the label alone, so
+                // `SNOOZE 5M` never truncates (the mockup draws it without its keys; VoiceOver still reads them).
+                ViewThatFits(in: .horizontal) {
+                    content(fitted: true, showsShortcut: true)
+                    content(fitted: false, showsShortcut: false)
+                }
+            } else {
+                content(fitted: false, showsShortcut: true)
             }
         }
-        .padding(.horizontal, theme.spacing(.tabPaddingX))
+        .padding(.horizontal, compact ? ComponentMetrics.compactActionPaddingX : theme.spacing(.tabPaddingX))
         .frame(height: height)
         .background(fill, in: shape)
         .overlay {
@@ -106,6 +108,33 @@ private struct ActionButtonBody: View {
         )
         .contentShape(shape)
         .opacity(isPressed ? ComponentMetrics.pressedOpacity : (isEnabled ? 1 : ComponentMetrics.disabledOpacity))
+    }
+
+    /// The label (left) and the shortcut glyphs (right). `fitted` keeps the label at its ideal width, for
+    /// `ViewThatFits` to measure.
+    @ViewBuilder private func content(fitted: Bool, showsShortcut: Bool) -> some View {
+        let shortcut = showsShortcut ? shortcut : nil
+        HStack(spacing: theme.spacing(compact ? .glyphGap : .actionGap)) {
+            label
+                .font(theme.font(.action))
+                .tracking(theme.tracking(.action))
+                .textCase(.uppercase)
+                .foregroundStyle(theme.color(labelRole))
+                .lineLimit(1)
+                .allowsTightening(true)
+                .minimumScaleFactor(compact && !fitted ? ComponentMetrics.compactActionMinimumScale : 1)
+                .fixedSize(horizontal: fitted, vertical: false)
+                // Label left, shortcut right, one action gap between them at least (`FOCUS TERMINAL ⌥⌘↵`
+                // fits the 176px peek action column).
+                .frame(maxWidth: shortcut == nil ? nil : .infinity, alignment: .leading)
+            if let shortcut {
+                Text(verbatim: shortcut)
+                    .font(theme.font(.body))
+                    .foregroundStyle(theme.color(.ink2))
+                    .lineLimit(1)
+                    .fixedSize()
+            }
+        }
     }
 
     private var labelRole: ColorRole {

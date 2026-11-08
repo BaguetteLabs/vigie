@@ -30,6 +30,9 @@ extension TimeModule {
         case .reset: reset(id)
         case .remove: remove(id)
         case .dismiss: dismiss(id)
+        case .startBreak: startBreak()
+        case .snooze: snoozeBreak()
+        case .skip: skipBreak()
         }
     }
 
@@ -45,7 +48,7 @@ extension TimeModule {
         let items = board.sorted(now: date)
         return TimeTabSnapshot(
             quickStart: TimeQuickStart(presets: presets, pomodoroLengths: Self.pomodoroLengths),
-            rows: items.map { TimeFormat.row($0, now: date, calendar: calendar) },
+            rows: breakRows(now: date) + items.map { TimeFormat.row($0, now: date, calendar: calendar) },
             runningCount: items.filter { !$0.isEnded }.count,
             selectedID: selectedID,
             canUndo: undoSlot != nil,

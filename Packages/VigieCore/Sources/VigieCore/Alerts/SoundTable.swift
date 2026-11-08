@@ -4,7 +4,8 @@ import Foundation
 ///
 /// Notifier is the only reader of `[sounds]`. Kinds missing here (`shelf.expiring`, `setup.problem`, pace) never
 /// play a sound, whatever their rule's outputs say. The `time.*` and `calendar.reminder` keys default to `"off"`
-/// (SPEC §11); Settings › Sounds lists `timer_end` since Story 20.2, the other two join with 20.4 and 13.4.
+/// (SPEC §11); Settings › Sounds lists `timer_end` since Story 20.2 and `break_reminder` since 20.4;
+/// `calendar_reminder` joins with 13.4.
 public enum SoundTable {
     /// Alert kind → `[sounds]` key.
     public static let keys: [String: String] = [
@@ -22,9 +23,9 @@ public enum SoundTable {
         "blocked", "failed", "done", "quota_warning", "timer_end", "break_reminder", "calendar_reminder",
     ]
 
-    /// The keys Settings › Sounds lists today (Story 10.2; `timer_end` Story 20.2); the other two join with their
-    /// stories.
-    public static let settingsKeys = ["blocked", "failed", "done", "quota_warning", "timer_end"]
+    /// The keys Settings › Sounds lists today (Story 10.2; `timer_end` Story 20.2, `break_reminder` 20.4);
+    /// `calendar_reminder` joins with its story.
+    public static let settingsKeys = ["blocked", "failed", "done", "quota_warning", "timer_end", "break_reminder"]
 
     /// The `[sounds]` key `kind` plays, or nil when the kind has no sound.
     public static func key(for kind: String) -> String? { keys[kind] }

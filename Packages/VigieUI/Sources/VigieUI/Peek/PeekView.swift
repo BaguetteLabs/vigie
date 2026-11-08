@@ -17,19 +17,23 @@ public struct PeekView: View {
     private let isRevealed: Bool
     private let onPrimary: @MainActor () -> Void
     private let onSecondary: @MainActor () -> Void
+    private let onTertiary: @MainActor () -> Void
     private let onHover: @MainActor (Bool) -> Void
 
     /// - Parameters:
     ///   - onPrimary: the `⌥⌘↵` action (clicking the primary button; the global shortcut is Story 3.3).
-    ///   - onSecondary: the `⌥⌘⌫` action (Dismiss).
+    ///   - onSecondary: the `⌥⌘⌫` action (Dismiss; Skip on the break peek).
+    ///   - onTertiary: the break peek's `⌥⌘Z` (Snooze).
     public init(
         content: PeekContent,
         dwell: PeekDwellState,
         isRevealed: Bool = true,
         onPrimary: @escaping @MainActor () -> Void = {},
         onSecondary: @escaping @MainActor () -> Void = {},
-        onHover: @escaping @MainActor (Bool) -> Void = { _ in }
+        onHover: @escaping @MainActor (Bool) -> Void = { _ in },
+        onTertiary: @escaping @MainActor () -> Void = {}
     ) {
+        self.onTertiary = onTertiary
         self.content = content
         self.dwell = dwell
         self.isRevealed = isRevealed
@@ -85,7 +89,7 @@ public struct PeekView: View {
     }
 
     private var grid: some View {
-        let columns = theme.peekColumns
+        let columns = content.tertiary == nil ? theme.peekColumns : theme.peekColumnsThreeActions
         return HStack(spacing: theme.spacing(.peekColumnGap)) {
             if content.kind.showsBeacon {
                 PeekBeacon(kind: content.kind, accent: content.accentRole)
@@ -128,12 +132,29 @@ public struct PeekView: View {
         .accessibilityElement(children: .combine)
     }
 
+    /// Two actions stacked; the break peek's three as the primary across the column over Snooze and Skip side
+    /// by side, same secondary styling (DESIGN "Break").
     private var actions: some View {
         VStack(spacing: theme.spacing(.actionGap)) {
             if let primary = content.primary {
                 ActionButton(label: primary.label, shortcut: primary.shortcut, role: .primary, action: onPrimary)
             }
-            if let secondary = content.secondary {
+            if let tertiary = content.tertiary {
+                HStack(spacing: theme.spacing(.actionGap)) {
+                    ActionButton(
+                        label: tertiary.label, shortcut: tertiary.shortcut, role: .secondary, compact: true,
+                        action: onTertiary
+                    )
+                    .frame(maxWidth: .infinity)
+                    if let secondary = content.secondary {
+                        ActionButton(
+                            label: secondary.label, shortcut: secondary.shortcut, role: .secondary, compact: true,
+                            action: onSecondary
+                        )
+                        .frame(maxWidth: .infinity)
+                    }
+                }
+            } else if let secondary = content.secondary {
                 ActionButton(
                     label: secondary.label, shortcut: secondary.shortcut, role: .secondary, action: onSecondary)
             }

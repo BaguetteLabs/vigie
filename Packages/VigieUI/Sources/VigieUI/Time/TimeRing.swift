@@ -10,22 +10,28 @@ public struct TimeRing: View {
     private let dashed: Bool
     private let dimmed: Bool
     private let size: CGFloat?
+    private let lineWidth: CGFloat?
 
     /// - Parameters:
     ///   - fractionLeft: 0...1, the arc drawn.
     ///   - dashed: a break arc.
     ///   - dimmed: `ink-3` instead of the accent (paused, Away).
     ///   - size: the diameter; nil reads `components.time-ring.size-row`.
-    public init(fractionLeft: Double, dashed: Bool = false, dimmed: Bool = false, size: CGFloat? = nil) {
+    ///   - lineWidth: the stroke; nil for the 2px row stroke (the closed ring uses 1.6px).
+    public init(
+        fractionLeft: Double, dashed: Bool = false, dimmed: Bool = false, size: CGFloat? = nil,
+        lineWidth: CGFloat? = nil
+    ) {
         self.fractionLeft = min(max(fractionLeft, 0), 1)
         self.dashed = dashed
         self.dimmed = dimmed
         self.size = size
+        self.lineWidth = lineWidth
     }
 
     public var body: some View {
         let side = size ?? TimeMetrics.ringSize(theme)
-        let line = TimeMetrics.ringStroke
+        let line = lineWidth ?? TimeMetrics.ringStroke
         let inset = line / 2
         ZStack {
             Circle()
@@ -112,6 +118,13 @@ enum TimeMetrics {
     static let chipBorderDim = 0.08
     static let quickBorder = 0.18
     static let pomodoroBorder = 0.38
+    /// The primary chip's accent fill (`START BREAK`).
+    static let primaryChipFill = 0.10
+    /// The closed-notch ring (`components.time-ring` on the left wing, mockup 23px) and its stroke.
+    static let wingRingSize: CGFloat = 23
+    static let wingRingStroke: CGFloat = 1.6
+    /// The ring-only break-due triangle against the ring diameter.
+    static let triangleShare: CGFloat = 0.3
     static let quickGlassTop = 0.07
     static let quickGlassBottom = 0.01
     static let fieldFill = 0.035

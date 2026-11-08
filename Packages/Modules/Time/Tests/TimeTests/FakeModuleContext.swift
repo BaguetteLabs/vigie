@@ -14,6 +14,7 @@ final class FakeModuleContext: ModuleContext, @unchecked Sendable {
     let fakeNotifier = RecordingNotifier()
     let fakeHost = RecordingHost()
     let fakePower = FakePower()
+    let fakeAway = FakeAway()
 
     init(settings: [String: any SettingValue] = [:], storage: FakeStorage = FakeStorage()) {
         fakeSettings = FakeSettings(values: settings)
@@ -33,7 +34,7 @@ final class FakeModuleContext: ModuleContext, @unchecked Sendable {
     var clipboard: any ClipboardService { NoClipboard() }
     var executables: any ExecutableResolver { NoExecutables() }
     var privacy: any PrivacyService { NoPrivacy() }
-    var away: any AwayService { NoAway() }
+    var away: any AwayService { fakeAway }
     var activity: any ActivityLog { NoActivity() }
     var integrations: any IntegrationInstaller { NoIntegrations() }
     var log: Logger { Logger(subsystem: "test", category: "time") }
@@ -176,12 +177,25 @@ final class RecordingNotifier: Notifier, @unchecked Sendable {
     private let lock = NSLock()
     private var events: [NotifierEvent] = []
     private var resolvedCount = 0
+    private var resolvedIndices: Set<Int> = []
     var posted: [NotifierEvent] { lock.withLock { events } }
     var resolved: Int { lock.withLock { resolvedCount } }
+    /// Posts not resolved yet.
+    var unresolved: [NotifierEvent] {
+        lock.withLock { events.enumerated().filter { !resolvedIndices.contains($0.offset) }.map(\.element) }
+    }
 
     func post(_ event: NotifierEvent) -> AlertHandle {
-        lock.withLock { events.append(event) }
-        return AlertHandle { [weak self] in self?.lock.withLock { self?.resolvedCount += 1 } }
+        let index = lock.withLock {
+            events.append(event)
+            return events.count - 1
+        }
+        return AlertHandle { [weak self] in
+            self?.lock.withLock {
+                guard let self, self.resolvedIndices.insert(index).inserted else { return }
+                self.resolvedCount += 1
+            }
+        }
     }
 }
 
@@ -243,9 +257,32 @@ struct NoPrivacy: PrivacyService {
     var changes: AsyncStream<Bool> { AsyncStream { $0.finish() } }
 }
 
-struct NoAway: AwayService {
-    var presence: Presence { .present }
-    var changes: AsyncStream<Presence> { AsyncStream { $0.finish() } }
+/// `context.away` the test drives: `send` sets the presence and yields it; counts open streams.
+final class FakeAway: AwayService, @unchecked Sendable {
+    private let lock = NSLock()
+    private var current: Presence = .present
+    private var continuations: [UUID: AsyncStream<Presence>.Continuation] = [:]
+
+    var presence: Presence { lock.withLock { current } }
+    var subscribers: Int { lock.withLock { continuations.count } }
+
+    var changes: AsyncStream<Presence> {
+        let (stream, continuation) = AsyncStream<Presence>.makeStream()
+        let id = UUID()
+        lock.withLock { continuations[id] = continuation }
+        continuation.onTermination = { [weak self] _ in
+            self?.lock.withLock { _ = self?.continuations.removeValue(forKey: id) }
+        }
+        return stream
+    }
+
+    func send(_ presence: Presence) {
+        let all = lock.withLock {
+            current = presence
+            return Array(continuations.values)
+        }
+        for continuation in all { continuation.yield(presence) }
+    }
 }
 
 struct NoActivity: ActivityLog {

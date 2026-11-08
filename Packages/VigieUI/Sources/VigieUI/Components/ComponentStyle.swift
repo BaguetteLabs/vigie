@@ -11,6 +11,10 @@ enum ComponentMetrics {
     static let cornerMark: CGFloat = 7
     /// Action button height when `components.action-button.height` is missing.
     static let actionHeight: CGFloat = 30
+    /// The break peek's half-width actions (mockup 1.7e `.acts3 .act`): 11px side padding, and how far the label
+    /// may shrink before it truncates.
+    static let compactActionPaddingX: CGFloat = 11
+    static let compactActionMinimumScale: CGFloat = 0.8
     /// Setup card max width when `components.setup-card.max-width` is missing.
     static let setupMaxWidth: CGFloat = 380
     /// Empty-state sentence max width (mock: 320px).

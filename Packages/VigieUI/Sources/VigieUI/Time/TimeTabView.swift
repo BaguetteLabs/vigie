@@ -259,7 +259,7 @@ public struct TimeTabView: View {
         let control: TimeRowModel.Control? =
             switch press.key {
             case .space where press.modifiers.isEmpty: row.pauseToggle
-            case .return where press.modifiers.isEmpty: row.isEnded ? .dismiss : nil
+            case .return where press.modifiers.isEmpty: row.returnControl
             case .delete where command: row.isEnded ? .dismiss : .remove
             case KeyEquivalent("r") where command: row.controls.contains(.reset) ? .reset : nil
             default: nil
@@ -325,12 +325,15 @@ struct TimeRowView: View {
                 ForEach(row.controls, id: \.self) { control in
                     TimeChip(
                         label: L10n.resource("time.action.\(control.rawValue)"),
-                        dim: control == .remove
+                        shortcut: control.isPrimary && isSelected ? "↵" : nil,
+                        dim: control == .remove, primary: control.isPrimary
                     ) { perform(control) }
                     .focused(focus, equals: .chip(row.id, control))
                 }
             }
-            .frame(width: TimeMetrics.controlsWidth, alignment: .trailing)
+            // The break-due row's three chips are wider than the 196px column: the column grows into the label.
+            .fixedSize(horizontal: true, vertical: false)
+            .frame(minWidth: TimeMetrics.controlsWidth, alignment: .trailing)
         }
         .padding(.horizontal, theme.spacing(.glyphGap))
         .frame(height: theme.componentLength("time-tab", "item-row-height") ?? TimeMetrics.rowHeight)
@@ -355,6 +358,10 @@ struct TimeRowView: View {
             CountdownTrack(fractionElapsed: elapsed)
         case .ended:
             TimeRing(fractionLeft: 1)
+        case .breakDue:
+            TimeRing(fractionLeft: 1, dashed: true)
+        case .breakRing(let fraction):
+            TimeRing(fractionLeft: fraction, dashed: true)
         }
     }
 }
@@ -436,6 +443,8 @@ struct TimeChip: View {
     let label: LocalizedStringResource
     var shortcut: String?
     var dim = false
+    /// The primary chip (`START BREAK`): accent text and border.
+    var primary = false
     var height: CGFloat = TimeMetrics.chipHeight
     let action: @MainActor () -> Void
 
@@ -443,7 +452,7 @@ struct TimeChip: View {
         Button(action: action) {
             Text(label)
         }
-        .buttonStyle(TimeChipStyle(shortcut: shortcut, dim: dim, height: height))
+        .buttonStyle(TimeChipStyle(shortcut: shortcut, dim: dim, height: height, primary: primary))
         .focusable(interactions: .activate)
         .focusEffectDisabled()
         .accessibilityLabel(Text(verbatim: AccessibilityLabel.control(String(localized: label), shortcut: shortcut)))
@@ -454,11 +463,12 @@ struct TimeChipStyle: ButtonStyle {
     let shortcut: String?
     let dim: Bool
     let height: CGFloat
+    var primary = false
 
     func makeBody(configuration: Configuration) -> some View {
         TimeChipBody(
-            label: configuration.label, shortcut: shortcut, dim: dim, height: height, isPressed: configuration.isPressed
-        )
+            label: configuration.label, shortcut: shortcut, dim: dim, height: height, primary: primary,
+            isPressed: configuration.isPressed)
     }
 }
 
@@ -469,10 +479,12 @@ private struct TimeChipBody: View {
     let shortcut: String?
     let dim: Bool
     let height: CGFloat
+    let primary: Bool
     let isPressed: Bool
 
     var body: some View {
         let shape = RoundedRectangle(cornerRadius: theme.actionRadius(height: height), style: .continuous)
+        let accent = TimeMetrics.accentRole(theme)
         HStack(spacing: theme.spacing(.glyphGap)) {
             label
             if let shortcut {
@@ -482,16 +494,21 @@ private struct TimeChipBody: View {
         .font(TimeMetrics.font(theme, .action, size: TimeMetrics.chipSize))
         .tracking(theme.tracking(.action))
         .textCase(.uppercase)
-        .foregroundStyle(theme.color(dim ? .ink2 : .ink1))
+        .foregroundStyle(theme.color(primary ? TimeMetrics.accentTextRole(theme) : (dim ? .ink2 : .ink1)))
         .lineLimit(1)
         .fixedSize()
         .padding(.horizontal, TimeMetrics.chipPaddingX)
         .frame(height: height)
+        .background {
+            if primary { shape.fill(theme.color(accent).opacity(TimeMetrics.primaryChipFill)) }
+        }
         .overlay {
             shape.strokeBorder(
-                theme.usesCornerMarks
-                    ? theme.borderColor(.structure, opacity: ComponentMetrics.structBorder)
-                    : theme.borderColor(.ink1, opacity: dim ? TimeMetrics.chipBorderDim : TimeMetrics.chipBorder),
+                primary
+                    ? theme.borderColor(accent, opacity: TimeMetrics.pomodoroBorder)
+                    : theme.usesCornerMarks
+                        ? theme.borderColor(.structure, opacity: ComponentMetrics.structBorder)
+                        : theme.borderColor(.ink1, opacity: dim ? TimeMetrics.chipBorderDim : TimeMetrics.chipBorder),
                 lineWidth: theme.a11y.hairlineWidth)
         }
         .overlay {

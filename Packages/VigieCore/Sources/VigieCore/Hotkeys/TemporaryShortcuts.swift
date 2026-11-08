@@ -12,7 +12,7 @@ public protocol TemporaryShortcutBackend: HotkeyBinding {
 }
 
 /// The peek shortcuts `⌥⌘↵` (primary) and `⌥⌘⌫` (Dismiss), bound only while a peek is visible (Story 3.3,
-/// AD-13, Conventions: Hotkeys).
+/// AD-13, Conventions: Hotkeys), plus `⌥⌘Z` (Snooze) only while the break peek is visible (Story 20.4).
 ///
 /// **Mechanism.** They are Carbon hotkeys through KeyboardShortcuts (AD-16), under the fixed names
 /// `peek:primary` and `peek:secondary`, outside `HotkeyCenter`: they are not user-configurable, take no part in
@@ -30,12 +30,16 @@ public final class TemporaryShortcuts {
     public static let primaryName = "peek.primary"
     /// Full name of the Dismiss shortcut.
     public static let secondaryName = "peek.secondary"
+    /// Full name of the break peek's Snooze shortcut (`peek:tertiary`, Story 20.4).
+    public static let tertiaryName = "peek.tertiary"
     // Known valid: Option + Command on a non-typing key.
     // swiftlint:disable force_try
     /// `⌥⌘↵`.
     public static let primarySpec = try! HotkeySpec(parsing: "opt+cmd+return")
     /// `⌥⌘⌫`.
     public static let secondarySpec = try! HotkeySpec(parsing: "opt+cmd+delete")
+    /// `⌥⌘Z`, registered only while the break peek is visible.
+    public static let tertiarySpec = try! HotkeySpec(parsing: "opt+cmd+z")
     // swiftlint:enable force_try
 
     /// True while the shortcuts are bound.
@@ -56,13 +60,16 @@ public final class TemporaryShortcuts {
         self.others = others
     }
 
-    /// Binds `⌥⌘↵` to `primary` (when given) and `⌥⌘⌫` to `secondary`, replacing any earlier handlers. Each press
-    /// mints a `UserIntent` for the handler.
+    /// Binds `⌥⌘↵` to `primary` (when given), `⌥⌘⌫` to `secondary` and `⌥⌘Z` to `tertiary` (the break peek only,
+    /// when given), replacing any earlier handlers. Each press mints a `UserIntent` for the handler.
     public func activate(
         primary: (@MainActor (UserIntent) -> Void)?,
-        secondary: @escaping @MainActor (UserIntent) -> Void
+        secondary: @escaping @MainActor (UserIntent) -> Void,
+        tertiary: (@MainActor (UserIntent) -> Void)? = nil
     ) {
-        let specs: Set<HotkeySpec> = primary == nil ? [Self.secondarySpec] : [Self.primarySpec, Self.secondarySpec]
+        var specs: Set<HotkeySpec> = [Self.secondarySpec]
+        if primary != nil { specs.insert(Self.primarySpec) }
+        if tertiary != nil { specs.insert(Self.tertiarySpec) }
         let clashing = Set(
             others().filter { specs.contains($0.value) && !$0.key.hasPrefix("peek.") }.map(\.key))
         let release = suspended.subtracting(clashing)
@@ -81,6 +88,13 @@ public final class TemporaryShortcuts {
         backend.bind(name: Self.secondaryName, shortcut: Self.secondarySpec) {
             secondary(UserIntentMinter.mint(source: .hotkey(Self.secondaryName)))
         }
+        if let tertiary {
+            backend.bind(name: Self.tertiaryName, shortcut: Self.tertiarySpec) {
+                tertiary(UserIntentMinter.mint(source: .hotkey(Self.tertiaryName)))
+            }
+        } else {
+            backend.unbind(name: Self.tertiaryName)
+        }
         isActive = true
     }
 
@@ -89,6 +103,7 @@ public final class TemporaryShortcuts {
         guard isActive else { return }
         backend.unbind(name: Self.primaryName)
         backend.unbind(name: Self.secondaryName)
+        backend.unbind(name: Self.tertiaryName)
         if !suspended.isEmpty { backend.resume(names: suspended) }
         suspended = []
         isActive = false

@@ -136,7 +136,8 @@ struct PeekRootView: View {
                 isRevealed: model.isRevealed,
                 onPrimary: { model.handlers?.primary() },
                 onSecondary: { model.handlers?.secondary() },
-                onHover: { model.handlers?.hover($0) }
+                onHover: { model.handlers?.hover($0) },
+                onTertiary: { model.handlers?.tertiary() }
             )
             .id(model.presentation)
             .padding(.horizontal, model.shadowMargin)

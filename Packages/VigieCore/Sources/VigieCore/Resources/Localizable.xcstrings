@@ -2016,6 +2016,18 @@
           }
         }
       }
+    },
+    "peek.action.snooze": {
+      "comment": "Break peek third action (Story 20.4): re-raise the break reminder in 5 minutes. Shown uppercase.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Snooze 5m"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

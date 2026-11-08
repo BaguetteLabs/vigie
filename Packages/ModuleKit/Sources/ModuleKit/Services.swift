@@ -214,6 +214,18 @@ public struct NotifierEvent: Hashable, Sendable {
     public let metrics: [String: Double]
     /// Short uppercase category the peek shows in the kicker (`SETUP · <CATEGORY>`); used by `setup.problem`.
     public let category: String?
+    /// The peek's Skip action (`⌥⌘⌫`), performed after the Notifier cancels the reminder; break peek only
+    /// (`time.break_reminder`, Story 20.4). Other peeks' second button is Dismiss, with no module action.
+    public let secondaryAction: AlertAction?
+    /// The break peek's third action, Snooze (`⌥⌘Z`), performed after the Notifier cancels the reminder (Story
+    /// 20.4). Only `time.break_reminder` peeks draw it (DESIGN: the one three-action peek).
+    public let tertiaryAction: AlertAction?
+    /// Replaces the kind's kicker (the Pomodoro source of a break, `POMODORO · LONG BREAK`, Story 20.5).
+    /// Not sensitive: like the kind label it is core-style state copy.
+    public let kicker: String?
+    /// Delivered without peek and sound whatever the rule says (`breaks.style = "quiet"`, Story 20.4). The alert
+    /// is still active (reminders, `after_focus` and the module's state see it) but never peeks or plays.
+    public let quiet: Bool
 
     public init(
         kind: String,
@@ -223,8 +235,16 @@ public struct NotifierEvent: Hashable, Sendable {
         action: AlertAction? = nil,
         dedupeKey: String? = nil,
         metrics: [String: Double] = [:],
-        category: String? = nil
+        category: String? = nil,
+        secondaryAction: AlertAction? = nil,
+        tertiaryAction: AlertAction? = nil,
+        kicker: String? = nil,
+        quiet: Bool = false
     ) {
+        self.secondaryAction = secondaryAction
+        self.tertiaryAction = tertiaryAction
+        self.kicker = kicker
+        self.quiet = quiet
         self.category = category
         self.kind = kind
         self.severity = severity
@@ -512,7 +532,8 @@ public protocol ActivityLog: Sendable {
 
 /// Adopted by a module whose alerts carry `.module(id:actionID:payload:)` actions (AD-13). The Notifier delivers
 /// the action back to the posting module when the user takes it: the peek's primary action (`⌥⌘↵` or a click)
-/// or a click on the macOS notification. `intent` is present when the action came from a user gesture, so the
+/// or a click on the macOS notification, and the break peek's Skip and Snooze (`secondaryAction`,
+/// `tertiaryAction`). `intent` is present when the action came from a user gesture, so the
 /// module may pass it to focus-taking host calls; it is nil otherwise. Modules without alert actions need not
 /// adopt it.
 @MainActor

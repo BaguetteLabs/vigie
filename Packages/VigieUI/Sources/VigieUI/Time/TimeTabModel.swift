@@ -13,6 +13,10 @@ public struct TimeRowModel: Identifiable, Equatable, Sendable {
         case track(fractionElapsed: Double)
         /// An ended item: a full ring in the accent.
         case ended
+        /// A due break (Story 20.4): a full dashed ring in the accent.
+        case breakDue
+        /// A break running: the dashed arc is the share left.
+        case breakRing(fractionLeft: Double)
     }
 
     /// A row chip, in display order.
@@ -22,6 +26,15 @@ public struct TimeRowModel: Identifiable, Equatable, Sendable {
         case reset
         case remove
         case dismiss
+        /// Break due (Story 20.4): the primary chip, `↵` on the selected row.
+        case startBreak
+        /// Break due: re-raise in 5 minutes.
+        case snooze
+        /// Break due or running: no break, a new work cycle.
+        case skip
+
+        /// Drawn as the primary chip (Time accent).
+        public var isPrimary: Bool { self == .startBreak }
     }
 
     public let id: UUID
@@ -52,6 +65,12 @@ public struct TimeRowModel: Identifiable, Equatable, Sendable {
         self.controls = controls
         self.isEnded = isEnded
         self.accessibilityLabel = accessibilityLabel
+    }
+
+    /// `↵` on the selected row: Dismiss on an ended item, Start break on a due break.
+    public var returnControl: Control? {
+        if controls.contains(.startBreak) { return .startBreak }
+        return isEnded ? .dismiss : nil
     }
 
     /// Space on the selected row: Pause or Resume, when the row has it.

@@ -2604,6 +2604,54 @@
           }
         }
       }
+    },
+    "time.action.startBreak" : {
+      "comment" : "Time tab chip on a due break (Story 20.4): starts the break. Uppercase.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "START BREAK"
+          }
+        }
+      }
+    },
+    "time.action.snooze" : {
+      "comment" : "Time tab chip on a due break: re-raises the break reminder in 5 minutes. Uppercase.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SNOOZE 5M"
+          }
+        }
+      }
+    },
+    "time.action.skip" : {
+      "comment" : "Time tab chip on a due or running break: no break, a new work cycle. Uppercase.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SKIP"
+          }
+        }
+      }
+    },
+    "time.closed.breakDue" : {
+      "comment" : "Closed-notch Time readout label under the break length while a break is due (Story 20.4). Shown uppercase.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "BREAK DUE"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

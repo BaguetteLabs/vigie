@@ -30,14 +30,19 @@ public enum PeekContentMapper {
         let secondary = PeekAction(
             label: resource(kind == .breakDue ? "peek.action.skip" : "peek.action.dismiss"),
             shortcut: PeekAction.secondaryShortcut)
+        // DESIGN "Break": the one three-action peek, Snooze 5m (`⌥⌘Z`) beside Skip; only the break kind draws it.
+        let tertiary =
+            kind == .breakDue && alert.event.tertiaryAction != nil
+            ? PeekAction(label: resource("peek.action.snooze"), shortcut: PeekAction.tertiaryShortcut) : nil
         return PeekContent(
             kind: kind,
-            kicker: kicker(kind, category: alert.event.category),
+            kicker: alert.event.kicker ?? kicker(kind, category: alert.event.category),
             title: alert.event.title,
             body: alert.event.body,
             primary: primary,
             secondary: secondary,
-            accentRole: accentRole(kind, theme: theme))
+            accentRole: accentRole(kind, theme: theme),
+            tertiary: tertiary)
     }
 
     /// The VoiceOver announcement (UX-DR93): kicker, title and the primary shortcut with its action, e.g.

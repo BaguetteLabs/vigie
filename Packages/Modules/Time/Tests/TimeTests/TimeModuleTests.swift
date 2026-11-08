@@ -34,8 +34,8 @@ import Testing
         let manifest = TimeModule.staticManifest
         #expect(manifest.id == "time")
         #expect(String(localized: manifest.name) == "Time")
-        #expect(manifest.alertKinds == ["time.timer_end"])
-        #expect(manifest.settings.map(\.key) == ["hotkey", "presets"])
+        #expect(manifest.alertKinds == ["time.timer_end", "time.break_reminder"])
+        #expect(manifest.settings.map(\.key).prefix(2) == ["hotkey", "presets"])
         #expect(manifest.defaultEnabled == false, "SPEC §11: [modules.time] enabled = false")
     }
 

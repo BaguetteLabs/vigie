@@ -10,11 +10,14 @@ public struct PeekHandlers {
     public var primary: @MainActor () -> Void
     public var secondary: @MainActor () -> Void
     public var hover: @MainActor (Bool) -> Void
+    /// The break peek's Snooze (Story 20.4).
+    public var tertiary: @MainActor () -> Void
 
     public init(
         primary: @escaping @MainActor () -> Void, secondary: @escaping @MainActor () -> Void,
-        hover: @escaping @MainActor (Bool) -> Void
+        hover: @escaping @MainActor (Bool) -> Void, tertiary: @escaping @MainActor () -> Void = {}
     ) {
+        self.tertiary = tertiary
         self.primary = primary
         self.secondary = secondary
         self.hover = hover
@@ -111,7 +114,8 @@ public final class PeekPresenter: PeekSink {
     ///   - enabled: `closed.peek` (and a per-module peek setting when one exists) for the posting module.
     ///   - pointer: the pointer location in global coordinates.
     ///   - announce: posts a VoiceOver announcement; by default ``postAnnouncement(_:)``.
-    ///   - shortcuts: `⌥⌘↵` / `⌥⌘⌫`, bound while a peek is visible (Story 3.3); nil binds none.
+    ///   - shortcuts: `⌥⌘↵` / `⌥⌘⌫` (and the break peek's `⌥⌘Z`), bound while a peek is visible (Story 3.3,
+    ///     20.4); nil binds none.
     ///   - isSuppressed: true while no peek may show (the expanded view is open, Story 3.9).
     ///   - isDropDisplayOpen: true while the drop display is open: peeks wait (Story 9.1); call ``resume()``
     ///     when it closes.
@@ -234,6 +238,15 @@ public final class PeekPresenter: PeekSink {
         events?.peekDismissed(alert)
     }
 
+    /// The break peek's `⌥⌘Z` or a click on Snooze (Story 20.4): retracts the peek and has ``events`` cancel the
+    /// reminder and route the snooze to the module.
+    public func performTertiary(intent: UserIntent? = nil) {
+        guard let alert = visible, visibleContent?.tertiary != nil else { return }
+        let intent = intent ?? UserIntentMinter.mint(source: .peekAction)
+        retractVisible()
+        events?.peekTertiary(alert, intent: intent)
+    }
+
     // MARK: Announcement
 
     /// Posts `text` as a high-priority VoiceOver announcement; VoiceOver and keyboard focus do not move.
@@ -313,12 +326,19 @@ public final class PeekPresenter: PeekSink {
             handlers: PeekHandlers(
                 primary: { [weak self] in self?.performPrimary() },
                 secondary: { [weak self] in self?.performSecondary() },
-                hover: { [weak self] in self?.hoverChanged($0) }))
+                hover: { [weak self] in self?.hoverChanged($0) },
+                tertiary: { [weak self] in self?.performTertiary() }))
         var primary: (@MainActor (UserIntent) -> Void)?
         if content.primary != nil {
             primary = { [weak self] intent in self?.performPrimary(intent: intent) }
         }
-        shortcuts?.activate(primary: primary, secondary: { [weak self] _ in self?.performSecondary() })
+        // `⌥⌘Z` exists only while the break peek is visible (Story 20.4).
+        var tertiary: (@MainActor (UserIntent) -> Void)?
+        if content.tertiary != nil {
+            tertiary = { [weak self] intent in self?.performTertiary(intent: intent) }
+        }
+        shortcuts?.activate(
+            primary: primary, secondary: { [weak self] _ in self?.performSecondary() }, tertiary: tertiary)
         announce(PeekContentMapper.announcement(for: content.privacy(privacy?.isActive ?? false)))
         startDwell()
     }

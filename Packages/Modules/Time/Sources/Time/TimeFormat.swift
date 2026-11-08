@@ -129,6 +129,60 @@ enum TimeFormat {
             "time.alert.body", clock(item.startedAt, calendar: calendar), clock(item.endsAt, calendar: calendar))
     }
 
+    // MARK: Breaks (Story 20.4)
+
+    static func wholeMinutes(_ seconds: TimeInterval) -> Int { max(0, Int((seconds / 60).rounded())) }
+
+    /// `Time for a break / 5 min break` (UX-DR90's `<cycles> / <length> min break`, with the reminder's name).
+    static func breakTitle(length: TimeInterval) -> String {
+        TimeText.format(
+            "time.alert.title", TimeText.string("time.break.alert.name"),
+            TimeText.format("time.break.length", wholeMinutes(length)))
+    }
+
+    /// `Focused 55 min since 13:05`, `Focused 1 h 40 min since 13:05`.
+    static func breakBody(worked: TimeInterval, since: Date, calendar: Calendar) -> String {
+        TimeText.format("time.break.alert.body", focusDuration(worked), clock(since, calendar: calendar))
+    }
+
+    /// `55 min`, `1 h 40 min`, `2 h`.
+    static func focusDuration(_ seconds: TimeInterval) -> String {
+        let minutes = wholeMinutes(seconds)
+        let hours = minutes / 60
+        let rest = minutes % 60
+        if hours == 0 { return TimeText.format("time.duration.minutes", rest) }
+        if rest == 0 { return TimeText.format("time.duration.hours", hours) }
+        return TimeText.format("time.duration.hoursMinutes", hours, rest)
+    }
+
+    /// "Break due, 5 minute break".
+    static func breakDueAccessibility(length: TimeInterval) -> String {
+        TimeText.format("time.break.a11y.due", wholeMinutes(length))
+    }
+
+    static func breakDueRow(id: UUID, length: TimeInterval) -> TimeRowModel {
+        TimeRowModel(
+            id: id, label: TimeText.string("time.break.label"),
+            kind: TimeText.format("time.break.kind", wholeMinutes(length)), value: value(length),
+            subline: TimeText.string("time.break.subline.due"), visual: .breakDue,
+            controls: [.startBreak, .snooze, .skip], isEnded: false,
+            accessibilityLabel: breakDueAccessibility(length: length))
+    }
+
+    static func breakRunningRow(
+        id: UUID, length: TimeInterval, endsAt: Date, now: Date, calendar: Calendar
+    ) -> TimeRowModel {
+        let remaining = max(0, endsAt.timeIntervalSince(now))
+        let fraction = length > 0 ? remaining / length : 0
+        let label = TimeText.string("time.break.label")
+        return TimeRowModel(
+            id: id, label: label, kind: TimeText.format("time.break.kind", wholeMinutes(length)),
+            value: value(remaining), subline: TimeText.format("time.subline.ends", clock(endsAt, calendar: calendar)),
+            visual: .breakRing(fractionLeft: fraction), controls: [.skip], isEnded: false,
+            accessibilityLabel: TimeText.format(
+                "time.break.a11y.running", spoken(remaining), clock(endsAt, calendar: calendar)))
+    }
+
     private static func formatter(_ format: String, calendar: Calendar) -> DateFormatter {
         let formatter = DateFormatter()
         formatter.locale = TimeText.catalogLocale

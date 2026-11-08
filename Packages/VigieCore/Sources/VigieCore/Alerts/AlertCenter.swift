@@ -201,10 +201,13 @@ public final class AlertCenter {
         {
             return drop(module: module, event: event, id: id, reason: .cooldown, at: timestamp)
         }
-        let outputs = rule.effectiveOutputs(for: event.severity, kind: event.kind)
+        var outputs = rule.effectiveOutputs(for: event.severity, kind: event.kind)
         if outputs.isEmpty {
             return drop(module: module, event: event, id: id, reason: .noOutputs, at: timestamp)
         }
+        // `breaks.style = "quiet"` (Story 20.4): never a peek or a sound, but the alert stays active (possibly
+        // with no output at all) so its module's state, reminders and `after_focus` treat it as unresolved.
+        if event.quiet { outputs.subtract(Self.focusWithheld) }
 
         lastDelivered[cooldownKey] = timestamp
         let alert = ActiveAlert(id: id, module: module, event: event, outputs: outputs, postedAt: timestamp)
@@ -423,10 +426,21 @@ extension AlertCenter: PeekSinkEvents {
         activate(alert, intent: intent)
     }
 
-    /// `⌥⌘⌫` or Dismiss: cancels the reminder (``dismiss(_:)``).
+    /// `⌥⌘⌫` or Dismiss: cancels the reminder (``dismiss(_:)``). The break peek's Skip then performs the event's
+    /// `secondaryAction`.
     public func peekDismissed(_ alert: ActiveAlert) {
         peekTokens[alert.id] = nil
         dismiss(alert.id)
+        if let action = alert.event.secondaryAction {
+            perform(action, for: alert, intent: UserIntentMinter.mint(source: .peekAction))
+        }
+    }
+
+    /// The break peek's Snooze (`⌥⌘Z`): cancels the reminder like Dismiss, then performs `tertiaryAction`.
+    public func peekTertiary(_ alert: ActiveAlert, intent: UserIntent) {
+        peekTokens[alert.id] = nil
+        dismiss(alert.id)
+        if let action = alert.event.tertiaryAction { perform(action, for: alert, intent: intent) }
     }
 
     /// A blocked or failed peek replaced this alert's peek: recorded as `.preempted`; the alert stays active and

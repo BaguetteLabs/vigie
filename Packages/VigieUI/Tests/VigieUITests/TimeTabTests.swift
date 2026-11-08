@@ -63,7 +63,7 @@ import Testing
         #expect(L10n.format("time.running.title", 3) == "RUNNING · 3")
         #expect(
             TimeRowModel.Control.allCases.map { L10n.string("time.action.\($0.rawValue)") }
-                == ["PAUSE", "RESUME", "RESET", "REMOVE", "DISMISS"])
+                == ["PAUSE", "RESUME", "RESET", "REMOVE", "DISMISS", "START BREAK", "SNOOZE 5M", "SKIP"])
         #expect(String(localized: VigieCopy.nothingRunning.label) == "NOTHING RUNNING")
         #expect(L10n.format("time.quickStart.preset.a11y", 5) == "Start a 5 minute timer")
     }
@@ -123,5 +123,82 @@ import Testing
                 to: URL(fileURLWithPath: directory).appendingPathComponent(
                     "peek-timer-end-\(variant)-\(look.rawValue).png"))
         }
+    }
+
+    // MARK: Breaks (Story 20.4)
+
+    static let breakDue = TimeRowModel(
+        id: UUID(), label: "Break", kind: "15 MIN BREAK", value: "15:00", subline: "BREAK DUE", visual: .breakDue,
+        controls: [.startBreak, .snooze, .skip], accessibilityLabel: "Break due, 15 minute break")
+
+    @Test func breakDueRowStartsTheBreakOnReturn() {
+        #expect(Self.breakDue.returnControl == .startBreak)
+        #expect(Self.ended.returnControl == .dismiss)
+        #expect(Self.tea.returnControl == nil)
+        #expect(TimeRowModel.Control.startBreak.isPrimary)
+        #expect(!TimeRowModel.Control.skip.isPrimary)
+        #expect(L10n.string("time.closed.breakDue") == "BREAK DUE")
+    }
+
+    static func write(_ image: CGImage, _ name: String) throws {
+        guard let directory = ProcessInfo.processInfo.environment["VIGIE_RENDER_DIR"] else { return }
+        let data = try #require(NSBitmapImageRep(cgImage: image).representation(using: .png, properties: [:]))
+        try data.write(to: URL(fileURLWithPath: directory).appendingPathComponent(name))
+    }
+
+    /// The break peek (DESIGN "Break", mockup 1.7e (i)): dashed ring beacon, three actions in the 196px column.
+    @Test(arguments: looks)
+    func rendersTheBreakPeek(look: Look, variant: String) throws {
+        let theme = SessionsTabTests.theme(look, variant: variant)
+        let content = PeekContent(
+            kind: .breakDue, kicker: "Break · due", title: "Time for a break / 5 min break",
+            body: "Focused 55 min since 13:05",
+            primary: PeekAction(
+                label: LocalizedStringResource(stringLiteral: "Start break"), shortcut: PeekAction.primaryShortcut),
+            secondary: PeekAction(
+                label: LocalizedStringResource(stringLiteral: "Skip"), shortcut: PeekAction.secondaryShortcut),
+            accentRole: theme.usesCornerMarks ? .gold : .iris1,
+            tertiary: PeekAction(
+                label: LocalizedStringResource(stringLiteral: "Snooze 5m"), shortcut: PeekAction.tertiaryShortcut))
+        let margin = theme.peekShadow.margin
+        let view = PeekView(
+            content: content, dwell: PeekDwellState(total: .seconds(5), remaining: .seconds(3), isRunning: false)
+        )
+        .padding(.horizontal, margin)
+        .padding(.bottom, margin)
+        .background(look == .dark ? Color(white: 0.22) : Color(white: 0.85))
+        .vigieTheme(theme)
+        let renderer = ImageRenderer(content: view)
+        renderer.scale = 2
+        let image = try #require(renderer.cgImage)
+        #expect(SessionGlyphTests.inkedPixels(image) > 1000)
+        try Self.write(image, "peek-break-\(variant)-\(look.rawValue).png")
+    }
+
+    /// The closed-notch `BREAK DUE` readout (mockup 1.7e (ii)) on the band, readout and ring-only forms.
+    @Test(arguments: looks)
+    func rendersTheBreakDueReadout(look: Look, variant: String) throws {
+        let theme = SessionsTabTests.theme(look, variant: variant)
+        let view = HStack(spacing: 24) {
+            TimeBreakDueReadout(value: "15:00", accessibilityLabel: "Break due, 15 minute break")
+            TimeBreakDueReadout(value: "15:00", ringOnly: true, accessibilityLabel: "Break due, 15 minute break")
+        }
+        .padding(12)
+        .background(theme.color(.band))
+        .vigieTheme(theme)
+        let renderer = ImageRenderer(content: view)
+        renderer.scale = 3
+        let image = try #require(renderer.cgImage)
+        #expect(SessionGlyphTests.inkedPixels(image) > 200)
+        try Self.write(image, "closed-break-due-\(variant)-\(look.rawValue).png")
+    }
+
+    /// The tab in break-due state: the break row first (selected, `START BREAK ↵`), then a Timer.
+    @Test(arguments: looks)
+    func rendersTheBreakDueTab(look: Look, variant: String) throws {
+        let theme = SessionsTabTests.theme(look, variant: variant)
+        let snapshot = Self.snapshot([Self.breakDue, Self.tea], selected: Self.breakDue.id)
+        let view = TimeTabView(snapshot: { snapshot }, actions: TimeTabActions()).rendering(minutes: "")
+        _ = try SessionsTabTests.render(view, theme: theme, name: "time-break-due-\(variant)-\(look.rawValue)")
     }
 }
