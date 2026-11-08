@@ -274,7 +274,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             environment: environment, eventBus: eventBus, configStore: configStore,
             permissions: coordinator, hotkeyCenter: hotkeyCenter, alertCenter: alertCenter,
             activityStore: activityStore, executables: executables, secretStore: secretStore,
-            hostControl: { CoreHostControl(moduleID: $0, link: hostLink) })
+            hostControl: { CoreHostControl(moduleID: $0, link: hostLink) },
+            dropZones: CoreDropZoneDirectory(link: hostLink))
         let registry = ModuleRegistry(
             descriptors: descriptors,
             enablement: ConfigModuleEnablement(store: configStore),

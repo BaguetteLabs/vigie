@@ -5,6 +5,8 @@ import SwiftUI
 enum ComponentMetrics {
     /// 1px hairlines, rings and filaments.
     static let hairline: CGFloat = 1
+    /// How far a card meta may shrink when the card keeps its title whole.
+    static let metaMinimumScale: CGFloat = 0.5
     /// C inner corner marks: 7px arms.
     static let cornerMark: CGFloat = 7
     /// Action button height when `components.action-button.height` is missing.

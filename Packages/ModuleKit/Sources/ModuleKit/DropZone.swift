@@ -35,6 +35,9 @@ public struct DropZone: Identifiable, Sendable {
     /// When set, the host shows this transient readout on the left wing while the handler runs (Image to Text:
     /// `READING…`), until the handler's result replaces it.
     public let progressReadout: LocalizedStringResource?
+    /// Rows the Shelf tab's `SEND TO` card shows under the zone (Ask AI: `AGENT`, `FOLDER`, `⌥ FOLDER`; Story
+    /// 9.7). Empty for the other zones.
+    public let details: [DropZoneDetail]
 
     public init(
         id: String,
@@ -53,7 +56,8 @@ public struct DropZone: Identifiable, Sendable {
         style: DropZoneStyle = .standard,
         isEnabled: Bool = true,
         looseContent: Set<DropLooseContent> = [],
-        progressReadout: LocalizedStringResource? = nil
+        progressReadout: LocalizedStringResource? = nil,
+        details: [DropZoneDetail] = []
     ) {
         self.id = id
         self.label = label
@@ -72,22 +76,89 @@ public struct DropZone: Identifiable, Sendable {
         self.isEnabled = isEnabled
         self.looseContent = looseContent
         self.progressReadout = progressReadout
+        self.details = details
     }
 
     /// True when the zone takes items of these content types: every type conforms to one of `accepts`. An
     /// empty `accepts` takes anything; an empty `contentTypes` (nothing known yet) is taken only then.
     public func accepts(contentTypes: [UTType]) -> Bool {
-        if accepts.isEmpty { return true }
-        guard !contentTypes.isEmpty else { return false }
-        return contentTypes.allSatisfy { type in accepts.contains { type.conforms(to: $0) } }
+        DropAcceptance.accepts(accepts, contentTypes: contentTypes)
     }
 
     /// True when the zone takes this drag: with `loose` nil (files or promises), ``accepts(contentTypes:)``;
     /// with loose content, an empty `accepts` or a kind listed in ``looseContent``.
     public func accepts(contentTypes: [UTType], loose: DropLooseContent?) -> Bool {
-        guard let loose else { return accepts(contentTypes: contentTypes) }
+        DropAcceptance.accepts(accepts, looseContent: looseContent, contentTypes: contentTypes, loose: loose)
+    }
+}
+
+/// The acceptance rule shared by ``DropZone`` and ``DropZoneSummary``.
+enum DropAcceptance {
+    static func accepts(_ accepts: [UTType], contentTypes: [UTType]) -> Bool {
+        if accepts.isEmpty { return true }
+        guard !contentTypes.isEmpty else { return false }
+        return contentTypes.allSatisfy { type in accepts.contains { type.conforms(to: $0) } }
+    }
+
+    static func accepts(
+        _ accepts: [UTType], looseContent: Set<DropLooseContent>, contentTypes: [UTType], loose: DropLooseContent?
+    ) -> Bool {
+        guard let loose else { return Self.accepts(accepts, contentTypes: contentTypes) }
         return accepts.isEmpty || looseContent.contains(loose)
     }
+}
+
+/// One row under a zone on the `SEND TO` card (`AGENT  Claude Code`, `FOLDER  File's folder`,
+/// `⌥ FOLDER  ~/Code`), formatted by the owning module.
+public struct DropZoneDetail: Identifiable, Equatable, Sendable {
+    /// How the row reacts to the drag modifiers while a drag hovers the zone.
+    public enum Emphasis: Equatable, Sendable {
+        /// Always drawn the same (`AGENT`).
+        case plain
+        /// Dimmed while these modifiers are held (`FOLDER` under ⌥).
+        case dimmedWhile(EventModifiers)
+        /// Lit in the accent while these modifiers are held (`⌥ FOLDER`).
+        case litWhile(EventModifiers)
+
+        public static func == (lhs: Emphasis, rhs: Emphasis) -> Bool {
+            switch (lhs, rhs) {
+            case (.plain, .plain): true
+            case (.dimmedWhile(let a), .dimmedWhile(let b)), (.litWhile(let a), .litWhile(let b)):
+                a.rawValue == b.rawValue
+            default: false
+            }
+        }
+    }
+
+    public let id: String
+    /// Uppercase row label (`AGENT`).
+    public let label: LocalizedStringResource
+    /// The value (`Claude Code`), already formatted.
+    public let value: String
+    public let emphasis: Emphasis
+
+    public init(id: String, label: LocalizedStringResource, value: String, emphasis: Emphasis = .plain) {
+        self.id = id
+        self.label = label
+        self.value = value
+        self.emphasis = emphasis
+    }
+
+    /// True when the row names the target for a drop with `modifiers`: plain rows always; a `dimmedWhile` row
+    /// unless its modifiers are held; a `litWhile` row only while they are.
+    public func isActive(modifiers: EventModifiers) -> Bool {
+        switch emphasis {
+        case .plain: true
+        case .dimmedWhile(let held): !modifiers.isSuperset(of: held)
+        case .litWhile(let held): modifiers.isSuperset(of: held)
+        }
+    }
+
+    public static func == (lhs: DropZoneDetail, rhs: DropZoneDetail) -> Bool {
+        lhs.id == rhs.id && lhs.value == rhs.value && lhs.emphasis == rhs.emphasis
+            && lhs.label.key == rhs.label.key
+    }
+
 }
 
 /// What a drag without any file carries (Story 9.2): the host reads, in this order, a web link, image data,

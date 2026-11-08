@@ -129,7 +129,8 @@ struct ShelfRowView: View {
             glyph.overlay {
                 ShelfDragHandle(
                     beginDrag: { actions.beginDrag(row.id) },
-                    endDrag: { operation in actions.endDrag(row.id, operation) }
+                    endDrag: { operation in actions.endDrag(row.id, operation) },
+                    badgeColor: theme.nsColor(theme.usesCornerMarks ? .gold : .iris2)
                 )
                 .frame(width: ShelfTabMetrics.dragHandleWidth)
                 .frame(maxHeight: .infinity)

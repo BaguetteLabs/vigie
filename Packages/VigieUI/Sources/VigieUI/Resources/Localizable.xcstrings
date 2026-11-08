@@ -1,6 +1,30 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "shelf.sendTo.releaseTarget" : {
+      "comment" : "Shelf tab SEND TO card, Ask AI zone while a stash item hovers it, under RELEASE TO ASK: agent, then folder (\"Claude Code in ~/Code\").",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ in %2$@"
+          }
+        }
+      }
+    },
+    "shelf.sendTo.noTargets" : {
+      "comment" : "Shelf tab SEND TO card when every zone is off (Ask AI module off, AirDrop and Image to Text off). Uppercase.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NO TARGETS"
+          }
+        }
+      }
+    },
     "usage.history.meta" : {
       "comment" : "Usage tab: meta of the 7-day history card.",
       "extractionState" : "manual",

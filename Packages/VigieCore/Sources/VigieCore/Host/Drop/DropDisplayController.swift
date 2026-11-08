@@ -239,29 +239,53 @@ public final class DropDisplayController {
                 logger.error("Drop on \(id, privacy: .public) delivered nothing; handler not called")
                 return nil
             }
-            let progress = zone.progressReadout.map { String(localized: $0) }
-            if let progress { self?.onProgress?(progress) }
-            let handler = zone.handler
-            let result = await Task.detached { await handler(payload) }.value
-            self?.lastDrop = (id, payload, result)
-            switch result {
-            case .accepted: logger.info("Drop on \(id, privacy: .public) accepted")
-            case .rejected: logger.info("Drop on \(id, privacy: .public) rejected by its module")
-            case .failed: logger.error("Drop on \(id, privacy: .public) failed")
-            case .readout(let text):
-                logger.info("Drop on \(id, privacy: .public) not taken; readout shown")
-                self?.onReadout?(String(localized: text))
-            case .confirmation(let readout):
-                logger.info("Drop on \(id, privacy: .public) confirmed; readout shown")
-                self?.onConfirmation?(
-                    .confirmation(
-                        String(localized: readout.text),
-                        announcement: readout.announcement.map { String(localized: $0) }, drains: readout.drains))
-            }
-            if progress != nil, !result.showsReadout { self?.onProgress?(nil) }
-            return result
+            return await self?.run(zone, payload: payload)
         }
         return true
+    }
+
+    /// Runs `zone`'s handler once, off the main actor, with the zone's progress readout meanwhile and the
+    /// result's readout or confirmation afterwards (every path: the drop display, the `SEND TO` card, the `Send
+    /// to` menu, `⌘V`, Services).
+    @discardableResult
+    public func run(_ zone: DropZone, payload: DropPayload) async -> DropResult {
+        let id = zone.id
+        let progress = zone.progressReadout.map { String(localized: $0) }
+        if let progress { onProgress?(progress) }
+        let handler = zone.handler
+        let result = await Task.detached { await handler(payload) }.value
+        lastDrop = (id, payload, result)
+        switch result {
+        case .accepted: logger.info("Drop on \(id, privacy: .public) accepted")
+        case .rejected: logger.info("Drop on \(id, privacy: .public) rejected by its module")
+        case .failed: logger.error("Drop on \(id, privacy: .public) failed")
+        case .readout(let text):
+            logger.info("Drop on \(id, privacy: .public) not taken; readout shown")
+            onReadout?(String(localized: text))
+        case .confirmation(let readout):
+            logger.info("Drop on \(id, privacy: .public) confirmed; readout shown")
+            onConfirmation?(
+                .confirmation(
+                    String(localized: readout.text),
+                    announcement: readout.announcement.map { String(localized: $0) }, drains: readout.drains))
+        }
+        if progress != nil, !result.showsReadout { onProgress?(nil) }
+        return result
+    }
+
+    /// Runs the enabled zone `zoneID` with `payload` (a path other than the drop display: Story 9.7, 9.10).
+    /// An unknown or disabled zone, or an empty payload, answers `.rejected` and runs nothing.
+    @discardableResult
+    public func perform(zoneID: String, payload: DropPayload) async -> DropResult {
+        guard let zone = enabledZones().first(where: { $0.id == zoneID }) else {
+            logger.info("Drop zone \(zoneID, privacy: .public) is not available; nothing run")
+            return .rejected
+        }
+        guard !payload.isEmpty else {
+            logger.error("Drop on \(zoneID, privacy: .public) delivered nothing; handler not called")
+            return .rejected
+        }
+        return await run(zone, payload: payload)
     }
 
     /// The drag session ended (dropped anywhere, or cancelled): retracts if still open.

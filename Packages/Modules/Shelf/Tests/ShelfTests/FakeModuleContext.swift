@@ -14,6 +14,7 @@ final class FakeModuleContext: ModuleContext, @unchecked Sendable {
     let fakeNotifier = RecordingNotifier()
     let fakeActivity = RecordingActivity()
     let fakeClipboard = RecordingClipboard()
+    let fakeDropZones = FakeDropZoneDirectory()
 
     init(settings: [String: any SettingValue] = [:], storage: FakeStorage = FakeStorage()) {
         fakeSettings = FakeSettings(values: settings)
@@ -36,6 +37,7 @@ final class FakeModuleContext: ModuleContext, @unchecked Sendable {
     var away: any AwayService { NoAway() }
     var activity: any ActivityLog { fakeActivity }
     var integrations: any IntegrationInstaller { NoIntegrations() }
+    var dropZones: any DropZoneDirectory { fakeDropZones }
     var log: Logger { Logger(subsystem: "test", category: "shelf") }
 }
 
@@ -292,5 +294,25 @@ final class RecordingRecycler: Recycler, @unchecked Sendable {
         if lock.withLock({ fail }) { throw Failure() }
         try FileManager.default.moveItem(at: url, to: trash.appendingPathComponent(url.lastPathComponent))
         lock.withLock { all.append(url) }
+    }
+}
+
+/// Zones to list; records every `perform` (zone, payload) and answers `result`. `onPerform` runs inside the
+/// call (to look at the security scope while the handler "runs").
+final class FakeDropZoneDirectory: DropZoneDirectory, @unchecked Sendable {
+    private let lock = NSLock()
+    var summaries: [DropZoneSummary] = []
+    var result: DropResult = .accepted
+    var onPerform: (@Sendable () -> Void)?
+    private var calls: [(zoneID: String, payload: DropPayload)] = []
+
+    var performed: [(zoneID: String, payload: DropPayload)] { lock.withLock { calls } }
+
+    @MainActor func zones() -> [DropZoneSummary] { lock.withLock { summaries } }
+
+    @MainActor func perform(zoneID: String, payload: DropPayload) async -> DropResult {
+        lock.withLock { calls.append((zoneID, payload)) }
+        onPerform?()
+        return lock.withLock { result }
     }
 }

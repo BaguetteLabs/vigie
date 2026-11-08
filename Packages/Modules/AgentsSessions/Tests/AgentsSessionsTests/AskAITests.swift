@@ -321,6 +321,22 @@ struct AskAITests {
                 == "Ask AI, Claude Code in the file's folder, Option for alternate folder")
     }
 
+    @Test("SEND TO card rows (Story 9.7): agent, folder dimmed by ⌥, alternate folder lit by ⌥")
+    func sendToDetails() async throws {
+        let details = try await start(["ask_cwd": "~/dev", "ask_alt_cwd": "~/Code"]).module.askZone.details
+        #expect(details.map(\.id) == ["agent", "folder", "alt_folder"])
+        #expect(details.map { String(localized: $0.label) } == ["AGENT", "FOLDER", "⌥ FOLDER"])
+        #expect(details.map(\.value) == ["Claude Code", "~/dev", "~/Code"])
+        #expect(details[0].emphasis == .plain)
+        #expect(details[1].emphasis == .dimmedWhile(.option))
+        #expect(details[2].emphasis == .litWhile(.option))
+        #expect(details.filter { $0.isActive(modifiers: []) }.map(\.id) == ["agent", "folder"])
+        #expect(details.filter { $0.isActive(modifiers: .option) }.map(\.id) == ["agent", "alt_folder"])
+        let defaults = try await start().module.askZone.details
+        #expect(defaults.map(\.value) == ["Claude Code", "File's folder", "~"])
+        #expect(try await start(["ask_cwd": "home"]).module.askZone.details[1].value == "Home folder")
+    }
+
     // MARK: Settings
 
     @Test("ask_* keys declared with their SPEC defaults (Romain's config keys)")

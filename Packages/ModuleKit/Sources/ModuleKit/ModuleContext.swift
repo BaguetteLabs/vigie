@@ -23,8 +23,15 @@ public protocol ModuleContext: Sendable {
     var activity: any ActivityLog { get }
     /// Applies agent config edits after the user confirms them (AD-22).
     var integrations: any IntegrationInstaller { get }
+    /// The running modules' drop zones, to show and invoke zones of other modules (Stories 9.7, 9.10).
+    /// Default: an empty directory.
+    var dropZones: any DropZoneDirectory { get }
     /// `os.Logger`, subsystem = bundle id, category = module id. Never log secrets or note content.
     var log: Logger { get }
+}
+
+extension ModuleContext {
+    public var dropZones: any DropZoneDirectory { EmptyDropZoneDirectory() }
 }
 
 /// Error thrown by a service that is declared but not available yet (or not in this build).

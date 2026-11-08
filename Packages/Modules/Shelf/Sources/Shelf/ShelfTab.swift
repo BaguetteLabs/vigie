@@ -11,7 +11,7 @@ extension ShelfModule {
         AnyView(
             ShelfTabView(
                 snapshot: { [weak self] in self?.tabSnapshot() ?? Self.placeholderSnapshot },
-                actions: tabActions))
+                actions: tabActions, sendTo: sendToCard))
     }
 
     var tabActions: ShelfTabActions {
@@ -102,6 +102,7 @@ extension ShelfModule {
             return nil
         }
         activeDrags[id] = access
+        draggingItemID = id
         return access.url
     }
 
@@ -110,6 +111,7 @@ extension ShelfModule {
     /// also loses its empty `items/<id>/` folder. A copy, a cancelled drag or a "move" that left the file in
     /// place keeps the item.
     func endDrag(_ id: UUID, _ operation: ShelfDragOperation) async {
+        if draggingItemID == id { draggingItemID = nil }
         guard let access = activeDrags.removeValue(forKey: id) else { return }
         let url = access.url
         defer { access.close() }

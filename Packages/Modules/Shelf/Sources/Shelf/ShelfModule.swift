@@ -133,6 +133,10 @@ public final class ShelfModule: NotchModule {
     @ObservationIgnored var log: Logger?
     /// `context.clipboard` (copy-only), for Image to Text.
     @ObservationIgnored var clipboard: (any ClipboardService)?
+    /// `context.dropZones`: the running modules' zones (the `SEND TO` card, Story 9.7).
+    @ObservationIgnored var zoneDirectory: (any DropZoneDirectory)?
+    /// The stash item being dragged out of the rows, between `beginDrag` and `endDrag`.
+    @ObservationIgnored var draggingItemID: UUID?
     @ObservationIgnored let recognizer: any TextRecognizing
     @ObservationIgnored private let airDropOverride: (any AirDropSharing)?
     @ObservationIgnored private var airDropStorage: (any AirDropSharing)?
@@ -167,6 +171,7 @@ public final class ShelfModule: NotchModule {
         activity = context.activity
         log = context.log
         clipboard = context.clipboard
+        zoneDirectory = context.dropZones
         let store = ShelfStore(storage: context.storage, scope: scope, log: context.log)
         self.store = store
         ttl = Self.resolvedTTL(context.settings)

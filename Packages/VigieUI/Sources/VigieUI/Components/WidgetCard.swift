@@ -32,6 +32,17 @@ public struct WidgetCard<Content: View>: View {
         self.init(title: Text(title), meta: meta.map { Text($0) }, content: content)
     }
 
+    /// True keeps the whole title and lets a long meta shrink instead (`SEND TO` · `LAST · 3 LINES · 14:48`
+    /// in a 212px card).
+    var keepsTitle = false
+
+    /// The title stays whole; the meta shrinks to fit.
+    public func keepingTitle() -> Self {
+        var copy = self
+        copy.keepsTitle = true
+        return copy
+    }
+
     public var body: some View {
         let shape = RoundedRectangle(cornerRadius: theme.radius(.card), style: .continuous)
         VStack(alignment: .leading, spacing: theme.spacing(.rowGap)) {
@@ -71,6 +82,7 @@ public struct WidgetCard<Content: View>: View {
                 .textCase(.uppercase)
                 .foregroundStyle(theme.color(.ink2))
                 .lineLimit(1)
+                .layoutPriority(keepsTitle ? 2 : 0)
                 .accessibilityAddTraits(.isHeader)
             Spacer(minLength: theme.spacing(.glyphGap))
             if let meta {
@@ -80,6 +92,7 @@ public struct WidgetCard<Content: View>: View {
                     .textCase(.uppercase)
                     .foregroundStyle(theme.color(.ink3))
                     .lineLimit(1)
+                    .minimumScaleFactor(keepsTitle ? ComponentMetrics.metaMinimumScale : 1)
                     // The title truncates first: the meta carries state (`STALE · HH:MM`, UX-DR99).
                     .layoutPriority(1)
             }

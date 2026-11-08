@@ -1,6 +1,42 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "shelf.sendTo.meta.defaults" : {
+      "comment" : "Shelf tab SEND TO card header meta before any Image to Text copy. Uppercase.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DEFAULTS"
+          }
+        }
+      }
+    },
+    "shelf.sendTo.meta.last" : {
+      "comment" : "Shelf tab SEND TO card header meta after an Image to Text copy: line count, then the time (14:48). Uppercase.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "LAST · %lld LINE · %@"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "LAST · %lld LINES · %@"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "shelf.expiring.body" : {
       "comment" : "macOS notification body (shelf.expiring). Arg = hours left.",
       "extractionState" : "manual",

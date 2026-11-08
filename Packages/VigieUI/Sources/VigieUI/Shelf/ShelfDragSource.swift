@@ -7,17 +7,20 @@ import SwiftUI
 struct ShelfDragHandle: NSViewRepresentable {
     let beginDrag: @MainActor () -> URL?
     let endDrag: @MainActor (ShelfDragOperation) -> Void
+    var badgeColor: NSColor = .controlAccentColor
 
     func makeNSView(context: Context) -> ShelfDragSourceView {
         let view = ShelfDragSourceView()
         view.beginDrag = beginDrag
         view.endDrag = endDrag
+        view.badgeColor = badgeColor
         return view
     }
 
     func updateNSView(_ view: ShelfDragSourceView, context: Context) {
         view.beginDrag = beginDrag
         view.endDrag = endDrag
+        view.badgeColor = badgeColor
     }
 }
 
@@ -29,7 +32,11 @@ final class ShelfDragSourceView: NSView, NSDraggingSource {
 
     var beginDrag: (@MainActor () -> URL?)?
     var endDrag: (@MainActor (ShelfDragOperation) -> Void)?
+    /// Draws the ⌥ badge (accent from the theme), set by the row.
+    var badgeColor: NSColor = .controlAccentColor
     private var pressed: NSEvent?
+    private var icon: NSImage?
+    private var showsOptionBadge = false
 
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
 
@@ -51,9 +58,11 @@ final class ShelfDragSourceView: NSView, NSDraggingSource {
         let item = NSDraggingItem(pasteboardWriter: url as NSURL)
         let point = convert(pressed.locationInWindow, from: nil)
         let side = Self.iconSide
+        let icon = NSWorkspace.shared.icon(forFile: url.path)
+        self.icon = icon
+        showsOptionBadge = false
         item.setDraggingFrame(
-            NSRect(x: point.x - side / 2, y: point.y - side / 2, width: side, height: side),
-            contents: NSWorkspace.shared.icon(forFile: url.path))
+            NSRect(x: point.x - side / 2, y: point.y - side / 2, width: side, height: side), contents: icon)
         let session = beginDraggingSession(with: [item], event: pressed, source: self)
         session.animatesToStartingPositionsOnCancelOrFail = true
     }
@@ -64,7 +73,49 @@ final class ShelfDragSourceView: NSView, NSDraggingSource {
         Self.operationMask
     }
 
+    /// ⌥ held while the drag is still over the panel (its only targets there are the `SEND TO` zones, where ⌥
+    /// means the alternate folder): the ghost carries an ⌥ badge (UX-DR32). Outside the panel Finder shows its
+    /// own copy badge.
+    func draggingSession(_ session: NSDraggingSession, movedTo screenPoint: NSPoint) {
+        let inside = window?.frame.contains(screenPoint) ?? false
+        let wanted = inside && NSEvent.modifierFlags.contains(.option)
+        guard wanted != showsOptionBadge, let icon else { return }
+        showsOptionBadge = wanted
+        let contents = wanted ? Self.badged(icon, color: badgeColor) : icon
+        session.enumerateDraggingItems(
+            options: [], for: self, classes: [NSPasteboardItem.self, NSURL.self], searchOptions: [:]
+        ) { item, _, _ in
+            item.setDraggingFrame(item.draggingFrame, contents: contents)
+        }
+    }
+
+    /// The file icon with a small ⌥ badge in its top-right corner.
+    static func badged(_ icon: NSImage, color: NSColor) -> NSImage {
+        let side = iconSide
+        return NSImage(size: NSSize(width: side, height: side), flipped: false) { rect in
+            icon.draw(in: rect)
+            let badge = NSRect(x: side - badgeSide, y: side - badgeSide, width: badgeSide, height: badgeSide)
+            color.setFill()
+            NSBezierPath(roundedRect: badge, xRadius: badgeRadius, yRadius: badgeRadius).fill()
+            let text = NSAttributedString(
+                string: optionGlyph,
+                attributes: [
+                    .font: NSFont.systemFont(ofSize: badgeFont, weight: .semibold), .foregroundColor: NSColor.black,
+                ])
+            let size = text.size()
+            text.draw(at: NSPoint(x: badge.midX - size.width / 2, y: badge.midY - size.height / 2))
+            return true
+        }
+    }
+
+    static let badgeSide: CGFloat = 14
+    static let badgeRadius: CGFloat = 4
+    static let badgeFont: CGFloat = 9
+    static let optionGlyph = "⌥"
+
     func draggingSession(_ session: NSDraggingSession, endedAt screenPoint: NSPoint, operation: NSDragOperation) {
+        icon = nil
+        showsOptionBadge = false
         endDrag?(Self.operation(operation))
     }
 

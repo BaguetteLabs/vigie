@@ -1,6 +1,66 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "agentsSessions.ask.detail.agent" : {
+      "comment" : "Shelf tab SEND TO card, Ask AI row label: the agent that starts. Uppercase.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AGENT"
+          }
+        }
+      }
+    },
+    "agentsSessions.ask.detail.folder" : {
+      "comment" : "Shelf tab SEND TO card, Ask AI row label: the default folder. Uppercase.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "FOLDER"
+          }
+        }
+      }
+    },
+    "agentsSessions.ask.detail.altFolder" : {
+      "comment" : "Shelf tab SEND TO card, Ask AI row label: the folder used with Option held. Uppercase.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⌥ FOLDER"
+          }
+        }
+      }
+    },
+    "agentsSessions.ask.folder.home.card" : {
+      "comment" : "Shelf tab SEND TO card, FOLDER row value when ask_cwd = home.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Home folder"
+          }
+        }
+      }
+    },
+    "agentsSessions.ask.folder.fileFolder.card" : {
+      "comment" : "Shelf tab SEND TO card, FOLDER row value when ask_cwd = file_folder.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "File's folder"
+          }
+        }
+      }
+    },
     "agentsSessions.a11y.noEventFor" : {
       "comment" : "VoiceOver detail for a stale agent session, after 'project, stale': a spoken duration, e.g. 'no event for 18 minutes'.",
       "extractionState" : "manual",

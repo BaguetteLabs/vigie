@@ -61,7 +61,25 @@ extension AgentsSessionsModule {
                 idle: LocalizedStringResource("agentsSessions.ask.hint", bundle: Self.bundle),
                 active: LocalizedStringResource("agentsSessions.ask.hintActive", bundle: Self.bundle)),
             style: .target,
-            isEnabled: isRunning)
+            isEnabled: isRunning,
+            details: askDetails)
+    }
+
+    /// The `SEND TO` card rows (Story 9.7): `AGENT Claude Code`, `FOLDER File's folder` (dimmed while ⌥ is held),
+    /// `⌥ FOLDER ~/Code` (lit while ⌥ is held).
+    var askDetails: [DropZoneDetail] {
+        [
+            DropZoneDetail(
+                id: "agent", label: LocalizedStringResource("agentsSessions.ask.detail.agent", bundle: Self.bundle),
+                value: askAgentName),
+            DropZoneDetail(
+                id: "folder", label: LocalizedStringResource("agentsSessions.ask.detail.folder", bundle: Self.bundle),
+                value: askFolderSetting.cardText(home: homeDirectory), emphasis: .dimmedWhile(.option)),
+            DropZoneDetail(
+                id: "alt_folder",
+                label: LocalizedStringResource("agentsSessions.ask.detail.altFolder", bundle: Self.bundle),
+                value: AskFolderSetting.abbreviated(askAltFolder, home: homeDirectory), emphasis: .litWhile(.option)),
+        ]
     }
 
     /// `ask_default_agent`.
@@ -248,6 +266,15 @@ enum AskFolderSetting: Equatable, Sendable {
         case .homeFolder: AgentsSessionsModule.string("agentsSessions.ask.folder.home")
         case .filesFolder: AgentsSessionsModule.string("agentsSessions.ask.folder.fileFolder")
         case .path(let path): Self.abbreviated(path, home: home).uppercased()
+        }
+    }
+
+    /// `Home folder`, `File's folder`, `~/dev` (the `SEND TO` card's `FOLDER` row).
+    func cardText(home: URL) -> String {
+        switch self {
+        case .homeFolder: AgentsSessionsModule.string("agentsSessions.ask.folder.home.card")
+        case .filesFolder: AgentsSessionsModule.string("agentsSessions.ask.folder.fileFolder.card")
+        case .path(let path): Self.abbreviated(path, home: home)
         }
     }
 

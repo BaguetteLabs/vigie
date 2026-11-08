@@ -22,6 +22,7 @@ public struct CoreModuleContext: ModuleContext {
     public let away: any AwayService
     public let activity: any ActivityLog
     public let integrations: any IntegrationInstaller
+    public let dropZones: any DropZoneDirectory
     public let log: Logger
 
     public init(
@@ -41,6 +42,7 @@ public struct CoreModuleContext: ModuleContext {
         away: any AwayService,
         activity: any ActivityLog,
         integrations: any IntegrationInstaller,
+        dropZones: any DropZoneDirectory = EmptyDropZoneDirectory(),
         log: Logger
     ) {
         self.settings = settings
@@ -59,6 +61,7 @@ public struct CoreModuleContext: ModuleContext {
         self.away = away
         self.activity = activity
         self.integrations = integrations
+        self.dropZones = dropZones
         self.log = log
     }
 }
@@ -92,6 +95,9 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
     public let hostControl: @MainActor @Sendable (ModuleID) -> any HostControl
     /// `context.clipboard` for every module: copy-only, on the general pasteboard (Story 9.9).
     public let clipboard: any ClipboardService
+    /// `context.dropZones` for every module (Story 9.7): a ``CoreDropZoneDirectory`` bound to the Notch Host in
+    /// the app; nil gives an empty directory.
+    public let dropZones: (any DropZoneDirectory)?
 
     /// - Parameters:
     ///   - environment: injected by the App (`AppEnvironment.current`); VigieCore never reads `.current`.
@@ -109,6 +115,7 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
     ///   - hostControl: builds `context.host` per module; defaults to a ``CoreHostControl`` on an unbound
     ///     ``NotchHostLink`` (host requests do nothing).
     ///   - clipboard: `context.clipboard`; defaults to a ``CoreClipboardService`` on the general pasteboard.
+    ///   - dropZones: `context.dropZones`; nil gives every module an empty directory.
     public init(
         environment: AppEnvironment, eventBus: InProcessEventBus, configStore: ConfigStore? = nil,
         permissions: PermissionsCoordinator? = nil, hotkeyCenter: HotkeyCenter? = nil,
@@ -117,7 +124,8 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
         power: CorePowerService? = nil,
         secretStore: KeychainSecretStore? = nil,
         hostControl: (@MainActor @Sendable (ModuleID) -> any HostControl)? = nil,
-        clipboard: (any ClipboardService)? = nil
+        clipboard: (any ClipboardService)? = nil,
+        dropZones: (any DropZoneDirectory)? = nil
     ) {
         self.environment = environment
         self.eventBus = eventBus
@@ -137,6 +145,7 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
         self.hostControl =
             hostControl ?? { @MainActor id in CoreHostControl(moduleID: id, link: NotchHostLink()) }
         self.clipboard = clipboard ?? CoreClipboardService()
+        self.dropZones = dropZones
     }
 
     public func makeContext(for manifest: ModuleManifest, tracker: RegistrationTracker) -> any ModuleContext {
@@ -167,6 +176,7 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
             activity: activity,
             integrations: CoreIntegrationInstaller(
                 environment: environment, configStore: configStore, activity: activity),
+            dropZones: dropZones ?? EmptyDropZoneDirectory(),
             log: log
         )
     }
