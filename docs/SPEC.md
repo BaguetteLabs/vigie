@@ -764,7 +764,7 @@ ask_alt_cwd = "~/Code"        # used when ⌥ is held on drop
 [modules."agents.sessions".local]   # local
 terminal = "warp"             # terminal | warp | ghostty | iterm
 
-[modules."agents.sessions".adapters.claude]
+[modules."agents.sessions".adapter.claude]   # singular: `adapters` above is the list (TOML forbids both on one key; 2026-11-08)
 usage_providers = ["local", "plan"]
 plan_auth = "token"           # local, per Account: token | claude_code (reuse Claude Code's login, after Allow)
 

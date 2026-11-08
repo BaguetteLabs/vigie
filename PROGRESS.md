@@ -109,7 +109,6 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 
 - Check `Packages/Modules/AgentsUsage/Sources/AgentsUsage/Resources/prices.json` against current Anthropic list prices (4.x rows written from memory).
 
-- AD-23 adapter settings path: TOML forbids `adapters` as both list and table. Code ships `[modules."agents.sessions".adapter.<id>]`. Confirm that name (or pick `enabled_adapters` for the list instead) and amend SPINE AD-23 + SPEC §11.
 - Test the live Claude plan endpoint once: Settings › Usage › Claude plan usage › Use Claude Code's login › Allow (macOS Keychain prompt), then check the status line / `log show … | grep "Plan usage"`. Patch `PLAN-ENDPOINT.md` + client + fixtures if the shape differs.
 
 - AD-23 wording after 7.10: (a) Accounts stored in the adapter table (`agents.sessions.adapter.<id>.account.*`) rather than under `agents.usage`; (b) Keychain owner `adapter.<id>` + per-Account key instead of an owner id that includes the Account. Confirm or ask for a change; then amend SPINE AD-23 and SPEC §8.2 (`CLAUDE_CONFIG_DIR`).
@@ -120,6 +119,8 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - Privacy detection checklist (`docs/decisions/spike-privacy-detection.md`): run the probe while sharing in Zoom / Meet / Teams / Slack huddle and recording with QuickTime / ⇧⌘5 / OBS; if titles match only while sharing, 21.3 can offer Automatic.
 
 ## Decisions log
+
+- 2026-11-08 — Romain: adapter table path stays `[modules."agents.sessions".adapter.<id>]` (singular) with `adapters` as the list. AD-23 and SPEC §11 amended.
 
 - 2026-11-07 — Working mode, signing, installs, remote: see "Working mode" above.
 - 2026-11-07 — XcodeGen chosen for the App target project (AD-2 keeps the target thin; no hand-edited pbxproj in git).
