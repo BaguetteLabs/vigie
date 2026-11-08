@@ -41,14 +41,17 @@ struct ProviderAdapter: AgentAdapter {
 
     @Test func manifestDeclaresTheRingSettings() {
         let settings = AgentsUsageModule.staticManifest.settings
-        #expect(settings.map(\.key) == ["priority", "order", "rings", "providers.claude.priority"])
+        let keys = settings.map(\.key)
+        #expect(Array(keys.prefix(3)) == ["priority", "order", "rings"])
+        #expect(keys.contains("providers.claude.priority"))
+        let byKey = Dictionary(uniqueKeysWithValues: settings.map { ($0.key, $0) })
         #expect(settings[0].kind == .int(default: 2, min: 1, max: 99))
         #expect(settings[1].kind == .list(of: .string, default: []))
         #expect(settings[2].kind == .enumeration(options: ["5h", "5h+weekly"], default: "5h+weekly"))
-        #expect(settings[3].kind == .int(default: 0, min: 0, max: 99))
+        #expect(byKey["providers.claude.priority"]?.kind == .int(default: 0, min: 0, max: 99))
         #expect(settings.allSatisfy { $0.scope == .synced })
         #expect(String(localized: settings[2].label) == "Quota rings")
-        #expect(String(localized: settings[3].label) == "Claude ring priority")
+        #expect(byKey["providers.claude.priority"].map { String(localized: $0.label) } == "Claude ring priority")
     }
 
     @Test func noProviderMeansAnEmptyLeftWing() {
@@ -137,6 +140,7 @@ struct ProviderAdapter: AgentAdapter {
     @Test func aStaleRingKeepsItsLastValue() async throws {
         let harness = try PlanHarness(plan: true, script: [.success([fiveHour, weekly]), .failure(.formatChanged)])
         try await harness.start()
+        harness.module.ringSettings.pace = false
         #expect(harness.module.quotaRings.first?.model.stale == false)
         await harness.module.refreshPlan("claude")
         let ring = try #require(harness.module.quotaRings.first)

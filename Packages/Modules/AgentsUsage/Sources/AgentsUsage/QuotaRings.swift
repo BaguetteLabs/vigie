@@ -12,11 +12,17 @@ public enum RingsMode: String, Sendable, CaseIterable {
     case fiveHourAndWeekly = "5h+weekly"
 }
 
-/// The ring keys of `[modules."agents.usage"]` (Story 7.4), read through `context.settings`.
+/// The ring keys of `[modules."agents.usage"]` (Story 7.4; `pace`, `pace_tolerance` Story 7.5), read through
+/// `context.settings`.
 public struct RingSettings: Equatable, Sendable {
     nonisolated static let priorityKey = "priority"
     nonisolated static let orderKey = "order"
     nonisolated static let ringsKey = "rings"
+    nonisolated static let paceKey = "pace"
+    nonisolated static let paceToleranceKey = "pace_tolerance"
+    /// `pace_tolerance` default and bounds, in points (SPEC §11).
+    public nonisolated static let defaultPaceTolerance = QuotaDialModel.defaultPaceTolerance
+    nonisolated static let maxPaceTolerance = 50
     /// Default left-wing priority of every provider ring (SPEC §11).
     public nonisolated static let defaultPriority = 2
     /// Per-provider overrides are declared for these providers (`providers.<id>.priority`). Codex and Gemini
@@ -30,15 +36,22 @@ public struct RingSettings: Equatable, Sendable {
     public var rings: RingsMode
     /// Overrides from `providers.<id>.priority`; 0 (the declared default) means "use `priority`".
     public var providerPriority: [AgentID: Int]
+    /// `pace`: draw the pace tick and the ahead-of-pace fill (FR52; default on).
+    public var pace: Bool
+    /// `pace_tolerance` in points: ahead only when used > elapsed + tolerance.
+    public var paceTolerance: Int
 
     public init(
         priority: Int = RingSettings.defaultPriority, order: [String] = [], rings: RingsMode = .fiveHourAndWeekly,
-        providerPriority: [AgentID: Int] = [:]
+        providerPriority: [AgentID: Int] = [:], pace: Bool = true,
+        paceTolerance: Int = RingSettings.defaultPaceTolerance
     ) {
         self.priority = priority
         self.order = order
         self.rings = rings
         self.providerPriority = providerPriority
+        self.pace = pace
+        self.paceTolerance = min(Self.maxPaceTolerance, max(0, paceTolerance))
     }
 
     init(_ settings: any ModuleSettings) {
@@ -53,12 +66,14 @@ public struct RingSettings: Equatable, Sendable {
             order: settings.value(Self.orderKey, as: [String].self) ?? [],
             rings: settings.value(Self.ringsKey, as: String.self).flatMap(RingsMode.init(rawValue:))
                 ?? .fiveHourAndWeekly,
-            providerPriority: overrides)
+            providerPriority: overrides,
+            pace: settings.value(Self.paceKey, as: Bool.self) ?? true,
+            paceTolerance: settings.value(Self.paceToleranceKey, as: Int.self) ?? Self.defaultPaceTolerance)
     }
 
     /// Every key whose change re-reads the settings.
     static var observedKeys: [String] {
-        [priorityKey, orderKey, ringsKey] + overridableProviders.map(providerPriorityKey)
+        [priorityKey, orderKey, ringsKey, paceKey, paceToleranceKey] + overridableProviders.map(providerPriorityKey)
     }
 
     func priority(for id: AgentID) -> Int { providerPriority[id] ?? priority }
@@ -88,6 +103,13 @@ public struct RingSettings: Equatable, Sendable {
                 kind: .enumeration(
                     options: RingsMode.allCases.map(\.rawValue), default: RingsMode.fiveHourAndWeekly.rawValue),
                 scope: .synced, help: text("agentsUsage.setting.rings.help")),
+            SettingDescriptor(
+                key: paceKey, label: text("agentsUsage.setting.pace"), kind: .bool(default: true), scope: .synced,
+                help: text("agentsUsage.setting.pace.help")),
+            SettingDescriptor(
+                key: paceToleranceKey, label: text("agentsUsage.setting.paceTolerance"),
+                kind: .int(default: defaultPaceTolerance, min: 0, max: maxPaceTolerance), scope: .synced,
+                help: text("agentsUsage.setting.paceTolerance.help")),
         ]
             + overridableProviders.map { id in
                 SettingDescriptor(
@@ -122,12 +144,27 @@ extension QuotaDialModel.Window {
 }
 
 extension QuotaDialModel {
+    /// The window pace is measured on (FR52): 5h, or weekly when the plan has no 5h; none otherwise.
+    static func pacedKind(in kinds: some Collection<QuotaWindowKind>) -> QuotaWindowKind? {
+        if kinds.contains(.fiveHour) { return .fiveHour }
+        if kinds.contains(.weekly) { return .weekly }
+        return nil
+    }
+
     /// The dial for a plan: the 5h window inside (plus weekly around it with `5h+weekly`), else the plan's only
-    /// window (weekly, then daily); nil when the plan has no window the dial knows (A18).
-    init?(providerName: String, plan: PlanState, rings: RingsMode) {
+    /// window (weekly, then daily); nil when the plan has no window the dial knows (A18). With `pace` on, the
+    /// paced window carries its elapsed share at `now` (Story 7.5).
+    init?(
+        providerName: String, plan: PlanState, rings: RingsMode, pace: Bool = false,
+        paceTolerance: Int = QuotaDialModel.defaultPaceTolerance, now: Date = Date()
+    ) {
         var windows: [QuotaWindowKind: QuotaDialModel.Window] = [:]
         for window in plan.windows {
             if let mapped = QuotaDialModel.Window(window), windows[mapped.kind] == nil { windows[mapped.kind] = mapped }
+        }
+        for kind in Array(windows.keys) { windows[kind]?.paceTolerance = paceTolerance }
+        if pace, let paced = Self.pacedKind(in: windows.keys), let window = windows[paced] {
+            windows[paced]?.elapsedFraction = paced.elapsedFraction(resetsAt: window.resetsAt, now: now)
         }
         if let fiveHour = windows[.fiveHour] {
             self.init(
@@ -148,10 +185,12 @@ extension AgentsUsageModule {
     /// A18). Reads `planStates` and `ringSettings`, both observed, so the host re-arbitrates on change.
     public var quotaRings: [QuotaRing] {
         let settings = ringSettings
+        let now = clock
         return adapters.adapters.enumerated().compactMap { index, adapter -> QuotaRing? in
             guard let provider = adapter.usageProvider, let plan = planStates[adapter.id],
                 let model = QuotaDialModel(
-                    providerName: String(localized: provider.name), plan: plan, rings: settings.rings)
+                    providerName: String(localized: provider.name), plan: plan, rings: settings.rings,
+                    pace: settings.pace, paceTolerance: settings.paceTolerance, now: now)
             else { return nil }
             return QuotaRing(
                 provider: adapter.id, model: model, priority: settings.priority(for: adapter.id),
@@ -187,9 +226,17 @@ extension AgentsUsageModule {
         if state != next { state = next }
     }
 
-    /// Reads the ring keys now and again whenever one changes.
-    func startRingSettings(_ settings: any ModuleSettings) {
+    /// Moves the dial clock to now: the pace tick advances (Story 7.5).
+    func tickClock() {
+        clock = now()
+    }
+
+    /// Reads the ring keys now and again whenever one changes, and advances the dial clock every
+    /// `clockInterval`.
+    func startRingSettings(_ settings: any ModuleSettings, scheduler: any Scheduler) {
         ringSettings = RingSettings(settings)
+        tickClock()
+        clockJob = scheduler.every(Self.clockInterval) { [weak self] in await self?.tickClock() }
         for key in RingSettings.observedKeys {
             let stream = settings.observe(key)
             ringObservers.append(
@@ -204,5 +251,7 @@ extension AgentsUsageModule {
     func stopRingSettings() {
         for task in ringObservers { task.cancel() }
         ringObservers = []
+        clockJob?.cancel()
+        clockJob = nil
     }
 }

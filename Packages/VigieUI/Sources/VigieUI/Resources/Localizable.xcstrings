@@ -1,6 +1,18 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "usage.dial.a11y.ahead" : {
+      "comment" : "VoiceOver: one plan window that is ahead of pace (used more than the elapsed time plus the tolerance).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@, ahead of pace"
+          }
+        }
+      }
+    },
     "usage.dial.a11y.join" : {
       "comment" : "VoiceOver: joins the quota dial label so far and the next window.",
       "extractionState" : "manual",

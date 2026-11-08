@@ -22,7 +22,8 @@ import Testing
 
         #expect(module.registry?.ids == ["claude"])
         #expect(module.lastIngest?.records == 5)
-        #expect(context.fakeScheduler.intervals == [.seconds(60)])
+        // Ingest every 60 s, and the dial clock (pace tick, Story 7.5).
+        #expect(context.fakeScheduler.intervals == [.seconds(60), AgentsUsageModule.clockInterval])
         #expect(module.state == .hidden)
 
         // The database lives in the storage folder, and nowhere else.

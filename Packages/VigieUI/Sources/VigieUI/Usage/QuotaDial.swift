@@ -12,6 +12,25 @@ public enum QuotaWindowKind: String, Sendable, Hashable, CaseIterable {
 
     /// The spoken window name: "5 hour window", "weekly", "daily".
     public var spokenName: String { L10n.string("usage.window.\(rawValue).spoken") }
+
+    /// The window's length. Plan endpoints report only `resets_at`, so the start is `resetsAt − length`
+    /// (Story 7.5).
+    public var length: TimeInterval {
+        switch self {
+        case .fiveHour: 5 * 3600
+        case .weekly: 7 * 24 * 3600
+        case .daily: 24 * 3600
+        }
+    }
+
+    /// The share of the window elapsed at `now`, clamped to 0…1: 0 before the window starts, 1 once it has
+    /// reset (until the next refresh brings the new window). nil without a reset time.
+    public func elapsedFraction(resetsAt: Date?, now: Date) -> Double? {
+        guard let resetsAt else { return nil }
+        let start = resetsAt.addingTimeInterval(-length)
+        let elapsed = now.timeIntervalSince(start) / length
+        return elapsed.isFinite ? min(1, max(0, elapsed)) : nil
+    }
 }
 
 /// What one provider's quota dial shows (DESIGN "Quota dial"; UX-DR16, UX-DR58).
@@ -27,11 +46,29 @@ public struct QuotaDialModel: Hashable, Sendable {
         /// Share used, clamped to 0…1.
         public var fraction: Double
         public var resetsAt: Date?
+        /// The share of the window elapsed, 0…1, when this is the paced window and `pace` is on (Story 7.5):
+        /// the dial draws the pace tick there. nil = no tick, `pace-on` fill.
+        public var elapsedFraction: Double?
+        /// `pace_tolerance` in points (default 5): ahead only when used > elapsed + tolerance.
+        public var paceTolerance: Int
 
-        public init(kind: QuotaWindowKind, fraction: Double, resetsAt: Date? = nil) {
+        public init(
+            kind: QuotaWindowKind, fraction: Double, resetsAt: Date? = nil, elapsedFraction: Double? = nil,
+            paceTolerance: Int = QuotaDialModel.defaultPaceTolerance
+        ) {
             self.kind = kind
             self.fraction = fraction.isFinite ? min(1, max(0, fraction)) : 0
             self.resetsAt = resetsAt
+            self.elapsedFraction = elapsedFraction.map { $0.isFinite ? min(1, max(0, $0)) : 0 }
+            self.paceTolerance = max(0, paceTolerance)
+        }
+
+        /// Within or ahead of pace (FR52); nil when the window is not paced. Compared in points, so the
+        /// tolerance edge itself is within pace.
+        public var pace: PaceState? {
+            guard let elapsedFraction else { return nil }
+            let lead = fraction * 100 - elapsedFraction * 100
+            return lead > Double(paceTolerance) + 1e-9 ? .ahead : .within
         }
 
         /// The window part of the readout label (`5H`, `WEEK`).
@@ -40,6 +77,9 @@ public struct QuotaDialModel: Hashable, Sendable {
         /// Whole percent used, 0…100.
         public var percent: Int { Int((fraction * 100).rounded()) }
     }
+
+    /// `pace_tolerance` default, in points (SPEC §11).
+    public static let defaultPaceTolerance = 5
 
     /// The provider name as the user knows it (`Claude`); shown uppercase.
     public var providerName: String
@@ -77,10 +117,12 @@ public struct QuotaDialModel: Hashable, Sendable {
         return L10n.format("usage.readout.label", nameLabel, primary.label)
     }
 
-    /// "Claude, 5 hour window 38 percent, weekly 52 percent"; absent windows are left out.
+    /// "Claude, 5 hour window 38 percent, weekly 52 percent"; absent windows are left out; a window ahead of
+    /// pace adds "ahead of pace".
     public var accessibilityLabel: String {
-        let windows = [primary, secondary].compactMap { $0 }.map {
-            L10n.format("usage.dial.a11y.window", $0.kind.spokenName, $0.percent)
+        let windows = [primary, secondary].compactMap { $0 }.map { window in
+            let base = L10n.format("usage.dial.a11y.window", window.kind.spokenName, window.percent)
+            return window.pace == .ahead ? L10n.format("usage.dial.a11y.ahead", base) : base
         }
         var label = providerName
         for window in windows {
@@ -123,9 +165,9 @@ public enum QuotaDialSize: Sendable, Hashable, CaseIterable {
 }
 
 /// One provider's quota dial with its name under it (DESIGN "Quota dial"; UX-DR16): track ring in `line`; the
-/// inner (or only) ring in the primary fill (A iris gradient, C gold; flat silver in Calm, solid under Reduce
-/// transparency / Increase contrast), the outer weekly ring thinner in A `line-silver` / C `struct`; the primary
-/// value inside. C adds the dashed tick bezel turning every `motion.dial-bezel`. Stale keeps the last values
+/// inner (or only) ring in `pace-on` (A iris gradient, C Volt; flat silver in Calm, solid under Reduce
+/// transparency / Increase contrast) or `pace-ahead` when ahead of pace, the outer weekly ring thinner in A
+/// `line-silver` / C `struct`; the pace tick on the paced window (Story 7.5); the primary value inside. C adds the dashed tick bezel turning every `motion.dial-bezel`. Stale keeps the last values
 /// with a dashed `ink-3` track and neutral arcs. On the island the theme is the dark look (UX-DR12).
 ///
 /// At `.tab` size no name is drawn (the Usage card header names the provider).
@@ -234,10 +276,10 @@ struct QuotaDialRing: View {
         ZStack {
             if tactical { bezel }
             if model.isNested {
-                ring(model.secondary, radius: 10, width: 1.3, fill: secondaryFill)
-                ring(model.primary, radius: 7, width: 1.5, fill: primaryFill(model.primary))
+                ring(model.secondary, radius: 10, width: 1.3, isPrimary: false)
+                ring(model.primary, radius: 7, width: 1.5, isPrimary: true)
             } else {
-                ring(model.primary, radius: 7.5, width: 1.6, fill: primaryFill(model.primary))
+                ring(model.primary, radius: 7.5, width: 1.6, isPrimary: true)
             }
             if showsValue, let value = model.valueText {
                 Text(verbatim: value)
@@ -250,7 +292,7 @@ struct QuotaDialRing: View {
         .frame(width: length, height: length)
     }
 
-    private func ring(_ window: QuotaDialModel.Window?, radius: CGFloat, width: CGFloat, fill: AnyShapeStyle)
+    private func ring(_ window: QuotaDialModel.Window?, radius: CGFloat, width: CGFloat, isPrimary: Bool)
         -> some View
     {
         let inset = (12 - radius) * unit
@@ -259,9 +301,35 @@ struct QuotaDialRing: View {
                 .stroke(trackColor, style: trackStyle(width: width * unit))
             Circle().inset(by: inset)
                 .trim(from: 0, to: window?.fraction ?? 0)
-                .stroke(fill, style: StrokeStyle(lineWidth: width * unit, lineCap: .round))
+                .stroke(
+                    fill(window, isPrimary: isPrimary), style: StrokeStyle(lineWidth: width * unit, lineCap: .round)
+                )
                 .rotationEffect(.degrees(-90))
+            if let elapsed = window?.elapsedFraction {
+                paceTick(at: elapsed, radius: radius)
+            }
         }
+    }
+
+    /// The pace marker (DESIGN `components.pace-marker.ring`): a short radial tick across the ring at the
+    /// elapsed-time position, with a 1px black keyline so it reads over any arc. Geometry of the mockup: 2.7
+    /// units long, 1.2 wide over a 2.8 keyline; A platinum (`ink-1`), C `gold-text`.
+    private func paceTick(at elapsed: Double, radius: CGFloat) -> some View {
+        let angle = elapsed * 2 * .pi - .pi / 2
+        let center = length / 2
+        func point(_ r: CGFloat) -> CGPoint {
+            CGPoint(x: center + cos(angle) * r * unit, y: center + sin(angle) * r * unit)
+        }
+        let tick = Path { path in
+            path.move(to: point(radius - 1.35))
+            path.addLine(to: point(radius + 1.35))
+        }
+        let color: Color = model.stale ? theme.color(.ink3) : theme.color(tactical ? .goldText : .ink1)
+        return ZStack {
+            tick.stroke(theme.color(.island), style: StrokeStyle(lineWidth: 2.8 * unit, lineCap: .round))
+            tick.stroke(color, style: StrokeStyle(lineWidth: 1.2 * unit, lineCap: .round))
+        }
+        .frame(width: length, height: length)
     }
 
     /// `line`; under Increase contrast at least `ink-3` 40 % (DESIGN "Increase contrast"); stale: `ink-3`.
@@ -278,13 +346,16 @@ struct QuotaDialRing: View {
         return StrokeStyle(lineWidth: width, dash: dash)
     }
 
-    /// A: iris gradient running along the arc (light: filaments); C: gold (`components.quota-dial.a-arc` /
-    /// `c-arc`). Calm: flat silver. Reduce transparency / Increase contrast: solid `pace-on`. Stale: `ink-2`.
-    private func primaryFill(_ window: QuotaDialModel.Window?) -> AnyShapeStyle {
+    /// The arc fill (DESIGN "Quota dial" fills; UX-DR12): stale `ink-2`; Calm flat silver (C `struct`); ahead
+    /// of pace `pace-ahead` (A Ember, C gold); else the primary ring in `pace-on` (A iris gradient running
+    /// along the arc, light: filaments, solid `pace-on` under Reduce transparency / Increase contrast; C Volt)
+    /// and the outer weekly ring in A `line-silver` / C `struct`.
+    private func fill(_ window: QuotaDialModel.Window?, isPrimary: Bool) -> AnyShapeStyle {
         if model.stale { return AnyShapeStyle(theme.color(.ink2)) }
         if theme.presence == .calm { return AnyShapeStyle(theme.color(tactical ? .structure : .ink2)) }
-        if tactical { return AnyShapeStyle(theme.color(.gold)) }
-        if theme.a11y.flatSurfaces { return AnyShapeStyle(theme.color(.paceOn)) }
+        if window?.pace == .ahead { return AnyShapeStyle(theme.color(.paceAhead)) }
+        guard isPrimary else { return secondaryFill }
+        if tactical || theme.a11y.flatSurfaces { return AnyShapeStyle(theme.color(.paceOn)) }
         let roles: [ColorRole] =
             theme.look == .light && theme.defines(.filament1)
             ? [.filament1, .filament2, .filament3] : [.iris1, .iris2, .iris3]
@@ -295,10 +366,9 @@ struct QuotaDialRing: View {
                 colors: roles.map(theme.color), center: .center, startAngle: .zero, endAngle: .degrees(sweep)))
     }
 
-    /// The outer weekly ring: A `line-silver`, C `struct`; stale `ink-2`.
+    /// The outer weekly ring: A `line-silver`, C `struct`.
     private var secondaryFill: AnyShapeStyle {
-        if model.stale { return AnyShapeStyle(theme.color(.ink2)) }
-        return AnyShapeStyle(theme.color(tactical ? .structure : .lineSilver))
+        AnyShapeStyle(theme.color(tactical ? .structure : .lineSilver))
     }
 
     /// C dashed tick bezel, turning every `motion.dial-bezel` at full presence; static otherwise.

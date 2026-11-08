@@ -18,6 +18,8 @@ public final class AgentsUsageModule: NotchModule {
 
     /// How often logs are ingested.
     nonisolated static let ingestInterval: Duration = .seconds(60)
+    /// How often the dial clock advances (the pace tick, Story 7.5).
+    nonisolated static let clockInterval: Duration = .seconds(60)
 
     public nonisolated static let staticManifest = ModuleManifest(
         id: "agents.usage",
@@ -45,11 +47,17 @@ public final class AgentsUsageModule: NotchModule {
 
     /// Plan windows per provider (Story 7.3); absent while `plan` is off.
     public internal(set) var planStates: [AgentID: PlanState] = [:] {
-        didSet { updateRingState() }
+        didSet {
+            clock = now()
+            updateRingState()
+        }
     }
     /// `priority`, `order`, `rings` and the per-provider overrides (Story 7.4); defaults until `start`.
     public internal(set) var ringSettings = RingSettings()
+    /// The time the rings are drawn at (pace tick); advanced every `clockInterval` and on each plan update.
+    public internal(set) var clock: Date
     @ObservationIgnored var ringObservers: [Task<Void, Never>] = []
+    @ObservationIgnored var clockJob: RegistrationToken?
     @ObservationIgnored var planAlerts: [AgentID: AlertHandle] = [:]
     @ObservationIgnored var planInFlight: Set<AgentID> = []
     @ObservationIgnored var planMissingContextLogged: Set<AgentID> = []
@@ -94,13 +102,14 @@ public final class AgentsUsageModule: NotchModule {
             }
         self.calendar = calendar
         self.now = now
+        self.clock = now()
     }
 
     public func start(context: any ModuleContext) async throws {
         let log = context.log
         self.log = log
         notifier = context.notifier
-        startRingSettings(context.settings)
+        startRingSettings(context.settings, scheduler: context.scheduler)
         let store = try UsageStore(directory: context.storage.directory)
         let estimator = try CostEstimator.bundled()
         let registry = UsageProviderRegistry(adapters: adapters, settings: adapterSettings)

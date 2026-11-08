@@ -1,6 +1,54 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "agentsUsage.setting.pace" : {
+      "comment" : "Settings › Usage: toggles the pace indicator on the quota rings.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pace indicator"
+          }
+        }
+      }
+    },
+    "agentsUsage.setting.pace.help" : {
+      "comment" : "Settings › Usage: help under the pace toggle.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Marks the elapsed time of the 5-hour window (weekly when there is none) on the ring and colors the arc when usage runs ahead of it. Visual only: never an alert or a sound."
+          }
+        }
+      }
+    },
+    "agentsUsage.setting.paceTolerance" : {
+      "comment" : "Settings › Usage: pace tolerance, in percentage points.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pace tolerance (points)"
+          }
+        }
+      }
+    },
+    "agentsUsage.setting.paceTolerance.help" : {
+      "comment" : "Settings › Usage: help under the pace tolerance.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usage counts as ahead of pace only when it exceeds the elapsed time by more than this many points."
+          }
+        }
+      }
+    },
     "agentsUsage.setting.order" : {
       "comment" : "Settings › Usage: order of the usage providers (ids).",
       "extractionState" : "manual",
