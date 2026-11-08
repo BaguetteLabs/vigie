@@ -87,7 +87,7 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - [x] 6.4 Versioning and build numbers (run `Scripts/version.sh --xcconfig App/Config/Version.xcconfig` before a manual `xcodegen generate`)
 
 ### v0.2 — Epics 7 (Usage), 8 (Codex, `vigie run`), 9 (Shelf), 10 (Sounds), 21 (Privacy)
-- [x] 7.1, 7.2 (signed-build AC pending a real identity), 7.3 (live endpoint untested; AD-23 path ruling pending) , 7.4, 7.5, 7.6, 7.7, 7.8 (not yet seen live), 7.9 · [ ] 7.10 · [ ] 8.1–8.4 · [ ] 9.1–9.10 · [x] 10.1–10.2 (listen to the WAVs once) · [ ] 21.1–21.3
+- [x] 7.1, 7.2 (signed-build AC pending a real identity), 7.3 (live endpoint untested; AD-23 path ruling pending) , 7.4, 7.5, 7.6, 7.7, 7.8 (not yet seen live), 7.9, 7.10 (AD-23 wording rulings pending) · [ ] 8.1–8.4 · [ ] 9.1–9.10 · [x] 10.1–10.2 (listen to the WAVs once) · [ ] 21.1–21.3
 
 ### v0.3 — Epics 11 (Home), 12 (Scripts), 13 (Calendar), 14 (Gemini), 20 (Time)
 - [x] 11.1 · [x] 11.2 · [ ] 11.3 · [ ] 12.1–12.11 · [ ] 13.1–13.4 · [ ] 14.1–14.3 · [ ] 20.1–20.6
@@ -109,6 +109,9 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 
 - AD-23 adapter settings path: TOML forbids `adapters` as both list and table. Code ships `[modules."agents.sessions".adapter.<id>]`. Confirm that name (or pick `enabled_adapters` for the list instead) and amend SPINE AD-23 + SPEC §11.
 - Test the live Claude plan endpoint once: Settings › Usage › Claude plan usage › Use Claude Code's login › Allow (macOS Keychain prompt), then check the status line / `log show … | grep "Plan usage"`. Patch `PLAN-ENDPOINT.md` + client + fixtures if the shape differs.
+
+- AD-23 wording after 7.10: (a) Accounts stored in the adapter table (`agents.sessions.adapter.<id>.account.*`) rather than under `agents.usage`; (b) Keychain owner `adapter.<id>` + per-Account key instead of an owner id that includes the Account. Confirm or ask for a change; then amend SPINE AD-23 and SPEC §8.2 (`CLAUDE_CONFIG_DIR`).
+- New story needed: hook installer per Account location (extra `CLAUDE_CONFIG_DIR` setups get no hooks today).
 
 ## Decisions log
 
@@ -170,6 +173,8 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - 2026-11-08 — Story 7.9: grip is `.draggable`, cards are `.dropDestination` (no `List`/`onMove` on the tab); `UsageProviderOrder` helpers; `setProviderOrder(shown:)` writes the full `order` (unseen providers kept). Settings › Usage shows **two** order controls: the generated raw `order` list editor (add/remove only) plus the module's Order block — needs a `SettingDescriptor` hide flag + filter in `moduleRows` (generic Settings follow-up, same gap as 11.1's `home.cards` exclusion). Drag not exercised in the running app. `hoverOpensWithoutFocusAfterTheDelayWhenOptedIn` flaked again (third time).
 
 - 2026-11-08 — Story 11.2 (quota card): `UsageHomeCardView` bound to `usageTabSnapshot()`; rows 32 pt (3 fit, fade from 4); `STALE · HH:MM` replaces the reset line on a stale row; `homeCard()` task refreshes overview + plan like the tab. Epic 11.1/11.2 done; 11.3 (shelf widget) waits for Epic 9.
+
+- 2026-11-08 — Story 7.10: Accounts live in the adapter table (`[modules."agents.sessions".adapter.<id>] accounts = [...]` + `account.<id>.{label,location,usage_providers,plan_auth}`, local.toml), not under `agents.usage` (sessions must attribute too). ConfigSchema gained key templates (`account.*.label`). Keychain owner stays `adapter.<id>` with per-Account keys `plan_token.<account>` (AD-23 says "owner id includes the Account" — wording ruling). Consent ids `claude.claude_code_login[.<account>]`. Login item name for a custom `CLAUDE_CONFIG_DIR` is guessed as `Claude Code-credentials-<sha256[0:8]>` (unverified). Ring's "most recent Account" = latest usage record (`UsageStore.latestAccounts()`), not sessions. Card headers use the short provider name (`CLAUDE · WORK`). Cost card got a `PROJECTS · ACCOUNTS` switch (not in mockup). `CLAUDE_CONFIG_DIR` added to Wire's env whitelist (SPEC §8.2 list needs it). Store schema v2 (`account` column). **Gap:** hooks are installed only in `~/.claude/settings.json`; a Claude Code run with another `CLAUDE_CONFIG_DIR` reads `<dir>/settings.json` → extra Accounts never report sessions until the installer handles per-Account locations (new story needed). Privacy-mode marking of Account labels waits for Epic 21.
 
 ## Notes for the next session
 
