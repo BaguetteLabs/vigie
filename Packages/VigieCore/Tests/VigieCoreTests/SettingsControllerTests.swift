@@ -104,7 +104,14 @@ struct SettingsHarness {
             cliInstaller: nil, manifests: manifests, loginItem: loginItem, secretStore: secretStore)
         let recorder = recorder
         controller.openURL = { recorder.urls.append($0) }
-        controller.activateApp = {}
+        // `open` creates the window, then calls this just before `makeKeyAndOrderFront`: park it off-screen and
+        // inert instead of activating the app, so the suite never covers or takes focus from the developer's windows.
+        controller.activateApp = { [unowned controller] in
+            if let w = controller.window {
+                quietOffscreen(w)
+                w.alphaValue = 0
+            }
+        }
         await registry.start()
     }
 
@@ -142,8 +149,7 @@ struct SettingsHarness {
     @Test func openSelectsPaneAndNeverShowsADockIcon() async throws {
         let h = try await SettingsHarness()
         let app = NSApplication.shared
-        app.setActivationPolicy(.accessory)
-        h.controller.activateApp = { NSApp.activate(ignoringOtherApps: true) }
+        app.setActivationPolicy(.prohibited)
         h.controller.open(pane: "custom.test")
         #expect(h.controller.selectedPaneID == "custom.test")
         let window = try #require(h.controller.window)
@@ -152,7 +158,7 @@ struct SettingsHarness {
         #expect(window.styleMask.contains(.resizable))
         #expect(window.contentLayoutRect.width == SettingsWindowMetrics.size.width)
         #expect(window.contentLayoutRect.height >= SettingsWindowMetrics.size.height)
-        #expect(app.activationPolicy() == .accessory)
+        #expect(app.activationPolicy() == .prohibited)
         h.controller.open(pane: "privacy")
         #expect(h.controller.selectedPaneID == "general")
         try await Task.sleep(for: .milliseconds(100))
@@ -163,7 +169,7 @@ struct SettingsHarness {
         h.controller.selectedPaneID = "sounds"
         h.controller.open()
         #expect(h.controller.selectedPaneID == "sounds")
-        #expect(app.activationPolicy() == .accessory)
+        #expect(app.activationPolicy() == .prohibited)
         // ⌘W closes.
         let event = try #require(
             NSEvent.keyEvent(
@@ -172,7 +178,7 @@ struct SettingsHarness {
                 isARepeat: false, keyCode: 13))
         #expect(window.performKeyEquivalent(with: event))
         #expect(!window.isVisible)
-        #expect(app.activationPolicy() == .accessory)
+        #expect(app.activationPolicy() == .prohibited)
         await h.tearDown()
     }
 
@@ -462,13 +468,9 @@ struct SettingsHarness {
             }
         }
         // The window's sidebar is a glass view that `cacheDisplay` cannot capture; render the list alone.
-        let sidebar = NSHostingView(rootView: SettingsSidebar(controller: h.controller))
-        sidebar.frame = NSRect(
-            x: 0, y: 0, width: SettingsWindowMetrics.sidebarWidth, height: SettingsWindowMetrics.size.height)
-        let host = NSWindow(contentRect: sidebar.frame, styleMask: [.borderless], backing: .buffered, defer: false)
-        host.isReleasedWhenClosed = false
-        host.contentView = sidebar
-        host.orderFront(nil)
+        let (host, sidebar) = hostOffscreen(
+            SettingsSidebar(controller: h.controller),
+            size: CGSize(width: SettingsWindowMetrics.sidebarWidth, height: SettingsWindowMetrics.size.height))
         sidebar.layoutSubtreeIfNeeded()
         try await Task.sleep(for: .milliseconds(300))
         defer { host.close() }

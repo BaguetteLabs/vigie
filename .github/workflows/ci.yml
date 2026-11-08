@@ -123,6 +123,10 @@ jobs:
         id: module-pasteboard-guard
         run: Scripts/check-module-pasteboard.sh && Scripts/tests/module-pasteboard-test.sh
 
+      - name: test-windows-guard
+        id: test-windows-guard
+        run: Scripts/check-test-windows.sh && Scripts/tests/test-windows-test.sh
+
       - name: module-away-guard
         id: module-away-guard
         run: Scripts/check-module-away.sh && Scripts/tests/module-away-test.sh

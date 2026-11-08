@@ -117,15 +117,12 @@ let testServices = SettingControlServices(
             let setting = MemorySetting()
             let model = SettingRowModel(
                 id: "k\(index)", label: "Label", help: "Help", kind: kind, binding: setting.binding)
-            let view = NSHostingView(
-                rootView: Form { SettingRow(model) }
+            let (window, view) = hostOffscreen(
+                Form { SettingRow(model) }
                     .formStyle(.grouped)
                     .environment(\.settingControlServices, testServices)
-                    .vigieTheme(theme))
-            view.frame = NSRect(x: 0, y: 0, width: 560, height: 200)
-            let window = NSWindow(contentRect: view.frame, styleMask: [.borderless], backing: .buffered, defer: false)
-            window.isReleasedWhenClosed = false
-            window.contentView = view
+                    .vigieTheme(theme),
+                size: CGSize(width: 560, height: 200))
             view.layoutSubtreeIfNeeded()
             let rep = try #require(view.bitmapImageRepForCachingDisplay(in: view.bounds))
             view.cacheDisplay(in: view.bounds, to: rep)

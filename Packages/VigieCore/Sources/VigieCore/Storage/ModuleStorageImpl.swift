@@ -26,11 +26,13 @@ public actor ModuleStorageImpl: ModuleStorage {
     private let coalesceInterval: Duration
     private let writeObserver: (@Sendable (URL) -> Void)?
     private let userFolderResolver: @Sendable (String) -> URL?
-    private let clock = ContinuousClock()
+    private let clock: any Clock<Duration>
+    /// Time since the storage was created, read from `clock`.
+    private let elapsed: @Sendable () -> Duration
 
     private var pending: [String: Data] = [:]
     private var scheduled: [String: Task<Void, Never>] = [:]
-    private var lastWrite: [String: ContinuousClock.Instant] = [:]
+    private var lastWrite: [String: Duration] = [:]
 
     /// The storage folder of `moduleID` under `applicationSupportURL`.
     public static func directory(for moduleID: ModuleID, applicationSupportURL: URL) -> URL {
@@ -48,9 +50,12 @@ public actor ModuleStorageImpl: ModuleStorage {
         environment: AppEnvironment,
         logger: Logger,
         coalesceInterval: Duration = .milliseconds(250),
+        clock: any Clock<Duration> = ContinuousClock(),
         writeObserver: (@Sendable (URL) -> Void)? = nil,
         userFolderResolver: @escaping @Sendable (String) -> URL? = { _ in nil }
     ) {
+        self.clock = clock
+        self.elapsed = Self.stopwatch(clock)
         self.directory = Self.directory(for: moduleID, applicationSupportURL: environment.applicationSupportURL)
         self.logger = logger
         self.coalesceInterval = coalesceInterval
@@ -172,11 +177,12 @@ public actor ModuleStorageImpl: ModuleStorage {
         pending[key] = try Self.makeEncoder().encode(StateFile(schema: schema, value: value))
         guard scheduled[key] == nil else { return }
 
-        let now = clock.now
-        let delay = lastWrite[key].map { max(.zero, $0.advanced(by: coalesceInterval) - now) } ?? .zero
+        let now = elapsed()
+        let delay = lastWrite[key].map { max(.zero, $0 + coalesceInterval - now) } ?? .zero
+        let clock = clock
         scheduled[key] = Task {
             if delay > .zero {
-                try? await Task.sleep(for: delay)
+                try? await clock.sleep(for: delay)
             }
             guard !Task.isCancelled else { return }
             self.writeScheduled(key)
@@ -191,6 +197,11 @@ public actor ModuleStorageImpl: ModuleStorage {
         for (key, data) in items { write(data, key: key) }
     }
 
+    private static func stopwatch<C: Clock>(_ clock: C) -> @Sendable () -> Duration where C.Duration == Duration {
+        let start = clock.now
+        return { start.duration(to: clock.now) }
+    }
+
     private func writeScheduled(_ key: String) {
         scheduled[key] = nil
         guard let data = pending.removeValue(forKey: key) else { return }
@@ -202,7 +213,7 @@ public actor ModuleStorageImpl: ModuleStorage {
         let target = directory.appendingPathComponent(key).resolvingSymlinksInPath()
         let folder = target.deletingLastPathComponent()
         let temp = folder.appendingPathComponent(".\(key).\(UUID().uuidString).tmp")
-        lastWrite[key] = clock.now
+        lastWrite[key] = elapsed()
         do {
             try manager.createDirectory(at: folder, withIntermediateDirectories: true)
             guard manager.createFile(atPath: temp.path, contents: data) else {

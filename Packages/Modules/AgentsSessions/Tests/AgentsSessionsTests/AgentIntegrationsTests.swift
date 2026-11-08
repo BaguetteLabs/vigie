@@ -293,14 +293,10 @@ final class FakeInstaller: IntegrationInstaller, @unchecked Sendable {
                     adapterID: "fake", action: .install,
                     files: [IntegrationFileChange(diff: diff, unifiedDiff: unified, stale: false)]),
                 changed: true))
-        let view = NSHostingView(
-            rootView: Form { Section { AgentIntegrationsView(model: model) } }.formStyle(.grouped)
-                .frame(width: 620, height: 520))
-        view.frame = NSRect(x: 0, y: 0, width: 620, height: 520)
-        let window = NSWindow(contentRect: view.frame, styleMask: [.borderless], backing: .buffered, defer: false)
-        window.isReleasedWhenClosed = false
-        window.contentView = view
-        window.orderFront(nil)
+        let (window, view) = hostOffscreen(
+            Form { Section { AgentIntegrationsView(model: model) } }.formStyle(.grouped)
+                .frame(width: 620, height: 520),
+            size: CGSize(width: 620, height: 520))
         defer { window.close() }
         try await Task.sleep(for: .milliseconds(300))
         view.layoutSubtreeIfNeeded()

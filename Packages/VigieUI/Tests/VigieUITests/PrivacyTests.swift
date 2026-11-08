@@ -22,17 +22,8 @@ import Testing
 
     /// Labels, values, titles, help and identifiers of every accessibility element under `view`.
     static func accessibilityStrings(_ view: some View, size: CGSize) -> [String] {
-        _ = NSApplication.shared
-        let hosting = NSHostingView(rootView: view.vigieTheme(theme))
-        hosting.frame = CGRect(origin: .zero, size: size)
-        let window = NSWindow(contentRect: hosting.frame, styleMask: [.borderless], backing: .buffered, defer: false)
-        window.isReleasedWhenClosed = false
-        window.contentView = hosting
-        // SwiftUI builds its accessibility tree only for an AX client; this is how one announces itself.
-        _ = NSApp.perform(
-            NSSelectorFromString("accessibilitySetValue:forAttribute:"), with: NSNumber(value: true),
-            with: "AXEnhancedUserInterface")
-        window.orderFrontRegardless()
+        announceAccessibilityClient()
+        let (window, hosting) = hostOffscreen(view.vigieTheme(theme), size: size)
         hosting.layoutSubtreeIfNeeded()
         RunLoop.main.run(until: Date().addingTimeInterval(0.05))
         var strings: [String] = []

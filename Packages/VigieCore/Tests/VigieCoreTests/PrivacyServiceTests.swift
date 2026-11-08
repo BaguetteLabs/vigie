@@ -175,17 +175,8 @@ import VigieUI
 /// Labels and values of every accessibility element of a rendered view.
 @MainActor enum AXStrings {
     static func collect(_ view: some View, size: CGSize) -> [String] {
-        _ = NSApplication.shared
-        let hosting = NSHostingView(rootView: view)
-        hosting.frame = CGRect(origin: .zero, size: size)
-        let window = NSWindow(contentRect: hosting.frame, styleMask: [.borderless], backing: .buffered, defer: false)
-        window.isReleasedWhenClosed = false
-        window.contentView = hosting
-        // SwiftUI builds its accessibility tree only for an AX client; this is how one announces itself.
-        _ = NSApp.perform(
-            NSSelectorFromString("accessibilitySetValue:forAttribute:"), with: NSNumber(value: true),
-            with: "AXEnhancedUserInterface")
-        window.orderFrontRegardless()
+        announceAccessibilityClient()
+        let (window, hosting) = hostOffscreen(view, size: size)
         hosting.layoutSubtreeIfNeeded()
         RunLoop.main.run(until: Date().addingTimeInterval(0.01))
         var strings: [String] = []

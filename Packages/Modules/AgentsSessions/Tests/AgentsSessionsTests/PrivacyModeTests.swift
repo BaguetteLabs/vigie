@@ -74,17 +74,8 @@ import VigieUI
     }
 
     static func accessibilityStrings(_ view: some View) -> [String] {
-        _ = NSApplication.shared
-        let hosting = NSHostingView(rootView: view)
-        hosting.frame = CGRect(x: 0, y: 0, width: 40, height: 40)
-        let window = NSWindow(contentRect: hosting.frame, styleMask: [.borderless], backing: .buffered, defer: false)
-        window.isReleasedWhenClosed = false
-        window.contentView = hosting
-        // SwiftUI builds its accessibility tree only for an AX client; this is how one announces itself.
-        _ = NSApp.perform(
-            NSSelectorFromString("accessibilitySetValue:forAttribute:"), with: NSNumber(value: true),
-            with: "AXEnhancedUserInterface")
-        window.orderFrontRegardless()
+        announceAccessibilityClient()
+        let (window, hosting) = hostOffscreen(view, size: CGSize(width: 40, height: 40))
         hosting.layoutSubtreeIfNeeded()
         RunLoop.main.run(until: Date().addingTimeInterval(0.05))
         var strings: [String] = []

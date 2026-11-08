@@ -18,11 +18,12 @@ struct SampleV1: Codable, Sendable {
 
     func makeStorage(
         interval: Duration = .milliseconds(250),
+        clock: any Clock<Duration> = ContinuousClock(),
         observer: (@Sendable (URL) -> Void)? = nil
     ) -> ModuleStorageImpl {
         ModuleStorageImpl(
             moduleID: "dev.sample", environment: makeEnvironment(root), logger: testLogger,
-            coalesceInterval: interval, writeObserver: observer)
+            coalesceInterval: interval, clock: clock, writeObserver: observer)
     }
 
     func files(_ storage: ModuleStorageImpl) throws -> [String] {
@@ -105,25 +106,33 @@ struct SampleV1: Codable, Sendable {
 
     @Test func rapidWritesAreCoalesced() async throws {
         let writes = Counter()
-        let storage = makeStorage { _ in writes.increment() }
+        let clock = TestClock()
+        let storage = makeStorage(clock: clock) { _ in writes.increment() }
         for index in 0..<10 {
             try await storage.writeJSON(index, name: "count", schema: 1)
         }
-        #expect(await eventually { writes.count >= 1 })
-        try await Task.sleep(for: .milliseconds(400))
-        #expect((1...2).contains(writes.count))
+        // The first write goes out at once; the other nine merge into one trailing write.
+        #expect(await eventually { writes.count == 1 })
+        #expect(await eventually { clock.sleeperCount == 1 })
+        clock.advance(by: .milliseconds(250))
+        #expect(await eventually { writes.count == 2 })
+        await storage.flush()
+        #expect(writes.count == 2)
         #expect(try await makeStorage().readJSON("count", as: Int.self, schema: 1) == 9)
     }
 
     @Test func writesAreSpacedByTheInterval() async throws {
         let writes = Counter()
-        // A long interval keeps the check meaningful on a loaded machine (CI, parallel suites).
-        let storage = makeStorage(interval: .seconds(1)) { _ in writes.increment() }
+        let clock = TestClock()
+        let storage = makeStorage(interval: .seconds(1), clock: clock) { _ in writes.increment() }
         try await storage.writeJSON(1, name: "n", schema: 1)
         #expect(await eventually { writes.count == 1 })
         try await storage.writeJSON(2, name: "n", schema: 1)
-        try await Task.sleep(for: .milliseconds(100))
+        #expect(await eventually { clock.sleeperCount == 1 })
+        clock.advance(by: .milliseconds(999))
+        await Task.yield()
         #expect(writes.count == 1)  // second write waits for the interval
+        clock.advance(by: .milliseconds(1))
         #expect(await eventually { writes.count == 2 })
     }
 
