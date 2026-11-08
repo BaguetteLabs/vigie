@@ -107,7 +107,6 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - **gh auth:** `gh` is installed but not logged in. Run `! gh auth login -w` in this session (or `gh auth login` in a terminal) so CI runs on BaguetteLabs/vigie can be checked. Until then the `ci.yml` first run is unverified.
 
 
-- Check `Packages/Modules/AgentsUsage/Sources/AgentsUsage/Resources/prices.json` against current Anthropic list prices (4.x rows written from memory).
 
 - Test the live Claude plan endpoint once: Settings › Usage › Claude plan usage › Use Claude Code's login › Allow (macOS Keychain prompt), then check the status line / `log show … | grep "Plan usage"`. Patch `PLAN-ENDPOINT.md` + client + fixtures if the shape differs.
 
@@ -121,6 +120,7 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - 2026-11-08 — Romain: adapter table path stays `[modules."agents.sessions".adapter.<id>]` (singular) with `adapters` as the list. AD-23 and SPEC §11 amended.
 - 2026-11-08 — Romain: 7.10 code confirmed — Accounts in the adapter table (`adapter.<id>.accounts` + `account.<id>.*`), Keychain owner `adapter.<id>` with per-Account keys. AD-23 and SPEC §7.2/§11 amended.
 - 2026-11-08 — Romain: hook installation per Account location added to Epic 7 as Story 7.11 (not deferred to v0.4).
+- 2026-11-08 — `prices.json` checked against platform.claude.com pricing: Sonnet 5.5 cache read fixed to $0.10; Mythos 5/5.1 added; Haiku 5.5 >100K tier not modeled. Prices stay bundled (A56, AD-16); app cannot update them without a release.
 
 - 2026-11-07 — Working mode, signing, installs, remote: see "Working mode" above.
 - 2026-11-07 — XcodeGen chosen for the App target project (AD-2 keeps the target thin; no hand-edited pbxproj in git).
