@@ -277,6 +277,12 @@ public struct WingReadout: View {
     }
 }
 
+/// Dial proportions not in the tokens.
+enum QuotaDialMetrics {
+    /// Stroke widths of the 58 px tab dial against the 24 px geometry scaled up.
+    static let cardStrokeScale: CGFloat = 0.65
+}
+
 // MARK: - Quota-warning hatch
 
 /// `components.quota-warning-fill.pattern`, a CSS `repeating-linear-gradient(135deg, warning 0 3px,
@@ -367,6 +373,11 @@ struct QuotaDialRing: View {
 
     /// Points per DESIGN pixel (1 at 24 px).
     private var unit: CGFloat { length / 24 }
+    /// The 58 px Usage tab dial sits on a card: strokes thinner than the scaled 24 px geometry (mockup
+    /// `key-usage-tab.html`: 2.8 / 1.7 / 1.4 in a 64 box) and the pace tick keylined in the card colour.
+    private var onCard: Bool { length > QuotaDialSize.stacked.fallback * 2 }
+    /// Stroke points per DESIGN pixel.
+    private var strokeUnit: CGFloat { onCard ? unit * QuotaDialMetrics.cardStrokeScale : unit }
     private var tactical: Bool { theme.defines(.structure) }
 
     var body: some View {
@@ -399,10 +410,10 @@ struct QuotaDialRing: View {
     {
         let inset = (12 - radius) * unit
         let arc = Circle().inset(by: inset).trim(from: 0, to: window?.fraction ?? 0)
-        let arcStyle = StrokeStyle(lineWidth: width * unit, lineCap: .round)
+        let arcStyle = StrokeStyle(lineWidth: width * strokeUnit, lineCap: .round)
         return ZStack {
             Circle().inset(by: inset)
-                .stroke(trackColor, style: trackStyle(width: width * unit))
+                .stroke(trackColor, style: trackStyle(width: width * strokeUnit))
             if window?.isWarning == true {
                 hatchedArc(arc, style: arcStyle)
             } else {
@@ -430,8 +441,10 @@ struct QuotaDialRing: View {
         }
         let color: Color = model.stale ? theme.color(.ink3) : theme.color(tactical ? .goldText : .ink1)
         return ZStack {
-            tick.stroke(theme.color(.island), style: StrokeStyle(lineWidth: 2.8 * unit, lineCap: .round))
-            tick.stroke(color, style: StrokeStyle(lineWidth: 1.2 * unit, lineCap: .round))
+            tick.stroke(
+                theme.color(onCard ? .surfaceCard : .island),
+                style: StrokeStyle(lineWidth: 2.8 * strokeUnit, lineCap: .round))
+            tick.stroke(color, style: StrokeStyle(lineWidth: 1.2 * strokeUnit, lineCap: .round))
         }
         .frame(width: length, height: length)
     }

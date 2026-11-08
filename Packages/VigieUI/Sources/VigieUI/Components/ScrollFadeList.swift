@@ -39,11 +39,18 @@ public struct ScrollFadeList<Content: View>: View {
     @State private var metrics = ScrollMetrics()
     private let thumbWidth: CGFloat
     private let showsHint: Bool
+    private let showsTrack: Bool
     private let content: Content
 
-    public init(thumbWidth: CGFloat = 2, showsHint: Bool = true, @ViewBuilder content: () -> Content) {
+    /// - Parameter showsTrack: draws the thumb's track (`line`) the whole height while the list overflows (the
+    ///   3px Usage track).
+    public init(
+        thumbWidth: CGFloat = 2, showsHint: Bool = true, showsTrack: Bool = false,
+        @ViewBuilder content: () -> Content
+    ) {
         self.thumbWidth = thumbWidth
         self.showsHint = showsHint
+        self.showsTrack = showsTrack
         self.content = content()
     }
 
@@ -99,6 +106,12 @@ public struct ScrollFadeList<Content: View>: View {
 
     @ViewBuilder private var thumb: some View {
         if let thumb = metrics.thumb(minimumLength: ComponentMetrics.minimumThumb) {
+            if showsTrack {
+                Capsule()
+                    .fill(theme.trackColor())
+                    .frame(width: thumbWidth, height: metrics.visibleHeight)
+                    .accessibilityHidden(true)
+            }
             Capsule()
                 .fill(theme.color(.ink3).opacity(ComponentMetrics.thumbOpacity))
                 .frame(width: thumbWidth, height: thumb.length)

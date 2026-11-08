@@ -1,6 +1,282 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "usage.tab.title" : {
+      "comment" : "Usage tab: title of the card that holds the no-provider empty state.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "USAGE"
+          }
+        }
+      }
+    },
+    "usage.tab.noProviders" : {
+      "comment" : "Usage tab: meta of the no-provider card.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "0 PROVIDERS"
+          }
+        }
+      }
+    },
+    "usage.tab.settingsShortcut" : {
+      "comment" : "Usage tab: shortcut shown on the Open settings button.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⌘,"
+          }
+        }
+      }
+    },
+    "usage.history.title" : {
+      "comment" : "Usage tab: title of the 7-day token history card.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HISTORY · 7D"
+          }
+        }
+      }
+    },
+    "usage.cost.title" : {
+      "comment" : "Usage tab: title of today's estimated cost card.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "COST · TODAY"
+          }
+        }
+      }
+    },
+    "usage.card.noPlanWindows" : {
+      "comment" : "Usage provider card of a provider without plan limits (tokens and cost from local logs only).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NO PLAN WINDOWS"
+          }
+        }
+      }
+    },
+    "usage.card.meta.warn" : {
+      "comment" : "Usage provider card meta before the warning threshold, e.g. WARN 80%.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WARN"
+          }
+        }
+      }
+    },
+    "usage.card.meta.percent" : {
+      "comment" : "Usage provider card meta: the warning threshold value, e.g. 80%.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld%%"
+          }
+        }
+      }
+    },
+    "usage.card.meta.weeklyOnly" : {
+      "comment" : "Usage provider card meta: the plan has a weekly window and no 5-hour window.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WEEKLY ONLY"
+          }
+        }
+      }
+    },
+    "usage.card.meta.dailyOnly" : {
+      "comment" : "Usage provider card meta: the plan has a daily quota only.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DAILY QUOTA ONLY"
+          }
+        }
+      }
+    },
+    "usage.card.meta.localOnly" : {
+      "comment" : "Usage provider card meta: no plan limits, only local logs.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LOCAL LOGS ONLY"
+          }
+        }
+      }
+    },
+    "usage.bar.value" : {
+      "comment" : "Usage bar: share of the window used, e.g. 62%.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld%%"
+          }
+        }
+      }
+    },
+    "usage.bar.reset" : {
+      "comment" : "Usage bar: before the reset time, e.g. RESET 16:40 · IN 1H52.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RESET"
+          }
+        }
+      }
+    },
+    "usage.bar.in" : {
+      "comment" : "Usage bar: time left before the reset, e.g. IN 1H52.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "IN %@"
+          }
+        }
+      }
+    },
+    "usage.bar.elapsed" : {
+      "comment" : "Usage bar pace line: share of the window's time elapsed.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ELAPSED %lld%%"
+          }
+        }
+      }
+    },
+    "usage.bar.pace.within" : {
+      "comment" : "Usage bar pace label: usage at or under the elapsed time plus the tolerance.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WITHIN PACE"
+          }
+        }
+      }
+    },
+    "usage.bar.pace.withinLead" : {
+      "comment" : "Usage bar pace label: usage ahead of the elapsed time by this many points, inside the tolerance.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WITHIN PACE · +%lld"
+          }
+        }
+      }
+    },
+    "usage.bar.pace.aheadLead" : {
+      "comment" : "Usage bar pace label: usage ahead of the elapsed time by more than the tolerance.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AHEAD OF PACE · +%lld"
+          }
+        }
+      }
+    },
+    "usage.bar.pace.warning" : {
+      "comment" : "Usage bar label: the window is at or over the warning threshold.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WARN · ≥ %lld%%"
+          }
+        }
+      }
+    },
+    "usage.bar.a11y.reset" : {
+      "comment" : "VoiceOver: the reset time and the time left of a usage window.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "reset %1$@ in %2$@"
+          }
+        }
+      }
+    },
+    "usage.bar.a11y.elapsed" : {
+      "comment" : "VoiceOver: share of a usage window's time elapsed.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "elapsed %lld percent"
+          }
+        }
+      }
+    },
+    "usage.footer.reorder" : {
+      "comment" : "Usage tab footer under a scrolling provider list, before SETTINGS.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DRAG TO REORDER · ALSO IN"
+          }
+        }
+      }
+    },
+    "usage.footer.settings" : {
+      "comment" : "Usage tab footer: the end of DRAG TO REORDER · ALSO IN SETTINGS.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SETTINGS"
+          }
+        }
+      }
+    },
     "usage.dial.a11y.warning" : {
       "comment" : "VoiceOver: prefix of a quota dial with a window at or over the warning threshold.",
       "extractionState" : "manual",
@@ -157,62 +433,62 @@
         }
       }
     },
-    "settings.secret.set": {
-      "comment": "Button on a secret setting: stores the typed value in the Keychain.",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Set"
+    "settings.secret.set" : {
+      "comment" : "Button on a secret setting: stores the typed value in the Keychain.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set"
           }
         }
       }
     },
-    "settings.secret.clear": {
-      "comment": "Button on a secret setting: deletes the stored value.",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Clear"
+    "settings.secret.clear" : {
+      "comment" : "Button on a secret setting: deletes the stored value.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear"
           }
         }
       }
     },
-    "settings.secret.stored": {
-      "comment": "Status under a secret field: a value is stored (never shown).",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Saved"
+    "settings.secret.stored" : {
+      "comment" : "Status under a secret field: a value is stored (never shown).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saved"
           }
         }
       }
     },
-    "settings.secret.empty": {
-      "comment": "Status under a secret field: no value is stored.",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Not set"
+    "settings.secret.empty" : {
+      "comment" : "Status under a secret field: no value is stored.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not set"
           }
         }
       }
     },
-    "settings.secret.unavailable": {
-      "comment": "Footnote under a disabled secret field when no secret store is available.",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Stored in the Keychain. Not available here."
+    "settings.secret.unavailable" : {
+      "comment" : "Footnote under a disabled secret field when no secret store is available.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stored in the Keychain. Not available here."
           }
         }
       }

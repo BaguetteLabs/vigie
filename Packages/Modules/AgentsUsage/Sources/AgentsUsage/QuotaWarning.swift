@@ -107,6 +107,13 @@ extension AgentsUsageModule: AlertActionHandler {
     /// `RESET 16:40 · IN 1H52` in local time; a reset a day or more away names the weekday
     /// (`RESET THU 09:00 · IN 3D04`).
     nonisolated static func quotaDetail(resetsAt: Date, now: Date, timeZone: TimeZone) -> String {
+        let parts = resetParts(resetsAt: resetsAt, now: now, timeZone: timeZone)
+        return UsageText.format("agentsUsage.quota.detail", parts.time, parts.remaining)
+    }
+
+    /// The two parts of a reset line: the local time (`16:40`, or `THU 09:00` a day or more away) and the time
+    /// left (`1H52`, `3D04`). Shared by the quota-warning peek and the Usage tab bars.
+    nonisolated static func resetParts(resetsAt: Date, now: Date, timeZone: TimeZone) -> UsageReset {
         let minutes = max(0, Int(resetsAt.timeIntervalSince(now) / 60))
         let hours = minutes / 60
         let formatter = DateFormatter()
@@ -121,11 +128,11 @@ extension AgentsUsageModule: AlertActionHandler {
             remaining = UsageText.format("agentsUsage.quota.in.hours", hours, minutes % 60)
         }
         let time = formatter.string(from: resetsAt).uppercased(with: UsageText.locale)
-        return UsageText.format("agentsUsage.quota.detail", time, remaining)
+        return UsageReset(time: time, remaining: remaining)
     }
 
     /// Alert action (AD-13, `AlertActionHandler`): `open-usage` opens this module's tab (the Usage tab, Story
-    /// 7.7); with no tab yet the host opens the expanded view on Home.
+    /// 7.7).
     public func handleAlertAction(_ actionID: String, payload: Data, intent: UserIntent?) {
         guard actionID == Self.openUsageActionID else {
             log?.notice("alert action \(actionID, privacy: .public) ignored")

@@ -9,12 +9,19 @@ public struct WidgetCard<Content: View>: View {
     @Environment(\.vigieTheme) private var theme
     private let title: Text
     private let meta: Text?
+    private var leading: AnyView?
     private let content: Content
 
     public init(title: Text, meta: Text? = nil, @ViewBuilder content: () -> Content) {
         self.title = title
         self.meta = meta
         self.content = content()
+    }
+
+    /// A card whose header starts with `leading` before the title (the reorder grip of a Usage provider card).
+    public init(title: Text, meta: Text? = nil, leading: some View, @ViewBuilder content: () -> Content) {
+        self.init(title: title, meta: meta, content: content)
+        self.leading = AnyView(leading)
     }
 
     public init(
@@ -56,7 +63,8 @@ public struct WidgetCard<Content: View>: View {
     }
 
     private var header: some View {
-        HStack(alignment: .firstTextBaseline, spacing: theme.spacing(.glyphGap)) {
+        HStack(alignment: leading == nil ? .firstTextBaseline : .center, spacing: theme.spacing(.glyphGap)) {
+            if let leading { leading }
             title
                 .font(theme.font(.cardTitle))
                 .tracking(theme.tracking(.cardTitle))

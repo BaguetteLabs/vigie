@@ -7,7 +7,7 @@ import os
 
 /// `agents.usage` (SPEC §7.2): token and cost history from agents' local logs (Story 7.1) and opt-in plan limits
 /// merged into the same provider (Story 7.3, `PlanUsage.swift`); one quota ring per provider with plan windows on the
-/// closed notch's left wing (Story 7.4, `QuotaRings.swift`). The Usage tab (7.7) builds on it.
+/// closed notch's left wing (Story 7.4, `QuotaRings.swift`); the Usage tab (Story 7.7, `UsageTab.swift`).
 ///
 /// App assembly passes the same `AgentAdapters` value as `agents.sessions` (AD-4, AD-23). The module owns the
 /// only SQLite database (AD-11), `usage.sqlite` in its `context.storage` folder, filled by ``UsageIngestor`` off
@@ -44,6 +44,8 @@ public final class AgentsUsageModule: NotchModule {
     @ObservationIgnored let adapterSettings: @Sendable (any AgentAdapter) -> any ReadOnlySettings
     @ObservationIgnored let calendar: Calendar
     @ObservationIgnored let now: @Sendable () -> Date
+    /// Opens a Settings pane by id (`Open settings ⌘,` of the Usage tab's empty state); nil hides the button.
+    @ObservationIgnored public let openSettings: (@MainActor @Sendable (String) -> Void)?
 
     /// Plan windows per provider (Story 7.3); absent while `plan` is off.
     public internal(set) var planStates: [AgentID: PlanState] = [:] {
@@ -76,7 +78,7 @@ public final class AgentsUsageModule: NotchModule {
     /// The query API, available once started.
     public private(set) var history: UsageHistory?
     /// The last ingest pass.
-    public private(set) var lastIngest: IngestReport?
+    public internal(set) var lastIngest: IngestReport?
     public private(set) var registry: UsageProviderRegistry?
 
     @ObservationIgnored var ingestor: UsageIngestor?
@@ -89,13 +91,15 @@ public final class AgentsUsageModule: NotchModule {
     ///   - adapterSettingsStores: writable adapter settings for the Settings block.
     ///   - adapterSettings: overrides how adapter settings are read; default: the store, else the context's
     ///     settings, else the declared defaults.
+    ///   - openSettings: opens a Settings pane by id (the Usage tab's `NO USAGE PROVIDER` button).
     public init(
         adapters: AgentAdapters,
         contexts: [AgentID: any AdapterContext] = [:],
         adapterSettingsStores: [AgentID: any AdapterSettingsStore] = [:],
         adapterSettings: (@Sendable (any AgentAdapter) -> any ReadOnlySettings)? = nil,
         calendar: Calendar = .current,
-        now: @escaping @Sendable () -> Date = { Date() }
+        now: @escaping @Sendable () -> Date = { Date() },
+        openSettings: (@MainActor @Sendable (String) -> Void)? = nil
     ) {
         self.adapters = adapters
         self.adapterContexts = contexts
@@ -108,6 +112,7 @@ public final class AgentsUsageModule: NotchModule {
             }
         self.calendar = calendar
         self.now = now
+        self.openSettings = openSettings
         self.clock = now()
     }
 

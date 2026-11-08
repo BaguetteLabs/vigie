@@ -202,8 +202,8 @@ import VigieUI
         harness.module.handleAlertAction("open-usage", payload: Data("claude".utf8), intent: intent)
         harness.module.handleAlertAction("unknown", payload: Data(), intent: intent)
         #expect(harness.host.openedTabs == [intent])
-        // The module has no tab yet (7.7): the host opens the expanded view on Home.
-        #expect(harness.module.expandedView() == nil)
+        // The host lands on this module's tab: the Usage tab (Story 7.7).
+        #expect(harness.module.expandedView() != nil)
     }
 
     @Test func stopResolvesOpenAlerts() async throws {

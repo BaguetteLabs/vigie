@@ -113,7 +113,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             ModuleDescriptor(manifest: AgentsUsageModule.staticManifest) {
                 AgentsUsageModule(
                     adapters: agentAdapters, contexts: adapterAssembly.contexts,
-                    adapterSettingsStores: adapterAssembly.settings)
+                    adapterSettingsStores: adapterAssembly.settings,
+                    openSettings: { [weak self] pane in self?.openSettings(pane: pane) })
             },
         ]
         #if DEBUG
