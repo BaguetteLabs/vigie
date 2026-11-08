@@ -87,7 +87,7 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - [x] 6.4 Versioning and build numbers (run `Scripts/version.sh --xcconfig App/Config/Version.xcconfig` before a manual `xcodegen generate`)
 
 ### v0.2 — Epics 7 (Usage), 8 (Codex, `vigie run`), 9 (Shelf), 10 (Sounds), 21 (Privacy)
-- [ ] 7.1–7.10 · [ ] 8.1–8.4 · [ ] 9.1–9.10 · [x] 10.1–10.2 (listen to the WAVs once) · [ ] 21.1–21.3
+- [x] 7.1 · [ ] 7.2–7.10 · [ ] 8.1–8.4 · [ ] 9.1–9.10 · [x] 10.1–10.2 (listen to the WAVs once) · [ ] 21.1–21.3
 
 ### v0.3 — Epics 11 (Home), 12 (Scripts), 13 (Calendar), 14 (Gemini), 20 (Time)
 - [x] 11.1 · [~] 11.2 (sessions card done; quota card waits for Epic 7) · [ ] 11.3 · [ ] 12.1–12.11 · [ ] 13.1–13.4 · [ ] 14.1–14.3 · [ ] 20.1–20.6
@@ -104,6 +104,8 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - **gh auth:** `gh` is installed but not logged in. Run `! gh auth login -w` in this session (or `gh auth login` in a terminal) so CI runs on BaguetteLabs/vigie can be checked. Until then the `ci.yml` first run is unverified.
 
 - Focus/DND detection: the app cannot read the DoNotDisturb Assertions file (privacy-protected). Decide: accept (no Focus suppression in v0.1), or research another detection route.
+
+- Check `Packages/Modules/AgentsUsage/Sources/AgentsUsage/Resources/prices.json` against current Anthropic list prices (4.x rows written from memory).
 
 ## Decisions log
 
@@ -149,6 +151,8 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - 2026-11-08 — Story 11.1: Home tab (`ExpandedTab.home`) is always first, outside `general.tab_order`; `expand()` lands on Home every time. Cards resolved by `HomeCardSelection.resolve(order:offered:)` from `[home] cards`; unknown ids logged once and preserved when the pane writes. Sizes from DESIGN tokens `components.script-card.width` (222), `components.home-grid.card-height` (138), `spacing.grid-gap` (no new Theme tokens: `base.toml` is generated). Script cards plug in via `NotchHost(additionalHomeCards:)` + `SettingsController.additionalHomeProviders`. 11.2 only needs `homeCard()` in AgentsSessions and Usage. Dev note: `~/.local/bin/vigie-dev` may point at a deleted DerivedData helper until the next dev launch re-points it.
 
 - 2026-11-08 — Story 11.2 (sessions card): `SessionsHomeCardView` bound to the module's `tabSnapshot(now:)`, rows on `18 | 92max | 1fr | 64` with `minimumScaleFactor`; in a 222 cell the agent name ("Claude Code") eats most of the project column — polish candidate: short agent label ("Claude") or glyph-only agent column on Home. Row buttons nest inside the Home card button; manual check that a row press does not also open the tab. Empty states have no Settings button on Home (nested button). Quota card: do it with Epic 7 (7.x module `homeCard()`).
+
+- 2026-11-08 — Story 7.1: `Packages/Modules/AgentsUsage` (first remote dependency: GRDB 7.12.x, `Package.resolved` committed; CI needs GitHub access as for the other packages). `UsageStore` (GRDB pool, WAL) under `modules/agents.usage/usage.sqlite`; `UsageIngestor` at start + every 60 s (no FSEvents); id = provider/session/message, upsert keeps the last streaming write. Real logs: 404 files, ~15.8k records, first pass ~7 s. `ClaudeLogReader` in the Claude adapter; `usageProvider` stays nil until 7.3. `usage_providers` is read through adapter defaults only (ConfigStore does not serve adapter settings yet) and the sessions `adapters` list is not consulted. `Scripts/check-locales.sh` exempts `GRDB_GRDB.bundle`. **Verify the bundled `prices.json`** (4.x rows and sonnet-5 cache-read from memory). Romain's config has `[modules."agents.usage"]` keys (order, pace, pace_tolerance, priority, rings, warn_action, warn_threshold) that now log unknown-key problems until 7.4+ declares them.
 
 ## Notes for the next session
 
