@@ -90,7 +90,7 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - [x] 7.1, 7.2 (signed-build AC pending a real identity), 7.3 (live endpoint untested; AD-23 path ruling pending) , 7.4, 7.5, 7.6, 7.7, 7.8 (not yet seen live), 7.9 · [ ] 7.10 · [ ] 8.1–8.4 · [ ] 9.1–9.10 · [x] 10.1–10.2 (listen to the WAVs once) · [ ] 21.1–21.3
 
 ### v0.3 — Epics 11 (Home), 12 (Scripts), 13 (Calendar), 14 (Gemini), 20 (Time)
-- [x] 11.1 · [~] 11.2 (sessions card done; quota card waits for Epic 7) · [ ] 11.3 · [ ] 12.1–12.11 · [ ] 13.1–13.4 · [ ] 14.1–14.3 · [ ] 20.1–20.6
+- [x] 11.1 · [x] 11.2 · [ ] 11.3 · [ ] 12.1–12.11 · [ ] 13.1–13.4 · [ ] 14.1–14.3 · [ ] 20.1–20.6
 
 ### v0.4 — Epics 15 (Notes), 16 (Sync), 17 (Onboarding/Settings), 18 (Themes), 19 (Public release)
 - [ ] 15.1–15.5 · [ ] 16.1–16.3 · [ ] 17.1, 17.2, 17.4, 17.5 ([-] 17.3 superseded) · [ ] 18.1–18.4 · [ ] 19.1–19.3
@@ -168,6 +168,8 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - 2026-11-08 — Stories 7.7/7.8: `UsageTabView`/`UsageTabSnapshot` (VigieUI `Usage/`), module `expandedView()` + `usageTabSnapshot()` + `UsageOverview` loaded off-main after each ingest / tab appear / day change. Meta reads `WARN 80%` (no plan name from the endpoint yet), `WEEKLY ONLY`, `DAILY QUOTA ONLY`, `LOCAL LOGS ONLY`, `+ STALE · HH:MM`. Every window is paced on the tab (mockup); tab dial always nests regardless of `rings`. Cost list caps at 3 rows (`N MORE`), unpriced → `≈` + `API RATE · SOME MODELS UNPRICED`. `onReorder` is a no-op until 7.9. `WidgetCard(leading:)` and `ScrollFadeList(showsTrack:)` added. **Nobody has seen the tab with real logs yet** (screen was locked): open Vigie Dev › Usage once. `PlanUsageTests.settle()` raised to 200 yields (was flaky).
 
 - 2026-11-08 — Story 7.9: grip is `.draggable`, cards are `.dropDestination` (no `List`/`onMove` on the tab); `UsageProviderOrder` helpers; `setProviderOrder(shown:)` writes the full `order` (unseen providers kept). Settings › Usage shows **two** order controls: the generated raw `order` list editor (add/remove only) plus the module's Order block — needs a `SettingDescriptor` hide flag + filter in `moduleRows` (generic Settings follow-up, same gap as 11.1's `home.cards` exclusion). Drag not exercised in the running app. `hoverOpensWithoutFocusAfterTheDelayWhenOptedIn` flaked again (third time).
+
+- 2026-11-08 — Story 11.2 (quota card): `UsageHomeCardView` bound to `usageTabSnapshot()`; rows 32 pt (3 fit, fade from 4); `STALE · HH:MM` replaces the reset line on a stale row; `homeCard()` task refreshes overview + plan like the tab. Epic 11.1/11.2 done; 11.3 (shelf widget) waits for Epic 9.
 
 ## Notes for the next session
 
