@@ -23,6 +23,13 @@ public struct RingSettings: Equatable, Sendable {
     /// `pace_tolerance` default and bounds, in points (SPEC §11).
     public nonisolated static let defaultPaceTolerance = QuotaDialModel.defaultPaceTolerance
     nonisolated static let maxPaceTolerance = 50
+    nonisolated static let warnThresholdKey = "warn_threshold"
+    nonisolated static let warnActionKey = "warn_action"
+    /// `warn_threshold` default, in % used (SPEC §11).
+    public nonisolated static let defaultWarnThreshold = 80
+    nonisolated static func providerWarnThresholdKey(_ id: AgentID) -> String {
+        "providers.\(id.rawValue).warn_threshold"
+    }
     /// Default left-wing priority of every provider ring (SPEC §11).
     public nonisolated static let defaultPriority = 2
     /// Per-provider overrides are declared for these providers (`providers.<id>.priority`). Codex and Gemini
@@ -40,11 +47,18 @@ public struct RingSettings: Equatable, Sendable {
     public var pace: Bool
     /// `pace_tolerance` in points: ahead only when used > elapsed + tolerance.
     public var paceTolerance: Int
+    /// `warn_threshold`: a window at or over this % used is in quota warning (FR51).
+    public var warnThreshold: Int
+    /// `warn_action`: peek + state `alert`, or the visual change only (state `active`).
+    public var warnAction: WarnAction
+    /// Overrides from `providers.<id>.warn_threshold`; 0 (the declared default) means "use `warn_threshold`".
+    public var providerWarnThreshold: [AgentID: Int]
 
     public init(
         priority: Int = RingSettings.defaultPriority, order: [String] = [], rings: RingsMode = .fiveHourAndWeekly,
         providerPriority: [AgentID: Int] = [:], pace: Bool = true,
-        paceTolerance: Int = RingSettings.defaultPaceTolerance
+        paceTolerance: Int = RingSettings.defaultPaceTolerance, warnThreshold: Int = RingSettings.defaultWarnThreshold,
+        warnAction: WarnAction = .alert, providerWarnThreshold: [AgentID: Int] = [:]
     ) {
         self.priority = priority
         self.order = order
@@ -52,13 +66,20 @@ public struct RingSettings: Equatable, Sendable {
         self.providerPriority = providerPriority
         self.pace = pace
         self.paceTolerance = min(Self.maxPaceTolerance, max(0, paceTolerance))
+        self.warnThreshold = min(100, max(1, warnThreshold))
+        self.warnAction = warnAction
+        self.providerWarnThreshold = providerWarnThreshold.filter { $0.value > 0 }.mapValues { min(100, $0) }
     }
 
     init(_ settings: any ModuleSettings) {
         var overrides: [AgentID: Int] = [:]
+        var thresholds: [AgentID: Int] = [:]
         for id in Self.overridableProviders {
             if let value = settings.value(Self.providerPriorityKey(id), as: Int.self), value > 0 {
                 overrides[id] = value
+            }
+            if let value = settings.value(Self.providerWarnThresholdKey(id), as: Int.self), value > 0 {
+                thresholds[id] = value
             }
         }
         self.init(
@@ -68,15 +89,23 @@ public struct RingSettings: Equatable, Sendable {
                 ?? .fiveHourAndWeekly,
             providerPriority: overrides,
             pace: settings.value(Self.paceKey, as: Bool.self) ?? true,
-            paceTolerance: settings.value(Self.paceToleranceKey, as: Int.self) ?? Self.defaultPaceTolerance)
+            paceTolerance: settings.value(Self.paceToleranceKey, as: Int.self) ?? Self.defaultPaceTolerance,
+            warnThreshold: settings.value(Self.warnThresholdKey, as: Int.self) ?? Self.defaultWarnThreshold,
+            warnAction: settings.value(Self.warnActionKey, as: String.self).flatMap(WarnAction.init(rawValue:))
+                ?? .alert,
+            providerWarnThreshold: thresholds)
     }
 
     /// Every key whose change re-reads the settings.
     static var observedKeys: [String] {
-        [priorityKey, orderKey, ringsKey, paceKey, paceToleranceKey] + overridableProviders.map(providerPriorityKey)
+        [priorityKey, orderKey, ringsKey, paceKey, paceToleranceKey, warnThresholdKey, warnActionKey]
+            + overridableProviders.flatMap { [providerPriorityKey($0), providerWarnThresholdKey($0)] }
     }
 
     func priority(for id: AgentID) -> Int { providerPriority[id] ?? priority }
+
+    /// The provider's threshold: its override, else `warn_threshold`.
+    func warnThreshold(for id: AgentID) -> Int { providerWarnThreshold[id] ?? warnThreshold }
 
     /// The provider's rank among rings: its position in `order`, else after every listed one in registration
     /// order.
@@ -110,6 +139,14 @@ public struct RingSettings: Equatable, Sendable {
                 key: paceToleranceKey, label: text("agentsUsage.setting.paceTolerance"),
                 kind: .int(default: defaultPaceTolerance, min: 0, max: maxPaceTolerance), scope: .synced,
                 help: text("agentsUsage.setting.paceTolerance.help")),
+            SettingDescriptor(
+                key: warnThresholdKey, label: text("agentsUsage.setting.warnThreshold"),
+                kind: .int(default: defaultWarnThreshold, min: 1, max: 100), scope: .synced,
+                help: text("agentsUsage.setting.warnThreshold.help")),
+            SettingDescriptor(
+                key: warnActionKey, label: text("agentsUsage.setting.warnAction"),
+                kind: .enumeration(options: WarnAction.allCases.map(\.rawValue), default: WarnAction.alert.rawValue),
+                scope: .synced, help: text("agentsUsage.setting.warnAction.help")),
         ]
             + overridableProviders.map { id in
                 SettingDescriptor(
@@ -117,6 +154,13 @@ public struct RingSettings: Equatable, Sendable {
                     label: text("agentsUsage.setting.providerPriority.\(id.rawValue)"),
                     kind: .int(default: 0, min: 0, max: 99), scope: .synced,
                     help: text("agentsUsage.setting.providerPriority.help"))
+            }
+            + overridableProviders.map { id in
+                SettingDescriptor(
+                    key: providerWarnThresholdKey(id),
+                    label: text("agentsUsage.setting.providerWarnThreshold.\(id.rawValue)"),
+                    kind: .int(default: 0, min: 0, max: 100), scope: .synced,
+                    help: text("agentsUsage.setting.providerWarnThreshold.help"))
             }
     }
 }
@@ -154,27 +198,44 @@ extension QuotaDialModel {
     /// The dial for a plan: the 5h window inside (plus weekly around it with `5h+weekly`), else the plan's only
     /// window (weekly, then daily); nil when the plan has no window the dial knows (A18). With `pace` on, the
     /// paced window carries its elapsed share at `now` (Story 7.5).
+    ///
+    /// With `warnThreshold`, each window at or over it (and not yet reset at `now`) is in quota warning (Story
+    /// 7.6); a warning on a window the dial does not draw sets `hiddenWarning`.
     init?(
         providerName: String, plan: PlanState, rings: RingsMode, pace: Bool = false,
-        paceTolerance: Int = QuotaDialModel.defaultPaceTolerance, now: Date = Date()
+        paceTolerance: Int = QuotaDialModel.defaultPaceTolerance, warnThreshold: Int? = nil, now: Date = Date()
     ) {
         var windows: [QuotaWindowKind: QuotaDialModel.Window] = [:]
         for window in plan.windows {
             if let mapped = QuotaDialModel.Window(window), windows[mapped.kind] == nil { windows[mapped.kind] = mapped }
         }
-        for kind in Array(windows.keys) { windows[kind]?.paceTolerance = paceTolerance }
+        for kind in Array(windows.keys) {
+            windows[kind]?.paceTolerance = paceTolerance
+            if let warnThreshold, let window = windows[kind] {
+                windows[kind]?.isWarning = window.isAtOrOver(warnThreshold, now: now)
+            }
+        }
         if pace, let paced = Self.pacedKind(in: windows.keys), let window = windows[paced] {
             windows[paced]?.elapsedFraction = paced.elapsedFraction(resetsAt: window.resetsAt, now: now)
         }
+        let primary: Window
+        let secondary: Window?
         if let fiveHour = windows[.fiveHour] {
-            self.init(
-                providerName: providerName, primary: fiveHour,
-                secondary: rings == .fiveHourAndWeekly ? windows[.weekly] : nil, stale: plan.isStale)
+            primary = fiveHour
+            secondary = rings == .fiveHourAndWeekly ? windows[.weekly] : nil
         } else if let only = windows[.weekly] ?? windows[.daily] {
-            self.init(providerName: providerName, primary: only, stale: plan.isStale)
+            primary = only
+            secondary = nil
         } else {
             return nil
         }
+        let drawn: Set<QuotaWindowKind> = [primary.kind, secondary?.kind].compactMap { $0 }.reduce(into: []) {
+            $0.insert($1)
+        }
+        let hidden = windows.values.contains { !drawn.contains($0.kind) && $0.isWarning }
+        self.init(
+            providerName: providerName, primary: primary, secondary: secondary, stale: plan.isStale,
+            hiddenWarning: hidden)
     }
 }
 
@@ -190,7 +251,8 @@ extension AgentsUsageModule {
             guard let provider = adapter.usageProvider, let plan = planStates[adapter.id],
                 let model = QuotaDialModel(
                     providerName: String(localized: provider.name), plan: plan, rings: settings.rings,
-                    pace: settings.pace, paceTolerance: settings.paceTolerance, now: now)
+                    pace: settings.pace, paceTolerance: settings.paceTolerance,
+                    warnThreshold: settings.warnThreshold(for: adapter.id), now: now)
             else { return nil }
             return QuotaRing(
                 provider: adapter.id, model: model, priority: settings.priority(for: adapter.id),
@@ -208,8 +270,10 @@ extension AgentsUsageModule {
         let multiple = rings.count > 1
         return rings.map { ring in
             let model = ring.model
-            return LeftWingItem(id: "ring.\(ring.provider.rawValue)", priority: ring.priority, order: ring.order) {
-                size in
+            let state = ring.model.hasWarning ? warningState : nil
+            return LeftWingItem(
+                id: "ring.\(ring.provider.rawValue)", priority: ring.priority, state: state, order: ring.order
+            ) { size in
                 switch size {
                 case .wide: multiple ? nil : AnyView(QuotaReadoutView(model: model))
                 case .short: AnyView(QuotaDialView(model: model, size: multiple ? .stacked : .wing))
@@ -219,16 +283,24 @@ extension AgentsUsageModule {
         }
     }
 
-    /// FR53 as far as rings go: ambient while a ring is offered, hidden otherwise (the quota warning, Story
-    /// 7.6, raises it).
+    /// FR53: hidden without a ring, ambient while rings are offered, and `alert` (`warn_action = "alert"`) or
+    /// `active` (`"visual"`) while any provider is in quota warning (Story 7.6). Pace never changes it.
     func updateRingState() {
-        let next: ModuleState = quotaRings.isEmpty ? .hidden : .ambient
+        let rings = quotaRings
+        let next: ModuleState =
+            rings.isEmpty ? .hidden : rings.contains(where: \.model.hasWarning) ? warningState : .ambient
         if state != next { state = next }
     }
 
-    /// Moves the dial clock to now: the pace tick advances (Story 7.5).
+    /// The state of a ring (and of the module) in quota warning, per `warn_action`.
+    var warningState: ModuleState { ringSettings.warnAction == .alert ? .alert : .active }
+
+    /// Moves the dial clock to now: the pace tick advances (Story 7.5) and a window whose reset passed leaves
+    /// its quota warning (Story 7.6).
     func tickClock() {
         clock = now()
+        updateRingState()
+        evaluateQuotaWarnings()
     }
 
     /// Reads the ring keys now and again whenever one changes, and advances the dial clock every
@@ -243,6 +315,8 @@ extension AgentsUsageModule {
                 Task { [weak self] in
                     for await _ in stream {
                         self?.ringSettings = RingSettings(settings)
+                        self?.updateRingState()
+                        self?.evaluateQuotaWarnings()
                     }
                 })
         }

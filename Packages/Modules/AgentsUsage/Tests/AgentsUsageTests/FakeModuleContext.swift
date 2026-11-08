@@ -9,6 +9,7 @@ final class FakeModuleContext: ModuleContext, @unchecked Sendable {
     let fakeStorage: FolderStorage
     let fakeScheduler = FakeScheduler()
     let recordingNotifier = RecordingNotifier()
+    let recordingHost = RecordingHost()
 
     /// The module's own settings (`[modules."agents.usage"]`); none by default.
     let moduleSettings: any ModuleSettings
@@ -25,7 +26,7 @@ final class FakeModuleContext: ModuleContext, @unchecked Sendable {
     var hotkeys: any HotkeyRegistry { NoHotkeys() }
     var notifier: any Notifier { recordingNotifier }
     var events: any EventBus { NoEvents() }
-    var host: any HostControl { NoHost() }
+    var host: any HostControl { recordingHost }
     var permissions: any PermissionsService { NoPermissions() }
     var power: any PowerService { NoPower() }
     var clipboard: any ClipboardService { NoClipboard() }
@@ -103,6 +104,18 @@ final class RecordingNotifier: Notifier, @unchecked Sendable {
         lock.withLock { _posted.append(event) }
         return AlertHandle { [weak self] in self?.lock.withLock { self?._resolved += 1 } }
     }
+}
+
+/// Records `openOwnTab` calls.
+final class RecordingHost: HostControl, @unchecked Sendable {
+    private let lock = NSLock()
+    private var _openedTabs: [UserIntent?] = []
+    var openedTabs: [UserIntent?] { lock.withLock { _openedTabs } }
+
+    func requestPeek() {}
+    func expand(focus: UserIntent?) {}
+    func openOwnTab(focus: UserIntent?) { lock.withLock { _openedTabs.append(focus) } }
+    func registerDynamicModule(_ module: any NotchModule) throws -> RegistrationToken { RegistrationToken {} }
 }
 
 struct NoHost: HostControl {

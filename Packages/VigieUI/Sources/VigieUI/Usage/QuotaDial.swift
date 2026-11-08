@@ -51,17 +51,24 @@ public struct QuotaDialModel: Hashable, Sendable {
         public var elapsedFraction: Double?
         /// `pace_tolerance` in points (default 5): ahead only when used > elapsed + tolerance.
         public var paceTolerance: Int
+        /// At or over the provider's `warn_threshold` (Story 7.6): hatched `quota-warning` arc, triangle on the
+        /// ring centre; wins over pace-ahead.
+        public var isWarning: Bool
 
         public init(
             kind: QuotaWindowKind, fraction: Double, resetsAt: Date? = nil, elapsedFraction: Double? = nil,
-            paceTolerance: Int = QuotaDialModel.defaultPaceTolerance
+            paceTolerance: Int = QuotaDialModel.defaultPaceTolerance, isWarning: Bool = false
         ) {
             self.kind = kind
             self.fraction = fraction.isFinite ? min(1, max(0, fraction)) : 0
             self.resetsAt = resetsAt
             self.elapsedFraction = elapsedFraction.map { $0.isFinite ? min(1, max(0, $0)) : 0 }
             self.paceTolerance = max(0, paceTolerance)
+            self.isWarning = isWarning
         }
+
+        /// Normal or warning (DESIGN "Pace and quota-warning colors").
+        public var quota: QuotaState { isWarning ? .warning : .normal }
 
         /// Within or ahead of pace (FR52); nil when the window is not paced. Compared in points, so the
         /// tolerance edge itself is within pace.
@@ -87,12 +94,24 @@ public struct QuotaDialModel: Hashable, Sendable {
     public private(set) var secondary: Window?
     /// The last refresh failed: the values are the last good ones, drawn in the stale look.
     public var stale: Bool
+    /// A window the dial does not draw (weekly with `rings = "5h"`) is at or over the threshold: the triangle
+    /// still replaces the value.
+    public var hiddenWarning: Bool
 
-    public init(providerName: String, primary: Window?, secondary: Window? = nil, stale: Bool = false) {
+    public init(
+        providerName: String, primary: Window?, secondary: Window? = nil, stale: Bool = false,
+        hiddenWarning: Bool = false
+    ) {
         self.providerName = providerName
         self.primary = primary ?? secondary
         self.secondary = primary == nil ? nil : secondary
         self.stale = stale
+        self.hiddenWarning = hiddenWarning
+    }
+
+    /// Any window of the provider is in quota warning (A36: the triangle replaces the value).
+    public var hasWarning: Bool {
+        hiddenWarning || primary?.isWarning == true || secondary?.isWarning == true
     }
 
     /// Both rings are drawn, nested.
@@ -118,17 +137,19 @@ public struct QuotaDialModel: Hashable, Sendable {
     }
 
     /// "Claude, 5 hour window 38 percent, weekly 52 percent"; absent windows are left out; a window ahead of
-    /// pace adds "ahead of pace".
+    /// pace adds "ahead of pace" (not under a quota warning, which wins); a quota warning prefixes "Quota
+    /// warning".
     public var accessibilityLabel: String {
         let windows = [primary, secondary].compactMap { $0 }.map { window in
             let base = L10n.format("usage.dial.a11y.window", window.kind.spokenName, window.percent)
-            return window.pace == .ahead ? L10n.format("usage.dial.a11y.ahead", base) : base
+            return !window.isWarning && window.pace == .ahead ? L10n.format("usage.dial.a11y.ahead", base) : base
         }
         var label = providerName
         for window in windows {
             label = L10n.format("usage.dial.a11y.join", label, window)
         }
-        return stale ? L10n.format("usage.dial.a11y.stale", label) : label
+        if stale { label = L10n.format("usage.dial.a11y.stale", label) }
+        return hasWarning ? L10n.format("usage.dial.a11y.warning", label) : label
     }
 }
 
@@ -256,6 +277,82 @@ public struct WingReadout: View {
     }
 }
 
+// MARK: - Quota-warning hatch
+
+/// `components.quota-warning-fill.pattern`, a CSS `repeating-linear-gradient(135deg, warning 0 3px,
+/// warning@40% 3px 5px)`: the stripe angle, the solid band, the period and the light band's alpha.
+struct HatchPattern: Equatable {
+    var angle: Double
+    var solid: CGFloat
+    var period: CGFloat
+    var lightAlpha: Double
+
+    /// DESIGN values, used when a theme lacks the component or it does not parse.
+    static let fallback = HatchPattern(angle: 135, solid: 3, period: 5, lightAlpha: 0.4)
+
+    init(angle: Double, solid: CGFloat, period: CGFloat, lightAlpha: Double) {
+        self.angle = angle
+        self.solid = solid
+        self.period = period
+        self.lightAlpha = lightAlpha
+    }
+
+    init(theme: Theme) {
+        self = theme.component("quota-warning-fill", "pattern").flatMap(HatchPattern.init(css:)) ?? .fallback
+    }
+
+    /// Parses `repeating-linear-gradient(<a>deg, <c> 0 <s>px, <c>@<alpha> <s>px <p>px)`.
+    init?(css: String) {
+        guard let open = css.firstIndex(of: "("), let close = css.lastIndex(of: ")") else { return nil }
+        let parts = css[css.index(after: open)..<close].split(separator: ",").map {
+            $0.trimmingCharacters(in: .whitespaces)
+        }
+        guard parts.count == 3, parts[0].hasSuffix("deg"), let angle = Double(parts[0].dropLast(3)) else {
+            return nil
+        }
+        let solidStops = parts[1].split(separator: " ")
+        let lightStops = parts[2].split(separator: " ")
+        guard solidStops.count == 3, lightStops.count == 3, let solid = ThemeValue.length(String(solidStops[2])),
+            let period = ThemeValue.length(String(lightStops[2])), period > solid, solid > 0
+        else { return nil }
+        let alpha = lightStops[0].split(separator: "@").last.flatMap {
+            Double(String($0).replacingOccurrences(of: "%", with: ""))
+        }
+        guard let alpha else { return nil }
+        self.init(angle: angle, solid: solid, period: period, lightAlpha: alpha > 1 ? alpha / 100 : alpha)
+    }
+}
+
+/// The solid bands of a ``HatchPattern`` across the whole rect (CSS angle: 0° points up, clockwise).
+struct HatchStripes: Shape {
+    let pattern: HatchPattern
+
+    func path(in rect: CGRect) -> Path {
+        let radians = pattern.angle * .pi / 180
+        // Gradient direction (screen coordinates, y down) and the band direction perpendicular to it.
+        let direction = CGPoint(x: sin(radians), y: -cos(radians))
+        let along = CGPoint(x: -direction.y, y: direction.x)
+        let reach = hypot(rect.width, rect.height)
+        let center = CGPoint(x: rect.midX, y: rect.midY)
+        func point(_ offset: CGFloat, _ extent: CGFloat) -> CGPoint {
+            CGPoint(
+                x: center.x + direction.x * offset + along.x * extent,
+                y: center.y + direction.y * offset + along.y * extent)
+        }
+        var path = Path()
+        var offset = -reach / 2 - pattern.period
+        while offset < reach / 2 + pattern.period {
+            path.move(to: point(offset, -reach))
+            path.addLine(to: point(offset, reach))
+            path.addLine(to: point(offset + pattern.solid, reach))
+            path.addLine(to: point(offset + pattern.solid, -reach))
+            path.closeSubpath()
+            offset += pattern.period
+        }
+        return path
+    }
+}
+
 // MARK: - Ring drawing
 
 /// The dial in a 24-unit box (geometry of `mockups/key-closed-notch-states.html`): single ring r 7.5 / 1.6;
@@ -281,7 +378,12 @@ struct QuotaDialRing: View {
             } else {
                 ring(model.primary, radius: 7.5, width: 1.6, isPrimary: true)
             }
-            if showsValue, let value = model.valueText {
+            if model.hasWarning {
+                // A36: the triangle replaces the value on the ring centre.
+                WarningTriangle()
+                    .fill(theme.color(.quotaWarning))
+                    .frame(width: 8 * unit, height: 8 * unit)
+            } else if showsValue, let value = model.valueText {
                 Text(verbatim: value)
                     .font(valueFont.font)
                     .foregroundStyle(theme.color(model.stale ? .ink2 : .ink1))
@@ -296,15 +398,17 @@ struct QuotaDialRing: View {
         -> some View
     {
         let inset = (12 - radius) * unit
+        let arc = Circle().inset(by: inset).trim(from: 0, to: window?.fraction ?? 0)
+        let arcStyle = StrokeStyle(lineWidth: width * unit, lineCap: .round)
         return ZStack {
             Circle().inset(by: inset)
                 .stroke(trackColor, style: trackStyle(width: width * unit))
-            Circle().inset(by: inset)
-                .trim(from: 0, to: window?.fraction ?? 0)
-                .stroke(
-                    fill(window, isPrimary: isPrimary), style: StrokeStyle(lineWidth: width * unit, lineCap: .round)
-                )
-                .rotationEffect(.degrees(-90))
+            if window?.isWarning == true {
+                hatchedArc(arc, style: arcStyle)
+            } else {
+                arc.stroke(fill(window, isPrimary: isPrimary), style: arcStyle)
+                    .rotationEffect(.degrees(-90))
+            }
             if let elapsed = window?.elapsedFraction {
                 paceTick(at: elapsed, radius: radius)
             }
@@ -332,6 +436,21 @@ struct QuotaDialRing: View {
         .frame(width: length, height: length)
     }
 
+    /// The quota-warning arc (DESIGN `components.quota-warning-fill`): `quota-warning` stripes over the same
+    /// hue at the pattern's alpha, clipped to the arc. Drawn in every presence level and in the stale look (the
+    /// warning holds for the last known values).
+    private func hatchedArc(_ arc: some Shape, style: StrokeStyle) -> some View {
+        let pattern = HatchPattern(theme: theme)
+        let hue = theme.color(.quotaWarning)
+        return ZStack {
+            arc.stroke(hue.opacity(pattern.lightAlpha), style: style)
+                .rotationEffect(.degrees(-90))
+            HatchStripes(pattern: pattern)
+                .fill(hue)
+                .mask(arc.stroke(style: style).rotationEffect(.degrees(-90)))
+        }
+    }
+
     /// `line`; under Increase contrast at least `ink-3` 40 % (DESIGN "Increase contrast"); stale: `ink-3`.
     private var trackColor: Color {
         if model.stale { return theme.color(.ink3) }
@@ -346,7 +465,7 @@ struct QuotaDialRing: View {
         return StrokeStyle(lineWidth: width, dash: dash)
     }
 
-    /// The arc fill (DESIGN "Quota dial" fills; UX-DR12): stale `ink-2`; Calm flat silver (C `struct`); ahead
+    /// The arc fill outside a quota warning (DESIGN "Quota dial" fills; UX-DR12): stale `ink-2`; Calm flat silver (C `struct`); ahead
     /// of pace `pace-ahead` (A Ember, C gold); else the primary ring in `pace-on` (A iris gradient running
     /// along the arc, light: filaments, solid `pace-on` under Reduce transparency / Increase contrast; C Volt)
     /// and the outer weekly ring in A `line-silver` / C `struct`.

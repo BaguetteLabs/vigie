@@ -1,6 +1,18 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "usage.dial.a11y.warning" : {
+      "comment" : "VoiceOver: prefix of a quota dial with a window at or over the warning threshold.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quota warning, %@"
+          }
+        }
+      }
+    },
     "usage.dial.a11y.ahead" : {
       "comment" : "VoiceOver: one plan window that is ahead of pace (used more than the elapsed time plus the tolerance).",
       "extractionState" : "manual",

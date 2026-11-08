@@ -1,6 +1,150 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "agentsUsage.setting.warnThreshold" : {
+      "comment" : "Settings › Usage: quota warning threshold, percent used.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Warning threshold (percent used)"
+          }
+        }
+      }
+    },
+    "agentsUsage.setting.warnThreshold.help" : {
+      "comment" : "Settings › Usage: help under the warning threshold.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A window at or over this share used shows the quota warning. Percent used only, never pace."
+          }
+        }
+      }
+    },
+    "agentsUsage.setting.warnAction" : {
+      "comment" : "Settings › Usage: what a quota warning does (alert | visual).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quota warning"
+          }
+        }
+      }
+    },
+    "agentsUsage.setting.warnAction.help" : {
+      "comment" : "Settings › Usage: help under the warning action.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "alert shows a peek (and the warning sound, if on); visual only changes the ring."
+          }
+        }
+      }
+    },
+    "agentsUsage.setting.providerWarnThreshold.claude" : {
+      "comment" : "Settings › Usage: Claude's own warning threshold (0 = the general one).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude warning threshold (percent used)"
+          }
+        }
+      }
+    },
+    "agentsUsage.setting.providerWarnThreshold.help" : {
+      "comment" : "Settings › Usage: help under a provider's warning threshold override.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "0 uses the general warning threshold."
+          }
+        }
+      }
+    },
+    "agentsUsage.quota.title" : {
+      "comment" : "Quota-warning peek title: provider (uppercase), window (5H, WEEK, DAY), percent used. E.g. CLAUDE · 5H 82 %.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ · %2$@ %3$lld %%"
+          }
+        }
+      }
+    },
+    "agentsUsage.quota.detail" : {
+      "comment" : "Quota-warning peek detail: reset clock time, time left. E.g. RESET 16:40 · IN 1H52.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RESET %1$@ · IN %2$@"
+          }
+        }
+      }
+    },
+    "agentsUsage.quota.resetTime" : {
+      "comment" : "Date format (Unicode pattern) of the reset time when it is less than a day away.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HH:mm"
+          }
+        }
+      }
+    },
+    "agentsUsage.quota.resetDayTime" : {
+      "comment" : "Date format (Unicode pattern) of the reset time a day or more away: weekday and time.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EEE HH:mm"
+          }
+        }
+      }
+    },
+    "agentsUsage.quota.in.hours" : {
+      "comment" : "Time left before a quota window resets: hours, minutes (two digits). E.g. 1H52.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lldH%2$02lld"
+          }
+        }
+      }
+    },
+    "agentsUsage.quota.in.days" : {
+      "comment" : "Time left before a quota window resets, a day or more: days, hours (two digits). E.g. 3D04.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lldD%2$02lld"
+          }
+        }
+      }
+    },
     "agentsUsage.setting.pace" : {
       "comment" : "Settings › Usage: toggles the pace indicator on the quota rings.",
       "extractionState" : "manual",

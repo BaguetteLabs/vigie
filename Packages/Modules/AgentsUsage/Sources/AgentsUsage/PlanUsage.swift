@@ -281,6 +281,9 @@ enum UsageText {
         String(format: string(key), locale: .current, arguments: arguments)
     }
 
+    /// The catalog's locale (uppercasing, weekday names).
+    static var locale: Locale { Locale(identifier: Bundle.module.preferredLocalizations.first ?? "en") }
+
     static func resource(_ key: String.LocalizationValue) -> LocalizedStringResource {
         LocalizedStringResource(key, bundle: AgentsUsageModule.bundle)
     }

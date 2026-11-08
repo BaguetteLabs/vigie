@@ -26,7 +26,7 @@ public final class AgentsUsageModule: NotchModule {
         name: LocalizedStringResource("agentsUsage.module.name", bundle: bundle),
         icon: "chart.bar",
         settings: RingSettings.descriptors(bundle: bundle),
-        alertKinds: [setupProblemKind],
+        alertKinds: [setupProblemKind, quotaWarningKind],
         defaultEnabled: true
     )
 
@@ -50,6 +50,7 @@ public final class AgentsUsageModule: NotchModule {
         didSet {
             clock = now()
             updateRingState()
+            evaluateQuotaWarnings()
         }
     }
     /// `priority`, `order`, `rings` and the per-provider overrides (Story 7.4); defaults until `start`.
@@ -58,6 +59,11 @@ public final class AgentsUsageModule: NotchModule {
     public internal(set) var clock: Date
     @ObservationIgnored var ringObservers: [Task<Void, Never>] = []
     @ObservationIgnored var clockJob: RegistrationToken?
+    /// Open quota-warning alerts by dedupe key (Story 7.6).
+    @ObservationIgnored var quotaAlerts: [String: AlertHandle] = [:]
+    /// Dedupe keys already posted: one alert per provider, window and reset time.
+    @ObservationIgnored var postedQuotaKeys: Set<String> = []
+    @ObservationIgnored var host: (any HostControl)?
     @ObservationIgnored var planAlerts: [AgentID: AlertHandle] = [:]
     @ObservationIgnored var planInFlight: Set<AgentID> = []
     @ObservationIgnored var planMissingContextLogged: Set<AgentID> = []
@@ -109,6 +115,7 @@ public final class AgentsUsageModule: NotchModule {
         let log = context.log
         self.log = log
         notifier = context.notifier
+        host = context.host
         startRingSettings(context.settings, scheduler: context.scheduler)
         let store = try UsageStore(directory: context.storage.directory)
         let estimator = try CostEstimator.bundled()
@@ -139,6 +146,7 @@ public final class AgentsUsageModule: NotchModule {
 
     public func stop() async {
         stopRingSettings()
+        resolveAllQuotaWarnings()
         stopPlanRefresh()
         ingestTask?.cancel()
         ingestTask = nil
