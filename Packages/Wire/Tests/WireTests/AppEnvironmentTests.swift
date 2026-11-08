@@ -47,6 +47,7 @@ import Testing
         #expect(env.spoolReplayingURL == root.appendingPathComponent("spool.replaying.jsonl"))
         #expect(env.instanceLockURL == root.appendingPathComponent("instance.lock"))
         #expect(env.localConfigURL == root.appendingPathComponent("local.toml"))
+        #expect(env.dropsDirectory == root.appendingPathComponent("drops", isDirectory: true))
     }
 
     @Test func configFolderDefaultsToReleaseOneForBothFlavors() {

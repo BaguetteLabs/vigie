@@ -40,6 +40,8 @@ public protocol PeekPanelDriver: AnyObject {
 ///   the replaced alert is reported as preempted and peeks again only through its reminder.
 /// - While `isSuppressed` (the expanded view is open) no peek shows: `show` returns an inert token and the queue
 ///   is dropped; the module's tab carries the attention marker instead. Sound and system outputs are unaffected.
+/// - While `isDropDisplayOpen` (Story 9.1, UX-DR92) new peeks wait in the queue, preemption included; when the
+///   display closes the host calls ``resume()`` and the queue shows under the rules above.
 /// - A queued peek retracted before it shows (its alert resolved) is dropped and never peeks.
 /// - A module cannot show a new peek within ``rateLimit`` (3 s, A52) of its previous one retracting; its next
 ///   peek waits in the queue while other modules' peeks may show.
@@ -86,6 +88,7 @@ public final class PeekPresenter: PeekSink {
     @ObservationIgnored private let logger: Logger
     @ObservationIgnored private let shortcuts: TemporaryShortcuts?
     @ObservationIgnored private let isSuppressed: @MainActor () -> Bool
+    @ObservationIgnored private let isDropDisplayOpen: @MainActor () -> Bool
 
     @ObservationIgnored private var queue: [Entry] = []
     @ObservationIgnored private var visibleToken: PeekToken?
@@ -109,6 +112,8 @@ public final class PeekPresenter: PeekSink {
     ///   - announce: posts a VoiceOver announcement; by default ``postAnnouncement(_:)``.
     ///   - shortcuts: `⌥⌘↵` / `⌥⌘⌫`, bound while a peek is visible (Story 3.3); nil binds none.
     ///   - isSuppressed: true while no peek may show (the expanded view is open, Story 3.9).
+    ///   - isDropDisplayOpen: true while the drop display is open: peeks wait (Story 9.1); call ``resume()``
+    ///     when it closes.
     public init(
         anchors: any PeekAnchorProvider,
         theme: ThemeController,
@@ -121,6 +126,7 @@ public final class PeekPresenter: PeekSink {
         rateLimit: Duration = PeekPresenter.defaultRateLimit,
         shortcuts: TemporaryShortcuts? = nil,
         isSuppressed: @escaping @MainActor () -> Bool = { false },
+        isDropDisplayOpen: @escaping @MainActor () -> Bool = { false },
         logger: Logger = Logger(subsystem: "fr.baguettelabs.vigie", category: "peek")
     ) {
         self.anchors = anchors
@@ -135,6 +141,7 @@ public final class PeekPresenter: PeekSink {
         self.rateLimit = rateLimit
         self.shortcuts = shortcuts
         self.isSuppressed = isSuppressed
+        self.isDropDisplayOpen = isDropDisplayOpen
         self.logger = logger
     }
 
@@ -165,12 +172,19 @@ public final class PeekPresenter: PeekSink {
         sequence += 1
         let entry = Entry(token: token, alert: alert, sequence: sequence, urgency: AlertUrgency.rank(alert))
         queue.append(entry)
-        if let current = visible, AlertUrgency.preempts(alert, over: current) {
+        if isDropDisplayOpen() {
+            logger.debug("Peek for \(alert.kind, privacy: .public) waits: drop display open")
+        } else if let current = visible, AlertUrgency.preempts(alert, over: current) {
             preempt(current, with: entry)
         } else {
             pump()
         }
         return token
+    }
+
+    /// A wait condition ended (the drop display closed): shows the queue under the Story 3.9 rules.
+    public func resume() {
+        pump()
     }
 
     public func retract(_ token: PeekToken) {
@@ -250,6 +264,7 @@ public final class PeekPresenter: PeekSink {
             return
         }
         queue.removeAll { !enabled($0.alert.module) }
+        if isDropDisplayOpen() { return }
         let now = elapsed()
         let ordered = queue.sorted(by: Self.precedes)
         if let next = ordered.first(where: { releaseTime($0.alert.module) <= now }) {

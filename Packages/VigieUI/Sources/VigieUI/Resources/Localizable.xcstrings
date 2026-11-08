@@ -1860,6 +1860,54 @@
           }
         }
       }
+    },
+    "drop.band.prefix" : {
+      "comment" : "Drop display band, left: the word before the item count (uppercase readout).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DROP ·"
+          }
+        }
+      }
+    },
+    "drop.band.items" : {
+      "comment" : "Drop display band, left: the dragged item count; %lld is the count.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld ITEM"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld ITEMS"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "drop.band.cancel" : {
+      "comment" : "Drop display band, right: Esc cancels the drop.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ESC · CANCEL"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

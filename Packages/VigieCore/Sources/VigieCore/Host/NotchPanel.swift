@@ -16,6 +16,12 @@ public final class NotchPanel: NSPanel {
         set { (contentView as? IslandHostingView)?.onClick = newValue }
     }
 
+    /// File drags over the island open the drop display (Story 9.1); nil takes no drags.
+    public var dragTarget: IslandDragTarget? {
+        get { (contentView as? IslandHostingView)?.dragTarget }
+        set { (contentView as? IslandHostingView)?.dragTarget = newValue }
+    }
+
     public init(contentRect: NSRect, rootView: some View, contextMenu: NotchContextMenu?) {
         super.init(
             contentRect: contentRect,
@@ -56,6 +62,34 @@ public final class NotchPanel: NSPanel {
 final class IslandHostingView: NSHostingView<AnyView> {
     weak var contextMenu: NotchContextMenu?
     var onClick: (@MainActor () -> Void)?
+    var dragTarget: IslandDragTarget? {
+        didSet {
+            if dragTarget == nil {
+                unregisterDraggedTypes()
+            } else {
+                registerForDraggedTypes(DropDragItems.draggedTypes)
+            }
+        }
+    }
+
+    override func draggingEntered(_ sender: any NSDraggingInfo) -> NSDragOperation {
+        dragTarget?.entered(sender) ?? []
+    }
+
+    override func draggingUpdated(_ sender: any NSDraggingInfo) -> NSDragOperation {
+        dragTarget?.updated(sender) ?? []
+    }
+
+    override func draggingExited(_ sender: (any NSDraggingInfo)?) {
+        dragTarget?.exited()
+    }
+
+    /// A release on the island itself (the display not grown yet) is no drop.
+    override func performDragOperation(_ sender: any NSDraggingInfo) -> Bool { false }
+
+    override func draggingEnded(_ sender: any NSDraggingInfo) {
+        dragTarget?.ended()
+    }
 
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
 

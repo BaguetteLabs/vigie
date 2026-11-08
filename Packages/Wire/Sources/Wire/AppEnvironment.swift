@@ -38,6 +38,9 @@ public struct AppEnvironment: Sendable {
     public let spoolReplayingURL: URL
     public let instanceLockURL: URL
     public let localConfigURL: URL
+    /// `<Application Support>/drops/`: file promises dropped on the notch are materialized here, one folder per
+    /// drop, before a drop zone handler runs (AD-19).
+    public let dropsDirectory: URL
     /// The folder used when no override applies: the release one, for both flavors.
     public let defaultConfigFolderURL: URL
     /// An explicit override (init parameter, or `VIGIE_CONFIG_DIR` in dev builds), if any.
@@ -83,6 +86,7 @@ public struct AppEnvironment: Sendable {
         spoolReplayingURL = support.appendingPathComponent("spool.replaying.jsonl")
         instanceLockURL = support.appendingPathComponent("instance.lock")
         localConfigURL = support.appendingPathComponent("local.toml")
+        dropsDirectory = support.appendingPathComponent("drops", isDirectory: true)
         defaultConfigFolderURL = homeDirectoryURL.appendingPathComponent(".config/vigie", isDirectory: true)
 
         if let configFolderOverride {

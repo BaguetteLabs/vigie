@@ -184,6 +184,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             shortcuts: TemporaryShortcuts(others: { [hotkeyCenter] in hotkeyCenter.bound }),
             // No peek while the expanded view is open (Story 3.9).
             isSuppressed: { [hostLink] in hostLink.host?.isExpanded ?? false },
+            // Peeks wait while the drop display is open and show after it closes (Story 9.1, UX-DR92).
+            isDropDisplayOpen: { [hostLink] in hostLink.host?.dropDisplay.isOpen ?? false },
             logger: Logger(subsystem: environment.logSubsystem, category: "peek"))
         self.peekPresenter = peeks
         // Set once the core notifier exists; a denial is reported once, as a setup problem.
@@ -325,9 +327,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             openSettings: { [weak self] in self?.openSettings(pane: nil) },
             openSettingsPane: { [weak self] pane in self?.openSettings(pane: pane) },
             homeCardOrder: { configStore.value(CoreSettings.path("home", "cards"), as: [String].self) ?? [] },
+            dropsDirectory: environment.dropsDirectory,
             logger: Logger(subsystem: environment.logSubsystem, category: "host"))
         hostLink.host = host
         self.notchHost = host
+        host.dropDisplay.onClose = { [weak peeks] in peeks?.resume() }
         // Display selection and the virtual notch (Stories 2.6, 2.7): re-place or re-arbitrate on config edits.
         let hostConfig = HostConfigBridge(store: configStore, host: host)
         hostConfig.start()
@@ -352,6 +356,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         logger.info("host ready")
 
         installCLI(cliInstaller)
+        simulateDropIfAsked(host)
+    }
+
+    /// `-VigieSimulateDrop YES` (Debug) opens the drop display with two sample zones for 5 s at launch, as if a
+    /// file were dragged over the notch (screenshots, Story 9.1).
+    private func simulateDropIfAsked(_ host: NotchHost) {
+        #if DEBUG
+            guard UserDefaults.standard.bool(forKey: "VigieSimulateDrop") else { return }
+            logger.info("Drop display opened by -VigieSimulateDrop")
+            host.dropDisplay.simulate(zones: DropSampleZones.make(), for: .seconds(5))
+        #endif
     }
 
     /// `-VigieSimulateFocus YES` (Debug) pretends a Focus mode is on, to exercise FR17 without changing the

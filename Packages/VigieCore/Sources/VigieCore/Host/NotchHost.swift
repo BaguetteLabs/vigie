@@ -145,6 +145,9 @@ public final class NotchHost {
     @ObservationIgnored var pointerWasInside = false
     /// Test seam: anchors used instead of the laid-out island.
     @ObservationIgnored var anchorsOverride: [IslandAnchor]?
+    /// The drag-only drop display (Story 9.1): file drags over an island open it with the running modules'
+    /// `dropZones`. Peeks wait while it is open.
+    @ObservationIgnored public let dropDisplay: DropDisplayController
 
     /// - Parameters:
     ///   - maxSideWidth: `closed.max_side_width` (SPEC §5.3, default 120).
@@ -170,6 +173,10 @@ public final class NotchHost {
     ///   - additionalHomeCards: cards of providers that are not modules (scripts, Epic 12).
     ///   - pointerLocation: the pointer in global AppKit coordinates; `NSEvent.mouseLocation` in production.
     ///   - makeExpandedPanel: builds the expanded panel window; an ``ExpandedPanel`` in production.
+    ///   - dropsDirectory: `AppEnvironment.dropsDirectory`, where file promises are materialized (AD-17, AD-19);
+    ///     nil refuses file promises.
+    ///   - dropEscape: Esc while the drop display is open; a ``SystemDropEscapeMonitor`` by default.
+    ///   - makeDropDisplayPanel: builds the drop display window; a ``DropDisplayPanelController`` in production.
     public init(
         themeController: ThemeController,
         registry: ModuleRegistry,
@@ -195,6 +202,11 @@ public final class NotchHost {
         additionalHomeCards: @escaping @MainActor () -> [HomeCardModel] = { [] },
         pointerLocation: @escaping @MainActor () -> CGPoint = { NSEvent.mouseLocation },
         makeExpandedPanel: (@MainActor (NotchHost) -> any ExpandedPanelHosting)? = nil,
+        dropsDirectory: URL? = nil,
+        dropEscape: (any DropEscapeMonitoring)? = nil,
+        dropModifierFlags: @escaping @MainActor () -> NSEvent.ModifierFlags = { NSEvent.modifierFlags },
+        dropExitGrace: Duration = DropDisplayController.defaultExitGrace,
+        makeDropDisplayPanel: (@MainActor (DropDisplayController) -> any DropDisplayPanelDriver)? = nil,
         logger: Logger
     ) {
         self.themeController = themeController
@@ -226,6 +238,7 @@ public final class NotchHost {
                     rootView: NotchRootView(host: host, displayID: id, themeController: host.themeController),
                     contextMenu: host.contextMenu)
                 panel.onClick = { [weak host] in host?.islandClicked() }
+                panel.dragTarget = IslandDragTarget(controller: host.dropDisplay, displayID: id)
                 return panel
             }
         self.makeExpandedPanel =
@@ -233,7 +246,25 @@ public final class NotchHost {
                 ExpandedPanel(host: host, rootView: ExpandedRootView(host: host, themeController: themeController))
             }
         self.logger = logger
+        dropDisplay = DropDisplayController(
+            zones: { [registry] in registry.runningModules.flatMap(\.dropZones) },
+            theme: { [themeController] in themeController.theme },
+            dropsDirectory: dropsDirectory,
+            escape: dropEscape,
+            modifierFlags: dropModifierFlags,
+            exitGrace: dropExitGrace,
+            makeDriver: makeDropDisplayPanel ?? { controller in
+                DropDisplayPanelController(themeController: themeController, controller: controller)
+            },
+            logger: logger)
         expandedSurface.host = self
+        dropDisplay.anchorProvider = { [weak self] id in self?.dropAnchor(for: id) }
+    }
+
+    /// Where the drop display grows: the island of `displayID`, else the one under the pointer (else main).
+    func dropAnchor(for displayID: CGDirectDisplayID?) -> IslandAnchor? {
+        if let displayID, anchorsOverride == nil, let island = island(for: displayID) { return island.anchor }
+        return anchor(forDisplayUnder: pointerLocation())
     }
 
     /// Places the islands and follows screen parameter changes until `stop()`.
@@ -250,6 +281,7 @@ public final class NotchHost {
     }
 
     public func stop() {
+        dropDisplay.cancel()
         collapse()
         hideTask?.cancel()
         expandedPanel?.hide()

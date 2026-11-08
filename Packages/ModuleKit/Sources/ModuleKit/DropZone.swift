@@ -15,6 +15,19 @@ public struct DropZone: Identifiable, Sendable {
     public let order: Int
     public let accepts: [UTType]
     public let handler: @Sendable (DropPayload) async -> DropResult
+    /// The meta line under the label, read each time the drop display opens (e.g. `KEEP 7 DAYS · 5 ITEMS`).
+    public let meta: LocalizedStringResource?
+    /// What replaces the meta line while a drag hovers the zone and it accepts the item (`RELEASE TO STASH`).
+    public let releaseLine: LocalizedStringResource?
+    /// The VoiceOver label naming the zone and its target ("Stash, keep 7 days, 5 items"); nil reads `label`.
+    public let accessibilityLabel: LocalizedStringResource?
+    /// A modifier the handler reads, with its hint (Ask AI: ⌥ = alternate folder).
+    public let modifierHint: DropModifierHint?
+    /// How the host draws the zone.
+    public let style: DropZoneStyle
+    /// False hides the zone (its setting is off); the host reflows the grid. A stopped module's zones are
+    /// hidden anyway.
+    public let isEnabled: Bool
 
     public init(
         id: String,
@@ -25,7 +38,13 @@ public struct DropZone: Identifiable, Sendable {
         cell: DropCell,
         order: Int,
         accepts: [UTType],
-        handler: @escaping @Sendable (DropPayload) async -> DropResult
+        handler: @escaping @Sendable (DropPayload) async -> DropResult,
+        meta: LocalizedStringResource? = nil,
+        releaseLine: LocalizedStringResource? = nil,
+        accessibilityLabel: LocalizedStringResource? = nil,
+        modifierHint: DropModifierHint? = nil,
+        style: DropZoneStyle = .standard,
+        isEnabled: Bool = true
     ) {
         self.id = id
         self.label = label
@@ -36,6 +55,44 @@ public struct DropZone: Identifiable, Sendable {
         self.order = order
         self.accepts = accepts
         self.handler = handler
+        self.meta = meta
+        self.releaseLine = releaseLine
+        self.accessibilityLabel = accessibilityLabel
+        self.modifierHint = modifierHint
+        self.style = style
+        self.isEnabled = isEnabled
+    }
+
+    /// True when the zone takes items of these content types: every type conforms to one of `accepts`. An
+    /// empty `accepts` takes anything; an empty `contentTypes` (nothing known yet) is taken only then.
+    public func accepts(contentTypes: [UTType]) -> Bool {
+        if accepts.isEmpty { return true }
+        guard !contentTypes.isEmpty else { return false }
+        return contentTypes.allSatisfy { type in accepts.contains { type.conforms(to: $0) } }
+    }
+}
+
+/// How the host draws a zone in the drop display.
+public enum DropZoneStyle: Hashable, Sendable {
+    /// Glyph, label and meta on a faint fill with a hairline (Stash, AirDrop, Image to Text).
+    case standard
+    /// Dashed accent border with the round `+` target (Ask AI).
+    case target
+}
+
+/// A modifier a zone's handler reads while dropping, and its hint line (`⌥ ALT FOLDER`, lit as `ALT FOLDER`
+/// while the modifier is held over the zone).
+public struct DropModifierHint: Sendable {
+    public let modifiers: EventModifiers
+    /// Shown while the modifier is up.
+    public let idle: LocalizedStringResource
+    /// Shown, lit, while the modifier is held over the zone.
+    public let active: LocalizedStringResource
+
+    public init(modifiers: EventModifiers, idle: LocalizedStringResource, active: LocalizedStringResource) {
+        self.modifiers = modifiers
+        self.idle = idle
+        self.active = active
     }
 }
 
@@ -45,7 +102,9 @@ public enum DropRole: Hashable, Sendable {
     case secondary
 }
 
-/// Preferred placement in the host's 4 × 2 drop display grid.
+/// Preferred placement in the host's 4 × 2 drop display grid. Columns and rows count from 1, as in DESIGN
+/// (Stash column 1 row 1 span 2 × 2; Ask AI column 3 row 1 span 1 × 2; AirDrop column 4 row 1; Image to Text
+/// column 4 row 2).
 public struct DropCell: Hashable, Sendable {
     public struct Span: Hashable, Sendable {
         public let columns: Int
