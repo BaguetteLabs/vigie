@@ -171,3 +171,22 @@ Extra rows:
 If rows 1, 3, 5 and 6 match while sharing and stay `notDetected` when not sharing, 21.3 may offer
 `Automatic (when sharing or recording)` with the title heuristic, off by default, requesting Screen Recording
 when turned on. Otherwise Privacy mode stays manual only.
+
+## Live results (2026-11-08, Romain, macOS 26.5, Google Meet in Brave, entire screen)
+
+Probe (`PrivacyDetectionProbe`, Screen Recording granted to the terminal): `owner=notDetected title=notDetected` both while sharing and after — the shipped patterns had no entry for Meet in a Chromium browser. A raw `CGWindowListCopyWindowInfo` dump taken while sharing and again after stopping differs by exactly three windows:
+
+| Only while sharing | Layer | Owner | Title |
+|---|---|---|---|
+| Share banner | 25 | Brave Browser | `Votre écran est partagé par le b… l'application meet.google.com.` (localized; English builds say "… is sharing your screen") |
+| Meet helper window | 3 | Brave Browser | `Meet – <meeting code>` |
+| Cursor overlay | 2147483630 | Window Server | `Cursor` |
+
+Both Brave windows disappear immediately when sharing stops; the Meet tab window (layer 0) stays. The system `StatusIndicator` windows (4) did not change count, so the menu-bar indicator is not observable this way.
+
+**Signals derived:**
+- **Title heuristic (needs Screen Recording):** a Chromium-family browser window whose title contains the shared origin's host (`meet.google.com`) or the localized "sharing your screen" phrase. Locale-dependent on the phrase, locale-independent on the host.
+- **Layer heuristic (no permission needed):** `kCGWindowOwnerName` and `kCGWindowLayer` are readable without Screen Recording. A window owned by a Chromium-family browser (Chrome, Brave, Edge, Arc, Vivaldi, Chromium) at **layer 25** existed only during the share. If Chromium uses layer 25 only for the screen-share banner, Automatic detection for browser-based sharing needs **no permission** and no locale handling. **To verify** before relying on it: dump windows while a download bubble, a permission prompt, a fullscreen "press Esc" toast and a tab-sharing (not screen) session are shown.
+
+**Still untested:** Zoom, Teams, Slack huddle, QuickTime, ⇧⌘5 recording, OBS, and macOS 15. Decision stays manual-only by default; Story 21.3's `Automatic` may be offered once the layer-25 check above holds, with the title heuristic as the permission-gated fallback for native apps.
+
