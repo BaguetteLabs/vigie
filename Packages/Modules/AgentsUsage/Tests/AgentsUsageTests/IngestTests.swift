@@ -153,8 +153,8 @@ private func totals(_ store: UsageStore) async throws -> UsageSeries {
         let store = try UsageStore(directory: sandbox.storage)
         await UsageIngestor(store: store, registry: sandbox.registry, log: log).ingest()
         let series = try await totals(store)
-        // m1 1740e-6 + m2 2440e-6 + m3 1500e-6 + m4 201000e-6 (USD).
-        #expect(abs(series.total.estimatedCost - 0.20668) < 1e-9)
+        // m1 1740e-6 + m2 2240e-6 + m3 1500e-6 + m4 201000e-6 (USD).
+        #expect(abs(series.total.estimatedCost - 0.20648) < 1e-9)
         #expect(abs((series.byModel["claude-fable-5-1"]?.estimatedCost ?? 0) - 0.201) < 1e-9)
         #expect(series.total.isFullyPriced)
     }
