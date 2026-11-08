@@ -124,6 +124,8 @@ final class DropFixture {
     let escape = FakeEscape()
     let drops = makeTempDirectory().appendingPathComponent("drops", isDirectory: true)
     var modifiers: NSEvent.ModifierFlags = []
+    /// VoiceOver announcements the host posted.
+    var announced: [String] = []
     var host: NotchHost!
 
     static let screen = CGRect(x: 0, y: 0, width: 1512, height: 982)
@@ -154,7 +156,8 @@ final class DropFixture {
             registry: registry, contextMenu: NotchContextMenu(), displays: { [] },
             pointerLocation: { CGPoint(x: 700, y: 980) },
             dropsDirectory: drops, dropEscape: escape, dropModifierFlags: { [unowned self] in self.modifiers },
-            dropExitGrace: .milliseconds(20), makeDropDisplayPanel: { _ in driver }, logger: testLogger)
+            dropExitGrace: .milliseconds(20), makeDropDisplayPanel: { _ in driver },
+            announce: { [unowned self] text in self.announced.append(text) }, logger: testLogger)
         host.anchorsOverride = [IslandAnchor(screenFrame: Self.screen, islandFrame: Self.island, notchRect: Self.notch)]
     }
 
@@ -461,7 +464,8 @@ final class DropFixture {
         let f = DropFixture()
         f.display.simulate(zones: DropSampleZones.make(), hovered: "sample.stash", for: .milliseconds(30))
         #expect(f.display.isOpen)
-        #expect(f.display.model?.layout.columns == 3)
+        #expect(f.display.model?.layout.columns == 2, "the sample Stash alone (2 × 2)")
+        #expect(DropSampleZones.make().map(\.id) == ["sample.stash"])
         #expect(f.display.model?.isLit("sample.stash") == true)
         #expect(String(localized: DropSampleZones.make()[0].meta!) == "KEEP 7 DAYS · 5 ITEMS")
         #expect(await eventually { !f.display.isOpen })

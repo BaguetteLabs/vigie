@@ -9,6 +9,9 @@ public enum TransientReadout: Hashable, Sendable {
     case noTextFound
     /// Text a module asked for, already localized (a drop handler's `DropResult.readout`, e.g. `NOT STASHED`).
     case message(String)
+    /// A module's confirmation readout, already localized (a drop handler's `DropResult.confirmation`, e.g.
+    /// `COPIED · 3 LINES`): `announcement` is posted to VoiceOver, `drains` draws the drain line.
+    case confirmation(String, announcement: String?, drains: Bool)
 
     /// The readout text, uppercase, from the VigieUI catalog.
     public var text: String {
@@ -16,7 +19,67 @@ public enum TransientReadout: Hashable, Sendable {
         case .copied(let lines): L10n.format("closed.copied.lines", lines)
         case .noTextFound: L10n.string("closed.noTextFound")
         case .message(let text): text
+        case .confirmation(let text, _, _): text
         }
+    }
+
+    /// What VoiceOver announces when the readout appears ("Copied 3 lines"); nil for none.
+    public var announcement: String? {
+        switch self {
+        case .copied(let lines): L10n.format("closed.copied.announcement", lines)
+        case .noTextFound: L10n.string("closed.noTextFound.announcement")
+        case .message: nil
+        case .confirmation(_, let announcement, _): announcement
+        }
+    }
+
+    /// True when the readout carries the 1px drain line (DESIGN "Copied readout").
+    public var drains: Bool {
+        switch self {
+        case .copied, .noTextFound: true
+        case .message: false
+        case .confirmation(_, _, let drains): drains
+        }
+    }
+}
+
+/// The drain line of a transient readout while it shows (DESIGN "Copied readout"): running over the readout's
+/// duration, or held full while the pointer is over the notch (the readout holds meanwhile).
+public enum TransientDrain: Hashable, Sendable {
+    /// Draining over `duration`; a new `trigger` restarts it from full.
+    case draining(Duration, trigger: Int)
+    /// Held full: the pointer is over the notch.
+    case held
+}
+
+/// The 1px drain line of a transient readout, `copied-readout` drain inset above the island bottom, across the
+/// left wing between its paddings. Under Reduce motion it is a static full line that disappears at the end
+/// (``DrainLine``).
+public struct TransientReadoutDrain: View {
+    @Environment(\.vigieTheme) private var theme
+    private let drain: TransientDrain
+
+    public init(_ drain: TransientDrain) {
+        self.drain = drain
+    }
+
+    /// `components.copied-readout.drain`: 6px above the island bottom.
+    public static let bottomInset: CGFloat = 6
+
+    public var body: some View {
+        Group {
+            switch drain {
+            case .draining(let duration, let trigger):
+                DrainLine(duration: duration, trigger: trigger)
+            case .held:
+                DrainLine(remaining: 1)
+            }
+        }
+        .padding(.horizontal, theme.spacing(.wingPaddingX))
+        .padding(.bottom, Self.bottomInset)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
     }
 }
 

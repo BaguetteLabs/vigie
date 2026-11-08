@@ -13,6 +13,9 @@ import os
 /// A Stash drop that cannot be stored adds nothing, returns `DropResult.readout("NOT STASHED")` (the host shows
 /// it on the left wing for 2 s) and writes a `shelf.stash` activity entry; no alert, peek or sound (UX-DR101).
 ///
+/// Image to Text (Story 9.9, `ImageToText.swift`): an image or PDF dropped on it is recognized on the Mac and
+/// its text copied through `context.clipboard`, with a `COPIED · <n> LINES` / `NO TEXT FOUND` readout.
+///
 /// Expiry (Story 9.4): ``ExpirySweeper`` runs at start, every 60 s and after every change. Items expire
 /// `ttl` after they were stashed unless pinned; references leave the shelf, copies and saved items go to the
 /// Trash. With `expiry_notification` on, `shelf.expiring` is posted once per item in its last 24 h.
@@ -52,6 +55,12 @@ public final class ShelfModule: NotchModule {
                 kind: .bool(default: false),
                 scope: .synced,
                 help: LocalizedStringResource("shelf.setting.expiryNotification.help", bundle: bundle)),
+            SettingDescriptor(
+                key: imageToTextSetting,
+                label: LocalizedStringResource("shelf.setting.imageToText", bundle: bundle),
+                kind: .bool(default: false),
+                scope: .synced,
+                help: LocalizedStringResource("shelf.setting.imageToText.help", bundle: bundle)),
         ],
         alertKinds: ["shelf.expiring"],
         defaultEnabled: true
@@ -62,6 +71,8 @@ public final class ShelfModule: NotchModule {
     public private(set) var state: ModuleState = .hidden
     /// Every item, newest first.
     public private(set) var items: [ShelfItem] = []
+    /// The last Image to Text copy (lines, when), for the `SEND TO` card meta `LAST · 3 LINES · 14:48` (9.7).
+    public internal(set) var lastImageToText: ImageToTextRun?
     /// The resolved `ttl` setting.
     public private(set) var ttl: Duration = ShelfModule.defaultTTL
     /// True between `start` and `stop`: the Stash zone is enabled only then.
@@ -112,13 +123,18 @@ public final class ShelfModule: NotchModule {
     @ObservationIgnored var settings: (any ModuleSettings)?
     @ObservationIgnored var activity: (any ActivityLog)?
     @ObservationIgnored var log: Logger?
+    /// `context.clipboard` (copy-only), for Image to Text.
+    @ObservationIgnored var clipboard: (any ClipboardService)?
+    @ObservationIgnored let recognizer: any TextRecognizing
     @ObservationIgnored var observeTasks: [Task<Void, Never>] = []
 
     public init(
         scope: any SecurityScopedResources = SystemSecurityScope(), recycler: any Recycler = WorkspaceRecycler(),
         revealer: any FileRevealer = WorkspaceRevealer(), quickLook: (any QuickLookPresenting)? = nil,
+        recognizer: any TextRecognizing = VisionTextRecognizer(),
         now: @escaping @Sendable () -> Date = { Date() }
     ) {
+        self.recognizer = recognizer
         self.scope = scope
         self.recycler = recycler
         self.revealer = revealer
@@ -132,6 +148,7 @@ public final class ShelfModule: NotchModule {
         settings = context.settings
         activity = context.activity
         log = context.log
+        clipboard = context.clipboard
         let store = ShelfStore(storage: context.storage, scope: scope, log: context.log)
         self.store = store
         ttl = Self.resolvedTTL(context.settings)
@@ -261,7 +278,8 @@ public final class ShelfModule: NotchModule {
 
     // MARK: Drop zones
 
-    public var dropZones: [DropZone] { [stashZone] }
+    /// Stash, then Image to Text (hidden unless `image_to_text` is on). Zones are read each time a drag arrives.
+    public var dropZones: [DropZone] { [stashZone, imageToTextZone] }
 
     /// Stash (SPEC §4.6, DESIGN layout B): column 1 row 1, 2 × 2, primary; takes anything.
     public var stashZone: DropZone {

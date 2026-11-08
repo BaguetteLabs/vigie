@@ -28,6 +28,13 @@ public struct DropZone: Identifiable, Sendable {
     /// False hides the zone (its setting is off); the host reflows the grid. A stopped module's zones are
     /// hidden anyway.
     public let isEnabled: Bool
+    /// The loose content (a drag without any file: text, a web link, image data) the zone takes. A zone with an
+    /// empty `accepts` takes any loose content too; otherwise only the kinds listed here (Story 9.9: a
+    /// files-only zone such as AirDrop or Ask AI stays unlit for a text drag).
+    public let looseContent: Set<DropLooseContent>
+    /// When set, the host shows this transient readout on the left wing while the handler runs (Image to Text:
+    /// `READING…`), until the handler's result replaces it.
+    public let progressReadout: LocalizedStringResource?
 
     public init(
         id: String,
@@ -44,7 +51,9 @@ public struct DropZone: Identifiable, Sendable {
         accessibilityLabel: LocalizedStringResource? = nil,
         modifierHint: DropModifierHint? = nil,
         style: DropZoneStyle = .standard,
-        isEnabled: Bool = true
+        isEnabled: Bool = true,
+        looseContent: Set<DropLooseContent> = [],
+        progressReadout: LocalizedStringResource? = nil
     ) {
         self.id = id
         self.label = label
@@ -61,6 +70,8 @@ public struct DropZone: Identifiable, Sendable {
         self.modifierHint = modifierHint
         self.style = style
         self.isEnabled = isEnabled
+        self.looseContent = looseContent
+        self.progressReadout = progressReadout
     }
 
     /// True when the zone takes items of these content types: every type conforms to one of `accepts`. An
@@ -70,6 +81,21 @@ public struct DropZone: Identifiable, Sendable {
         guard !contentTypes.isEmpty else { return false }
         return contentTypes.allSatisfy { type in accepts.contains { type.conforms(to: $0) } }
     }
+
+    /// True when the zone takes this drag: with `loose` nil (files or promises), ``accepts(contentTypes:)``;
+    /// with loose content, an empty `accepts` or a kind listed in ``looseContent``.
+    public func accepts(contentTypes: [UTType], loose: DropLooseContent?) -> Bool {
+        guard let loose else { return accepts(contentTypes: contentTypes) }
+        return accepts.isEmpty || looseContent.contains(loose)
+    }
+}
+
+/// What a drag without any file carries (Story 9.2): the host reads, in this order, a web link, image data,
+/// then plain text.
+public enum DropLooseContent: Hashable, Sendable, CaseIterable {
+    case link
+    case image
+    case text
 }
 
 /// How the host draws a zone in the drop display.
@@ -142,10 +168,13 @@ public struct DropPayload: Sendable {
     public let url: URL?
     /// Dragged image data (PNG or TIFF bytes), when no file was dragged.
     public let imageData: Data?
+    /// The entries of `urls` the host materialized from file promises into its drops folder (AD-19). A handler
+    /// that only reads the files (Image to Text) deletes these afterwards; every other URL is the user's file.
+    public let materializedURLs: [URL]
 
     public init(
         urls: [URL], modifiers: EventModifiers, source: DropSource, text: String? = nil, url: URL? = nil,
-        imageData: Data? = nil
+        imageData: Data? = nil, materializedURLs: [URL] = []
     ) {
         self.urls = urls
         self.modifiers = modifiers
@@ -153,6 +182,7 @@ public struct DropPayload: Sendable {
         self.text = text
         self.url = url
         self.imageData = imageData
+        self.materializedURLs = materializedURLs
     }
 
     /// True when the payload carries nothing a handler can use.
@@ -178,4 +208,24 @@ public enum DropResult: Sendable {
     /// shows the text as a transient readout for `motion.confirm-readout` (2 s), e.g. `NOT STASHED` (UX-DR101).
     /// No alert, peek or sound follows.
     case readout(LocalizedStringResource)
+    /// A confirmation readout (Image to Text `COPIED · 3 LINES`, `NO TEXT FOUND`; DESIGN "Copied readout"): the
+    /// same left-wing slot for `motion.confirm-readout`, held while the pointer is over the notch, optionally
+    /// with a draining 1px line, and a VoiceOver announcement. No alert, peek or sound.
+    case confirmation(DropReadout)
+}
+
+/// The content of ``DropResult/confirmation(_:)``.
+public struct DropReadout: Sendable {
+    /// The readout text, uppercase (`COPIED · 3 LINES`).
+    public let text: LocalizedStringResource
+    /// What VoiceOver announces ("Copied 3 lines"); nil announces nothing.
+    public let announcement: LocalizedStringResource?
+    /// True draws the 1px drain line under the readout (a static full line under Reduce motion).
+    public let drains: Bool
+
+    public init(text: LocalizedStringResource, announcement: LocalizedStringResource? = nil, drains: Bool = true) {
+        self.text = text
+        self.announcement = announcement
+        self.drains = drains
+    }
 }

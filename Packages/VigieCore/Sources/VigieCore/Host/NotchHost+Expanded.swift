@@ -120,6 +120,7 @@ extension NotchHost {
     /// Hover over the closed island. With `open_on_hover`, opens without focus after `hover_delay`; leaving
     /// before then cancels.
     func islandHoverChanged(_ hovering: Bool) {
+        transientHoverChanged(hovering)
         hoverTask?.cancel()
         hoverTask = nil
         guard hovering, !isExpanded, openOnHover() else { return }

@@ -764,6 +764,174 @@
           }
         }
       }
+    },
+    "shelf.setting.imageToText" : {
+      "comment" : "Settings › Shelf: toggle for the Image to Text drop zone.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Image to Text"
+          }
+        }
+      }
+    },
+    "shelf.setting.imageToText.help" : {
+      "comment" : "Settings › Shelf: help under the Image to Text toggle.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shows a drop zone that copies the text of an image or PDF, recognized on this Mac."
+          }
+        }
+      }
+    },
+    "shelf.imageToText.label" : {
+      "comment" : "Drop display: Image to Text zone label.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "IMAGE TO TEXT"
+          }
+        }
+      }
+    },
+    "shelf.imageToText.meta" : {
+      "comment" : "Drop display: Image to Text zone meta line.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "COPY TEXT"
+          }
+        }
+      }
+    },
+    "shelf.imageToText.miniMeta" : {
+      "comment" : "Shelf tab SEND TO card: Image to Text mini zone meta.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "COPY"
+          }
+        }
+      }
+    },
+    "shelf.imageToText.release" : {
+      "comment" : "Drop display: Image to Text release line while an image or PDF hovers it.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RELEASE TO COPY TEXT"
+          }
+        }
+      }
+    },
+    "shelf.imageToText.a11y" : {
+      "comment" : "VoiceOver label of the Image to Text drop zone.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Image to Text, copy the text of an image or PDF"
+          }
+        }
+      }
+    },
+    "shelf.imageToText.reading" : {
+      "comment" : "Closed notch: transient readout while Image to Text recognizes text.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "READING…"
+          }
+        }
+      }
+    },
+    "shelf.imageToText.copied" : {
+      "comment" : "Closed notch: readout after Image to Text copied the text; arg = line count.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "COPIED · %lld LINE"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "COPIED · %lld LINES"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "shelf.imageToText.copied.a11y" : {
+      "comment" : "VoiceOver announcement after Image to Text copied the text; arg = line count.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Copied %lld line"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Copied %lld lines"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "shelf.imageToText.noText" : {
+      "comment" : "Closed notch: readout when Image to Text found no text.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NO TEXT FOUND"
+          }
+        }
+      }
+    },
+    "shelf.imageToText.noText.a11y" : {
+      "comment" : "VoiceOver announcement when Image to Text found no text.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No text found"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

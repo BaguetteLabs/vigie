@@ -1,4 +1,5 @@
 import AppKit
+import ModuleKit
 import Synchronization
 import UniformTypeIdentifiers
 
@@ -73,6 +74,17 @@ public struct DropDragItems {
         if imageData != nil { return [.image] }
         if text != nil { return [.plainText] }
         return []
+    }
+
+    /// What a drag without any file carries (nil while a file or promise is dragged), for
+    /// `DropZone.accepts(contentTypes:loose:)`: a files-only zone stays unlit for loose text, links and images
+    /// even though `public.plain-text` conforms to `public.item` (Story 9.9).
+    public var looseContent: DropLooseContent? {
+        guard !hasFiles else { return nil }
+        if webURL != nil { return .link }
+        if imageData != nil { return .image }
+        if text != nil { return .text }
+        return nil
     }
 
     /// The pasteboard types a drop destination registers for: file URLs, file promises, then web links, images

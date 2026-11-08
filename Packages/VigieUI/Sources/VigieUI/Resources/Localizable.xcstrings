@@ -2148,6 +2148,54 @@
           }
         }
       }
+    },
+    "closed.copied.announcement" : {
+      "comment" : "VoiceOver announcement after Image to Text copied recognized text; %lld is the line count.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Copied %lld line"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Copied %lld lines"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "closed.noTextFound.announcement" : {
+      "comment" : "VoiceOver announcement when Image to Text found no text.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No text found"
+          }
+        }
+      }
+    },
+    "drop.mini.disabled" : {
+      "comment" : "VoiceOver hint on a SEND TO mini zone that cannot take the dragged item.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not available for this item"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

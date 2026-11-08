@@ -85,6 +85,11 @@ public final class NotchHost {
     public private(set) var trailingLayout = SideLayout.empty
     /// The transient readout on the left wing, while it lasts.
     public private(set) var transient: TransientReadout?
+    /// The drain line under ``transient`` (readouts that drain only), held full while the pointer is over the
+    /// notch.
+    public private(set) var transientDrain: TransientDrain?
+    /// True while the pointer is over a closed island (hover holds a transient readout).
+    public private(set) var isPointerOverIsland = false
     /// True from `expand` until `collapse` (the panel stays on screen for the exit motion after that).
     public internal(set) var isExpanded = false
     /// The active tab of the expanded view; nil shows the first tab.
@@ -106,6 +111,11 @@ public final class NotchHost {
     @ObservationIgnored private let menuBarProbe: any MenuBarProbing
     @ObservationIgnored private var arbitrationGeneration = 0
     @ObservationIgnored private var transientTask: Task<Void, Never>?
+    /// The current readout's duration (nil: a progress readout, shown until replaced or cleared).
+    @ObservationIgnored private var transientDuration: Duration?
+    @ObservationIgnored private var transientTrigger = 0
+    /// Posts a VoiceOver announcement; `NSAccessibility.post(.announcementRequested)` by default.
+    @ObservationIgnored private let announce: @MainActor (String) -> Void
     @ObservationIgnored private let readDisplays: @MainActor () -> [DisplayInfo]
     @ObservationIgnored let logger: Logger
     @ObservationIgnored private let makeIslandPanel: @MainActor (NotchHost, CGDirectDisplayID) -> any IslandPanelHosting
@@ -177,6 +187,7 @@ public final class NotchHost {
     ///     nil refuses file promises.
     ///   - dropEscape: Esc while the drop display is open; a ``SystemDropEscapeMonitor`` by default.
     ///   - makeDropDisplayPanel: builds the drop display window; a ``DropDisplayPanelController`` in production.
+    ///   - announce: posts a VoiceOver announcement (a transient readout's); the system one by default.
     public init(
         themeController: ThemeController,
         registry: ModuleRegistry,
@@ -207,8 +218,10 @@ public final class NotchHost {
         dropModifierFlags: @escaping @MainActor () -> NSEvent.ModifierFlags = { NSEvent.modifierFlags },
         dropExitGrace: Duration = DropDisplayController.defaultExitGrace,
         makeDropDisplayPanel: (@MainActor (DropDisplayController) -> any DropDisplayPanelDriver)? = nil,
+        announce: (@MainActor (String) -> Void)? = nil,
         logger: Logger
     ) {
+        self.announce = announce ?? NotchHost.postAnnouncement
         self.themeController = themeController
         self.registry = registry
         self.contextMenu = contextMenu
@@ -260,6 +273,10 @@ public final class NotchHost {
         expandedSurface.host = self
         dropDisplay.anchorProvider = { [weak self] id in self?.dropAnchor(for: id) }
         dropDisplay.onReadout = { [weak self] text in self?.showTransient(.message(text)) }
+        dropDisplay.onConfirmation = { [weak self] readout in self?.showTransient(readout) }
+        dropDisplay.onProgress = { [weak self] text in
+            if let text { self?.showProgress(.message(text)) } else { self?.clearTransient() }
+        }
     }
 
     /// Where the drop display grows: the island of `displayID`, else the one under the pointer (else main).
@@ -294,6 +311,8 @@ public final class NotchHost {
         transientTask?.cancel()
         transientTask = nil
         transient = nil
+        transientDrain = nil
+        transientDuration = nil
         for panel in panels.values { panel.hide() }
         panels = [:]
         islands = []
@@ -567,19 +586,80 @@ public final class NotchHost {
 
     /// Shows a transient readout on the left wing (SPEC §5: after the first item, the last visible item steps
     /// into `+X`) for `duration`, by default the theme's `motion.confirm-readout` (2 s). A newer readout
-    /// replaces the current one and restarts the clock.
+    /// replaces the current one and restarts the clock. While the pointer is over the notch the readout holds
+    /// (its drain line stays full); when the pointer leaves, it runs its full duration again (DESIGN "Copied
+    /// readout"). A readout with an announcement posts it to VoiceOver.
     public func showTransient(_ readout: TransientReadout, duration: Duration? = nil) {
         let duration = duration ?? themeController.islandTheme.motion(.confirmReadout)
         transientTask?.cancel()
+        transientTask = nil
         transient = readout
+        transientDuration = duration
         rearbitrate()
+        if let announcement = readout.announcement { announce(announcement) }
+        if isPointerOverIsland {
+            transientDrain = readout.drains ? .held : nil
+        } else {
+            runTransientClock()
+        }
+    }
+
+    /// Shows `readout` (Image to Text `READING…`) until ``showTransient(_:duration:)`` replaces it or
+    /// ``clearTransient()`` removes it: no clock, no drain.
+    public func showProgress(_ readout: TransientReadout) {
+        transientTask?.cancel()
+        transientTask = nil
+        transient = readout
+        transientDuration = nil
+        transientDrain = nil
+        rearbitrate()
+    }
+
+    /// Removes the transient readout now.
+    public func clearTransient() {
+        transientTask?.cancel()
+        transientTask = nil
+        guard transient != nil else { return }
+        transient = nil
+        transientDuration = nil
+        transientDrain = nil
+        rearbitrate()
+    }
+
+    /// Hover over a closed island holds the transient readout; leaving runs its clock again from full.
+    func transientHoverChanged(_ hovering: Bool) {
+        guard isPointerOverIsland != hovering else { return }
+        isPointerOverIsland = hovering
+        guard let transient, transientDuration != nil else { return }
+        if hovering {
+            transientTask?.cancel()
+            transientTask = nil
+            transientDrain = transient.drains ? .held : nil
+        } else {
+            runTransientClock()
+        }
+    }
+
+    private func runTransientClock() {
+        guard let transient, let duration = transientDuration else { return }
+        transientTrigger += 1
+        transientDrain = transient.drains ? .draining(duration, trigger: transientTrigger) : nil
+        transientTask?.cancel()
         transientTask = Task { @MainActor [weak self] in
             try? await Task.sleep(for: duration)
             guard !Task.isCancelled, let self else { return }
-            self.transient = nil
             self.transientTask = nil
-            self.rearbitrate()
+            self.clearTransient()
         }
+    }
+
+    /// A VoiceOver announcement through the app (non-activating panels are never key).
+    static func postAnnouncement(_ text: String) {
+        NSAccessibility.post(
+            element: NSApp as Any, notification: .announcementRequested,
+            userInfo: [
+                .announcement: text, .priority: NSAccessibilityPriorityLevel.high.rawValue,
+            ])
     }
 
     private func computeLayouts() -> (SideLayout, SideLayout) {
@@ -615,6 +695,11 @@ struct NotchRootView: View {
                 leading: { lane(host.leadingLayout) },
                 trailing: { lane(host.trailingLayout) }
             )
+            .overlay(alignment: .bottomLeading) {
+                if let drain = host.transientDrain, host.transient != nil {
+                    TransientReadoutDrain(drain).frame(width: geometry.wings.leading)
+                }
+            }
             .frame(width: geometry.islandFrame.width, height: geometry.islandFrame.height)
             .onHover { host.islandHoverChanged($0) }
             .vigieTheme(host.theme(for: island))

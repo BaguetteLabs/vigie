@@ -13,6 +13,7 @@ final class FakeModuleContext: ModuleContext, @unchecked Sendable {
     let fakeScheduler = FakeScheduler()
     let fakeNotifier = RecordingNotifier()
     let fakeActivity = RecordingActivity()
+    let fakeClipboard = RecordingClipboard()
 
     init(settings: [String: any SettingValue] = [:], storage: FakeStorage = FakeStorage()) {
         fakeSettings = FakeSettings(values: settings)
@@ -29,7 +30,7 @@ final class FakeModuleContext: ModuleContext, @unchecked Sendable {
     var host: any HostControl { NoHost() }
     var permissions: any PermissionsService { NoPermissions() }
     var power: any PowerService { NoPower() }
-    var clipboard: any ClipboardService { NoClipboard() }
+    var clipboard: any ClipboardService { fakeClipboard }
     var executables: any ExecutableResolver { NoExecutables() }
     var privacy: any PrivacyService { NoPrivacy() }
     var away: any AwayService { NoAway() }
@@ -219,8 +220,12 @@ struct NoPower: PowerService {
     var sleepWake: AsyncStream<SleepWakeEvent> { AsyncStream { $0.finish() } }
 }
 
-struct NoClipboard: ClipboardService {
-    func copy(_ text: String, clearAfter: Duration?) {}
+/// Records every copy (thread-safe: Image to Text copies from its handler).
+final class RecordingClipboard: ClipboardService, @unchecked Sendable {
+    private let lock = NSLock()
+    private var all: [String] = []
+    var copied: [String] { lock.withLock { all } }
+    func copy(_ text: String, clearAfter: Duration?) { lock.withLock { all.append(text) } }
 }
 
 struct NoExecutables: ExecutableResolver {

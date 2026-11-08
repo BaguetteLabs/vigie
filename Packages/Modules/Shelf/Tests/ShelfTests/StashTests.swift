@@ -13,10 +13,13 @@ struct ShelfHarness {
     let context: FakeModuleContext
     let module: ShelfModule
 
-    init(settings: [String: any SettingValue] = [:], storage: FakeStorage = FakeStorage()) {
+    init(
+        settings: [String: any SettingValue] = [:], storage: FakeStorage = FakeStorage(),
+        recognizer: any TextRecognizing = VisionTextRecognizer()
+    ) {
         context = FakeModuleContext(settings: settings, storage: storage)
         let clock = clock
-        module = ShelfModule(scope: scope, recycler: recycler, now: { clock.now })
+        module = ShelfModule(scope: scope, recycler: recycler, recognizer: recognizer, now: { clock.now })
     }
 
     func start() async throws { try await module.start(context: context) }
@@ -39,10 +42,11 @@ extension DropResult {
     @Test func manifestDeclaresSettingsAndTheExpiryKind() {
         let manifest = ShelfModule.staticManifest
         #expect(manifest.id == "shelf")
-        #expect(manifest.settings.map(\.key) == ["ttl", "mode", "expiry_notification"])
+        #expect(manifest.settings.map(\.key) == ["ttl", "mode", "expiry_notification", "image_to_text"])
         #expect(manifest.settings[0].kind == .duration(default: .seconds(7 * 86_400)))
         #expect(manifest.settings[1].kind == .enumeration(options: ["reference", "copy"], default: "reference"))
         #expect(manifest.settings[2].kind == .bool(default: false))
+        #expect(manifest.settings[3].kind == .bool(default: false))
         #expect(manifest.alertKinds == ["shelf.expiring"])
     }
 

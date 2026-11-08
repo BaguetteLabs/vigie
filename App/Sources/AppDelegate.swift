@@ -363,8 +363,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     /// `-VigieSimulateDrop YES` (Debug) opens the drop display for 5 s at launch, as if a file were dragged over
-    /// the notch (screenshots, Story 9.1): the running modules' zones, plus a sample stand-in for a zone no
-    /// module declares yet (Ask AI until Story 9.6).
+    /// the notch (screenshots, Story 9.1): the running modules' zones, plus a sample Stash when the Shelf is
+    /// off.
     private func simulateDropIfAsked(_ host: NotchHost) {
         #if DEBUG
             guard UserDefaults.standard.bool(forKey: "VigieSimulateDrop") else { return }

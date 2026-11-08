@@ -71,7 +71,8 @@ public protocol ModuleContextFactory {
 
 /// The production factory: real settings (with a `ConfigStore`), storage, scheduler, event bus, hotkeys,
 /// notifier, activity log, executable resolver, integration installer (AD-22), power service (Story 4.12),
-/// owner-scoped secrets (Story 7.2) and host control; the shared permissions coordinator; stubs for the rest.
+/// owner-scoped secrets (Story 7.2), the clipboard (Story 9.9) and host control; the shared permissions
+/// coordinator; stubs for the rest.
 public struct CoreModuleContextFactory: ModuleContextFactory {
     public let environment: AppEnvironment
     public let eventBus: InProcessEventBus
@@ -89,6 +90,8 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
     public let secretStore: KeychainSecretStore
     /// `context.host` for a module: a ``CoreHostControl`` bound to the Notch Host through a ``NotchHostLink``.
     public let hostControl: @MainActor @Sendable (ModuleID) -> any HostControl
+    /// `context.clipboard` for every module: copy-only, on the general pasteboard (Story 9.9).
+    public let clipboard: any ClipboardService
 
     /// - Parameters:
     ///   - environment: injected by the App (`AppEnvironment.current`); VigieCore never reads `.current`.
@@ -105,6 +108,7 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
     ///   - secretStore: the launch's secret store; defaults to one on the real Keychain for `environment`.
     ///   - hostControl: builds `context.host` per module; defaults to a ``CoreHostControl`` on an unbound
     ///     ``NotchHostLink`` (host requests do nothing).
+    ///   - clipboard: `context.clipboard`; defaults to a ``CoreClipboardService`` on the general pasteboard.
     public init(
         environment: AppEnvironment, eventBus: InProcessEventBus, configStore: ConfigStore? = nil,
         permissions: PermissionsCoordinator? = nil, hotkeyCenter: HotkeyCenter? = nil,
@@ -112,7 +116,8 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
         executables: ExecutableResolverImpl? = nil,
         power: CorePowerService? = nil,
         secretStore: KeychainSecretStore? = nil,
-        hostControl: (@MainActor @Sendable (ModuleID) -> any HostControl)? = nil
+        hostControl: (@MainActor @Sendable (ModuleID) -> any HostControl)? = nil,
+        clipboard: (any ClipboardService)? = nil
     ) {
         self.environment = environment
         self.eventBus = eventBus
@@ -131,6 +136,7 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
         self.secretStore = secretStore ?? KeychainSecretStore(environment: environment)
         self.hostControl =
             hostControl ?? { @MainActor id in CoreHostControl(moduleID: id, link: NotchHostLink()) }
+        self.clipboard = clipboard ?? CoreClipboardService()
     }
 
     public func makeContext(for manifest: ModuleManifest, tracker: RegistrationTracker) -> any ModuleContext {
@@ -154,7 +160,7 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
             host: hostControl(manifest.id),
             permissions: permissions ?? PermissionsCoordinator(checker: SystemPermissionChecker()),
             power: TrackedPowerService(base: power, tracker: tracker),
-            clipboard: StubClipboardService(),
+            clipboard: clipboard,
             executables: executables,
             privacy: StubPrivacyService(),
             away: StubAwayService(),

@@ -18,11 +18,6 @@ struct DefaultsModuleSettings: ModuleSettings {
     func observe(_ key: String) -> AsyncStream<Void> { AsyncStream { $0.finish() } }
 }
 
-/// Implemented in Story 9.9.
-struct StubClipboardService: ClipboardService {
-    func copy(_ text: String, clearAfter: Duration?) {}
-}
-
 /// Implemented in Story 21.2.
 struct StubPrivacyService: PrivacyService {
     var isActive: Bool { false }

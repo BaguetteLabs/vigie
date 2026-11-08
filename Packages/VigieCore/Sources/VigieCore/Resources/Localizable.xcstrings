@@ -49,66 +49,6 @@
         }
       }
     },
-    "drop.sample.ask.label": {
-      "comment": "Debug drop display sample: Ask AI zone label.",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ASK AI"
-          }
-        }
-      }
-    },
-    "drop.sample.ask.release": {
-      "comment": "Debug drop display sample: Ask AI zone release line while hovered.",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "RELEASE TO ASK"
-          }
-        }
-      }
-    },
-    "drop.sample.ask.hint": {
-      "comment": "Debug drop display sample: Ask AI hint, Option opens the alternate folder.",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "⌥ ALT FOLDER"
-          }
-        }
-      }
-    },
-    "drop.sample.ask.hintActive": {
-      "comment": "Debug drop display sample: Ask AI hint while Option is held.",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ALT FOLDER"
-          }
-        }
-      }
-    },
-    "drop.sample.ask.a11y": {
-      "comment": "Debug drop display sample: Ask AI zone VoiceOver label.",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ask AI, Claude Code in ~/dev, Option for alternate folder"
-          }
-        }
-      }
-    },
     "vigiecore.setup.title.secretsUnavailable": {
       "comment": "Setup alert title: the build cannot use the Keychain (Story 7.2).",
       "extractionState": "manual",

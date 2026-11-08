@@ -50,6 +50,11 @@ public final class DropDisplayController {
     @ObservationIgnored public var onClose: (@MainActor () -> Void)?
     /// Shows a handler's `DropResult.readout` text on the closed notch (the Notch Host's transient readout).
     @ObservationIgnored public var onReadout: (@MainActor (String) -> Void)?
+    /// Shows a handler's `DropResult.confirmation` on the closed notch (drain line, VoiceOver announcement).
+    @ObservationIgnored public var onConfirmation: (@MainActor (TransientReadout) -> Void)?
+    /// A zone's `progressReadout` while its handler runs (`READING…`); nil when the handler returned without a
+    /// readout of its own (the progress readout leaves).
+    @ObservationIgnored public var onProgress: (@MainActor (String?) -> Void)?
     /// The anchor of an island; set by the Notch Host.
     @ObservationIgnored var anchorProvider: @MainActor (CGDirectDisplayID?) -> IslandAnchor? = { _ in nil }
     /// The last handler run (zone, payload, result), for tests and the log.
@@ -69,6 +74,7 @@ public final class DropDisplayController {
 
     @ObservationIgnored private var openZones: [String: DropZone] = [:]
     @ObservationIgnored private var contentTypes: [UTType] = []
+    @ObservationIgnored private var looseContent: DropLooseContent?
     @ObservationIgnored private var sourceOperations: NSDragOperation = []
     @ObservationIgnored private var sequence: Int?
     @ObservationIgnored private var cancelledSequence: Int?
@@ -170,7 +176,8 @@ public final class DropDisplayController {
     public func displayDragUpdated(at point: CGPoint) -> NSDragOperation {
         guard isOpen, let model else { return [] }
         let id = zoneID(at: point)
-        let accepts = id.flatMap { openZones[$0] }?.accepts(contentTypes: contentTypes) ?? false
+        let accepts =
+            id.flatMap { openZones[$0] }?.accepts(contentTypes: contentTypes, loose: looseContent) ?? false
         if model.hoveredZoneID != id { model.hoveredZoneID = id }
         if model.hoveredAccepts != accepts { model.hoveredAccepts = accepts }
         let option = modifierFlags().contains(.option)
@@ -197,7 +204,7 @@ public final class DropDisplayController {
             logger.debug("Drop released outside every zone; no action")
             return false
         }
-        guard zone.accepts(contentTypes: items.contentTypes) else {
+        guard zone.accepts(contentTypes: items.contentTypes, loose: items.looseContent) else {
             logger.debug("Drop zone \(id, privacy: .public) does not take the dragged items")
             return false
         }
@@ -225,12 +232,15 @@ public final class DropDisplayController {
                     urls: [], modifiers: modifiers, source: .dropDisplay, text: text, url: webURL,
                     imageData: imageData)
             } else {
-                payload = DropPayload(urls: all, modifiers: modifiers, source: .dropDisplay)
+                payload = DropPayload(
+                    urls: all, modifiers: modifiers, source: .dropDisplay, materializedURLs: promised.urls)
             }
             guard !payload.isEmpty else {
                 logger.error("Drop on \(id, privacy: .public) delivered nothing; handler not called")
                 return nil
             }
+            let progress = zone.progressReadout.map { String(localized: $0) }
+            if let progress { self?.onProgress?(progress) }
             let handler = zone.handler
             let result = await Task.detached { await handler(payload) }.value
             self?.lastDrop = (id, payload, result)
@@ -241,7 +251,14 @@ public final class DropDisplayController {
             case .readout(let text):
                 logger.info("Drop on \(id, privacy: .public) not taken; readout shown")
                 self?.onReadout?(String(localized: text))
+            case .confirmation(let readout):
+                logger.info("Drop on \(id, privacy: .public) confirmed; readout shown")
+                self?.onConfirmation?(
+                    .confirmation(
+                        String(localized: readout.text),
+                        announcement: readout.announcement.map { String(localized: $0) }, drains: readout.drains))
             }
+            if progress != nil, !result.showsReadout { self?.onProgress?(nil) }
             return result
         }
         return true
@@ -297,6 +314,7 @@ public final class DropDisplayController {
         openZones = Dictionary(
             zones.filter { placed.contains($0.id) }.map { ($0.id, $0) }, uniquingKeysWith: { a, _ in a })
         contentTypes = items.contentTypes
+        looseContent = items.looseContent
         sourceOperations = items.sourceOperations
         sequence = items.sequence
         self.displayID = displayID
@@ -321,6 +339,7 @@ public final class DropDisplayController {
         driver.retract()
         openZones = [:]
         contentTypes = []
+        looseContent = nil
         insideIsland = false
         insideDisplay = false
         model = nil
@@ -391,5 +410,15 @@ public final class SystemDropEscapeMonitor: DropEscapeMonitoring {
     public func stop() {
         for monitor in monitors { NSEvent.removeMonitor(monitor) }
         monitors.removeAll()
+    }
+}
+
+extension DropResult {
+    /// True when the result puts a readout of its own on the left wing (it replaces a progress readout).
+    var showsReadout: Bool {
+        switch self {
+        case .readout, .confirmation: true
+        case .accepted, .rejected, .failed: false
+        }
     }
 }
