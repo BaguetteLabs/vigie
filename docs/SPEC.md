@@ -410,7 +410,8 @@ Each agent adapter can provide one or more **usage providers**, which can be tur
 
 **Multiple Accounts.** Every provider (not only Claude) can have several **Accounts**, each with its own usage.
 - Each Account is bound to its own agent config or log location (e.g. a second Claude Code config folder). Sessions and log entries are attributed to an Account by that location.
-- Usage is kept per Account and never merged across Accounts. Credentials are per Account, in the Keychain.
+- Usage is kept per Account and never merged across Accounts. Credentials are per Account, in the Keychain (owner `adapter.<id>`, one key per Account, e.g. `plan_token.work`; ruled 2026-11-08).
+- Accounts are declared in the adapter's table in `local.toml` (`[modules."agents.sessions".adapter.<id>] accounts` + `account.<id>.{label,location,usage_providers,plan_auth}`), not under `agents.usage`, so both agent modules read one list (ruled 2026-11-08).
 - With no Account configured, a provider has one implicit Account at the agent's default location.
 
 **Closed notch:** one quota ring per provider in use, on the left-wing item lane (§5) with the module's `priority` (per-provider override in `providers.<id>`), in user order, with the provider name under each ring (a single provider shows a ring plus a value/label readout instead). For a provider with several Accounts, the ring shows the Account of the most recent session; the others are on the Usage tab. Setting `rings = "5h" | "5h+weekly"`: with both, the rings are nested (5h inside). Only the windows the plan has are shown (5h, weekly, daily); no empty ring. With no provider, the left wing is empty.
@@ -778,11 +779,14 @@ pace_tolerance = 5            # points
 warn_threshold = 80           # %, per provider override: [modules."agents.usage".providers.<id>]
 warn_action = "alert"         # alert | visual
 
-[modules."agents.usage".accounts.claude-work]   # one table per extra Account (§7.2)
-provider = "claude"
-name = "Work"
-location = "~/.claude-work"   # agent config/log location; sessions and logs here belong to this Account
-plan_limits = false           # opt-in remote limits, per Account
+# Accounts live in the adapter table (local.toml), so sessions and usage attribute alike (ruled 2026-11-08):
+# [modules."agents.sessions".adapter.claude]
+# accounts = ["work"]            # extra Accounts; the implicit default Account needs no entry (§7.2)
+# [modules."agents.sessions".adapter.claude.account.work]
+# label = "Work"
+# location = "~/.claude-work"    # agent config/log location; sessions and logs here belong to this Account
+# usage_providers = ["local"]    # add "plan" for opt-in remote limits, per Account
+# plan_auth = "token"
 
 [modules.shelf]
 enabled = true

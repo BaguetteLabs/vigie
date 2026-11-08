@@ -111,7 +111,6 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 
 - Test the live Claude plan endpoint once: Settings › Usage › Claude plan usage › Use Claude Code's login › Allow (macOS Keychain prompt), then check the status line / `log show … | grep "Plan usage"`. Patch `PLAN-ENDPOINT.md` + client + fixtures if the shape differs.
 
-- AD-23 wording after 7.10: (a) Accounts stored in the adapter table (`agents.sessions.adapter.<id>.account.*`) rather than under `agents.usage`; (b) Keychain owner `adapter.<id>` + per-Account key instead of an owner id that includes the Account. Confirm or ask for a change; then amend SPINE AD-23 and SPEC §8.2 (`CLAUDE_CONFIG_DIR`).
 - New story needed: hook installer per Account location (extra `CLAUDE_CONFIG_DIR` setups get no hooks today).
 
 - Drag a file from Finder over the notch once (Vigie Dev): the drop display should grow out without focus change; press Esc to cancel. Report if nothing appears.
@@ -121,6 +120,7 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 ## Decisions log
 
 - 2026-11-08 — Romain: adapter table path stays `[modules."agents.sessions".adapter.<id>]` (singular) with `adapters` as the list. AD-23 and SPEC §11 amended.
+- 2026-11-08 — Romain: 7.10 code confirmed — Accounts in the adapter table (`adapter.<id>.accounts` + `account.<id>.*`), Keychain owner `adapter.<id>` with per-Account keys. AD-23 and SPEC §7.2/§11 amended.
 
 - 2026-11-07 — Working mode, signing, installs, remote: see "Working mode" above.
 - 2026-11-07 — XcodeGen chosen for the App target project (AD-2 keeps the target thin; no hand-edited pbxproj in git).
