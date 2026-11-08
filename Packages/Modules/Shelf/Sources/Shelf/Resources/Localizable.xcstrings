@@ -1,6 +1,54 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "shelf.expiring.body" : {
+      "comment" : "macOS notification body (shelf.expiring). Arg = hours left.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leaves the shelf in %lld h. Pin it to keep it."
+          }
+        }
+      }
+    },
+    "shelf.expiring.bodyTrash" : {
+      "comment" : "macOS notification body (shelf.expiring) for a copy or saved item. Arg = hours left.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Moves to the Trash in %lld h. Pin it to keep it."
+          }
+        }
+      }
+    },
+    "shelf.expiring.count" : {
+      "comment" : "Shelf card meta: items in their last 24 hours.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld EXPIRING"
+          }
+        }
+      }
+    },
+    "shelf.expiring.title" : {
+      "comment" : "macOS notification title (shelf.expiring). Arg = item name.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ expires soon"
+          }
+        }
+      }
+    },
     "shelf.module.name" : {
       "comment" : "Module name (Settings, tab).",
       "extractionState" : "manual",
@@ -417,6 +465,54 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "RELEASE TO STASH"
+          }
+        }
+      }
+    },
+    "shelf.timeLeft.day" : {
+      "comment" : "Shelf row: time left, between 24 and 48 hours with no extra hour. Arg = days (1).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lldD LEFT"
+          }
+        }
+      }
+    },
+    "shelf.timeLeft.dayHours" : {
+      "comment" : "Shelf row: time left, between 24 and 48 hours. Arg 1 = days (1), arg 2 = hours.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lldD %2$lldH LEFT"
+          }
+        }
+      }
+    },
+    "shelf.timeLeft.days" : {
+      "comment" : "Shelf row: time left, 2 days or more. Arg = whole days.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lldD LEFT"
+          }
+        }
+      }
+    },
+    "shelf.timeLeft.hours" : {
+      "comment" : "Shelf row: time left in the last 24 hours (expiry warning). Arg = hours, at least 1.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EXPIRES IN %lldH"
           }
         }
       }

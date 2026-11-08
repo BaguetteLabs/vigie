@@ -147,6 +147,18 @@ public struct NotifyRule: Hashable, Sendable {
     /// for it (Story 3.6, A70).
     public static func defaultOutputs(for severity: AlertSeverity) -> Set<AlertOutput> { [.peek, .sound] }
 
+    /// Kinds whose default outputs differ from ``defaultOutputs(for:)`` (AD-13 alert table). `shelf.expiring`
+    /// is a macOS notification only, never a peek or a sound (SPEC §7.3, Story 9.4); the module posts it only
+    /// when the user turned `expiry_notification` on, so the notifications permission stays opt-in.
+    public static let kindDefaultOutputs: [String: Set<AlertOutput>] = [
+        "shelf.expiring": [.system]
+    ]
+
+    /// Outputs of `kind` when no layer sets `outputs`.
+    public static func defaultOutputs(for severity: AlertSeverity, kind: String) -> Set<AlertOutput> {
+        kindDefaultOutputs[kind] ?? defaultOutputs(for: severity)
+    }
+
     /// `self` over `base`: each field set here wins, unset fields come from `base`.
     public func overriding(_ base: NotifyRule) -> NotifyRule {
         NotifyRule(
@@ -164,6 +176,11 @@ public struct NotifyRule: Hashable, Sendable {
     public var effectiveConditions: [RuleCondition] { conditions ?? [] }
     public func effectiveOutputs(for severity: AlertSeverity) -> Set<AlertOutput> {
         outputs ?? Self.defaultOutputs(for: severity)
+    }
+
+    /// The outputs for an alert of `kind`: the set `outputs`, else the kind's default.
+    public func effectiveOutputs(for severity: AlertSeverity, kind: String) -> Set<AlertOutput> {
+        outputs ?? Self.defaultOutputs(for: severity, kind: kind)
     }
 }
 

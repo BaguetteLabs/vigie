@@ -201,7 +201,7 @@ public final class AlertCenter {
         {
             return drop(module: module, event: event, id: id, reason: .cooldown, at: timestamp)
         }
-        let outputs = rule.effectiveOutputs(for: event.severity)
+        let outputs = rule.effectiveOutputs(for: event.severity, kind: event.kind)
         if outputs.isEmpty {
             return drop(module: module, event: event, id: id, reason: .noOutputs, at: timestamp)
         }

@@ -271,3 +271,21 @@ func makeFile(_ name: String = "report.pdf", contents: String = "hello shelf") -
     try! Data(contents.utf8).write(to: url)
     return url
 }
+
+/// Moves files into its own "Trash" folder (like the real Trash: the file survives) and records them.
+final class RecordingRecycler: Recycler, @unchecked Sendable {
+    private let lock = NSLock()
+    private var all: [URL] = []
+    let trash = makeTempDirectory()
+    var fail = false
+
+    var recycled: [URL] { lock.withLock { all } }
+
+    struct Failure: Error {}
+
+    func recycle(_ url: URL) async throws {
+        if lock.withLock({ fail }) { throw Failure() }
+        try FileManager.default.moveItem(at: url, to: trash.appendingPathComponent(url.lastPathComponent))
+        lock.withLock { all.append(url) }
+    }
+}

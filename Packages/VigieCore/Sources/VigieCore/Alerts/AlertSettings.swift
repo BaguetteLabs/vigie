@@ -50,6 +50,11 @@ public enum AlertSettings {
         ordered(NotifyRule.defaultOutputs(for: .info))
     }
 
+    /// The default outputs of one kind (`shelf.expiring`: System notification only).
+    public static func defaultOutputs(kind: String) -> [AlertOutput] {
+        ordered(NotifyRule.defaultOutputs(for: .info, kind: kind))
+    }
+
     /// One entry per kind the manifest declares, in declaration order (duplicates dropped).
     public static func kinds(for manifest: ModuleManifest) -> [AlertKindSetting] {
         var seen = Set<String>()
@@ -116,7 +121,9 @@ extension ConfigStore {
 
     /// The configured outputs in Peek / System / Sound order (unknown names dropped), or the default.
     public func alertOutputs(_ setting: AlertKindSetting) -> [AlertOutput] {
-        guard let names = value(setting.path(.outputs), as: [String].self) else { return AlertSettings.defaultOutputs }
+        guard let names = value(setting.path(.outputs), as: [String].self) else {
+            return AlertSettings.defaultOutputs(kind: setting.kind)
+        }
         return AlertSettings.ordered(names.compactMap(AlertOutput.init(rawValue:)))
     }
 

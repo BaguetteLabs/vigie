@@ -17,12 +17,12 @@ extension AlertHarness {
     /// A notifier for a second module.
     func otherNotifier() -> any Notifier {
         center.makeNotifier(
-            for: ModuleManifest(id: Self.otherModule, name: "Shelf", icon: "tray", alertKinds: ["shelf.expiring"]))
+            for: ModuleManifest(id: Self.otherModule, name: "Shelf", icon: "tray", alertKinds: ["shelf.sample"]))
     }
 
     func postOther() -> AlertHandle {
         center.post(
-            module: Self.otherModule, event: NotifierEvent(kind: "shelf.expiring", severity: .warn, title: "file"))
+            module: Self.otherModule, event: NotifierEvent(kind: "shelf.sample", severity: .warn, title: "file"))
     }
 
     func setFocus(_ active: Bool) async {

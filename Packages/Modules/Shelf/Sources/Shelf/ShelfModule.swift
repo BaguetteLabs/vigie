@@ -12,6 +12,10 @@ import os
 ///
 /// A Stash drop that cannot be stored adds nothing, returns `DropResult.readout("NOT STASHED")` (the host shows
 /// it on the left wing for 2 s) and writes a `shelf.stash` activity entry; no alert, peek or sound (UX-DR101).
+///
+/// Expiry (Story 9.4): ``ExpirySweeper`` runs at start, every 60 s and after every change. Items expire
+/// `ttl` after they were stashed unless pinned; references leave the shelf, copies and saved items go to the
+/// Trash. With `expiry_notification` on, `shelf.expiring` is posted once per item in its last 24 h.
 @MainActor @Observable
 public final class ShelfModule: NotchModule {
     nonisolated static let bundle = ShelfText.bundle
@@ -22,6 +26,8 @@ public final class ShelfModule: NotchModule {
     public nonisolated static let stashZoneID = "shelf.stash"
     /// Activity entry kind of a Stash outcome.
     nonisolated static let stashActivityKind = "shelf.stash"
+    /// How often the expiry sweep runs.
+    public nonisolated static let sweepInterval: Duration = .seconds(60)
 
     public nonisolated static let staticManifest = ModuleManifest(
         id: "shelf",
@@ -63,9 +69,26 @@ public final class ShelfModule: NotchModule {
     /// The index and the module folder; nil until `start`.
     public private(set) var store: ShelfStore?
 
+    /// When the last expiry sweep ran (views that show time left re-read on it).
+    public private(set) var lastSweep: Date?
+
     public var itemCount: Int { items.count }
 
+    /// Items in their last 24 h before expiry, as of the last sweep.
+    public var expiringCount: Int {
+        let now = lastSweep ?? now()
+        return items.filter { $0.isExpiring(now: now) }.count
+    }
+
+    /// The card meta `1 EXPIRING` (Story 9.3 shows it), nil when nothing is expiring.
+    public var expiringMeta: String? { ShelfExpiry.expiringMeta(count: expiringCount) }
+
     @ObservationIgnored private let scope: any SecurityScopedResources
+    @ObservationIgnored private let recycler: any Recycler
+    @ObservationIgnored var sweeper: ExpirySweeper?
+    @ObservationIgnored private var sweepToken: RegistrationToken?
+    /// The last queued sweep; each sweep waits for the one before it.
+    @ObservationIgnored private var sweepTask: Task<Void, Never>?
     @ObservationIgnored let now: @Sendable () -> Date
     @ObservationIgnored var settings: (any ModuleSettings)?
     @ObservationIgnored var activity: (any ActivityLog)?
@@ -73,9 +96,11 @@ public final class ShelfModule: NotchModule {
     @ObservationIgnored var observeTasks: [Task<Void, Never>] = []
 
     public init(
-        scope: any SecurityScopedResources = SystemSecurityScope(), now: @escaping @Sendable () -> Date = { Date() }
+        scope: any SecurityScopedResources = SystemSecurityScope(), recycler: any Recycler = WorkspaceRecycler(),
+        now: @escaping @Sendable () -> Date = { Date() }
     ) {
         self.scope = scope
+        self.recycler = recycler
         self.now = now
     }
 
@@ -92,14 +117,18 @@ public final class ShelfModule: NotchModule {
         if await store.recomputeExpiry(ttl: ttl) {
             context.log.info("Shelf expiry dates follow the current ttl")
         }
-        await refresh()
+        sweeper = ExpirySweeper(recycler: recycler, notifier: context.notifier, log: context.log)
         isRunning = true
+        await sweep()
+        sweepToken = context.scheduler.every(Self.sweepInterval) { [weak self] in await self?.sweep() }
         observe("ttl") { [weak self] in await self?.ttlChanged() }
     }
 
     public func stop() async {
         for task in observeTasks { task.cancel() }
         observeTasks = []
+        sweepToken?.cancel()
+        sweepToken = nil
         isRunning = false
     }
 
@@ -118,7 +147,54 @@ public final class ShelfModule: NotchModule {
         guard let settings, let store else { return }
         ttl = Self.resolvedTTL(settings)
         await store.recomputeExpiry(ttl: ttl)
+        await sweep()
+    }
+
+    /// Runs the expiry sweep, then refreshes items and state. Sweeps never overlap: a call made while one
+    /// runs queues another pass after it and returns when that pass is done.
+    public func sweep() async {
+        let previous = sweepTask
+        let task = Task { @MainActor [weak self] in
+            await previous?.value
+            await self?.sweepOnce()
+        }
+        sweepTask = task
+        await task.value
+    }
+
+    private func sweepOnce() async {
+        guard let store, let sweeper, isRunning else {
+            await refresh()
+            return
+        }
+        let date = now()
+        let notify = settings?.value("expiry_notification", as: Bool.self) ?? false
+        let report = await sweeper.sweep(store, now: date, notify: notify)
+        if !report.expired.isEmpty {
+            log?.info(
+                "Shelf: \(report.expired.count, privacy: .public) item(s) expired, \(report.recycled.count, privacy: .public) moved to the Trash"
+            )
+        }
+        lastSweep = date
         await refresh()
+    }
+
+    // MARK: Item actions (Story 9.3 builds on these)
+
+    /// Pins (never expires) or unpins (expires `ttl` after it was stashed) an item.
+    public func setPinned(_ id: UUID, _ pinned: Bool) async {
+        guard let store else { return }
+        await store.setPinned(id, pinned, ttl: ttl)
+        await sweep()
+    }
+
+    /// Takes an item off the shelf; its file is left where it is (nothing is deleted).
+    @discardableResult
+    public func remove(_ id: UUID) async -> ShelfItem? {
+        guard let store else { return nil }
+        let removed = await store.remove(id)
+        await sweep()
+        return removed
     }
 
     /// Re-reads the store's items and recomputes the state.
@@ -146,7 +222,7 @@ public final class ShelfModule: NotchModule {
         do {
             let added = try await store.stash(payload, mode: mode, ttl: ttl, now: now())
             log?.info("Stashed \(added.count, privacy: .public) item(s)")
-            await refresh()
+            await sweep()
             return .accepted
         } catch {
             let failure = (error as? StashFailure) ?? .writeFailed

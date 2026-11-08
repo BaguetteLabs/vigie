@@ -9,13 +9,14 @@ import Testing
 struct ShelfHarness {
     let clock = TestClock()
     let scope = CountingScope()
+    let recycler = RecordingRecycler()
     let context: FakeModuleContext
     let module: ShelfModule
 
     init(settings: [String: any SettingValue] = [:], storage: FakeStorage = FakeStorage()) {
         context = FakeModuleContext(settings: settings, storage: storage)
         let clock = clock
-        module = ShelfModule(scope: scope, now: { clock.now })
+        module = ShelfModule(scope: scope, recycler: recycler, now: { clock.now })
     }
 
     func start() async throws { try await module.start(context: context) }

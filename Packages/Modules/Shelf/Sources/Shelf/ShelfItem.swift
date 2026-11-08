@@ -35,6 +35,9 @@ public struct ShelfItem: Codable, Hashable, Sendable, Identifiable {
     public var pinned: Bool
     /// `addedAt + ttl`; nil while pinned (never expires).
     public var expiresAt: Date?
+    /// When `shelf.expiring` was posted for the current `expiresAt` (once per item); nil before, and again
+    /// after a pin or `ttl` change moves the item out of its last 24 h.
+    public var expiryNotifiedAt: Date?
 
     public init(
         id: UUID = UUID(), name: String, size: Int64, sourceApp: String? = nil, addedAt: Date, mode: ShelfItemMode,

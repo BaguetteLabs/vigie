@@ -105,3 +105,14 @@ func parisDate(_ hour: Int, _ minute: Int, day: Int = 7) -> Date {
         }
     }
 }
+
+@Suite struct KindDefaultOutputsTests {
+    @Test func shelfExpiringDefaultsToSystemOnly() {
+        #expect(NotifyRule.defaultOutputs(for: .info, kind: "shelf.expiring") == [.system])
+        #expect(NotifyRule().effectiveOutputs(for: .warn, kind: "shelf.expiring") == [.system])
+        #expect(NotifyRule().effectiveOutputs(for: .warn, kind: "session.done") == [.peek, .sound])
+        // A rule that sets outputs still wins.
+        #expect(NotifyRule(outputs: [.peek]).effectiveOutputs(for: .info, kind: "shelf.expiring") == [.peek])
+        #expect(AlertSettings.defaultOutputs(kind: "shelf.expiring") == [.system])
+    }
+}

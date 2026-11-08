@@ -183,11 +183,29 @@ public actor ShelfStore {
         guard let index = items.firstIndex(where: { $0.id == id }), items[index].pinned != pinned else { return }
         items[index].pinned = pinned
         items[index].expiresAt = ShelfItem.expiry(addedAt: items[index].addedAt, ttl: ttl, pinned: pinned)
+        resetNotice(index)
         await persist()
     }
 
-    /// Re-computes `expiresAt` for a new `ttl`, from each item's `addedAt` (pinned items keep none). Returns
-    /// whether anything changed.
+    /// Records that `shelf.expiring` was posted for these items.
+    public func markExpiryNotified(_ ids: [UUID], at date: Date) async {
+        let ids = Set(ids)
+        for index in items.indices where ids.contains(items[index].id) { items[index].expiryNotifiedAt = date }
+        await persist()
+    }
+
+    /// Clears the expiry notice when the item is no longer in its last 24 h, so it is posted again next time.
+    private func resetNotice(_ index: Int) {
+        guard let notified = items[index].expiryNotifiedAt else { return }
+        let item = items[index]
+        let stillWarned =
+            item.expiresAt.map { $0.timeIntervalSince(notified) <= ShelfExpiry.warningWindow } ?? false
+        if !stillWarned { items[index].expiryNotifiedAt = nil }
+    }
+
+    /// Re-computes `expiresAt` for a new `ttl`, from each item's `addedAt` (pinned items keep none): the ttl
+    /// is how long an item stays after it was stashed, so a shorter ttl can expire items at the next sweep.
+    /// Returns whether anything changed.
     @discardableResult
     public func recomputeExpiry(ttl: Duration) async -> Bool {
         var changed = false
@@ -195,6 +213,7 @@ public actor ShelfStore {
             let expiry = ShelfItem.expiry(addedAt: items[index].addedAt, ttl: ttl, pinned: items[index].pinned)
             if items[index].expiresAt != expiry {
                 items[index].expiresAt = expiry
+                resetNotice(index)
                 changed = true
             }
         }
