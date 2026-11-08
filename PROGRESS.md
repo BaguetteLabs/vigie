@@ -98,6 +98,8 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 
 ## Queued work (ruled by Romain)
 
+- 2026-11-08 — **Defect: island and band a few px shorter than the physical notch on Romain's MacBook Air** (Story 2.5 live check). `NotchGeometry.physical` uses `max(safeAreaInsets.top, auxiliary area heights, band-height 34)`; the physical cut-out is taller than what macOS reports, so notch-black shows below the closed island and below the expanded band. No API gives the physical height. Fix candidates: a `[closed] notch_overlap` (local, pt added below the reported height, with a live stepper in Settings › Appearance), and a one-time debug log of `ScreenMetrics` at start so the reported values can be read from `log show`. Needs Romain's estimate of the gap in px.
+- 2026-11-08 — **Idea (Notchi screenshot):** settings as a page inside the open notch (Back / pin / close, rows with status chips `Not Verified`, `Connected`, `No Key`, `Up to date`, external links, a red Quit row). Worth considering for Epic 17 (Settings) as a quick-settings page in the expanded view, keeping the full Settings window for the generated panes.
 - 2026-11-08 — **Spike: Focus/DND detection route** (Story 3.5 follow-up). Romain ruled "research another route" instead of accepting no Focus suppression. Candidates: Full Disk Access to read `~/Library/DoNotDisturb/DB/Assertions.json`; `defaults`/`plutil` of the ModeConfigurations store; Shortcuts automation bridge (a Focus-triggered Shortcut that writes a flag Vigie watches or calls `vigie event`); `NSWorkspace`/private `DNDModeState` observers (rejected if private); menu-bar Focus item accessibility query. Record permission cost and latency; write `docs/decisions/spike-focus-detection.md`.
 
 ## Waiting on Romain
