@@ -90,7 +90,7 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - [ ] 7.1–7.10 · [ ] 8.1–8.4 · [ ] 9.1–9.10 · [x] 10.1–10.2 (listen to the WAVs once) · [ ] 21.1–21.3
 
 ### v0.3 — Epics 11 (Home), 12 (Scripts), 13 (Calendar), 14 (Gemini), 20 (Time)
-- [x] 11.1 · [ ] 11.2–11.3 · [ ] 12.1–12.11 · [ ] 13.1–13.4 · [ ] 14.1–14.3 · [ ] 20.1–20.6
+- [x] 11.1 · [~] 11.2 (sessions card done; quota card waits for Epic 7) · [ ] 11.3 · [ ] 12.1–12.11 · [ ] 13.1–13.4 · [ ] 14.1–14.3 · [ ] 20.1–20.6
 
 ### v0.4 — Epics 15 (Notes), 16 (Sync), 17 (Onboarding/Settings), 18 (Themes), 19 (Public release)
 - [ ] 15.1–15.5 · [ ] 16.1–16.3 · [ ] 17.1, 17.2, 17.4, 17.5 ([-] 17.3 superseded) · [ ] 18.1–18.4 · [ ] 19.1–19.3
@@ -147,6 +147,8 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - 2026-11-08 — Story 4.13: `vigie agent --agent <id> --session <id> (--status working|blocked|done|failed|idle | --end) [--cwd] [--message]`; reserved ids (claude, codex, gemini) are logged and dropped; usage errors are the only output (exit 2). Identity `generic.<agent>:<session>`; `AgentID.init?` now also accepts `generic.*` (one-line AgentKit change). Mapping lives in `GenericAgentMapping.swift`; blocked → `needs.input(.permissionPrompt)`; agent pid = first non-shell ancestor. No adapter, no support gate.
 
 - 2026-11-08 — Story 11.1: Home tab (`ExpandedTab.home`) is always first, outside `general.tab_order`; `expand()` lands on Home every time. Cards resolved by `HomeCardSelection.resolve(order:offered:)` from `[home] cards`; unknown ids logged once and preserved when the pane writes. Sizes from DESIGN tokens `components.script-card.width` (222), `components.home-grid.card-height` (138), `spacing.grid-gap` (no new Theme tokens: `base.toml` is generated). Script cards plug in via `NotchHost(additionalHomeCards:)` + `SettingsController.additionalHomeProviders`. 11.2 only needs `homeCard()` in AgentsSessions and Usage. Dev note: `~/.local/bin/vigie-dev` may point at a deleted DerivedData helper until the next dev launch re-points it.
+
+- 2026-11-08 — Story 11.2 (sessions card): `SessionsHomeCardView` bound to the module's `tabSnapshot(now:)`, rows on `18 | 92max | 1fr | 64` with `minimumScaleFactor`; in a 222 cell the agent name ("Claude Code") eats most of the project column — polish candidate: short agent label ("Claude") or glyph-only agent column on Home. Row buttons nest inside the Home card button; manual check that a row press does not also open the tab. Empty states have no Settings button on Home (nested button). Quota card: do it with Epic 7 (7.x module `homeCard()`).
 
 ## Notes for the next session
 
