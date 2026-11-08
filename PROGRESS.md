@@ -87,7 +87,7 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - [x] 6.4 Versioning and build numbers (run `Scripts/version.sh --xcconfig App/Config/Version.xcconfig` before a manual `xcodegen generate`)
 
 ### v0.2 — Epics 7 (Usage), 8 (Codex, `vigie run`), 9 (Shelf), 10 (Sounds), 21 (Privacy)
-- [x] 7.1, 7.2 (signed-build AC pending a real identity) · [ ] 7.3–7.10 · [ ] 8.1–8.4 · [ ] 9.1–9.10 · [x] 10.1–10.2 (listen to the WAVs once) · [ ] 21.1–21.3
+- [x] 7.1, 7.2 (signed-build AC pending a real identity), 7.3 (live endpoint untested; AD-23 path ruling pending) · [ ] 7.4–7.10 · [ ] 8.1–8.4 · [ ] 9.1–9.10 · [x] 10.1–10.2 (listen to the WAVs once) · [ ] 21.1–21.3
 
 ### v0.3 — Epics 11 (Home), 12 (Scripts), 13 (Calendar), 14 (Gemini), 20 (Time)
 - [x] 11.1 · [~] 11.2 (sessions card done; quota card waits for Epic 7) · [ ] 11.3 · [ ] 12.1–12.11 · [ ] 13.1–13.4 · [ ] 14.1–14.3 · [ ] 20.1–20.6
@@ -106,6 +106,9 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - Focus/DND detection: the app cannot read the DoNotDisturb Assertions file (privacy-protected). Decide: accept (no Focus suppression in v0.1), or research another detection route.
 
 - Check `Packages/Modules/AgentsUsage/Sources/AgentsUsage/Resources/prices.json` against current Anthropic list prices (4.x rows written from memory).
+
+- AD-23 adapter settings path: TOML forbids `adapters` as both list and table. Code ships `[modules."agents.sessions".adapter.<id>]`. Confirm that name (or pick `enabled_adapters` for the list instead) and amend SPINE AD-23 + SPEC §11.
+- Test the live Claude plan endpoint once: Settings › Usage › Claude plan usage › Use Claude Code's login › Allow (macOS Keychain prompt), then check the status line / `log show … | grep "Plan usage"`. Patch `PLAN-ENDPOINT.md` + client + fixtures if the shape differs.
 
 ## Decisions log
 
@@ -155,6 +158,8 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - 2026-11-08 — Story 7.1: `Packages/Modules/AgentsUsage` (first remote dependency: GRDB 7.12.x, `Package.resolved` committed; CI needs GitHub access as for the other packages). `UsageStore` (GRDB pool, WAL) under `modules/agents.usage/usage.sqlite`; `UsageIngestor` at start + every 60 s (no FSEvents); id = provider/session/message, upsert keeps the last streaming write. Real logs: 404 files, ~15.8k records, first pass ~7 s. `ClaudeLogReader` in the Claude adapter; `usageProvider` stays nil until 7.3. `usage_providers` is read through adapter defaults only (ConfigStore does not serve adapter settings yet) and the sessions `adapters` list is not consulted. `Scripts/check-locales.sh` exempts `GRDB_GRDB.bundle`. **Verify the bundled `prices.json`** (4.x rows and sonnet-5 cache-read from memory). Romain's config has `[modules."agents.usage"]` keys (order, pace, pace_tolerance, priority, rings, warn_action, warn_threshold) that now log unknown-key problems until 7.4+ declares them.
 
 - 2026-11-08 — Story 7.2: `KeychainSecretStore` (data-protection keychain, access group `<TeamID>.<bundle id>` read from the code signature, service `<bundle id>.secrets`, account `<owner>/<key>`). Under ad-hoc signing the probe reports unavailable (-34018) and posts one `setup.problem` `secrets.unavailable`; every call throws `.unavailable`. The entitlement lives in `App/Vigie.signed.entitlements` (adding it to the ad-hoc build kills the app at launch); switch `CODE_SIGN_ENTITLEMENTS` + `DEVELOPMENT_TEAM` in Story 6.1. `ConfigStore.set/remove` refuse `.secret` keys; Settings secret rows go through `SecretSettingBinding`. Adapters have no `AdapterContext` of their own yet (secrets fall back to the agents.sessions scope) — wire `adapterOwner(_:)` in 7.3. `Scripts/check-cli-no-keychain.sh` guards VigieCLI/Wire.
+
+- 2026-11-08 — Story 7.3: **AD-23 / SPEC §11 conflict**: `[modules."agents.sessions"] adapters = [...]` and `[modules."agents.sessions".adapters.<id>]` cannot coexist in TOML (`adapters` would be both an array and a table). Code uses `[modules."agents.sessions".adapter.<id>]` (singular), set in one constant `CoreSettings.adapterTableSegment`; SPINE line 214 and SPEC line 767 still say `adapters.` — Romain to rule, then amend the docs. Plan provider: `ClaudePlanUsageProvider` (endpoint + fixtures documented in `Packages/Adapters/Claude/Sources/ClaudeAdapter/Usage/PLAN-ENDPOINT.md`), settings `usage_providers` (synced), `plan_auth` (local), `plan_token` (secret). `readExternal` reads the login-keychain item only with a `[consents."<id>"]` record in local.toml; never cached or written. `AgentsUsageModule.planState(for:)` / `PlanState.staleLabel` for 7.4/11.2; `expandedViewDidAppear()` must be called by the Usage card/tab (nothing calls it yet). No alert for unfinished setup (consent/token missing), only the Settings status line. App builds one `AdapterContext` per adapter (`AgentAdapterAssembly`).
 
 ## Notes for the next session
 
