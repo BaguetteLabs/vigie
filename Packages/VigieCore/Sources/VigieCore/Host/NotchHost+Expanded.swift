@@ -21,23 +21,25 @@ extension NotchHost {
     /// True while the expanded view holds keyboard focus.
     public var isExpandedKey: Bool { focusPolicy.isKey(expandedSurface) }
 
-    /// The tabs: running modules with an `expandedView()`, in `[general] tab_order` (A12, A74). A module in
-    /// `alert` carries the attention marker.
+    /// The tabs: Home first, always (FR89, Story 11.1), then running modules with an `expandedView()` in
+    /// `[general] tab_order` (A12, A74). A module in `alert` carries the attention marker.
     public var expandedTabs: [ExpandedTab] {
         _ = registry.statuses  // module starts and stops
         let tabs = registry.runningModules.compactMap(ExpandedTabOrder.tab(for:))
-        return ExpandedTabOrder.ordered(tabs, by: tabOrder())
+            .filter { $0.id != ExpandedTab.homeID }
+        return [.home] + ExpandedTabOrder.ordered(tabs, by: tabOrder())
     }
 
-    /// The body of a tab: its module's `expandedView()`.
+    /// The body of a tab: Home's grid, or its module's `expandedView()`.
     public func expandedContent(for tabID: String) -> AnyView? {
-        registry.runningModules.first { $0.manifest.id.rawValue == tabID }?.expandedView()
+        if tabID == ExpandedTab.homeID { return homeContent() }
+        return registry.runningModules.first { $0.manifest.id.rawValue == tabID }?.expandedView()
     }
 
     // MARK: Open and close
 
-    /// Opens the expanded view on the display under the pointer (or the main Vigie display), on the first tab
-    /// (Home from Epic 11). With `focus` it becomes the key surface; without, it shows without focus. When it is
+    /// Opens the expanded view on the display under the pointer (or the main Vigie display), on Home every time
+    /// (FR87), whichever tab it was left on. With `focus` it becomes the key surface; without, it shows without focus. When it is
     /// already open, `focus` makes it key.
     public func expand(focus: UserIntent?) {
         if isExpanded {
@@ -55,7 +57,7 @@ extension NotchHost {
         expansionGeneration += 1
         let frame = anchor.panelFrame(size: themeController.theme.expandedPanelSize)
         expansionOrigin = anchor.islandFrame.size
-        selectedTabID = expandedTabs.first?.id
+        selectedTabID = ExpandedTab.homeID
         let panel = expandedPanel ?? makeExpandedPanel(self)
         expandedPanel = panel
         isExpanded = true

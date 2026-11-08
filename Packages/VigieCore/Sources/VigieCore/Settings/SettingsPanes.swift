@@ -55,6 +55,9 @@ public struct SettingsPane: Identifiable, Sendable {
 /// `[appearance.colors]` is free-form and has no generated rows yet. Aliases: `privacy` → `general`,
 /// `virtual_notch` / `displays` → `display`, `notch` → `closed`, `alerts` → `notify`.
 public enum SettingsPaneCatalog {
+    /// Settings › Home (Story 11.1): the Home card list, then `[general] tab_order`.
+    public static let homePaneID = "home"
+
     public static let corePaneIDs = [
         "general", "activity", "appearance", "closed", "display", "home", "notify", "sounds", "sync", "updates",
     ]
@@ -108,12 +111,9 @@ public enum SettingsPaneCatalog {
                         keys: keys("virtual_notch", ["width", "idle", "position", "placement", "style"])),
                 ])),
             SettingsPane(
-                id: "home", title: SettingsText.resource("settings.pane.home"), icon: "square.grid.3x2",
-                content: .core([
-                    SettingsSection(keys: [
-                        CoreSettings.path("home", "cards"), CoreSettings.path("general", "tab_order"),
-                    ])
-                ])),
+                id: homePaneID, title: SettingsText.resource("settings.pane.home"), icon: "square.grid.3x2",
+                // `[home] cards` is edited by the Home card list (HomePaneContent), not a generated row.
+                content: .core([SettingsSection(keys: [CoreSettings.path("general", "tab_order")])])),
             SettingsPane(
                 id: "notify", title: SettingsText.resource("settings.pane.notify"), icon: "bell.badge",
                 content: .core([

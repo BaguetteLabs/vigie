@@ -122,12 +122,15 @@ struct SettingsHarness {
         for id in SettingsPaneCatalog.corePaneIDs { #expect(ids.contains(id)) }
         for id in ["agents.sessions", "calendar.test", "custom.test"] { #expect(ids.contains(id)) }
         #expect(Array(ids.prefix(SettingsPaneCatalog.corePaneIDs.count)) == SettingsPaneCatalog.corePaneIDs)
-        // Every core key has a row in exactly one pane, except [appearance.colors] (free-form).
+        // Every core key has a row in exactly one pane, except [appearance.colors] (free-form) and
+        // `[home] cards`, which the Settings › Home card list edits (Story 11.1).
         let placed = h.controller.panes.flatMap { pane -> [ConfigKeyPath] in
             if case .core(let sections) = pane.content { return sections.flatMap(\.keys) }
             return []
         }
-        let core = Set(CoreSettings.all.map(\.path)).subtracting([CoreSettings.path("general", "launch_at_login")])
+        let core = Set(CoreSettings.all.map(\.path)).subtracting([
+            CoreSettings.path("general", "launch_at_login"), HomePaneModel.cardsPath,
+        ])
         #expect(Set(placed) == core)
         #expect(placed.count == core.count)
         await h.tearDown()
@@ -431,9 +434,16 @@ struct SettingsHarness {
     /// Renders the General and a module pane offscreen; with `VIGIE_SETTINGS_SNAPSHOT_DIR` set, writes PNGs there.
     @Test func panesRenderOffscreen() async throws {
         let h = try await SettingsHarness()
+        h.controller.additionalHomeProviders = {
+            [
+                HomeProviderDescriptor(id: "script.site", name: "vigie.app"),
+                HomeProviderDescriptor(id: "x", name: "Other"),
+            ]
+        }
+        await h.controller.home.setOn("x", true)
         h.controller.open(pane: "general")
         let window = try #require(h.controller.window)
-        for pane in ["general", "custom.test", "calendar.test", "display", "activity"] {
+        for pane in ["general", "custom.test", "calendar.test", "display", "activity", "home"] {
             h.controller.selectedPaneID = pane
             try await Task.sleep(for: .milliseconds(300))
             let view = try #require(window.contentView)

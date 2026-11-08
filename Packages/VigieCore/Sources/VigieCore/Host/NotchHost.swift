@@ -128,6 +128,14 @@ public final class NotchHost {
     @ObservationIgnored let makeExpandedPanel: @MainActor (NotchHost) -> any ExpandedPanelHosting
     /// Opens the Settings window from the gear; nil keeps the gear inert (until Story 2.14).
     @ObservationIgnored public let openSettings: (@MainActor () -> Void)?
+    /// Opens Settings on a pane (the Home empty state's `Open settings` → Settings › Home).
+    @ObservationIgnored let openSettingsPane: (@MainActor (String) -> Void)?
+    /// `[home] cards`: provider ids in Home order (Story 11.1).
+    @ObservationIgnored let homeCardOrder: @MainActor () -> [String]
+    /// Home cards from providers that are not modules (scripts with the `home` surface, Epic 12).
+    @ObservationIgnored let additionalHomeCards: @MainActor () -> [HomeCardModel]
+    /// `[home] cards` ids already logged as offering no card, so each is logged once.
+    @ObservationIgnored var loggedMissingHomeCards: Set<String> = []
     @ObservationIgnored let expandedSurface = ExpandedSurface()
     @ObservationIgnored var expandedPanel: (any ExpandedPanelHosting)?
     @ObservationIgnored var expansionGeneration = 0
@@ -156,6 +164,10 @@ public final class NotchHost {
     ///   - closeOnLeave: `[general] close_on_leave` (default false).
     ///   - tabOrder: `[general] tab_order`, module ids (default empty: registry order).
     ///   - openSettings: opens the Settings window from the gear; nil until Story 2.14.
+    ///   - openSettingsPane: opens Settings on a pane id (`home` from the Home empty state); nil falls back to
+    ///     `openSettings`.
+    ///   - homeCardOrder: `[home] cards`, provider ids in Home order (default empty: the Home empty state).
+    ///   - additionalHomeCards: cards of providers that are not modules (scripts, Epic 12).
     ///   - pointerLocation: the pointer in global AppKit coordinates; `NSEvent.mouseLocation` in production.
     ///   - makeExpandedPanel: builds the expanded panel window; an ``ExpandedPanel`` in production.
     public init(
@@ -178,6 +190,9 @@ public final class NotchHost {
         closeOnLeave: @escaping @MainActor () -> Bool = { false },
         tabOrder: @escaping @MainActor () -> [String] = { [] },
         openSettings: (@MainActor () -> Void)? = nil,
+        openSettingsPane: (@MainActor (String) -> Void)? = nil,
+        homeCardOrder: @escaping @MainActor () -> [String] = { [] },
+        additionalHomeCards: @escaping @MainActor () -> [HomeCardModel] = { [] },
         pointerLocation: @escaping @MainActor () -> CGPoint = { NSEvent.mouseLocation },
         makeExpandedPanel: (@MainActor (NotchHost) -> any ExpandedPanelHosting)? = nil,
         logger: Logger
@@ -200,6 +215,9 @@ public final class NotchHost {
         self.closeOnLeave = closeOnLeave
         self.tabOrder = tabOrder
         self.openSettings = openSettings
+        self.openSettingsPane = openSettingsPane
+        self.homeCardOrder = homeCardOrder
+        self.additionalHomeCards = additionalHomeCards
         self.pointerLocation = pointerLocation
         self.makeIslandPanel =
             makeIslandPanel ?? { host, id in

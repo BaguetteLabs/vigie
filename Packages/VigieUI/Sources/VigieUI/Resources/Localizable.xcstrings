@@ -1140,6 +1140,30 @@
           }
         }
       }
+    },
+    "expanded.tab.home" : {
+      "comment" : "Title of the Home tab, always first in the expanded view.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Home"
+          }
+        }
+      }
+    },
+    "home.card.open" : {
+      "comment" : "Accessibility label of a Home card button; the argument is the module name. Clicking it opens that tab.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open %@"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

@@ -1740,6 +1740,78 @@
           }
         }
       }
+    },
+    "settings.home.cards" : {
+      "comment" : "Settings › Home: heading of the list of modules and scripts that offer a Home card.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Home cards"
+          }
+        }
+      }
+    },
+    "settings.home.footer" : {
+      "comment" : "Settings › Home: footer under the card list.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ticked cards appear on Home in this order. Drag to reorder."
+          }
+        }
+      }
+    },
+    "settings.home.empty" : {
+      "comment" : "Settings › Home: shown when no running module or script offers a Home card.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No module offers a Home card yet."
+          }
+        }
+      }
+    },
+    "settings.home.drag" : {
+      "comment" : "Settings › Home: tooltip of a row's drag handle.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drag to reorder"
+          }
+        }
+      }
+    },
+    "settings.home.moveUp" : {
+      "comment" : "Settings › Home: VoiceOver action moving a row one place up.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move up"
+          }
+        }
+      }
+    },
+    "settings.home.moveDown" : {
+      "comment" : "Settings › Home: VoiceOver action moving a row one place down.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move down"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

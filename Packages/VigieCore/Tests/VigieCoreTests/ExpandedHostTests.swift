@@ -43,13 +43,16 @@ final class TabModule: NotchModule {
     let manifest: ModuleManifest
     var state: ModuleState = .ambient
     @ObservationIgnored let hasTab: Bool
+    @ObservationIgnored var hasCard: Bool
 
-    init(_ id: ModuleID, hasTab: Bool = true) {
+    init(_ id: ModuleID, hasTab: Bool = true, hasCard: Bool = false) {
         manifest = ModuleManifest(id: id, name: "Tab", icon: "circle")
         self.hasTab = hasTab
+        self.hasCard = hasCard
     }
 
     func expandedView() -> AnyView? { hasTab ? AnyView(Color.clear) : nil }
+    func homeCard() -> AnyView? { hasCard ? AnyView(Color.clear) : nil }
     func start(context: any ModuleContext) async throws {}
     func stop() async {}
 }
@@ -59,10 +62,13 @@ final class ExpandedFixture {
     let modules: [ModuleID: TabModule]
     let registry: ModuleRegistry
     let focus = FocusPolicy()
+    let enablement: TestEnablement
     let panel = FakeExpandedPanel()
     var openOnHover = false
     var closeOnLeave = false
     var tabOrder: [String] = []
+    var homeCards: [String] = []
+    var openedPanes: [String] = []
     var pointer = CGPoint(x: 700, y: 980)
     var host: NotchHost!
 
@@ -70,16 +76,23 @@ final class ExpandedFixture {
     static let island = CGRect(x: 536, y: 950, width: 440, height: 32)
     static let notch = CGRect(x: 656, y: 950, width: 200, height: 32)
 
-    init(ids: [ModuleID] = ["agents.sessions", "agents.usage", "shelf"], withoutTab: Set<ModuleID> = []) {
+    init(
+        ids: [ModuleID] = ["agents.sessions", "agents.usage", "shelf"], withoutTab: Set<ModuleID> = [],
+        withCard: Set<ModuleID> = []
+    ) {
         var modules: [ModuleID: TabModule] = [:]
-        for id in ids { modules[id] = TabModule(id, hasTab: !withoutTab.contains(id)) }
+        for id in ids {
+            modules[id] = TabModule(id, hasTab: !withoutTab.contains(id), hasCard: withCard.contains(id))
+        }
         let made = modules
         self.modules = modules
+        let enablement = TestEnablement()
+        self.enablement = enablement
         registry = ModuleRegistry(
             descriptors: ids.map { id in
                 ModuleDescriptor(manifest: ModuleManifest(id: id, name: "Tab", icon: "circle")) { made[id]! }
             },
-            enablement: TestEnablement(),
+            enablement: enablement,
             contextFactory: CoreModuleContextFactory(
                 environment: makeEnvironment(makeTempDirectory()), eventBus: InProcessEventBus()),
             logger: testLogger)
@@ -93,6 +106,8 @@ final class ExpandedFixture {
             hoverDelay: { .milliseconds(20) },
             closeOnLeave: { [unowned self] in self.closeOnLeave },
             tabOrder: { [unowned self] in self.tabOrder },
+            openSettingsPane: { [unowned self] in self.openedPanes.append($0) },
+            homeCardOrder: { [unowned self] in self.homeCards },
             pointerLocation: { [unowned self] in self.pointer },
             makeExpandedPanel: { _ in panel },
             logger: testLogger)
@@ -212,12 +227,12 @@ final class ExpandedFixture {
         #expect(f.host.isExpanded)
     }
 
-    @Test func opensOnTheFirstTabAndOpenTabSelectsATab() async {
+    @Test func opensOnHomeAndOpenTabSelectsATab() async {
         let f = ExpandedFixture()
         await f.start()
         f.host.selectedTabID = "shelf"
         f.host.expand(focus: f.intent)
-        #expect(f.host.selectedTabID == "agents.sessions")
+        #expect(f.host.selectedTabID == ExpandedTab.homeID)
         f.host.collapse()
         f.host.openTab("shelf", focus: f.intent)
         #expect(f.host.selectedTabID == "shelf")
@@ -226,9 +241,9 @@ final class ExpandedFixture {
     @Test func tabsFollowTabOrderAndCarryTheAttentionMarker() async {
         let f = ExpandedFixture(ids: ["agents.sessions", "agents.usage", "shelf", "time"], withoutTab: ["time"])
         await f.start()
-        #expect(f.host.expandedTabs.map(\.id) == ["agents.sessions", "agents.usage", "shelf"])
+        #expect(f.host.expandedTabs.map(\.id) == ["home", "agents.sessions", "agents.usage", "shelf"])
         f.tabOrder = ["shelf", "calendar", "agents.sessions"]
-        #expect(f.host.expandedTabs.map(\.id) == ["shelf", "agents.sessions", "agents.usage"])
+        #expect(f.host.expandedTabs.map(\.id) == ["home", "shelf", "agents.sessions", "agents.usage"])
         #expect(f.host.expandedTabs.allSatisfy { !$0.needsAttention })
         f.modules["agents.sessions"]!.state = .alert
         #expect(f.host.expandedTabs.first { $0.id == "agents.sessions" }?.needsAttention == true)

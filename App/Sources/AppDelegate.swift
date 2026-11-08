@@ -292,6 +292,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             closeOnLeave: { configStore.value(general("close_on_leave"), as: Bool.self) ?? false },
             tabOrder: { configStore.value(general("tab_order"), as: [String].self) ?? [] },
             openSettings: { [weak self] in self?.openSettings(pane: nil) },
+            openSettingsPane: { [weak self] pane in self?.openSettings(pane: pane) },
+            homeCardOrder: { configStore.value(CoreSettings.path("home", "cards"), as: [String].self) ?? [] },
             logger: Logger(subsystem: environment.logSubsystem, category: "host"))
         hostLink.host = host
         self.notchHost = host

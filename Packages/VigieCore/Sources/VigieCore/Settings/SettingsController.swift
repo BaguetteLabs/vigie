@@ -42,6 +42,11 @@ public final class SettingsController {
     public let activity: ActivityPaneModel
     /// Settings › Sounds state (Story 10.2). The App sets `sounds.player` to the alert sound player.
     public let sounds: SoundsPaneModel
+    /// Settings › Home state (Story 11.1).
+    public let home: HomePaneModel
+    /// Home card providers that are not modules (scripts with the `home` surface, Epic 12); listed after the
+    /// modules in Settings › Home.
+    @ObservationIgnored public var additionalHomeProviders: @MainActor () -> [HomeProviderDescriptor] = { [] }
 
     @ObservationIgnored public let configStore: ConfigStore
     @ObservationIgnored public let registry: ModuleRegistry
@@ -83,10 +88,25 @@ public final class SettingsController {
         self.loginShellPath = loginShellPath
         self.activity = ActivityPaneModel(store: activityStore)
         sounds = SoundsPaneModel(configStore: configStore)
+        var extraHomeProviders: (@MainActor () -> [HomeProviderDescriptor])?
+        home = HomePaneModel(configStore: configStore) {
+            Self.moduleHomeProviders(registry) + (extraHomeProviders?() ?? [])
+        }
         services = CoreSettingServices.make()
         loginItemStatus = loginItem.status
         for manifest in manifests { configStore.register(manifest: manifest) }
         panes = SettingsPaneCatalog.corePanes() + manifests.map(SettingsPaneCatalog.modulePane)
+        extraHomeProviders = { [weak self] in self?.additionalHomeProviders() ?? [] }
+    }
+
+    /// Running modules that offer a `homeCard()`, in registry order (Settings › Home).
+    static func moduleHomeProviders(_ registry: ModuleRegistry) -> [HomeProviderDescriptor] {
+        _ = registry.statuses  // module starts and stops
+        return registry.runningModules.compactMap { module in
+            guard module.homeCard() != nil else { return nil }
+            return HomeProviderDescriptor(
+                id: module.manifest.id.rawValue, name: String(localized: module.manifest.name))
+        }
     }
 
     // MARK: - Window
