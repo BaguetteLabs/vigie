@@ -1,6 +1,30 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "agentsSessions.ask.menu" : {
+      "comment" : "Shelf Send to menu and VoiceOver action: send the item to Ask AI.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ask AI"
+          }
+        }
+      }
+    },
+    "agentsSessions.ask.menuAlternate" : {
+      "comment" : "Shelf Send to menu and VoiceOver action: Ask AI with the Option folder (ask_alt_cwd).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ask AI in alternate folder"
+          }
+        }
+      }
+    },
     "agentsSessions.ask.detail.agent" : {
       "comment" : "Shelf tab SEND TO card, Ask AI row label: the agent that starts. Uppercase.",
       "extractionState" : "manual",

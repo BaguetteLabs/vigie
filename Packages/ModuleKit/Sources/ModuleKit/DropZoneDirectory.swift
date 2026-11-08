@@ -3,8 +3,8 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 /// The running modules' drop zones, for a module that shows or invokes zones it does not own (Stories 9.7,
-/// 9.10: the Shelf tab's `SEND TO` card shows the Ask AI zone of `agents.sessions`; the stash items dropped on the card
-/// run zone handlers). Implemented by VigieCore over the same collection the drop display
+/// 9.10: the Shelf tab's `SEND TO` card shows the Ask AI zone of `agents.sessions`; stash items dropped on it,
+/// the `Send to` menu, `⌘V` and the Services entry run zone handlers). Implemented by VigieCore over the same collection the drop display
 /// uses (`NotchModule.dropZones` of the running modules); modules never reference each other (AD-1, AD-19).
 ///
 /// ``zones()`` is read on the main actor; a view that calls it in `body` re-renders when the zones' observed
@@ -20,6 +20,10 @@ public protocol DropZoneDirectory: Sendable {
     /// keeps any security-scoped access open until this returns (AD-19).
     @MainActor func perform(zoneID: String, payload: DropPayload) async -> DropResult
 
+    /// `⌘V` on a module's tab (Story 9.10): the host reads the general pasteboard (files, image, text or a link;
+    /// modules never read it, AD-19) and runs `zoneID` with that content and `source = .paste`. Nil when the
+    /// pasteboard holds nothing usable: no handler runs and nothing is shown.
+    @MainActor func performPaste(into zoneID: String) async -> DropResult?
 }
 
 /// A ``DropZone`` as another module sees it: everything but the handler, plus the owning module.
@@ -40,6 +44,7 @@ public struct DropZoneSummary: Identifiable, Sendable {
     public let style: DropZoneStyle
     public let isEnabled: Bool
     public let details: [DropZoneDetail]
+    public let menuTitle: LocalizedStringResource?
 
     public init(_ zone: DropZone, moduleID: ModuleID) {
         id = zone.id
@@ -58,6 +63,7 @@ public struct DropZoneSummary: Identifiable, Sendable {
         style = zone.style
         isEnabled = zone.isEnabled
         details = zone.details
+        menuTitle = zone.menuTitle
     }
 
     /// Same rule as ``DropZone/accepts(contentTypes:)``.
@@ -76,4 +82,5 @@ public struct EmptyDropZoneDirectory: DropZoneDirectory {
     public init() {}
     @MainActor public func zones() -> [DropZoneSummary] { [] }
     @MainActor public func perform(zoneID: String, payload: DropPayload) async -> DropResult { .rejected }
+    @MainActor public func performPaste(into zoneID: String) async -> DropResult? { nil }
 }

@@ -119,6 +119,14 @@ jobs:
         id: cli-no-keychain-guard
         run: Scripts/check-cli-no-keychain.sh
 
+      - name: module-pasteboard-guard
+        id: module-pasteboard-guard
+        run: Scripts/check-module-pasteboard.sh && Scripts/tests/module-pasteboard-test.sh
+
+      - name: services-plist
+        id: services-plist
+        run: Scripts/check-services-plist.sh
+
       - name: adapter-fixtures
         id: adapter-fixtures
         run: echo "not yet"

@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 
 /// One Stash row of the Shelf tab (DESIGN "Shelf row", UX-DR33), with every text already formatted by the
 /// Shelf module from its catalog.
@@ -102,6 +103,13 @@ public struct ShelfTabActions {
     public var beginDrag: @MainActor (UUID) -> URL?
     /// The drag ended with this operation.
     public var endDrag: @MainActor (UUID, ShelfDragOperation) -> Void
+    /// The `Send to` zone entries for an item (Story 9.10): enabled zones that take it, Ask AI's alternate
+    /// folder included. Quick Look, Reveal and Pin are added by the row.
+    public var sendToEntries: @MainActor (UUID) -> [ShelfMenuEntry]
+    /// A zone entry chosen: run the zone with the item, these modifiers held.
+    public var send: @MainActor (UUID, String, EventModifiers) -> Void
+    /// `⌘V` on the tab: stash the clipboard (the host reads it).
+    public var paste: @MainActor () -> Void
 
     public init(
         select: @escaping @MainActor (UUID?) -> Void = { _ in },
@@ -109,7 +117,10 @@ public struct ShelfTabActions {
         reveal: @escaping @MainActor (UUID) -> Void = { _ in },
         togglePin: @escaping @MainActor (UUID) -> Void = { _ in },
         beginDrag: @escaping @MainActor (UUID) -> URL? = { _ in nil },
-        endDrag: @escaping @MainActor (UUID, ShelfDragOperation) -> Void = { _, _ in }
+        endDrag: @escaping @MainActor (UUID, ShelfDragOperation) -> Void = { _, _ in },
+        sendToEntries: @escaping @MainActor (UUID) -> [ShelfMenuEntry] = { _ in [] },
+        send: @escaping @MainActor (UUID, String, EventModifiers) -> Void = { _, _, _ in },
+        paste: @escaping @MainActor () -> Void = {}
     ) {
         self.select = select
         self.quickLook = quickLook
@@ -117,6 +128,9 @@ public struct ShelfTabActions {
         self.togglePin = togglePin
         self.beginDrag = beginDrag
         self.endDrag = endDrag
+        self.sendToEntries = sendToEntries
+        self.send = send
+        self.paste = paste
     }
 }
 

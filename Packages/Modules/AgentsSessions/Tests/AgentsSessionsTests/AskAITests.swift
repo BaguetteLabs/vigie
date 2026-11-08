@@ -306,6 +306,8 @@ struct AskAITests {
         #expect(zone.modifierHint?.modifiers == .option)
         #expect(zone.modifierHint.map { String(localized: $0.idle) } == "⌥ ALT FOLDER")
         #expect(zone.modifierHint.map { String(localized: $0.active) } == "ALT FOLDER")
+        #expect(zone.menuTitle.map { String(localized: $0) } == "Ask AI")
+        #expect(zone.modifierHint?.menuTitle.map { String(localized: $0) } == "Ask AI in alternate folder")
         #expect(zone.meta.map { String(localized: $0) } == "CLAUDE · ~/DEV")
         #expect(
             zone.accessibilityLabel.map { String(localized: $0) }

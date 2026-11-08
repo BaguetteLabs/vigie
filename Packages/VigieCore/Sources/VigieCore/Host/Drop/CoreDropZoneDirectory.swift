@@ -1,3 +1,4 @@
+import AppKit
 import ModuleKit
 
 /// `context.dropZones` (Stories 9.7, 9.10): the running modules' zones as the drop display collects them, and
@@ -6,9 +7,12 @@ import ModuleKit
 /// unbound it lists nothing and runs nothing.
 public struct CoreDropZoneDirectory: DropZoneDirectory {
     public let link: NotchHostLink
+    /// The clipboard `⌘V` reads: `NSPasteboard.general` in production. Only this host path reads it (AD-19).
+    let pasteboard: @MainActor @Sendable () -> NSPasteboard
 
-    public init(link: NotchHostLink) {
+    public init(link: NotchHostLink, pasteboard: (@MainActor @Sendable () -> NSPasteboard)? = nil) {
         self.link = link
+        self.pasteboard = pasteboard ?? { NSPasteboard.general }
     }
 
     @MainActor public func zones() -> [DropZoneSummary] {
@@ -18,6 +22,11 @@ public struct CoreDropZoneDirectory: DropZoneDirectory {
     @MainActor public func perform(zoneID: String, payload: DropPayload) async -> DropResult {
         guard let host = link.host else { return .rejected }
         return await host.dropDisplay.perform(zoneID: zoneID, payload: payload)
+    }
+
+    @MainActor public func performPaste(into zoneID: String) async -> DropResult? {
+        guard let payload = PasteboardReader.payload(from: pasteboard(), source: .paste) else { return nil }
+        return await perform(zoneID: zoneID, payload: payload)
     }
 }
 

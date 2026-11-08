@@ -12,7 +12,14 @@ struct ShelfRowView: View {
     let isHovered: Bool
     let interactive: Bool
     let actions: ShelfTabActions
+    /// Changes when ↵ asks for this row's `Send to` menu.
+    var menuToken: Int? = nil
     let onHover: (Bool) -> Void
+
+    /// The `Send to` menu and VoiceOver actions (Story 9.10).
+    private var menuEntries: [ShelfMenuEntry] {
+        ShelfMenuEntry.entries(sendTo: actions.sendToEntries(row.id), isPinned: row.isPinned)
+    }
 
     var body: some View {
         let columns = ShelfColumns.standard
@@ -63,9 +70,23 @@ struct ShelfRowView: View {
         .accessibilityAddTraits(.isButton)
         .accessibilityAction { actions.select(row.id) }
         .accessibilityActions {
-            Button(L10n.resource("shelf.action.quickLook")) { actions.quickLook(row.id) }
-            Button(L10n.resource("shelf.action.reveal")) { actions.reveal(row.id) }
-            Button(L10n.resource(pinKey)) { actions.togglePin(row.id) }
+            ForEach(menuEntries) { entry in
+                Button(entry.title) { entry.perform(on: row.id, actions) }
+            }
+        }
+        .contextMenu {
+            if interactive {
+                ForEach(menuEntries) { entry in
+                    Button(entry.title) { entry.perform(on: row.id, actions) }
+                }
+            }
+        }
+        .background {
+            if interactive {
+                ShelfMenuAnchor(
+                    token: menuToken, entries: { menuEntries },
+                    run: { entry in entry.perform(on: row.id, actions) })
+            }
         }
     }
 
@@ -375,6 +396,8 @@ enum ShelfTabMetrics {
     static let dash: [CGFloat] = [3, 3]
     static let noSource = "—"
     static let metaSeparator = " · "
+    /// `⌘V` on the tab.
+    static let pasteKey = KeyEquivalent("v")
     static let previewBodyHeight: CGFloat = 350
 
     /// Row rule (`--hair2`): 4% dark, 7% light.

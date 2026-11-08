@@ -37,6 +37,13 @@ Scripts/check-package-deps.sh
 echo "==> cli-no-keychain guard"
 Scripts/check-cli-no-keychain.sh
 
+echo "==> module-pasteboard guard"
+Scripts/check-module-pasteboard.sh
+Scripts/tests/module-pasteboard-test.sh
+
+echo "==> services plist"
+Scripts/check-services-plist.sh
+
 echo "==> config corpus"
 Scripts/config-corpus.sh
 

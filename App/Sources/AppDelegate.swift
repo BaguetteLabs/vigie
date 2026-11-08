@@ -37,6 +37,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var settings: SettingsController?
     private var appTopics: AppTopics?
     private var hostConfig: HostConfigBridge?
+    private var stashService: StashServiceProvider?
     private var isShuttingDown = false
 
     private let environment = AppEnvironment.current
@@ -335,6 +336,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             logger: Logger(subsystem: environment.logSubsystem, category: "host"))
         hostLink.host = host
         self.notchHost = host
+        // Services › Stash in Vigie (Story 9.10, AD-20): routed to the Stash zone; never activates Vigie.
+        let stashService = StashServiceProvider(
+            directory: CoreDropZoneDirectory(link: hostLink), notifier: coreNotifier,
+            logger: Logger(subsystem: environment.logSubsystem, category: "services"))
+        NSApp.servicesProvider = stashService
+        NSUpdateDynamicServices()
+        self.stashService = stashService
         host.dropDisplay.onClose = { [weak peeks] in peeks?.resume() }
         // Display selection and the virtual notch (Stories 2.6, 2.7): re-place or re-arbitrate on config edits.
         let hostConfig = HostConfigBridge(store: configStore, host: host)

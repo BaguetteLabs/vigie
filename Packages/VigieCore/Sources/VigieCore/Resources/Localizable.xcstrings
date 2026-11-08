@@ -1,6 +1,54 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "vigiecore.service.shelfOff.title": {
+      "comment": "Setup-problem alert title: the Services entry Stash in Vigie was used while the Shelf module is disabled.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shelf is off"
+          }
+        }
+      }
+    },
+    "vigiecore.service.shelfOff.body": {
+      "comment": "Setup-problem alert body for Shelf is off.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn the Shelf on to stash from the Services menu. Nothing was stashed."
+          }
+        }
+      }
+    },
+    "vigiecore.setup.category.shelf": {
+      "comment": "Kicker category after SETUP, for Shelf problems. Uppercase.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SHELF"
+          }
+        }
+      }
+    },
+    "vigiecore.service.stash.empty": {
+      "comment": "Error the Services menu shows when Stash in Vigie gets no usable content.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing to stash: Vigie takes files, images, text and links."
+          }
+        }
+      }
+    },
     "drop.sample.stash.label": {
       "comment": "Debug drop display sample (-VigieSimulateDrop): Stash zone label.",
       "extractionState": "manual",

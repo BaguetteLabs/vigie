@@ -1,6 +1,30 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "shelf.airdrop.menu" : {
+      "comment" : "Shelf Send to menu and VoiceOver action: share the item with AirDrop.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AirDrop"
+          }
+        }
+      }
+    },
+    "shelf.imageToText.menu" : {
+      "comment" : "Shelf Send to menu and VoiceOver action: copy the item's text.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Image to Text"
+          }
+        }
+      }
+    },
     "shelf.sendTo.meta.defaults" : {
       "comment" : "Shelf tab SEND TO card header meta before any Image to Text copy. Uppercase.",
       "extractionState" : "manual",

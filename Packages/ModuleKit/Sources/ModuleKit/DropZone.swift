@@ -38,6 +38,9 @@ public struct DropZone: Identifiable, Sendable {
     /// Rows the Shelf tab's `SEND TO` card shows under the zone (Ask AI: `AGENT`, `FOLDER`, `⌥ FOLDER`; Story
     /// 9.7). Empty for the other zones.
     public let details: [DropZoneDetail]
+    /// The zone's entry in the Shelf `Send to` menu and VoiceOver actions ("Ask AI", "AirDrop"; Story 9.10);
+    /// nil uses `label`.
+    public let menuTitle: LocalizedStringResource?
 
     public init(
         id: String,
@@ -57,7 +60,8 @@ public struct DropZone: Identifiable, Sendable {
         isEnabled: Bool = true,
         looseContent: Set<DropLooseContent> = [],
         progressReadout: LocalizedStringResource? = nil,
-        details: [DropZoneDetail] = []
+        details: [DropZoneDetail] = [],
+        menuTitle: LocalizedStringResource? = nil
     ) {
         self.id = id
         self.label = label
@@ -77,6 +81,7 @@ public struct DropZone: Identifiable, Sendable {
         self.looseContent = looseContent
         self.progressReadout = progressReadout
         self.details = details
+        self.menuTitle = menuTitle
     }
 
     /// True when the zone takes items of these content types: every type conforms to one of `accepts`. An
@@ -185,11 +190,18 @@ public struct DropModifierHint: Sendable {
     public let idle: LocalizedStringResource
     /// Shown, lit, while the modifier is held over the zone.
     public let active: LocalizedStringResource
+    /// The Shelf `Send to` menu entry that runs the zone with ``modifiers`` held ("Ask AI in alternate
+    /// folder", Story 9.10); nil offers no such entry.
+    public let menuTitle: LocalizedStringResource?
 
-    public init(modifiers: EventModifiers, idle: LocalizedStringResource, active: LocalizedStringResource) {
+    public init(
+        modifiers: EventModifiers, idle: LocalizedStringResource, active: LocalizedStringResource,
+        menuTitle: LocalizedStringResource? = nil
+    ) {
         self.modifiers = modifiers
         self.idle = idle
         self.active = active
+        self.menuTitle = menuTitle
     }
 }
 

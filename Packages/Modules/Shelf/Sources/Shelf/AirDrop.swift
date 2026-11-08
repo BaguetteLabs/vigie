@@ -58,7 +58,8 @@ extension ShelfModule {
             meta: ShelfText.resource("shelf.airdrop.meta"),
             releaseLine: ShelfText.resource("shelf.airdrop.release"),
             accessibilityLabel: ShelfText.resource("shelf.airdrop.a11y"),
-            isEnabled: isRunning && isAirDropOn)
+            isEnabled: isRunning && isAirDropOn,
+            menuTitle: ShelfText.resource("shelf.airdrop.menu"))
     }
 
     /// The zone as the `SEND TO` card's 38px mini zone (meta `SHARE`, Story 9.7); nil while hidden.

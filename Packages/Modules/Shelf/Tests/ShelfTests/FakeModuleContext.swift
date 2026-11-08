@@ -315,4 +315,14 @@ final class FakeDropZoneDirectory: DropZoneDirectory, @unchecked Sendable {
         onPerform?()
         return lock.withLock { result }
     }
+
+    /// What the "clipboard" holds for `performPaste`, as the host would read it; nil = empty.
+    var clipboard: DropPayload?
+    private(set) var pastes: [String] = []
+
+    @MainActor func performPaste(into zoneID: String) async -> DropResult? {
+        lock.withLock { pastes.append(zoneID) }
+        guard let clipboard = lock.withLock({ clipboard }) else { return nil }
+        return await perform(zoneID: zoneID, payload: clipboard)
+    }
 }

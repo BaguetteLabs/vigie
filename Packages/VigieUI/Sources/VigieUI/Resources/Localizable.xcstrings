@@ -1,6 +1,66 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "shelf.menu.title" : {
+      "comment" : "Shelf row menu title (right-click or Return on the selected row).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send to"
+          }
+        }
+      }
+    },
+    "shelf.menu.quickLook" : {
+      "comment" : "Shelf row Send to menu and VoiceOver action: Quick Look the item.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quick Look"
+          }
+        }
+      }
+    },
+    "shelf.menu.reveal" : {
+      "comment" : "Shelf row Send to menu and VoiceOver action: show the item in Finder.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reveal"
+          }
+        }
+      }
+    },
+    "shelf.menu.pin" : {
+      "comment" : "Shelf row Send to menu and VoiceOver action: pin the item (it never expires).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pin"
+          }
+        }
+      }
+    },
+    "shelf.menu.unpin" : {
+      "comment" : "Shelf row Send to menu and VoiceOver action: unpin the item.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unpin"
+          }
+        }
+      }
+    },
     "shelf.sendTo.releaseTarget" : {
       "comment" : "Shelf tab SEND TO card, Ask AI zone while a stash item hovers it, under RELEASE TO ASK: agent, then folder (\"Claude Code in ~/Code\").",
       "extractionState" : "manual",

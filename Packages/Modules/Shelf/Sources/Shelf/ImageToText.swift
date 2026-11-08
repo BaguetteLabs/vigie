@@ -41,7 +41,8 @@ extension ShelfModule {
             accessibilityLabel: ShelfText.resource("shelf.imageToText.a11y"),
             isEnabled: isRunning && isImageToTextOn,
             looseContent: [.image],
-            progressReadout: ShelfText.resource("shelf.imageToText.reading"))
+            progressReadout: ShelfText.resource("shelf.imageToText.reading"),
+            menuTitle: ShelfText.resource("shelf.imageToText.menu"))
     }
 
     /// The zone as the `SEND TO` card's 38px mini zone (meta `COPY`, Story 9.7); nil while hidden.

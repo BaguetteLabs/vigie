@@ -14,6 +14,8 @@ import SwiftUI
 public struct ShelfTabView: View {
     @Environment(\.vigieTheme) private var theme
     @State private var hovered: UUID?
+    /// ↵ on the selection: which row pops its `Send to` menu, and a counter that changes per request.
+    @State private var menuRequest: (id: UUID, token: Int)?
 
     /// False draws the rows in a plain stack and the grip without its AppKit drag source (offscreen
     /// renders: `ImageRenderer` draws neither `ScrollView` content nor AppKit views).
@@ -55,9 +57,16 @@ public struct ShelfTabView: View {
         .padding(.bottom, theme.spacing(.gridPaddingX))
         .focusable()
         .focusEffectDisabled()
-        .onKeyPress(keys: [.upArrow, .downArrow, .space]) { press in
+        .onKeyPress(keys: [.upArrow, .downArrow, .space, .return]) { press in
             handle(press.key)
         }
+        .onKeyPress(keys: [ShelfTabMetrics.pasteKey]) { press in
+            guard press.modifiers == .command else { return .ignored }
+            actions.paste()
+            return .handled
+        }
+        // ⌘V usually arrives as the Edit › Paste command; the host reads the clipboard, not this view.
+        .onPasteCommand(of: [.item]) { _ in actions.paste() }
     }
 
     @ViewBuilder private func stashCard(_ snapshot: ShelfTabSnapshot) -> some View {
@@ -94,6 +103,7 @@ public struct ShelfTabView: View {
                     isHovered: row.id == hovered,
                     interactive: interactive,
                     actions: actions,
+                    menuToken: menuRequest?.id == row.id ? menuRequest?.token : nil,
                     onHover: { hovering in
                         if hovering { hovered = row.id } else if hovered == row.id { hovered = nil }
                     }
@@ -119,6 +129,10 @@ public struct ShelfTabView: View {
         case .space:
             guard let id = ShelfSelection.valid(snapshot.selectedID, in: ids) else { return .ignored }
             actions.quickLook(id)
+            return .handled
+        case .return:
+            guard let id = ShelfSelection.valid(snapshot.selectedID, in: ids) else { return .ignored }
+            menuRequest = (id, (menuRequest?.token ?? 0) + 1)
             return .handled
         default:
             return .ignored

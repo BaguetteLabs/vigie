@@ -59,10 +59,12 @@ extension AgentsSessionsModule {
             modifierHint: DropModifierHint(
                 modifiers: .option,
                 idle: LocalizedStringResource("agentsSessions.ask.hint", bundle: Self.bundle),
-                active: LocalizedStringResource("agentsSessions.ask.hintActive", bundle: Self.bundle)),
+                active: LocalizedStringResource("agentsSessions.ask.hintActive", bundle: Self.bundle),
+                menuTitle: LocalizedStringResource("agentsSessions.ask.menuAlternate", bundle: Self.bundle)),
             style: .target,
             isEnabled: isRunning,
-            details: askDetails)
+            details: askDetails,
+            menuTitle: LocalizedStringResource("agentsSessions.ask.menu", bundle: Self.bundle))
     }
 
     /// The `SEND TO` card rows (Story 9.7): `AGENT Claude Code`, `FOLDER File's folder` (dimmed while ⌥ is held),

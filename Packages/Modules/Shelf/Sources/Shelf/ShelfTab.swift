@@ -30,6 +30,16 @@ extension ShelfModule {
             endDrag: { [weak self] id, operation in
                 guard let self else { return }
                 Task { await self.endDrag(id, operation) }
+            },
+            sendToEntries: { [weak self] id in self?.sendToEntries(for: id) ?? [] },
+            send: { [weak self] id, zoneID, modifiers in
+                guard let self else { return }
+                self.select(id)
+                Task { await self.send(id, to: zoneID, modifiers: modifiers) }
+            },
+            paste: { [weak self] in
+                guard let self else { return }
+                Task { await self.paste() }
             })
     }
 
