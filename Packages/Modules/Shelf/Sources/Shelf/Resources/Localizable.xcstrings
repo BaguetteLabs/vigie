@@ -516,6 +516,254 @@
           }
         }
       }
+    },
+    "shelf.mode.REF" : {
+      "comment" : "Shelf row: mode tag of a reference (expiry leaves the original).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "REF"
+          }
+        }
+      }
+    },
+    "shelf.mode.COPY" : {
+      "comment" : "Shelf row: mode tag of a copy (expiry moves it to the Trash).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "COPY"
+          }
+        }
+      }
+    },
+    "shelf.mode.SAVED" : {
+      "comment" : "Shelf row: mode tag of saved text, a link or an image.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SAVED"
+          }
+        }
+      }
+    },
+    "shelf.row.sizeMode" : {
+      "comment" : "Shelf row: size then mode tag. Arg 1 = size (184 KB), arg 2 = mode.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ · %2$@"
+          }
+        }
+      }
+    },
+    "shelf.row.a11y" : {
+      "comment" : "Shelf row VoiceOver label. Arg 1 = name, arg 2 = size and mode, arg 3 = time left or pinned.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, %2$@, %3$@"
+          }
+        }
+      }
+    },
+    "shelf.row.a11y.pinned" : {
+      "comment" : "Shelf row VoiceOver: the item never expires.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "pinned"
+          }
+        }
+      }
+    },
+    "shelf.added.today" : {
+      "comment" : "Shelf row: added column, the day line for today.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TODAY"
+          }
+        }
+      }
+    },
+    "shelf.added.timeFormat" : {
+      "comment" : "Shelf row: added time, a DateFormatter pattern.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HH:mm"
+          }
+        }
+      }
+    },
+    "shelf.added.weekdayFormat" : {
+      "comment" : "Shelf row: added day earlier this month, a DateFormatter pattern (TUE 03).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EEE dd"
+          }
+        }
+      }
+    },
+    "shelf.added.dateFormat" : {
+      "comment" : "Shelf row: added day before this month, a DateFormatter pattern (FRI 30 OCT).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EEE dd MMM"
+          }
+        }
+      }
+    },
+    "shelf.tab.title" : {
+      "comment" : "Shelf tab: Stash card title. Arg = items on the shelf.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "STASH · %lld"
+          }
+        }
+      }
+    },
+    "shelf.tab.ttl.days" : {
+      "comment" : "Shelf tab: Stash card meta, the ttl in days.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TTL %lldD"
+          }
+        }
+      }
+    },
+    "shelf.tab.ttl.hours" : {
+      "comment" : "Shelf tab: Stash card meta, the ttl in hours.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TTL %lldH"
+          }
+        }
+      }
+    },
+    "shelf.empty.days" : {
+      "comment" : "Shelf tab: empty-state sentence. Arg = ttl in days.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drag a file, text or image onto the notch, or press ⌘V, to keep it here for %#@days@."
+          },
+          "substitutions" : {
+            "days" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg day"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg days"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "shelf.empty.hours" : {
+      "comment" : "Shelf tab: empty-state sentence. Arg = ttl in hours.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drag a file, text or image onto the notch, or press ⌘V, to keep it here for %#@hours@."
+          },
+          "substitutions" : {
+            "hours" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg hour"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg hours"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "shelf.notice.missing" : {
+      "comment" : "Shelf tab footer: the item's file cannot be found.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "FILE NOT FOUND"
+          }
+        }
+      }
+    },
+    "shelf.notice.quickLookFocus" : {
+      "comment" : "Shelf tab footer: Quick Look needs the panel focused first.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CLICK THE PANEL, THEN ␣"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

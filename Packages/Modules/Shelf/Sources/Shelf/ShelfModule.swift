@@ -83,8 +83,27 @@ public final class ShelfModule: NotchModule {
     /// The card meta `1 EXPIRING` (Story 9.3 shows it), nil when nothing is expiring.
     public var expiringMeta: String? { ShelfExpiry.expiringMeta(count: expiringCount) }
 
-    @ObservationIgnored private let scope: any SecurityScopedResources
+    /// The Shelf tab's selected row (Story 9.3); kept here so ↑↓ and Space survive re-renders.
+    public internal(set) var selectedID: UUID?
+    /// A short footer line after a tab action could not run (`FILE NOT FOUND`); cleared by the next action.
+    public internal(set) var notice: String?
+
+    @ObservationIgnored let scope: any SecurityScopedResources
     @ObservationIgnored private let recycler: any Recycler
+    @ObservationIgnored let revealer: any FileRevealer
+    @ObservationIgnored private let quickLookOverride: (any QuickLookPresenting)?
+    @ObservationIgnored private var presenter: (any QuickLookPresenting)?
+    /// The Quick Look panel, created on first use.
+    var quickLook: any QuickLookPresenting {
+        if let presenter { return presenter }
+        let made = quickLookOverride ?? QuickLookPresenter()
+        presenter = made
+        return made
+    }
+    /// How long a drag's "move" may take to leave the source (Finder moves after the drop).
+    @ObservationIgnored var moveSettle: (attempts: Int, interval: Duration) = (10, .milliseconds(200))
+    /// Files held open by a drag out of the tab, released when it ends.
+    @ObservationIgnored var activeDrags: [UUID: ShelfFileAccess] = [:]
     @ObservationIgnored var sweeper: ExpirySweeper?
     @ObservationIgnored private var sweepToken: RegistrationToken?
     /// The last queued sweep; each sweep waits for the one before it.
@@ -97,10 +116,13 @@ public final class ShelfModule: NotchModule {
 
     public init(
         scope: any SecurityScopedResources = SystemSecurityScope(), recycler: any Recycler = WorkspaceRecycler(),
+        revealer: any FileRevealer = WorkspaceRevealer(), quickLook: (any QuickLookPresenting)? = nil,
         now: @escaping @Sendable () -> Date = { Date() }
     ) {
         self.scope = scope
         self.recycler = recycler
+        self.revealer = revealer
+        self.quickLookOverride = quickLook
         self.now = now
     }
 
@@ -129,6 +151,8 @@ public final class ShelfModule: NotchModule {
         observeTasks = []
         sweepToken?.cancel()
         sweepToken = nil
+        for access in activeDrags.values { access.close() }
+        activeDrags = [:]
         isRunning = false
     }
 
@@ -179,7 +203,7 @@ public final class ShelfModule: NotchModule {
         await refresh()
     }
 
-    // MARK: Item actions (Story 9.3 builds on these)
+    // MARK: Item actions (the Shelf tab's handlers are in ShelfTab.swift)
 
     /// Pins (never expires) or unpins (expires `ttl` after it was stashed) an item.
     public func setPinned(_ id: UUID, _ pinned: Bool) async {

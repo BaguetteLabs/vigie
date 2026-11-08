@@ -1908,6 +1908,246 @@
           }
         }
       }
+    },
+    "shelf.empty.label" : {
+      "comment" : "Shelf tab: empty-state label of the Stash card.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "STASH EMPTY"
+          }
+        }
+      }
+    },
+    "shelf.column.item" : {
+      "comment" : "Shelf tab: column header.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ITEM"
+          }
+        }
+      }
+    },
+    "shelf.column.source" : {
+      "comment" : "Shelf tab: column header (the app an item came from).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SOURCE"
+          }
+        }
+      }
+    },
+    "shelf.column.added" : {
+      "comment" : "Shelf tab: column header.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ADDED"
+          }
+        }
+      }
+    },
+    "shelf.column.expires" : {
+      "comment" : "Shelf tab: column header.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EXPIRES"
+          }
+        }
+      }
+    },
+    "shelf.footer.dragOut" : {
+      "comment" : "Shelf tab footer: before the verb MOVE.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DRAG OUT"
+          }
+        }
+      }
+    },
+    "shelf.footer.move" : {
+      "comment" : "Shelf tab footer: what a drag out does.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MOVE"
+          }
+        }
+      }
+    },
+    "shelf.footer.optionDrag" : {
+      "comment" : "Shelf tab footer: drag with the Option key, before COPY.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⌥ DRAG"
+          }
+        }
+      }
+    },
+    "shelf.footer.copy" : {
+      "comment" : "Shelf tab footer: what an Option-drag out does.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "COPY"
+          }
+        }
+      }
+    },
+    "shelf.footer.quickLook" : {
+      "comment" : "Shelf tab footer: Space opens Quick Look.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "␣ QUICK LOOK"
+          }
+        }
+      }
+    },
+    "shelf.footer.rule" : {
+      "comment" : "Shelf tab footer: the expiry rule.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On expiry: references leave the shelf, file untouched. Copies and saved items go to the Trash."
+          }
+        }
+      }
+    },
+    "shelf.sendTo.title" : {
+      "comment" : "Shelf tab: title of the right card (Send to zones).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SEND TO"
+          }
+        }
+      }
+    },
+    "shelf.sendTo.askAI" : {
+      "comment" : "Shelf tab: Ask AI zone label.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ASK AI"
+          }
+        }
+      }
+    },
+    "shelf.sendTo.askAI.sentence" : {
+      "comment" : "Shelf tab: Ask AI zone sentence.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drop a file to start a session"
+          }
+        }
+      }
+    },
+    "shelf.action.quickLook" : {
+      "comment" : "Shelf row: hover chip and VoiceOver action.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "QUICK LOOK"
+          }
+        }
+      }
+    },
+    "shelf.action.reveal" : {
+      "comment" : "Shelf row: hover chip and VoiceOver action, shows the file in Finder.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "REVEAL"
+          }
+        }
+      }
+    },
+    "shelf.action.pin" : {
+      "comment" : "Shelf row: hover chip and VoiceOver action, keeps the item past its ttl.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PIN"
+          }
+        }
+      }
+    },
+    "shelf.action.unpin" : {
+      "comment" : "Shelf row: hover chip and VoiceOver action on a pinned item.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "UNPIN"
+          }
+        }
+      }
+    },
+    "shelf.row.pinned" : {
+      "comment" : "Shelf row: expires column of a pinned item.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PINNED"
+          }
+        }
+      }
+    },
+    "shelf.tip.drag" : {
+      "comment" : "Shelf row: tip under the grip of the hovered row.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DRAG · MOVE  ⌥ DRAG · COPY"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"
