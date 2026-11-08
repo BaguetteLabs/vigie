@@ -95,6 +95,10 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 ### v0.4 — Epics 15 (Notes), 16 (Sync), 17 (Onboarding/Settings), 18 (Themes), 19 (Public release)
 - [ ] 15.1–15.5 · [ ] 16.1–16.3 · [ ] 17.1, 17.2, 17.4, 17.5 ([-] 17.3 superseded) · [ ] 18.1–18.4 · [ ] 19.1–19.3
 
+## Queued work (ruled by Romain)
+
+- 2026-11-08 — **Spike: Focus/DND detection route** (Story 3.5 follow-up). Romain ruled "research another route" instead of accepting no Focus suppression. Candidates: Full Disk Access to read `~/Library/DoNotDisturb/DB/Assertions.json`; `defaults`/`plutil` of the ModeConfigurations store; Shortcuts automation bridge (a Focus-triggered Shortcut that writes a flag Vigie watches or calls `vigie event`); `NSWorkspace`/private `DNDModeState` observers (rejected if private); menu-bar Focus item accessibility query. Record permission cost and latency; write `docs/decisions/spike-focus-detection.md`.
+
 ## Waiting on Romain
 
 - **Warp focus check (Story 1.5, 5 min, screen unlocked, no permission needed):** open three Warp tabs (one in a second window), run `echo $WARP_FOCUS_URL` in each, then from another tab run `open '<one of those urls>'`. Does the exact tab/pane come to the front? Yes → decision (a) exact focus via deep link; Warp activates but the tab does not switch → (c) app-level. Details and the prototype commands: `docs/decisions/spike-warp-focus.md` § How to re-run.
@@ -102,7 +106,6 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - **CI re-enable:** `.github/workflows/ci.yml` is `workflow_dispatch` only (your request, 2026-11-07 evening, after ~20 failure mails). Cause found from your pasted log: the `macos-26` runner has Xcode 26.0…26.6 only, no 27.1. `.xcode-version` is now `26.6`. When you can watch: trigger the workflow manually from the Actions tab (or `gh workflow run ci`), and if green tell me to restore the triggers.
 - **gh auth:** `gh` is installed but not logged in. Run `! gh auth login -w` in this session (or `gh auth login` in a terminal) so CI runs on BaguetteLabs/vigie can be checked. Until then the `ci.yml` first run is unverified.
 
-- Focus/DND detection: the app cannot read the DoNotDisturb Assertions file (privacy-protected). Decide: accept (no Focus suppression in v0.1), or research another detection route.
 
 - Check `Packages/Modules/AgentsUsage/Sources/AgentsUsage/Resources/prices.json` against current Anthropic list prices (4.x rows written from memory).
 
