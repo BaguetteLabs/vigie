@@ -1,0 +1,3 @@
+{"parentUuid":"x","isSidechain":false,"type":"assistant","timestamp":"2026-11-06T15:00:00.000Z","sessionId":"sess-b1","requestId":"req_r4","cwd":"/Users/me/beta","version":"2.1.319","message":{"id":"msg_m4","type":"message","role":"assistant","model":"claude-fable-5-1","content":[{"type":"text","text":"ok"}],"usage":{"input_tokens":100,"cache_creation_input_tokens":10000,"cache_read_input_tokens":100000,"output_tokens":1000,"output_tokens_details":{"thinking_tokens":0}}}}
+{"type":"attachment","timestamp":"2026-11-06T15:00:30.000Z","sessionId":"sess-b1","attachment":{"type":"environment"}}
+{"parentUuid":"x","isSidechain":false,"type":"assistant","ti

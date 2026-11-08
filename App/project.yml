@@ -21,6 +21,8 @@ packages:
     path: ../Packages/AgentKit
   AgentsSessions:
     path: ../Packages/Modules/AgentsSessions
+  AgentsUsage:
+    path: ../Packages/Modules/AgentsUsage
   ClaudeAdapter:
     path: ../Packages/Adapters/Claude
   GenericTerminal:
@@ -63,6 +65,7 @@ targets:
       - package: Wire
       - package: AgentKit
       - package: AgentsSessions
+      - package: AgentsUsage
       - package: ClaudeAdapter
       - package: GenericTerminal
       - package: TerminalAppTerminal

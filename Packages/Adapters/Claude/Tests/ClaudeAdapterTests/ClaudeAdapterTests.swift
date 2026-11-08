@@ -385,13 +385,14 @@ extension AgentEvent {
     @Test func identityAndSettings() {
         let adapter = ClaudeAdapter()
         #expect(adapter.id == "claude")
-        #expect(adapter.capabilities == [.hooks, .launch])
+        #expect(adapter.capabilities == [.hooks, .launch, .logReader])
         #expect(adapter.settings.map(\.key) == ["executable", "hooks_scope"])
         #expect(adapter.settings[0].kind == .path(default: nil))
         #expect(adapter.settings[0].scope == .local)
         #expect(adapter.settings[1].kind == .enumeration(options: ["user", "project"], default: "user"))
         #expect(adapter.launchCommand(files: [], cwd: nil) == LaunchCommand(executable: "claude", arguments: []))
-        #expect(adapter.transcriptWatcher == nil && adapter.logReader == nil && adapter.usageProvider == nil)
+        #expect(
+            adapter.transcriptWatcher == nil && adapter.logReader is ClaudeLogReader && adapter.usageProvider == nil)
     }
 
     @Test func stringsResolveFromCatalog() {

@@ -1,5 +1,6 @@
 import AgentKit
 import AgentsSessions
+import AgentsUsage
 import AppKit
 import ClaudeAdapter
 import GenericTerminal
@@ -105,7 +106,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 AgentsSessionsModule(
                     adapters: agentAdapters, terminals: terminalAdapters,
                     openSettings: { [weak self] pane in self?.openSettings(pane: pane) })
-            }
+            },
+            // Same adapter instances as agents.sessions (AD-23).
+            ModuleDescriptor(manifest: AgentsUsageModule.staticManifest) {
+                AgentsUsageModule(adapters: agentAdapters)
+            },
         ]
         #if DEBUG
             // The Debug build shows the sample module without touching the user's config.

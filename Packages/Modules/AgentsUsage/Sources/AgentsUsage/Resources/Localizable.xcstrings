@@ -1,0 +1,18 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "agentsUsage.module.name" : {
+      "comment" : "Name of the AI usage module, shown in Settings and as the Usage tab title.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usage"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

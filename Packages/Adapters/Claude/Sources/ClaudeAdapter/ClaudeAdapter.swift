@@ -34,21 +34,28 @@ public struct ClaudeAdapter: AgentAdapter {
 
     private let runner: any ProcessRunner
     private let fileReader: any ConfigFileReader
+    /// Where `~/.claude/projects` (the `logReader` root) is resolved.
+    private let homeDirectory: URL
 
     public init(
         runner: any ProcessRunner = SystemProcessRunner(),
-        fileReader: any ConfigFileReader = FileSystemConfigFileReader()
+        fileReader: any ConfigFileReader = FileSystemConfigFileReader(),
+        homeDirectory: URL = FileManager.default.homeDirectoryForCurrentUser
     ) {
         self.runner = runner
         self.fileReader = fileReader
+        self.homeDirectory = homeDirectory
     }
 
     public var id: AgentID { Self.agentID }
 
     public var name: LocalizedStringResource { L10n.resource("claude.adapter.name") }
 
-    /// Hooks and Ask AI. Transcript, log reading and usage arrive in Epic 7.
-    public var capabilities: Set<AgentCapability> { [.hooks, .launch] }
+    /// Hooks, Ask AI and local log reading (Story 7.1). Plan-limit usage arrives with Story 7.3.
+    public var capabilities: Set<AgentCapability> { [.hooks, .launch, .logReader] }
+
+    /// `~/.claude/projects/**/*.jsonl` (Story 7.1, AD-23).
+    public var logReader: (any AgentLogReader)? { ClaudeLogReader(homeDirectory: homeDirectory) }
 
     public var settings: [SettingDescriptor] {
         [
