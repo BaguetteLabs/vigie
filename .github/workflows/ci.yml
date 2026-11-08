@@ -2,14 +2,14 @@
 # No secrets, no signing, no deployment environment: fork PRs run safely.
 name: ci
 
-# TEMPORARY (2026-11-07): manual trigger only. Runs on macos-26 fail for a reason
-# not yet diagnosed (gh is not authenticated locally) and every push mailed a failure.
-# Restore `pull_request:` and `push: branches: [master]` once the first green run is seen.
+# Triggers restored 2026-11-08 after the first green manual run (42481321186): the earlier
+# failures were a missing Xcode 27.1 on the runner (now pinned to 26.6) and wall-clock tests.
 on:
+  pull_request:
+  push:
+    branches: [master]
+    # Release tags (Story 6.2) will be added here: tags: ['v*']
   workflow_dispatch:
-  # TEMPORARY (2026-11-07): release tags will trigger this workflow once it is no longer manual-only (Story 6.2).
-  # push:
-  #   tags: ['v*']
 
 concurrency:
   group: ci-${{ github.ref }}
