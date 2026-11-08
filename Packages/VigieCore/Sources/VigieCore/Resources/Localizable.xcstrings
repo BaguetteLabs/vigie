@@ -1,6 +1,78 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "vigiecore.setup.title.secretsUnavailable": {
+      "comment": "Setup alert title: the build cannot use the Keychain (Story 7.2).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Secrets are unavailable in this build"
+          }
+        }
+      }
+    },
+    "vigiecore.setup.body.secretsUnavailable": {
+      "comment": "Setup alert body: why secrets are unavailable. No action.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This build is not signed with the keychain entitlement, so tokens and other secrets cannot be stored."
+          }
+        }
+      }
+    },
+    "vigiecore.setup.category.secrets": {
+      "comment": "Kicker category after SETUP, for secret storage problems. Uppercase.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SECRETS"
+          }
+        }
+      }
+    },
+    "settings.error.secretKey": {
+      "comment": "Inline Settings error: ConfigError.secretKey (a secret setting cannot be written to config).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This setting is stored in the Keychain, not in the config file."
+          }
+        }
+      }
+    },
+    "settings.error.secretsUnavailable": {
+      "comment": "Inline Settings error on a secret row: this build cannot use the Keychain.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Secrets are unavailable in this build."
+          }
+        }
+      }
+    },
+    "settings.error.secretFailed": {
+      "comment": "Inline Settings error on a secret row: any other Keychain failure.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The Keychain refused this change. Try again."
+          }
+        }
+      }
+    },
     "alerts.system.permissionDenied": {
       "comment": "Setup-problem alert: notifications permission denied, so the macOS notification output is off.",
       "extractionState": "manual",

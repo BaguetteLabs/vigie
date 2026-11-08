@@ -69,6 +69,23 @@ public struct SettingBinding {
     }
 }
 
+/// Reads and writes one `secret` setting through the Keychain (`SecretStore`, AD-9), never through the config
+/// binding. The value is never read back into the UI: the row only knows whether one is stored.
+public struct SecretSettingBinding {
+    /// Whether a value is stored. Throws when the store cannot be read (the row shows the error).
+    public let isSet: @MainActor () async throws -> Bool
+    /// Stores the value; nil clears it.
+    public let set: @MainActor (String?) async throws -> Void
+
+    public init(
+        isSet: @escaping @MainActor () async throws -> Bool,
+        set: @escaping @MainActor (String?) async throws -> Void
+    ) {
+        self.isSet = isSet
+        self.set = set
+    }
+}
+
 /// One generated row: label, help, control for `kind`, inline error, and a "Reset to default" context action.
 public struct SettingRowModel: Identifiable {
     /// Stable id (the config key path).
@@ -79,6 +96,8 @@ public struct SettingRowModel: Identifiable {
     public let binding: SettingBinding
     /// Display text of an enumeration option (config values are raw, e.g. `menu_bar`).
     public let optionLabel: @MainActor (String) -> String
+    /// For a `secret` setting: its Keychain binding. Nil shows a disabled field (no store, e.g. previews).
+    public let secret: SecretSettingBinding?
 
     public init(
         id: String,
@@ -86,7 +105,8 @@ public struct SettingRowModel: Identifiable {
         help: LocalizedStringResource? = nil,
         kind: SettingKind,
         binding: SettingBinding,
-        optionLabel: @escaping @MainActor (String) -> String = { $0 }
+        optionLabel: @escaping @MainActor (String) -> String = { $0 },
+        secret: SecretSettingBinding? = nil
     ) {
         self.id = id
         self.label = label
@@ -94,6 +114,7 @@ public struct SettingRowModel: Identifiable {
         self.kind = kind
         self.binding = binding
         self.optionLabel = optionLabel
+        self.secret = secret
     }
 
     /// The current value, or the kind's default when the binding has none.
@@ -238,6 +259,60 @@ public final class SettingFieldState {
     }
 }
 
+/// State of a `secret` row: whether a value is stored. The typed text lives only in the field's draft and is
+/// dropped once saved.
+@MainActor @Observable
+public final class SecretFieldState {
+    /// nil until the first ``refresh(_:field:services:)``.
+    public private(set) var isSet: Bool?
+
+    public init() {}
+
+    /// Re-reads whether a value is stored; a failure shows as the row's error.
+    public func refresh(_ binding: SecretSettingBinding, field: SettingFieldState, services: SettingControlServices)
+        async
+    {
+        do {
+            isSet = try await binding.isSet()
+        } catch {
+            field.report(services.errorMessage(error))
+        }
+    }
+
+    /// Stores `text` (trimmed of surrounding newlines only; empty text writes nothing). Returns whether it was
+    /// stored.
+    @discardableResult
+    public func save(
+        _ text: String, to binding: SecretSettingBinding, field: SettingFieldState, services: SettingControlServices
+    ) async -> Bool {
+        let value = text.trimmingCharacters(in: .newlines)
+        guard !value.isEmpty else { return false }
+        return await write(value, to: binding, field: field, services: services)
+    }
+
+    /// Deletes the stored value.
+    @discardableResult
+    public func clear(_ binding: SecretSettingBinding, field: SettingFieldState, services: SettingControlServices)
+        async -> Bool
+    {
+        await write(nil, to: binding, field: field, services: services)
+    }
+
+    private func write(
+        _ value: String?, to binding: SecretSettingBinding, field: SettingFieldState, services: SettingControlServices
+    ) async -> Bool {
+        do {
+            try await binding.set(value)
+            field.clearError()
+            isSet = value != nil
+            return true
+        } catch {
+            field.report(services.errorMessage(error))
+            return false
+        }
+    }
+}
+
 /// Fixed sizes of the Settings window's fields (native window, not island tokens).
 public enum SettingsMetrics {
     public static let numberFieldWidth: CGFloat = 72
@@ -315,15 +390,7 @@ public struct SettingControl: View {
         case .string:
             TextDraftField(model: model, state: state, kind: .string)
         case .secret:
-            VStack(alignment: .trailing) {
-                SecureField(text: .constant("")) { Text(model.label) }
-                    .labelsHidden()
-                    .disabled(true)
-                    .frame(minWidth: SettingsMetrics.textFieldMinWidth, maxWidth: SettingsMetrics.textFieldMaxWidth)
-                Text(L10n.resource("settings.secret.footnote"))
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
+            SecretField(model: model, state: state)
         case .enumeration(let options, _):
             Picker(
                 selection: Binding(
@@ -351,6 +418,61 @@ public struct SettingControl: View {
 
     private func write(_ value: SettingControlValue) {
         Task { await state.apply(value, to: model.binding, services: services) }
+    }
+}
+
+/// A `secret` setting: a secure field with `Set` (stores the typed text in the Keychain and empties the field)
+/// and, once a value is stored, `Clear`; a status line and the "Stored in the Keychain" footnote.
+struct SecretField: View {
+    @Environment(\.settingControlServices) private var services
+    let model: SettingRowModel
+    let state: SettingFieldState
+    @State private var secretState = SecretFieldState()
+    @State private var draft = ""
+
+    var body: some View {
+        VStack(alignment: .trailing) {
+            HStack {
+                SecureField(text: $draft) { Text(model.label) }
+                    .labelsHidden()
+                    .frame(minWidth: SettingsMetrics.textFieldMinWidth, maxWidth: SettingsMetrics.textFieldMaxWidth)
+                    .onSubmit { save() }
+                Button {
+                    save()
+                } label: {
+                    Text(L10n.resource("settings.secret.set"))
+                }
+                .disabled(draft.isEmpty)
+                if secretState.isSet == true {
+                    Button {
+                        guard let binding = model.secret else { return }
+                        Task { await secretState.clear(binding, field: state, services: services) }
+                    } label: {
+                        Text(L10n.resource("settings.secret.clear"))
+                    }
+                }
+            }
+            .disabled(model.secret == nil)
+            if let isSet = secretState.isSet {
+                Text(L10n.resource(isSet ? "settings.secret.stored" : "settings.secret.empty"))
+                    .font(.caption)
+            }
+            Text(L10n.resource(model.secret == nil ? "settings.secret.unavailable" : "settings.secret.footnote"))
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .task {
+            guard let binding = model.secret else { return }
+            await secretState.refresh(binding, field: state, services: services)
+        }
+    }
+
+    private func save() {
+        guard let binding = model.secret else { return }
+        let text = draft
+        Task {
+            if await secretState.save(text, to: binding, field: state, services: services) { draft = "" }
+        }
     }
 }
 

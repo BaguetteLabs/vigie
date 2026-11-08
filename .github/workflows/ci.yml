@@ -115,6 +115,10 @@ jobs:
         id: package-deps-guard
         run: Scripts/check-package-deps.sh
 
+      - name: cli-no-keychain-guard
+        id: cli-no-keychain-guard
+        run: Scripts/check-cli-no-keychain.sh
+
       - name: adapter-fixtures
         id: adapter-fixtures
         run: echo "not yet"

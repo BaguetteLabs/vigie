@@ -64,6 +64,16 @@ public protocol SecretStore: Sendable {
     func write(_ value: String?, for key: String) async throws
 }
 
+/// Why a `SecretStore` call failed (Story 7.2). `status` is the Keychain `OSStatus`. Never carries the value.
+public enum SecretStoreError: Error, Equatable, Sendable {
+    /// Secrets cannot be used in this build (not signed with the keychain entitlement, `errSecMissingEntitlement`).
+    case unavailable(status: Int32)
+    /// No secret is stored under this key.
+    case notFound
+    /// Any other Keychain failure.
+    case failed(status: Int32)
+}
+
 // MARK: - Scheduler (implemented in Story 2.2)
 
 public protocol Scheduler: Sendable {

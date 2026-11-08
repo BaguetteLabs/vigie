@@ -70,8 +70,8 @@ public protocol ModuleContextFactory {
 }
 
 /// The production factory: real settings (with a `ConfigStore`), storage, scheduler, event bus, hotkeys,
-/// notifier, activity log, executable resolver, integration installer (AD-22), power service (Story 4.12) and
-/// host control; the shared permissions coordinator; stubs for the rest.
+/// notifier, activity log, executable resolver, integration installer (AD-22), power service (Story 4.12),
+/// owner-scoped secrets (Story 7.2) and host control; the shared permissions coordinator; stubs for the rest.
 public struct CoreModuleContextFactory: ModuleContextFactory {
     public let environment: AppEnvironment
     public let eventBus: InProcessEventBus
@@ -85,6 +85,8 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
     public let executables: ExecutableResolverImpl
     /// The launch's power service (keep-awake and sleep/wake), wrapped per module by its tracker.
     public let power: CorePowerService
+    /// The launch's secret store; each module gets ``KeychainSecretStore/scoped(to:)`` with its id.
+    public let secretStore: KeychainSecretStore
     /// `context.host` for a module: a ``CoreHostControl`` bound to the Notch Host through a ``NotchHostLink``.
     public let hostControl: @MainActor @Sendable (ModuleID) -> any HostControl
 
@@ -100,6 +102,7 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
     ///   - executables: the launch's resolver; defaults to one that runs the user's login shell.
     ///   - power: the launch's power service; defaults to one reading `[general] prevent_idle_sleep` from
     ///     `configStore` (off without one) and following that key's changes.
+    ///   - secretStore: the launch's secret store; defaults to one on the real Keychain for `environment`.
     ///   - hostControl: builds `context.host` per module; defaults to a ``CoreHostControl`` on an unbound
     ///     ``NotchHostLink`` (host requests do nothing).
     public init(
@@ -108,6 +111,7 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
         alertCenter: AlertCenter? = nil, activityStore: ActivityStore? = nil,
         executables: ExecutableResolverImpl? = nil,
         power: CorePowerService? = nil,
+        secretStore: KeychainSecretStore? = nil,
         hostControl: (@MainActor @Sendable (ModuleID) -> any HostControl)? = nil
     ) {
         self.environment = environment
@@ -124,6 +128,7 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
             executables
             ?? ExecutableResolverImpl(log: Logger(subsystem: environment.logSubsystem, category: "executables"))
         self.power = power ?? Self.makePower(configStore: configStore)
+        self.secretStore = secretStore ?? KeychainSecretStore(environment: environment)
         self.hostControl =
             hostControl ?? { @MainActor id in CoreHostControl(moduleID: id, link: NotchHostLink()) }
     }
@@ -141,7 +146,7 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
         return CoreModuleContext(
             settings: settings,
             storage: ModuleStorageImpl(moduleID: manifest.id, environment: environment, logger: log),
-            secrets: UnavailableSecretStore(),
+            secrets: secretStore.scoped(to: manifest.id.rawValue),
             scheduler: CoreScheduler(tracker: tracker),
             hotkeys: CoreHotkeyRegistry(moduleID: manifest.id, center: hotkeyCenter, tracker: tracker),
             notifier: alertCenter.makeNotifier(for: manifest),

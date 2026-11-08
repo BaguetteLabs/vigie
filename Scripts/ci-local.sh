@@ -34,6 +34,9 @@ Scripts/check-process-launch.sh
 echo "==> package-deps guard"
 Scripts/check-package-deps.sh
 
+echo "==> cli-no-keychain guard"
+Scripts/check-cli-no-keychain.sh
+
 echo "==> config corpus"
 Scripts/config-corpus.sh
 

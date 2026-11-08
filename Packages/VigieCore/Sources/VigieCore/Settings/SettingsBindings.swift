@@ -47,6 +47,23 @@ public struct SettingWriteError: LocalizedError, Equatable {
         case .fileHasErrors(let file): SettingsText.format("settings.error.fileHasErrors", file)
         case .verificationFailed: SettingsText.string("settings.error.verificationFailed")
         case .writeFailed(let file, _): SettingsText.format("settings.error.writeFailed", file)
+        case .secretKey: SettingsText.string("settings.error.secretKey")
+        }
+    }
+}
+
+/// A refused secret read or write, with catalog text (never the value, never the English status).
+public struct SecretWriteError: LocalizedError, Equatable {
+    public let underlying: SecretStoreError
+
+    public init(_ underlying: SecretStoreError) {
+        self.underlying = underlying
+    }
+
+    public var errorDescription: String? {
+        switch underlying {
+        case .unavailable: SettingsText.string("settings.error.secretsUnavailable")
+        case .notFound, .failed: SettingsText.string("settings.error.secretFailed")
         }
     }
 }

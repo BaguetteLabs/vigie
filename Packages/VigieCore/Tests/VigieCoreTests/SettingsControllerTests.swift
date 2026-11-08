@@ -77,7 +77,9 @@ struct SettingsHarness {
         var urls: [URL] = []
     }
 
-    init(config: String? = nil, sessions: ModuleManifest = testManifest) async throws {
+    init(config: String? = nil, sessions: ModuleManifest = testManifest, secretStore: KeychainSecretStore? = nil)
+        async throws
+    {
         let manifests = [sessions, calendarManifest, customManifest]
         (store, watcher) = try await fixture.makeStore(manifests: manifests, config: config)
         checker.set(.calendar, .denied)
@@ -92,13 +94,14 @@ struct SettingsHarness {
             descriptors: descriptors,
             enablement: TestEnablement(["agents.sessions": false, "calendar.test": true, "custom.test": true]),
             contextFactory: CoreModuleContextFactory(
-                environment: fixture.environment, eventBus: InProcessEventBus(), permissions: coordinator),
+                environment: fixture.environment, eventBus: InProcessEventBus(), permissions: coordinator,
+                secretStore: secretStore),
             logger: testLogger, permissions: coordinator)
         activityStore = ActivityStore(environment: fixture.environment)
         controller = SettingsController(
             configStore: store, registry: registry, permissions: coordinator,
             hotkeyCenter: HotkeyCenter(binding: FakeHotkeyBinding()), activityStore: activityStore,
-            cliInstaller: nil, manifests: manifests, loginItem: loginItem)
+            cliInstaller: nil, manifests: manifests, loginItem: loginItem, secretStore: secretStore)
         let recorder = recorder
         controller.openURL = { recorder.urls.append($0) }
         controller.activateApp = {}

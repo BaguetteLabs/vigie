@@ -55,6 +55,8 @@ public final class SettingsController {
     @ObservationIgnored public let cliInstaller: CLIInstaller?
     @ObservationIgnored public let manifests: [ModuleManifest]
     @ObservationIgnored public let loginItem: any LoginItemControlling
+    /// Backs `secret` rows (owner = module id, key = setting key); nil shows them disabled.
+    @ObservationIgnored public let secretStore: KeychainSecretStore?
     @ObservationIgnored private let loginShellPath: (@Sendable () async -> String?)?
     @ObservationIgnored let services: SettingControlServices
     @ObservationIgnored public private(set) var window: NSWindow?
@@ -67,6 +69,7 @@ public final class SettingsController {
     /// - Parameters:
     ///   - manifests: modules that get a pane, in sidebar order (usually `registry.descriptors.map(\.manifest)`).
     ///   - loginShellPath: the login shell's `PATH` for the CLI hint (nil = no hint, never a false alarm).
+    ///   - secretStore: the launch's secret store, for `secret` settings (AD-9); never ConfigStore.
     public init(
         configStore: ConfigStore,
         registry: ModuleRegistry,
@@ -76,7 +79,8 @@ public final class SettingsController {
         cliInstaller: CLIInstaller?,
         manifests: [ModuleManifest],
         loginItem: any LoginItemControlling = SMAppServiceLoginItem(),
-        loginShellPath: (@Sendable () async -> String?)? = nil
+        loginShellPath: (@Sendable () async -> String?)? = nil,
+        secretStore: KeychainSecretStore? = nil
     ) {
         self.configStore = configStore
         self.registry = registry
@@ -86,6 +90,7 @@ public final class SettingsController {
         self.manifests = manifests
         self.loginItem = loginItem
         self.loginShellPath = loginShellPath
+        self.secretStore = secretStore
         self.activity = ActivityPaneModel(store: activityStore)
         sounds = SoundsPaneModel(configStore: configStore)
         var extraHomeProviders: (@MainActor () -> [HomeProviderDescriptor])?
@@ -171,9 +176,18 @@ public final class SettingsController {
 
     // MARK: - Rows
 
-    /// The generated row for a known key; nil when ConfigStore does not know it.
+    /// The generated row for a known key; nil when ConfigStore does not know it. A module's `secret` row reads
+    /// and writes through ``secretStore`` only; its config binding holds nothing and refuses writes.
     public func rowModel(for path: ConfigKeyPath) -> SettingRowModel? {
         guard let entry = configStore.schema.entries[path] else { return nil }
+        if case .secret = entry.descriptor.kind {
+            return SettingRowModel(
+                id: path.description, label: entry.descriptor.label, help: entry.descriptor.help,
+                kind: entry.descriptor.kind,
+                binding: SettingBinding(
+                    get: { nil }, set: { _ in throw SettingWriteError(.secretKey(path.description)) }),
+                secret: entry.moduleID.flatMap { secretBinding(owner: $0.rawValue, key: entry.descriptor.key) })
+        }
         let isEnabledKey = entry.moduleID != nil && path == ConfigKeyPath.moduleEnabled(entry.moduleID!)
         let label = isEnabledKey ? SettingsText.resource("settings.module.enabled") : entry.descriptor.label
         return SettingRowModel(
@@ -183,6 +197,34 @@ public final class SettingsController {
             kind: entry.descriptor.kind,
             binding: configStore.settingBinding(for: path),
             optionLabel: { SettingsText.option(path: path, value: $0) })
+    }
+
+    /// The Keychain binding of a module's `secret` setting; nil without a store.
+    func secretBinding(owner: String, key: String) -> SecretSettingBinding? {
+        guard let secretStore else { return nil }
+        return SecretSettingBinding(
+            isSet: {
+                do throws(SecretStoreError) {
+                    return try await secretStore.exists(owner: owner, key: key)
+                } catch {
+                    throw SecretWriteError(error)
+                }
+            },
+            set: { value in
+                do throws(SecretStoreError) {
+                    if let value {
+                        try await secretStore.set(value, owner: owner, key: key)
+                    } else {
+                        do throws(SecretStoreError) {
+                            try await secretStore.remove(owner: owner, key: key)
+                        } catch .notFound {
+                            // Already clear.
+                        }
+                    }
+                } catch {
+                    throw SecretWriteError(error)
+                }
+            })
     }
 
     /// Rows of a module pane: its descriptors, in manifest order.

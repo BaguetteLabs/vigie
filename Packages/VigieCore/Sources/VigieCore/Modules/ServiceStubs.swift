@@ -18,12 +18,6 @@ struct DefaultsModuleSettings: ModuleSettings {
     func observe(_ key: String) -> AsyncStream<Void> { AsyncStream { $0.finish() } }
 }
 
-/// Implemented in Story 7.2.
-struct UnavailableSecretStore: SecretStore {
-    func read(_ key: String) async throws -> String? { throw ModuleServiceError.notAvailable }
-    func write(_ value: String?, for key: String) async throws { throw ModuleServiceError.notAvailable }
-}
-
 /// Implemented in Story 9.9.
 struct StubClipboardService: ClipboardService {
     func copy(_ text: String, clearAfter: Duration?) {}

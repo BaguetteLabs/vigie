@@ -1,6 +1,66 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "settings.secret.set": {
+      "comment": "Button on a secret setting: stores the typed value in the Keychain.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set"
+          }
+        }
+      }
+    },
+    "settings.secret.clear": {
+      "comment": "Button on a secret setting: deletes the stored value.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clear"
+          }
+        }
+      }
+    },
+    "settings.secret.stored": {
+      "comment": "Status under a secret field: a value is stored (never shown).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saved"
+          }
+        }
+      }
+    },
+    "settings.secret.empty": {
+      "comment": "Status under a secret field: no value is stored.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not set"
+          }
+        }
+      }
+    },
+    "settings.secret.unavailable": {
+      "comment": "Footnote under a disabled secret field when no secret store is available.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stored in the Keychain. Not available here."
+          }
+        }
+      }
+    },
     "a11y.grip" : {
       "comment" : "Accessibility label of the 6-dot reorder grip.",
       "extractionState" : "manual",
@@ -890,13 +950,13 @@
       }
     },
     "settings.secret.footnote" : {
-      "comment" : "Footnote under a disabled secret field in Settings (secrets are wired in Story 7.2).",
+      "comment" : "Footnote under a secret field in Settings.",
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Stored in the Keychain. Editing arrives in a later version."
+            "value" : "Stored in the Keychain."
           }
         }
       }

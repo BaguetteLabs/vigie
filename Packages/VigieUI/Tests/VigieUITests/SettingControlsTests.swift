@@ -104,7 +104,8 @@ let testServices = SettingControlServices(
         for key in [
             "settings.reset", "settings.secret.footnote", "settings.error.duration", "settings.error.integer",
             "settings.error.number", "settings.error.generic", "settings.hotkey.unavailable", "settings.path.choose",
-            "settings.path.choose.prompt", "settings.list.add", "settings.list.remove",
+            "settings.path.choose.prompt", "settings.list.add", "settings.list.remove", "settings.secret.set",
+            "settings.secret.clear", "settings.secret.stored", "settings.secret.empty", "settings.secret.unavailable",
         ] {
             #expect(L10n.string(key) != key, "\(key)")
         }
@@ -133,5 +134,79 @@ let testServices = SettingControlServices(
             #expect(setting.writes.isEmpty, "rendering must not write: \(kind)")
             window.close()
         }
+    }
+
+    @Test func secretRowRendersWithAStoreWithoutWriting() async throws {
+        let secret = MemorySecret()
+        let setting = MemorySetting()
+        let model = SettingRowModel(
+            id: "s", label: "Token", kind: .secret, binding: setting.binding, secret: secret.binding)
+        let view = NSHostingView(
+            rootView: Form { SettingRow(model) }.formStyle(.grouped).environment(\.settingControlServices, testServices)
+        )
+        view.frame = NSRect(x: 0, y: 0, width: 560, height: 200)
+        view.layoutSubtreeIfNeeded()
+        #expect(view.fittingSize.height > 0)
+        #expect(secret.writes.isEmpty)
+        #expect(setting.writes.isEmpty)
+    }
+}
+
+/// In-memory Keychain binding that records writes.
+@MainActor
+final class MemorySecret {
+    var value: String?
+    var writes: [String?] = []
+    var failure: (any Error)?
+
+    var binding: SecretSettingBinding {
+        SecretSettingBinding(
+            isSet: { [unowned self] in
+                if let failure { throw failure }
+                return value != nil
+            },
+            set: { [unowned self] newValue in
+                if let failure { throw failure }
+                writes.append(newValue)
+                value = newValue
+            })
+    }
+}
+
+@MainActor @Suite struct SecretFieldStateTests {
+    @Test func saveStoresTheValueAndClearDeletesIt() async {
+        let secret = MemorySecret()
+        let field = SettingFieldState()
+        let state = SecretFieldState()
+        #expect(state.isSet == nil)
+        await state.refresh(secret.binding, field: field, services: testServices)
+        #expect(state.isSet == false)
+
+        #expect(await state.save("", to: secret.binding, field: field, services: testServices) == false)
+        #expect(await state.save("\n", to: secret.binding, field: field, services: testServices) == false)
+        #expect(secret.writes.isEmpty)
+
+        #expect(await state.save("tok en\n", to: secret.binding, field: field, services: testServices))
+        #expect(secret.writes == ["tok en"])
+        #expect(state.isSet == true)
+
+        #expect(await state.clear(secret.binding, field: field, services: testServices))
+        #expect(secret.writes == ["tok en", nil])
+        #expect(state.isSet == false)
+    }
+
+    @Test func refusedWriteShowsTheErrorAndKeepsTheState() async {
+        let secret = MemorySecret()
+        secret.value = "old"
+        let field = SettingFieldState()
+        let state = SecretFieldState()
+        await state.refresh(secret.binding, field: field, services: testServices)
+        secret.failure = RefusedWrite()
+        #expect(await state.save("new", to: secret.binding, field: field, services: testServices) == false)
+        #expect(field.error == "Refused (localized)")
+        #expect(state.isSet == true)
+        secret.failure = nil
+        #expect(await state.save("new", to: secret.binding, field: field, services: testServices))
+        #expect(field.error == nil)
     }
 }

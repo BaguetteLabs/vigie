@@ -230,12 +230,13 @@ public final class ConfigStore {
     /// watcher, and the watcher's event for this write is ignored (same bytes).
     ///
     /// For a `hotkey` or `path` setting, `.none` writes `""` (no shortcut, no path).
-    /// - Throws: `ConfigError.unknownSetting`, `.invalidValue` (wrong type or out of range; nothing written),
+    /// - Throws: `ConfigError.unknownSetting`, `.secretKey` (a `secret` setting: Keychain only, AD-9), `.invalidValue` (wrong type or out of range; nothing written),
     ///   `.unsupportedLocation` (the key is in an inline table or array of tables), `.fileUnavailable`,
     ///   `.fileHasErrors` (fix the TOML error first), `.verificationFailed`, `.writeFailed`. The file is
     ///   untouched on any error.
     public func set(_ path: ConfigKeyPath, to value: ConfigResolvedValue) async throws(ConfigError) {
         guard let entry = schema.entries[path] else { throw .unknownSetting(path.description) }
+        if case .secret = entry.descriptor.kind { throw .secretKey(path.description) }
         let scalar = try Self.scalar(for: value, kind: entry.descriptor.kind, key: path.description)
         try await write(path, value: scalar, local: entry.scope == .local)
     }
@@ -244,6 +245,7 @@ public final class ConfigStore {
     /// that is not in the file changes nothing. Throws as `set` does.
     public func remove(_ path: ConfigKeyPath) async throws(ConfigError) {
         guard let entry = schema.entries[path] else { throw .unknownSetting(path.description) }
+        if case .secret = entry.descriptor.kind { throw .secretKey(path.description) }
         try await write(path, value: nil, local: entry.scope == .local)
     }
 

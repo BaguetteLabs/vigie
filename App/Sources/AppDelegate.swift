@@ -239,10 +239,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             logger.error("hotkey problem: \(String(describing: problem), privacy: .public)")
         }
 
+        // Secrets (Story 7.2, AD-9): one Keychain store, scoped per module; unentitled builds post a setup problem.
+        let secretStore = KeychainSecretStore(environment: environment)
+        Task { await secretStore.reportAvailability(to: coreNotifier) }
+
         let contextFactory = CoreModuleContextFactory(
             environment: environment, eventBus: eventBus, configStore: configStore,
             permissions: coordinator, hotkeyCenter: hotkeyCenter, alertCenter: alertCenter,
-            activityStore: activityStore, executables: executables,
+            activityStore: activityStore, executables: executables, secretStore: secretStore,
             hostControl: { CoreHostControl(moduleID: $0, link: hostLink) })
         let registry = ModuleRegistry(
             descriptors: descriptors,
@@ -262,7 +266,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 // The resolver's captured login-shell PATH; unknown when the capture fell back.
                 guard await executables.searchPathSource == .loginShell else { return nil }
                 return await executables.searchPath.joined(separator: ":")
-            })
+            }, secretStore: secretStore)
         settings.sounds.player = soundPlayer
         self.settings = settings
 

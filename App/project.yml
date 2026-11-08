@@ -79,7 +79,10 @@ targets:
         CODE_SIGN_ENTITLEMENTS: Vigie.entitlements
         # Ad-hoc signing for now. AD-17/AD-20 require a stable Apple Development /
         # Developer ID identity with a provisioning profile; that arrives together with
-        # the `keychain-access-groups` entitlement, which is deferred until real signing exists.
+        # the `keychain-access-groups` entitlement (SecretStore, Story 7.2, AD-9). Xcode refuses
+        # that entitlement without a profile and AMFI kills an ad-hoc binary carrying it, so it
+        # lives in Vigie.signed.entitlements: when the identity exists, point CODE_SIGN_ENTITLEMENTS
+        # there and set DEVELOPMENT_TEAM. Until then SecretStore reports "unavailable" at launch.
         CODE_SIGN_IDENTITY: "-"
         CODE_SIGN_STYLE: Manual
         DEVELOPMENT_TEAM: ""

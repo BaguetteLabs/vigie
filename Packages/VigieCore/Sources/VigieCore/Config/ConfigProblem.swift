@@ -57,4 +57,7 @@ public enum ConfigError: Error, Equatable, Sendable {
     case verificationFailed(key: String)
     /// The atomic write failed; the file is unchanged.
     case writeFailed(file: String, reason: String)
+    /// The key is a `secret` setting: its value lives only in the Keychain (`SecretStore`, AD-9), never in a
+    /// config file.
+    case secretKey(String)
 }
