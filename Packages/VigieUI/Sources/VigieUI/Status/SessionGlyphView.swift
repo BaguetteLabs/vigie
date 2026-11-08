@@ -1,3 +1,4 @@
+import ModuleKit
 import SwiftUI
 
 /// How a session glyph moves (DESIGN "Status glyph", "Presence mode"; UX-DR56, UX-DR96). Pure, so the motion
@@ -46,18 +47,33 @@ extension Theme {
 /// state and the caller passes the spoken label ("vigie, blocked, 2 minutes", UX-DR63).
 public struct SessionGlyphView: View {
     @Environment(\.vigieTheme) private var theme
+    @Environment(\.privacyActive) private var privacyActive
     private let status: SessionStatus
     private let label: String?
+    private let sensitive: [String?]
     private let size: StatusMarkSize
 
     /// - Parameters:
     ///   - status: the display status (stale included).
     ///   - accessibilityLabel: "<project>, <status>, <time>"; nil reads the status word alone.
+    ///   - sensitive: the user text inside `accessibilityLabel` (the project), masked while Privacy mode is on.
     ///   - size: 16 px slot (`medium`) by default; 26 px (`large`) in legends and the peek beacon.
-    public init(_ status: SessionStatus, accessibilityLabel: String? = nil, size: StatusMarkSize = .medium) {
+    public init(
+        _ status: SessionStatus, accessibilityLabel: String? = nil, sensitive: [String?] = [],
+        size: StatusMarkSize = .medium
+    ) {
         self.status = status
         self.label = accessibilityLabel
+        self.sensitive = sensitive
         self.size = size
+    }
+
+    /// The spoken label, with the sensitive parts masked while Privacy mode is on (AD-24).
+    static func spokenLabel(_ label: String?, sensitive: [String?], status: SessionStatus, privacyActive: Bool)
+        -> String
+    {
+        guard let label else { return L10n.string(status.accessibilityKey) }
+        return privacyActive ? PrivacyMask.scrub(label, removing: sensitive) : label
     }
 
     public var body: some View {
@@ -70,7 +86,9 @@ public struct SessionGlyphView: View {
         .frame(width: length, height: length)
         .id(motion)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(Text(verbatim: label ?? L10n.string(status.accessibilityKey)))
+        .accessibilityLabel(
+            Text(
+                verbatim: Self.spokenLabel(label, sensitive: sensitive, status: status, privacyActive: privacyActive)))
     }
 }
 

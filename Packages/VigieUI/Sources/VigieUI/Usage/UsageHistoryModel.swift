@@ -1,4 +1,5 @@
 import Foundation
+import ModuleKit
 
 /// `HISTORY · 7D` (Story 7.8; FR54, UX-DR31): tokens per local day for the last seven days, one series per agent
 /// (stacked), weekday initials on the axis, today last.
@@ -70,22 +71,26 @@ public enum UsageHistoryPanel: Hashable, Sendable {
 /// first, the total, and the source line `FROM LOCAL LOGS · OFFLINE`.
 public struct UsageCostList: Hashable, Sendable {
     public struct Row: Hashable, Sendable, Identifiable {
-        /// The project folder name (`vigie`), or `2 MORE` for the rest.
-        public var name: String
-        /// The full `cwd` (tooltip, VoiceOver); nil for the `MORE` row.
-        public var path: String?
+        /// The project folder name (`vigie`), an Account label, or `2 MORE` for the rest. Sensitive (every
+        /// row name is masked in Privacy mode, the `MORE` row's too: the row cannot tell them apart).
+        @Sensitive public var name: String
+        /// The full `cwd` (tooltip, VoiceOver); nil for the `MORE` row. Sensitive.
+        @Sensitive public var path: String?
         public var cost: Double
         /// The bar: this row's cost against the first row's.
         public var fraction: Double
 
         public init(name: String, path: String?, cost: Double, fraction: Double) {
+            // Kept through `redacted()`, and never the raw text (Privacy mode): the row's identity only.
+            self.id = String((path ?? name).hashValue)
             self.name = name
             self.path = path
             self.cost = cost
             self.fraction = fraction.isFinite ? min(1, max(0, fraction)) : 0
         }
 
-        public var id: String { path ?? name }
+        /// Stable for the row's path (else name) within a launch.
+        public let id: String
         public var costText: String { UsageFormat.cost(cost) }
     }
 
@@ -108,6 +113,25 @@ public struct UsageCostList: Hashable, Sendable {
     public var totalText: String {
         let amount = UsageFormat.cost(total)
         return isApproximate ? L10n.format("usage.cost.approximate", amount) : amount
+    }
+}
+
+extension UsageCostList.Row: PrivacyRedactable {
+    public func redacted() -> UsageCostList.Row {
+        var copy = self
+        copy.name = $name.masked
+        copy.path = $path.masked
+        return copy
+    }
+}
+
+extension UsageCostList: PrivacyRedactable {
+    /// Project and Account names masked; costs, bars and the total stay.
+    public func redacted() -> UsageCostList {
+        var copy = self
+        copy.rows = rows.map { $0.redacted() }
+        copy.accountRows = accountRows.map { $0.redacted() }
+        return copy
     }
 }
 

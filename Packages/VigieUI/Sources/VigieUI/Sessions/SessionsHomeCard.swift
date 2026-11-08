@@ -83,6 +83,7 @@ public struct SessionsHomeCardView: View {
 /// One compact Home row: a button, so its press is Focus and the surrounding card button stays quiet.
 struct SessionsHomeRow: View {
     @Environment(\.vigieTheme) private var theme
+    @Environment(\.privacyActive) private var privacyActive
     let row: SessionRowModel
     let onFocus: @MainActor () -> Void
 
@@ -103,6 +104,7 @@ struct SessionsHomeRow: View {
                     .foregroundStyle(theme.color(.ink1))
                     .lineLimit(1)
                     .truncationMode(.tail)
+                    .sensitive()
                     .frame(maxWidth: .infinity, alignment: .leading)
                 Text(verbatim: row.statusLabel)
                     .font(theme.font(.rowStatus))
@@ -118,7 +120,7 @@ struct SessionsHomeRow: View {
         }
         .buttonStyle(.plain)
         .focusEffectDisabled()
-        .accessibilityLabel(Text(verbatim: row.accessibilityLabel))
+        .accessibilityLabel(Text(verbatim: row.privacy(privacyActive).accessibilityLabel))
     }
 }
 

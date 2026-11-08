@@ -1,4 +1,5 @@
 import Foundation
+import ModuleKit
 
 /// The reset line of a usage bar: the local reset time (`16:40`, `MON 09:00`) and the time left (`1H52`,
 /// `4D18`). Formatted by the module, which owns the calendar; the bar adds `RESET … · IN …`.
@@ -167,8 +168,8 @@ public struct UsageProviderCardModel: Hashable, Sendable, Identifiable {
     public var content: Content
     /// The provider id, the unit of `order` (drag and Move up / down move the provider with all its Accounts).
     public var providerID: String
-    /// The Account label (`Work`), set only when the provider has several Accounts (UX-DR99).
-    public var account: String?
+    /// The Account label (`Work`), set only when the provider has several Accounts (UX-DR99). Sensitive.
+    @Sensitive public var account: String?
 
     public init(
         id: String, name: String, meta: UsageCardMeta, content: Content, providerID: String? = nil,
@@ -186,6 +187,16 @@ public struct UsageProviderCardModel: Hashable, Sendable, Identifiable {
     /// card title style.
     public var title: String {
         account.map { L10n.format("usage.readout.label", name, $0) } ?? name
+    }
+}
+
+extension UsageProviderCardModel: PrivacyRedactable {
+    /// The Account masked in the header and the dial (`CLAUDE CODE · ••••••`).
+    public func redacted() -> UsageProviderCardModel {
+        var copy = self
+        copy.account = $account.masked
+        if case .windows(let dial, let bars) = content { copy.content = .windows(dial: dial.redacted(), bars: bars) }
+        return copy
     }
 }
 
@@ -212,6 +223,16 @@ public struct UsageTabSnapshot: Hashable, Sendable {
 
     /// More than two cards: the list scrolls, with the fade, the 3 px track and the footer (UX-DR29).
     public var overflows: Bool { providers.count > UsageTabMetrics.visibleProviders }
+
+    /// The snapshot as Privacy mode shows it (AD-24): Account labels and project names masked; providers,
+    /// windows, values and costs stay.
+    public func privacy(_ privacyActive: Bool) -> UsageTabSnapshot {
+        guard privacyActive else { return self }
+        var copy = self
+        copy.providers = providers.map { $0.redacted() }
+        if case .list(let list) = cost { copy.cost = .list(list.redacted()) }
+        return copy
+    }
 
     /// Provider ids in card order, once each (the unit of `order`).
     public var providerOrder: [String] {

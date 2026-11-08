@@ -9,6 +9,7 @@ import SwiftUI
 /// `snapshot` is read in `body`, so an `@Observable` source re-renders the tab when it changes.
 public struct UsageTabView: View {
     @Environment(\.vigieTheme) private var theme
+    @Environment(\.privacyActive) private var privacyActive
     /// False draws the cards in a plain stack (offscreen renders: `ImageRenderer` draws no `ScrollView` content).
     var scrolls = true
     private let snapshot: @MainActor () -> UsageTabSnapshot
@@ -30,7 +31,8 @@ public struct UsageTabView: View {
     }
 
     public var body: some View {
-        let snapshot = snapshot()
+        // Privacy mode (AD-24): Account labels and project names masked everywhere below, labels included.
+        let snapshot = snapshot().privacy(privacyActive)
         Group {
             if snapshot.isEmpty {
                 WidgetCard(

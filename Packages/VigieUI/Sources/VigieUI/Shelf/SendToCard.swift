@@ -226,6 +226,7 @@ struct SendToAskZone: View {
                     Text(verbatim: line)
                         .font(ShelfTabMetrics.font(theme, .prose, size: SendToMetrics.sentenceSize))
                         .foregroundStyle(theme.color(.ink1))
+                        .sensitive()
                 }
             } else {
                 Text(target.zone.label)
@@ -338,10 +339,12 @@ struct SendToDetailRows: View {
                         .textCase(.uppercase)
                         .foregroundStyle(isLit(detail) ? accentText : theme.color(.ink3))
                         .frame(width: SendToMetrics.labelColumn, alignment: .leading)
+                    // The agent and folders the zone uses are the user's settings: sensitive (AD-24).
                     Text(verbatim: detail.value)
                         .font(ShelfTabMetrics.font(theme, .prose, size: SendToMetrics.valueSize))
                         .foregroundStyle(isLit(detail) ? accentText : theme.color(.ink1))
                         .truncationMode(.middle)
+                        .sensitive()
                 }
                 .lineLimit(1)
                 .opacity(isDimmed(detail) ? SendToMetrics.dimmedRow : 1)

@@ -137,6 +137,7 @@ struct UsageCostCard: View {
                                 .font(theme.font(.body))
                                 .foregroundStyle(theme.color(.ink1))
                                 .truncationMode(.middle)
+                                .sensitive()
                             Spacer(minLength: theme.spacing(.glyphGap))
                             Text(verbatim: row.costText)
                                 .font(theme.font(.body))

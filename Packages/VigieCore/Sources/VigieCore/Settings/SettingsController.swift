@@ -42,6 +42,9 @@ public final class SettingsController {
     public let activity: ActivityPaneModel
     /// Settings › Sounds state (Story 10.2). The App sets `sounds.player` to the alert sound player.
     public let sounds: SoundsPaneModel
+    /// Privacy mode (Story 21.2): the window's views read `privacyActive` (reveal controls are unavailable while
+    /// it is on). The App sets it before the window opens.
+    public var privacy: CorePrivacyService?
     /// Settings › Home state (Story 11.1).
     public let home: HomePaneModel
     /// Home card providers that are not modules (scripts with the `home` surface, Epic 12); listed after the
@@ -142,7 +145,8 @@ public final class SettingsController {
         window.isReleasedWhenClosed = false
         window.minSize = SettingsWindowMetrics.minSize
         window.collectionBehavior.insert(.moveToActiveSpace)
-        let root = SettingsRootView(controller: self).environment(\.settingControlServices, services)
+        let root = PrivacyScope(privacy: privacy) { SettingsRootView(controller: self) }
+            .environment(\.settingControlServices, services)
         let hosting = NSHostingController(rootView: root)
         hosting.sizingOptions = []
         window.contentViewController = hosting

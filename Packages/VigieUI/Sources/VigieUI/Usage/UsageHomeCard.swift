@@ -61,6 +61,7 @@ struct UsageHomeRowModel: Hashable, Identifiable {
 /// card in a button).
 public struct UsageHomeCardView: View {
     @Environment(\.vigieTheme) private var theme
+    @Environment(\.privacyActive) private var privacyActive
     private let snapshot: @MainActor () -> UsageTabSnapshot
     /// False draws the rows in a plain stack (`ImageRenderer` draws no `ScrollView` content).
     var scrolls = true
@@ -83,7 +84,7 @@ public struct UsageHomeCardView: View {
     }
 
     public var body: some View {
-        let providers = snapshot().providers
+        let providers = snapshot().privacy(privacyActive).providers
         let rows = providers.map(UsageHomeRowModel.init)
         Group {
             if rows.isEmpty {

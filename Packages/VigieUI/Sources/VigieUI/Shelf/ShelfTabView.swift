@@ -13,6 +13,7 @@ import SwiftUI
 /// `snapshot` is read in `body`, so an `@Observable` source re-renders the tab when it changes.
 public struct ShelfTabView: View {
     @Environment(\.vigieTheme) private var theme
+    @Environment(\.privacyActive) private var privacyActive
     @State private var hovered: UUID?
     /// ↵ on the selection: which row pops its `Send to` menu, and a counter that changes per request.
     @State private var menuRequest: (id: UUID, token: Int)?
@@ -42,7 +43,8 @@ public struct ShelfTabView: View {
     }
 
     public var body: some View {
-        let snapshot = snapshot()
+        // Privacy mode (AD-24): file names masked in the rows and their VoiceOver labels.
+        let snapshot = snapshot().privacy(privacyActive)
         HStack(alignment: .top, spacing: theme.spacing(.gridGap)) {
             stashCard(snapshot)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)

@@ -64,12 +64,15 @@ final class PeekPanelModel {
 @MainActor
 public final class PeekPanelController: PeekPanelDriver {
     private let themeController: ThemeController
+    private let privacy: CorePrivacyService?
     private let model = PeekPanelModel()
     private var panel: PeekPanel?
     private var hideTask: Task<Void, Never>?
 
-    public init(themeController: ThemeController) {
+    /// - Parameter privacy: Privacy mode; while active the peek shows dots and the band's eye-slash.
+    public init(themeController: ThemeController, privacy: CorePrivacyService? = nil) {
         self.themeController = themeController
+        self.privacy = privacy
     }
 
     public var isVisible: Bool { panel?.isVisible ?? false }
@@ -90,7 +93,8 @@ public final class PeekPanelController: PeekPanelDriver {
         let panel =
             self.panel
             ?? PeekPanel(
-                contentRect: frame, rootView: PeekRootView(model: model, themeController: themeController))
+                contentRect: frame,
+                rootView: PeekRootView(model: model, themeController: themeController, privacy: privacy))
         self.panel = panel
         panel.appearance = NSAppearance(named: theme.look == .dark ? .darkAqua : .aqua)
         panel.setFrame(frame, display: true)
@@ -122,6 +126,7 @@ public final class PeekPanelController: PeekPanelDriver {
 struct PeekRootView: View {
     let model: PeekPanelModel
     let themeController: ThemeController
+    var privacy: CorePrivacyService?
 
     var body: some View {
         if let content = model.content {
@@ -137,6 +142,7 @@ struct PeekRootView: View {
             .padding(.horizontal, model.shadowMargin)
             .padding(.bottom, model.shadowMargin)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            .privacyActive(privacy?.isActive ?? false)
             .vigieTheme(themeController.theme)
         }
     }

@@ -1,4 +1,5 @@
 import Foundation
+import ModuleKit
 import SwiftUI
 
 /// The peek variants (DESIGN "Peek alert panel", EXPERIENCE "Peek alert panel"). The kind picks the beacon
@@ -52,8 +53,10 @@ public struct PeekContent: Sendable, Equatable {
     public var kind: PeekKind
     /// The state line, e.g. `Blocked` (shown uppercase in the kicker type).
     public var kicker: String
-    public var title: String
-    public var body: String?
+    /// The alert's title and detail: user text, always sensitive (AD-24, `NotifierEvent`). The kicker is core
+    /// copy and stays.
+    @Sensitive public var title: String
+    @Sensitive public var body: String?
     public var primary: PeekAction?
     public var secondary: PeekAction?
     /// The alert hue: rim, beacon, kicker and dwell line (`status-blocked`, `quota-warning`, `iris-1`...).
@@ -79,6 +82,16 @@ public struct PeekContent: Sendable, Equatable {
         if accentRole == .quotaWarning && look == .light { return .quotaWarningText }
         if accentRole == .gold { return .goldText }
         return accentRole
+    }
+}
+
+extension PeekContent: PrivacyRedactable {
+    /// Title and detail masked; kind, kicker, actions and hue stay.
+    public func redacted() -> PeekContent {
+        var copy = self
+        copy.title = $title.masked
+        copy.body = $body.masked
+        return copy
     }
 }
 

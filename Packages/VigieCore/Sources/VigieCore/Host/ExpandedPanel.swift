@@ -190,6 +190,8 @@ struct ExpandedRootView: View {
         .padding(.horizontal, ExpandedMetrics.shadowMargin)
         .padding(.bottom, ExpandedMetrics.shadowMargin)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        // Privacy mode (AD-24): tabs, Home cards and the tab-row indicator read it.
+        .privacyActive(host.privacy.isActive)
         .vigieTheme(theme)
     }
 }

@@ -89,6 +89,7 @@ public final class PeekPresenter: PeekSink {
     @ObservationIgnored private let shortcuts: TemporaryShortcuts?
     @ObservationIgnored private let isSuppressed: @MainActor () -> Bool
     @ObservationIgnored private let isDropDisplayOpen: @MainActor () -> Bool
+    @ObservationIgnored private let privacy: CorePrivacyService?
 
     @ObservationIgnored private var queue: [Entry] = []
     @ObservationIgnored private var visibleToken: PeekToken?
@@ -114,6 +115,8 @@ public final class PeekPresenter: PeekSink {
     ///   - isSuppressed: true while no peek may show (the expanded view is open, Story 3.9).
     ///   - isDropDisplayOpen: true while the drop display is open: peeks wait (Story 9.1); call ``resume()``
     ///     when it closes.
+    ///   - privacy: Privacy mode (Story 21.2): the panel masks title and detail and shows the eye-slash, and the
+    ///     VoiceOver announcement leaves them out. Turning it on or off never shows a peek.
     public init(
         anchors: any PeekAnchorProvider,
         theme: ThemeController,
@@ -127,11 +130,13 @@ public final class PeekPresenter: PeekSink {
         shortcuts: TemporaryShortcuts? = nil,
         isSuppressed: @escaping @MainActor () -> Bool = { false },
         isDropDisplayOpen: @escaping @MainActor () -> Bool = { false },
+        privacy: CorePrivacyService? = nil,
         logger: Logger = Logger(subsystem: "fr.baguettelabs.vigie", category: "peek")
     ) {
         self.anchors = anchors
         self.themeController = theme
-        self.driver = driver ?? PeekPanelController(themeController: theme)
+        self.privacy = privacy
+        self.driver = driver ?? PeekPanelController(themeController: theme, privacy: privacy)
         self.clock = clock
         self.elapsed = Self.stopwatch(clock)
         self.dwell = dwell
@@ -314,7 +319,7 @@ public final class PeekPresenter: PeekSink {
             primary = { [weak self] intent in self?.performPrimary(intent: intent) }
         }
         shortcuts?.activate(primary: primary, secondary: { [weak self] _ in self?.performSecondary() })
-        announce(PeekContentMapper.announcement(for: content))
+        announce(PeekContentMapper.announcement(for: content.privacy(privacy?.isActive ?? false)))
         startDwell()
     }
 

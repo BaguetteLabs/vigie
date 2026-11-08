@@ -1,4 +1,5 @@
 import Foundation
+import ModuleKit
 
 /// One Agents tab row (DESIGN "Session row", FR39), already formatted by the agents module so VigieUI stays
 /// agent-agnostic.
@@ -9,10 +10,11 @@ public struct SessionRowModel: Identifiable, Sendable, Equatable {
     public var glyphStatus: SessionStatus
     /// `Claude Code`, `Codex`.
     public var agentName: String
-    /// The project (from `cwd`).
-    public var project: String
+    /// The project (from `cwd`). Sensitive (Privacy mode, AD-24).
+    @Sensitive public var project: String
     /// The last tool, or the stale `LAST EVENT 14:30 · Bash` line; nil shows nothing under the project.
-    public var lastAction: String?
+    /// Sensitive (it can name files and commands).
+    @Sensitive public var lastAction: String?
     /// The terminal app (A55); shown only when rows span more than one app.
     public var terminalName: String?
     /// `BLOCKED · 12M`, `IDLE`, `STALE · 18M`.
@@ -48,6 +50,17 @@ public struct SessionRowModel: Identifiable, Sendable, Equatable {
     public var isAlert: Bool { glyphStatus == .blocked || glyphStatus == .failed }
 }
 
+extension SessionRowModel: PrivacyRedactable {
+    /// Project and last action masked; the VoiceOver label keeps the status and time (AD-24).
+    public func redacted() -> SessionRowModel {
+        var copy = self
+        copy.accessibilityLabel = PrivacyMask.scrub(accessibilityLabel, removing: [project, lastAction])
+        copy.project = $project.masked
+        copy.lastAction = $lastAction.masked
+        return copy
+    }
+}
+
 /// The Agents tab's empty states (FR92, EXPERIENCE "Surface states").
 public enum SessionsEmptyState: Sendable, Equatable {
     /// No agent adapter is set up: `NO AGENT CONNECTED` with a button to Settings › Agents.
@@ -74,6 +87,11 @@ public struct SessionsSnapshot: Sendable, Equatable {
     public init(rows: [SessionRowModel], empty: SessionsEmptyState? = nil) {
         self.rows = rows
         self.empty = empty
+    }
+
+    /// The snapshot as Privacy mode shows it (AD-24).
+    public func privacy(_ privacyActive: Bool) -> SessionsSnapshot {
+        privacyActive ? SessionsSnapshot(rows: rows.map { $0.redacted() }, empty: empty) : self
     }
 
     /// The terminal column appears only when the rows span more than one terminal app (FR39).

@@ -38,6 +38,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var appTopics: AppTopics?
     private var hostConfig: HostConfigBridge?
     private var stashService: StashServiceProvider?
+    private var privacy: CorePrivacyService?
     private var isShuttingDown = false
 
     private let environment = AppEnvironment.current
@@ -166,6 +167,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // The host is built after the registry, which needs the Notifier: the link closes that loop.
         let hostLink = NotchHostLink()
 
+        // Privacy mode (Story 21.2, AD-24): one state for the host, the Notifier outputs and every module.
+        let privacy = makePrivacy()
+        self.privacy = privacy
+
         // Notifier (AD-13): config rules, Focus modes, peek / system outputs, action routing.
         let notifierLog = Logger(subsystem: environment.logSubsystem, category: "notifier")
         let notifyRules = ConfigNotifyRules(store: configStore, logger: notifierLog)
@@ -190,13 +195,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             isSuppressed: { [hostLink] in hostLink.host?.isExpanded ?? false },
             // Peeks wait while the drop display is open and show after it closes (Story 9.1, UX-DR92).
             isDropDisplayOpen: { [hostLink] in hostLink.host?.dropDisplay.isOpen ?? false },
+            privacy: privacy,
             logger: Logger(subsystem: environment.logSubsystem, category: "peek"))
         self.peekPresenter = peeks
         // Set once the core notifier exists; a denial is reported once, as a setup problem.
         var reportPermissionDenied: (String) -> Void = { _ in }
         let systemSink = SystemNotificationSink(
             client: UNUserNotificationCenterClient(), permissions: coordinator, router: actionRouter,
-            onPermissionDenied: { message in reportPermissionDenied(message) })
+            onPermissionDenied: { message in reportPermissionDenied(message) }, privacy: privacy)
         // Sound problems post through the core notifier, which exists only after the center: late-bound.
         var soundProblems: SoundProblemReporter?
         let soundPlayer = AVAudioPlayerSoundPlayer()
@@ -276,7 +282,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             permissions: coordinator, hotkeyCenter: hotkeyCenter, alertCenter: alertCenter,
             activityStore: activityStore, executables: executables, secretStore: secretStore,
             hostControl: { CoreHostControl(moduleID: $0, link: hostLink) },
-            dropZones: CoreDropZoneDirectory(link: hostLink))
+            dropZones: CoreDropZoneDirectory(link: hostLink), privacy: privacy)
         let registry = ModuleRegistry(
             descriptors: descriptors,
             enablement: ConfigModuleEnablement(store: configStore),
@@ -297,6 +303,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 return await executables.searchPath.joined(separator: ":")
             }, secretStore: secretStore)
         settings.sounds.player = soundPlayer
+        settings.privacy = privacy
         self.settings = settings
 
         let general = { (key: String) in CoreSettings.path("general", key) }
@@ -333,6 +340,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             openSettingsPane: { [weak self] pane in self?.openSettings(pane: pane) },
             homeCardOrder: { configStore.value(CoreSettings.path("home", "cards"), as: [String].self) ?? [] },
             dropsDirectory: environment.dropsDirectory,
+            privacy: privacy,
             logger: Logger(subsystem: environment.logSubsystem, category: "host"))
         hostLink.host = host
         self.notchHost = host
@@ -385,6 +393,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             }
             host.dropDisplay.simulate(zones: real + samples, for: .seconds(5))
         #endif
+    }
+
+    /// `-VigiePrivacy YES` (Debug) forces Privacy mode on at launch (Story 21.2), until the Settings toggle
+    /// arrives with Story 21.3.
+    private func makePrivacy() -> CorePrivacyService {
+        let privacy = CorePrivacyService()
+        #if DEBUG
+            if UserDefaults.standard.bool(forKey: "VigiePrivacy") {
+                logger.info("Privacy mode forced on by -VigiePrivacy")
+                privacy.setForced(true)
+            }
+        #endif
+        return privacy
     }
 
     /// `-VigieSimulateFocus YES` (Debug) pretends a Focus mode is on, to exercise FR17 without changing the

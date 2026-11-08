@@ -98,6 +98,8 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
     /// `context.dropZones` for every module (Story 9.7): a ``CoreDropZoneDirectory`` bound to the Notch Host in
     /// the app; nil gives an empty directory.
     public let dropZones: (any DropZoneDirectory)?
+    /// The launch's Privacy mode state (Story 21.2, AD-24); every module reads its ``CorePrivacyService/context``.
+    public let privacy: CorePrivacyService
 
     /// - Parameters:
     ///   - environment: injected by the App (`AppEnvironment.current`); VigieCore never reads `.current`.
@@ -116,6 +118,8 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
     ///     ``NotchHostLink`` (host requests do nothing).
     ///   - clipboard: `context.clipboard`; defaults to a ``CoreClipboardService`` on the general pasteboard.
     ///   - dropZones: `context.dropZones`; nil gives every module an empty directory.
+    ///   - privacy: the launch's Privacy mode state, shared with the host and the Notifier outputs; defaults to
+    ///     one that is off.
     public init(
         environment: AppEnvironment, eventBus: InProcessEventBus, configStore: ConfigStore? = nil,
         permissions: PermissionsCoordinator? = nil, hotkeyCenter: HotkeyCenter? = nil,
@@ -125,7 +129,8 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
         secretStore: KeychainSecretStore? = nil,
         hostControl: (@MainActor @Sendable (ModuleID) -> any HostControl)? = nil,
         clipboard: (any ClipboardService)? = nil,
-        dropZones: (any DropZoneDirectory)? = nil
+        dropZones: (any DropZoneDirectory)? = nil,
+        privacy: CorePrivacyService? = nil
     ) {
         self.environment = environment
         self.eventBus = eventBus
@@ -146,6 +151,7 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
             hostControl ?? { @MainActor id in CoreHostControl(moduleID: id, link: NotchHostLink()) }
         self.clipboard = clipboard ?? CoreClipboardService()
         self.dropZones = dropZones
+        self.privacy = privacy ?? CorePrivacyService()
     }
 
     public func makeContext(for manifest: ModuleManifest, tracker: RegistrationTracker) -> any ModuleContext {
@@ -171,7 +177,7 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
             power: TrackedPowerService(base: power, tracker: tracker),
             clipboard: clipboard,
             executables: executables,
-            privacy: StubPrivacyService(),
+            privacy: privacy.context,
             away: StubAwayService(),
             activity: activity,
             integrations: CoreIntegrationInstaller(

@@ -1,4 +1,5 @@
 import Foundation
+import ModuleKit
 import SwiftUI
 
 /// One Stash row of the Shelf tab (DESIGN "Shelf row", UX-DR33), with every text already formatted by the
@@ -15,8 +16,8 @@ public struct ShelfRowModel: Identifiable, Equatable, Sendable {
     }
 
     public let id: UUID
-    /// File name with its extension.
-    public var name: String
+    /// File name with its extension. Sensitive (Privacy mode, AD-24); the `kind` tile stays.
+    @Sensitive public var name: String
     /// The file tile's label (`PDF`, `TXT`), empty when the name has no extension.
     public var kind: String
     /// `184 KB · REF`.
@@ -47,6 +48,16 @@ public struct ShelfRowModel: Identifiable, Equatable, Sendable {
     public var isPinned: Bool { expiry == .pinned }
 }
 
+extension ShelfRowModel: PrivacyRedactable {
+    /// The file name masked, in the row and its VoiceOver label; kind, size, times and expiry stay.
+    public func redacted() -> ShelfRowModel {
+        var copy = self
+        copy.accessibilityLabel = PrivacyMask.scrub(accessibilityLabel, removing: [name])
+        copy.name = $name.masked
+        return copy
+    }
+}
+
 /// What the Shelf tab shows now.
 public struct ShelfTabSnapshot: Sendable {
     /// `STASH · 5`.
@@ -75,6 +86,14 @@ public struct ShelfTabSnapshot: Sendable {
         self.selectedID = selectedID
         self.emptySentence = emptySentence
         self.notice = notice
+    }
+
+    /// The snapshot as Privacy mode shows it (AD-24).
+    public func privacy(_ privacyActive: Bool) -> ShelfTabSnapshot {
+        guard privacyActive else { return self }
+        var copy = self
+        copy.rows = rows.map { $0.redacted() }
+        return copy
     }
 }
 

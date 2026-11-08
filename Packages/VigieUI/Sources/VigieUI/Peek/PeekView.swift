@@ -10,6 +10,7 @@ import SwiftUI
 /// motion both are instant. Hovering reports through `onHover` (the host pauses the dwell).
 public struct PeekView: View {
     @Environment(\.vigieTheme) private var theme
+    @Environment(\.privacyActive) private var privacyActive
 
     private let content: PeekContent
     private let dwell: PeekDwellState
@@ -48,6 +49,12 @@ public struct PeekView: View {
             PeekEdge(content: content)
             VStack(spacing: 0) {
                 Color.clear.frame(height: band)
+                    .overlay(alignment: .trailing) {
+                        // Privacy mode (UX-DR98): the eye-slash in the band; title and detail are dots.
+                        if privacyActive {
+                            PrivacyIndicator().padding(.trailing, inset)
+                        }
+                    }
                 grid
                     .padding(.horizontal, inset)
                     .padding(.bottom, theme.spacing(.peekTimerBottom))
@@ -106,6 +113,7 @@ public struct PeekView: View {
                 .foregroundStyle(theme.color(.ink1))
                 .lineLimit(1)
                 .truncationMode(.middle)
+                .sensitive()
             if let body = content.body {
                 Text(verbatim: body)
                     .font(theme.font(.body))
@@ -113,6 +121,7 @@ public struct PeekView: View {
                     .foregroundStyle(theme.color(.ink2))
                     .lineLimit(1)
                     .truncationMode(.tail)
+                    .sensitive()
                     .padding(.top, theme.spacing(.glyphGap))
             }
         }

@@ -198,12 +198,16 @@ public enum AlertAction: Hashable, Sendable {
 }
 
 /// An alert a module posts. The posting module's id is added by its context.
+///
+/// Privacy mode (AD-24, Story 21.2): `title` and `body` are always ``Sensitive``. While Privacy mode is active
+/// the peek shows them as dots and the macOS notification carries only the kind label; the kicker (from the
+/// kind) and `category` are core copy and stay. There is no way to post a non-sensitive title or body.
 public struct NotifierEvent: Hashable, Sendable {
     /// One of the kinds declared in the manifest's `alertKinds`.
     public let kind: String
     public let severity: AlertSeverity
-    public let title: String
-    public let body: String?
+    @Sensitive public var title: String
+    @Sensitive public var body: String?
     public let action: AlertAction?
     public let dedupeKey: String?
     /// Numeric facts the Notifier's rule conditions compare against (A54), e.g. `working_duration` in seconds.
@@ -338,8 +342,13 @@ public protocol ExecutableResolver: Sendable {
 
 // MARK: - Privacy (implemented in Story 21.2)
 
+/// `context.privacy` (AD-24): the one Privacy mode state, read-only. Modules never detect sharing themselves and
+/// never redact on their own: they mark fields ``Sensitive`` and the host and VigieUI do the rest. Read it only
+/// for behavior that is not rendering (none in v0.2).
 public protocol PrivacyService: Sendable {
+    /// True while Privacy mode is on (detected sharing or the user's force-on).
     var isActive: Bool { get }
+    /// Yields the new state on each change. Each access returns a new stream; stop iterating to end it.
     var changes: AsyncStream<Bool> { get }
 }
 

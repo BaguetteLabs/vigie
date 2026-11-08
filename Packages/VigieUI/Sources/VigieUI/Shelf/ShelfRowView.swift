@@ -105,6 +105,7 @@ struct ShelfRowView: View {
                 .foregroundStyle(theme.color(.ink1))
                 .lineLimit(1)
                 .truncationMode(.middle)
+                .sensitive()
             Text(verbatim: row.sizeMode)
                 .font(ShelfTabMetrics.font(theme, .code, size: ShelfTabMetrics.metaSize, weight: 400))
                 .foregroundStyle(theme.color(.ink3))

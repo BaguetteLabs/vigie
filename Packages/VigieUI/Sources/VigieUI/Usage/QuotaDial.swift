@@ -1,3 +1,4 @@
+import ModuleKit
 import SwiftUI
 
 /// A plan window a quota dial can show (SPEC §7.2: 5h, weekly, daily). The raw value is the window name
@@ -99,7 +100,8 @@ public struct QuotaDialModel: Hashable, Sendable {
     public var hiddenWarning: Bool
     /// The Account shown (`Work`), set only when the provider has several Accounts (UX-DR99, Story 7.10): the
     /// name under the ring reads `CLAUDE · WORK`, the Account cut to ``wingAccountLength`` characters.
-    public var accountLabel: String?
+    /// Sensitive: Privacy mode shows `CLAUDE · ••••••` (AD-24).
+    @Sensitive public var accountLabel: String?
 
     /// Characters of the Account label on the closed notch (UX-DR99).
     public static let wingAccountLength = 6
@@ -165,6 +167,15 @@ public struct QuotaDialModel: Hashable, Sendable {
     }
 }
 
+extension QuotaDialModel: PrivacyRedactable {
+    /// The Account masked; provider, windows and values stay (AD-24).
+    public func redacted() -> QuotaDialModel {
+        var copy = self
+        copy.accountLabel = $accountLabel.masked
+        return copy
+    }
+}
+
 /// The three dial sizes (DESIGN `components.quota-dial`).
 public enum QuotaDialSize: Sendable, Hashable, CaseIterable {
     /// 24 px: a ring on the left wing (alone, or next to non-ring items).
@@ -206,6 +217,7 @@ public enum QuotaDialSize: Sendable, Hashable, CaseIterable {
 /// At `.tab` size no name is drawn (the Usage card header names the provider).
 public struct QuotaDialView: View {
     @Environment(\.vigieTheme) private var theme
+    @Environment(\.privacyActive) private var privacyActive
     private let model: QuotaDialModel
     private let size: QuotaDialSize
     private let showsName: Bool
@@ -222,6 +234,7 @@ public struct QuotaDialView: View {
     }
 
     public var body: some View {
+        let model = model.privacy(privacyActive)
         let length = size.length(in: theme)
         VStack(spacing: length / 24) {
             QuotaDialRing(model: model, length: length, showsValue: showsValue)
@@ -243,6 +256,7 @@ public struct QuotaDialView: View {
 /// a readout, `38 %` over `CLAUDE · 5H` (or `CLAUDE · WEEK` for a plan without 5h).
 public struct QuotaReadoutView: View {
     @Environment(\.vigieTheme) private var theme
+    @Environment(\.privacyActive) private var privacyActive
     private let model: QuotaDialModel
 
     public init(model: QuotaDialModel) {
@@ -250,6 +264,7 @@ public struct QuotaReadoutView: View {
     }
 
     public var body: some View {
+        let model = model.privacy(privacyActive)
         HStack(spacing: theme.spacing(.glyphGap)) {
             QuotaDialRing(model: model, length: QuotaDialSize.wing.length(in: theme), showsValue: false)
             WingReadout(value: model.readoutValue ?? "", label: model.readoutLabel, stale: model.stale)

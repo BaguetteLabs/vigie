@@ -18,12 +18,6 @@ struct DefaultsModuleSettings: ModuleSettings {
     func observe(_ key: String) -> AsyncStream<Void> { AsyncStream { $0.finish() } }
 }
 
-/// Implemented in Story 21.2.
-struct StubPrivacyService: PrivacyService {
-    var isActive: Bool { false }
-    var changes: AsyncStream<Bool> { AsyncStream { $0.finish() } }
-}
-
 /// Implemented in Story 20.3.
 struct StubAwayService: AwayService {
     var presence: Presence { .present }

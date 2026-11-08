@@ -10,6 +10,7 @@ import SwiftUI
 /// environment theme; the band uses `bandTheme` (the island's dark look) when given.
 public struct ExpandedShellView: View {
     @Environment(\.vigieTheme) private var theme
+    @Environment(\.privacyActive) private var privacyActive
     @Binding private var selection: String?
     @FocusState private var rowFocus: ExpandedRowFocus?
     /// Focus rings show only once the keyboard moves focus, not for the focus AppKit gives on open.
@@ -76,6 +77,10 @@ public struct ExpandedShellView: View {
             ExpandedTabBar(
                 tabs: tabs, activeID: activeID, focus: $rowFocus, showsFocusRing: showsFocusRing, select: select)
             Spacer(minLength: 0)
+            // Privacy mode (UX-DR98): the eye-slash left of the gear; not focusable, not a tab.
+            if privacyActive {
+                PrivacyIndicator()
+            }
             SettingsGear(isFocused: showsFocusRing && rowFocus == .gear, action: openSettings)
                 .focusable()
                 .focused($rowFocus, equals: .gear)

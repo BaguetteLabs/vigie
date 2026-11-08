@@ -2280,6 +2280,30 @@
           }
         }
       }
+    },
+    "privacy.indicator" : {
+      "comment" : "Privacy mode indicator (eye-slash) in the expanded tab row and the peek band: VoiceOver label and tooltip.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Privacy mode on"
+          }
+        }
+      }
+    },
+    "privacy.hidden" : {
+      "comment" : "VoiceOver label of a field hidden by Privacy mode (shown as dots).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hidden"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

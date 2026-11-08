@@ -6,6 +6,7 @@ import SwiftUI
 /// failed row. A click anywhere on the row is Focus.
 struct SessionRowView: View {
     @Environment(\.vigieTheme) private var theme
+    @Environment(\.privacyActive) private var privacyActive
     let row: SessionRowModel
     let showsTerminal: Bool
     let isFirst: Bool
@@ -19,7 +20,7 @@ struct SessionRowView: View {
         let columns = SessionColumns(theme: theme)
         let shape = RoundedRectangle(cornerRadius: theme.radius(.row), style: .continuous)
         HStack(spacing: theme.spacing(.rowGap)) {
-            SessionGlyphView(row.glyphStatus, accessibilityLabel: row.accessibilityLabel)
+            SessionGlyphView(row.glyphStatus, accessibilityLabel: spokenLabel)
                 .frame(width: columns.glyph)
             Text(verbatim: row.agentName)
                 .font(theme.font(.body))
@@ -64,7 +65,7 @@ struct SessionRowView: View {
         .onHover(perform: onHover)
         .onTapGesture { onFocus() }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(Text(verbatim: row.accessibilityLabel))
+        .accessibilityLabel(Text(verbatim: spokenLabel))
         .accessibilityAddTraits(.isButton)
         .accessibilityAction { onFocus() }
         .accessibilityActions {
@@ -73,6 +74,9 @@ struct SessionRowView: View {
             }
         }
     }
+
+    /// The row's VoiceOver label, the project and last action masked in Privacy mode (AD-24).
+    private var spokenLabel: String { row.privacy(privacyActive).accessibilityLabel }
 
     /// The project over the last action; a selected dismissable row ends it with `DISMISS ⌫`, so the other
     /// columns keep their grid positions.
@@ -95,12 +99,14 @@ struct SessionRowView: View {
                 .foregroundStyle(theme.color(.ink1))
                 .lineLimit(1)
                 .truncationMode(.tail)
+                .sensitive()
             if let lastAction = row.lastAction, !lastAction.isEmpty {
                 Text(verbatim: lastAction)
                     .font(theme.font(.code))
                     .foregroundStyle(theme.color(secondaryRole))
                     .lineLimit(1)
                     .truncationMode(.tail)
+                    .sensitive()
             }
         }
     }

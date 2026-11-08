@@ -343,10 +343,12 @@ public final class AgentsSessionsModule: NotchModule, AlertActionHandler {
         return sessions.enumerated().map { index, session in
             let status = statuses[session.key] ?? session.status
             let label = text.accessibilityLabel(session, now: now)
+            // The project inside the spoken label is user text: masked in Privacy mode (AD-24).
+            let project = text.project(session)
             return LeftWingItem(
                 id: session.key.description, priority: 0, state: wingState(status), order: index
             ) { _ in
-                AnyView(SessionGlyphView(status, accessibilityLabel: label))
+                AnyView(SessionGlyphView(status, accessibilityLabel: label, sensitive: [project]))
             }
         }
     }

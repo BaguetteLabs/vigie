@@ -98,6 +98,8 @@ public final class NotchHost {
     public internal(set) var expansionOrigin: CGSize = .zero
 
     @ObservationIgnored let themeController: ThemeController
+    /// Privacy mode (AD-24): read by every surface root (`privacyActive`). Nothing is added to the closed notch.
+    @ObservationIgnored public let privacy: CorePrivacyService
     @ObservationIgnored let registry: ModuleRegistry
     @ObservationIgnored private let contextMenu: NotchContextMenu
     @ObservationIgnored private let maxSideWidth: @MainActor () -> CGFloat
@@ -188,6 +190,7 @@ public final class NotchHost {
     ///   - dropEscape: Esc while the drop display is open; a ``SystemDropEscapeMonitor`` by default.
     ///   - makeDropDisplayPanel: builds the drop display window; a ``DropDisplayPanelController`` in production.
     ///   - announce: posts a VoiceOver announcement (a transient readout's); the system one by default.
+    ///   - privacy: the launch's Privacy mode state (Story 21.2); one that is off by default.
     public init(
         themeController: ThemeController,
         registry: ModuleRegistry,
@@ -219,8 +222,10 @@ public final class NotchHost {
         dropExitGrace: Duration = DropDisplayController.defaultExitGrace,
         makeDropDisplayPanel: (@MainActor (DropDisplayController) -> any DropDisplayPanelDriver)? = nil,
         announce: (@MainActor (String) -> Void)? = nil,
+        privacy: CorePrivacyService? = nil,
         logger: Logger
     ) {
+        self.privacy = privacy ?? CorePrivacyService()
         self.announce = announce ?? NotchHost.postAnnouncement
         self.themeController = themeController
         self.registry = registry
@@ -702,6 +707,7 @@ struct NotchRootView: View {
             }
             .frame(width: geometry.islandFrame.width, height: geometry.islandFrame.height)
             .onHover { host.islandHoverChanged($0) }
+            .privacyActive(host.privacy.isActive)
             .vigieTheme(host.theme(for: island))
         }
     }
