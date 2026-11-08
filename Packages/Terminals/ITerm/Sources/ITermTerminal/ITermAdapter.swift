@@ -80,6 +80,60 @@ public struct ITermAdapter: PermissionReportingTerminalAdapter {
         }
     }
 
+    // MARK: Ask AI (Story 9.6)
+
+    /// iTerm2 types text without Return (`write text … newline no`).
+    public var supportsTypedText: Bool { true }
+    /// Seconds between running the command and typing `typedText`, so the shell has handed the tty to the agent
+    /// (`docs/decisions/ask-ai-launch.md`, unverified).
+    static let typedTextDelay = "1.5"
+
+    public func openTab(argv: [String], cwd: URL?, context: any AdapterContext) async throws {
+        _ = try await openTab(argv: argv, cwd: cwd, typedText: nil, context: context)
+    }
+
+    /// Opens a new tab (a window when none is open) with the default profile, runs `cd <cwd> && <argv>` in it,
+    /// then types `typedText` with no Return. Throws `permissionRequired` when Automation is denied (after
+    /// activating the app); any other script failure is rethrown.
+    public func openTab(argv: [String], cwd: URL?, typedText: String?, context: any AdapterContext) async throws
+        -> OpenTabOutcome
+    {
+        let source = Self.openTabScript(
+            command: ShellQuote.commandLine(argv: argv, cwd: cwd), typedText: typedText)
+        do {
+            _ = try await scripts.run(source: source)
+            return .running
+        } catch let error as AppleScriptError where error.isPermissionDenied {
+            context.log.notice("iTerm2 refused Apple Events (\(error.number))")
+            _ = await activateApp()
+            throw TerminalFocusError.permissionRequired(.automation(bundleID: Self.bundleID))
+        }
+    }
+
+    static func openTabScript(command: String, typedText: String?) -> String {
+        let typing =
+            typedText.map {
+                """
+
+                        delay \(typedTextDelay)
+                        write text \(AppleScriptText.literal($0)) newline no
+                """
+            } ?? ""
+        return """
+            tell application id "\(bundleID)"
+                activate
+                if (count of windows) is 0 then
+                    create window with default profile
+                else
+                    tell current window to create tab with default profile
+                end if
+                tell current session of current window
+                    write text \(AppleScriptText.literal(command))\(typing)
+                end tell
+            end tell
+            """
+    }
+
     private func activateApp() async -> FocusResult {
         await activator.activate(bundleIDs: bundleIDs) ? .appOnly : .failed(reason: "iTerm2 is not available")
     }

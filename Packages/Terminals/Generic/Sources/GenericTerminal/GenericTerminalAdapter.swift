@@ -74,6 +74,25 @@ public struct GenericTerminalAdapter: TerminalAdapter, TerminalAppNaming {
         return .failed(reason: "no terminal app found")
     }
 
+    // MARK: Ask AI (Story 9.6)
+
+    public func openTab(argv: [String], cwd: URL?, context: any AdapterContext) async throws {
+        _ = try await openTab(argv: argv, cwd: cwd, typedText: nil, context: context)
+    }
+
+    /// A terminal app cannot be told a command without its own adapter: brings the first running known terminal
+    /// app forward and returns `.commandNotRun`, so the caller copies the command line
+    /// (`docs/decisions/ask-ai-launch.md`). Never throws.
+    public func openTab(argv: [String], cwd: URL?, typedText: String?, context: any AdapterContext) async throws
+        -> OpenTabOutcome
+    {
+        for bundleID in bundleIDs where await workspace.activateApp(bundleID: bundleID) {
+            return .commandNotRun
+        }
+        context.log.notice("Ask AI: no running terminal app to bring forward")
+        return .commandNotRun
+    }
+
     /// Ghostty, Warp… for the Agents terminal column (A55); the forwarded bundle id wins over `TERM_PROGRAM`.
     public func appName(env: [String: String]) -> String? {
         let bundleID = Self.value(env, "__CFBundleIdentifier")

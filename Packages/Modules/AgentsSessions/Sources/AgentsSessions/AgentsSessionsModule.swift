@@ -74,7 +74,7 @@ public final class AgentsSessionsModule: NotchModule, AlertActionHandler {
                 kind: .list(of: .string, default: []),
                 scope: .synced,
                 help: LocalizedStringResource("agentsSessions.setting.ignoredPaths.help", bundle: bundle)),
-        ],
+        ] + askSettings,
         alertKinds: AlertKind.allCases.map(\.rawValue) + [setupProblemKind],
         defaultEnabled: true
     )
@@ -155,6 +155,12 @@ public final class AgentsSessionsModule: NotchModule, AlertActionHandler {
     @ObservationIgnored var moduleSecrets: (any SecretStore)?
     @ObservationIgnored var moduleExecutables: (any ExecutableResolver)?
     @ObservationIgnored var supportTask: Task<Void, Never>?
+    /// True between `start` and `stop`: the Ask AI zone shows and takes drops only then (Story 9.6, A72).
+    public internal(set) var isRunning = false
+    /// `context.clipboard`, for Ask AI's copied command or paths (Story 9.6).
+    @ObservationIgnored var clipboard: (any ClipboardService)?
+    /// The open `Ask AI: <agent> is not installed` alert.
+    @ObservationIgnored var askAlert: AlertHandle?
     /// Settings › Agents connect flow (Story 4.7); built at start from `context.integrations`.
     public private(set) var integrations: AgentIntegrationsModel?
 
@@ -187,6 +193,7 @@ public final class AgentsSessionsModule: NotchModule, AlertActionHandler {
         moduleSecrets = context.secrets
         moduleExecutables = context.executables
         host = context.host
+        clipboard = context.clipboard
         fallbackTerminalContext = AdapterContextBox(
             settings: DefaultsReadOnlySettings(descriptors: []), secrets: context.secrets,
             executables: context.executables, http: URLSessionHTTPClient(), log: log)
@@ -261,9 +268,13 @@ public final class AgentsSessionsModule: NotchModule, AlertActionHandler {
             }
         }
         await runLiveness()
+        isRunning = true
     }
 
     public func stop() async {
+        isRunning = false
+        askAlert?.resolve()
+        askAlert = nil
         sleepTask?.cancel()
         sleepTask = nil
         supportTask?.cancel()

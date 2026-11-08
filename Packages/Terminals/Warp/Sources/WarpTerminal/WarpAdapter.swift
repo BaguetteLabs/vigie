@@ -102,6 +102,41 @@ public struct WarpAdapter: TerminalAdapter {
         return .failed(reason: "Warp is not installed or could not be activated")
     }
 
+    // MARK: Ask AI (Story 9.6)
+
+    public func openTab(argv: [String], cwd: URL?, context: any AdapterContext) async throws {
+        _ = try await openTab(argv: argv, cwd: cwd, typedText: nil, context: context)
+    }
+
+    /// Warp has no scripting: opens `warp://action/new_tab?path=<cwd>` (a new tab in the folder, no permission
+    /// needed), brings Warp forward and returns `.commandNotRun` so the caller copies the command line
+    /// (`docs/decisions/ask-ai-launch.md`). Never throws.
+    public func openTab(argv: [String], cwd: URL?, typedText: String?, context: any AdapterContext) async throws
+        -> OpenTabOutcome
+    {
+        let order = Self.bundleIDCandidates
+        if let url = Self.newTabURL(cwd: cwd), await urlOpener.open(url) {
+            _ = await activateRunning(order)
+            return .commandNotRun
+        }
+        context.log.notice("Warp new-tab URL was not opened; activating Warp")
+        if await activateRunning(order) { return .commandNotRun }
+        for bundleID in order where await activator.launch(bundleID: bundleID) {
+            return .commandNotRun
+        }
+        return .commandNotRun
+    }
+
+    /// `warp://action/new_tab?path=<cwd>` (`warp://action/new_tab` without a folder).
+    static func newTabURL(cwd: URL?) -> URL? {
+        var components = URLComponents()
+        components.scheme = "warp"
+        components.host = "action"
+        components.path = "/new_tab"
+        if let cwd { components.queryItems = [URLQueryItem(name: "path", value: cwd.path)] }
+        return components.url
+    }
+
     /// The session URL to open: `focusURL` verbatim when valid, else built from `sessionUUID` (`warppreview`
     /// scheme for the Preview channel). nil when neither identifies a pane.
     static func sessionURL(from fields: [String: String]) -> URL? {

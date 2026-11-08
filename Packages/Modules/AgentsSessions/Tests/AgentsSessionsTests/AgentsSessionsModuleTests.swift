@@ -41,7 +41,11 @@ import Wire
 
     @Test func settingsDeclared() {
         let settings = AgentsSessionsModule.staticManifest.settings
-        #expect(settings.map(\.key) == ["done_to_idle", "terminal", "adapters", "stale_after", "ignored_paths"])
+        #expect(
+            settings.map(\.key) == [
+                "done_to_idle", "terminal", "adapters", "stale_after", "ignored_paths",
+                "ask_default_agent", "ask_cwd", "ask_alt_cwd",
+            ])
         #expect(settings[0].kind == .duration(default: .seconds(900)))
         #expect(settings[0].scope == .synced)
         #expect(settings[1].scope == .local)

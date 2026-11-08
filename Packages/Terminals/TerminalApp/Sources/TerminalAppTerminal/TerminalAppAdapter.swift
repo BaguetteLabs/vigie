@@ -72,6 +72,45 @@ public struct TerminalAppAdapter: PermissionReportingTerminalAdapter {
         }
     }
 
+    // MARK: Ask AI (Story 9.6)
+
+    public func openTab(argv: [String], cwd: URL?, context: any AdapterContext) async throws {
+        _ = try await openTab(argv: argv, cwd: cwd, typedText: nil, context: context)
+    }
+
+    /// Runs `cd <cwd> && <argv>` in a new Terminal.app window (`do script`; the dictionary has no new-tab
+    /// command, `docs/decisions/ask-ai-launch.md`). Terminal.app cannot type without Return, so `typedText` is
+    /// ignored (``supportsTypedText`` is false). Throws `permissionRequired` when Automation is denied (after
+    /// activating the app); any other script failure is rethrown.
+    public func openTab(argv: [String], cwd: URL?, typedText: String?, context: any AdapterContext) async throws
+        -> OpenTabOutcome
+    {
+        do {
+            _ = try await scripts.run(source: Self.openTabScript(command: ShellQuote.commandLine(argv: argv, cwd: cwd)))
+            return .running
+        } catch let error as AppleScriptError where error.isPermissionDenied {
+            context.log.notice("Terminal.app refused Apple Events (\(error.number))")
+            _ = await activateApp()
+            throw TerminalFocusError.permissionRequired(.automation(bundleID: Self.bundleID))
+        }
+    }
+
+    /// `do script` opens a new window running `command`. When Terminal.app was not running, launching it opens its
+    /// default window, so the command runs there instead of in a second window.
+    static func openTabScript(command: String) -> String {
+        """
+        set wasRunning to application id "\(bundleID)" is running
+        tell application id "\(bundleID)"
+            if wasRunning or (count of windows) is 0 then
+                do script \(AppleScriptText.literal(command))
+            else
+                do script \(AppleScriptText.literal(command)) in window 1
+            end if
+            activate
+        end tell
+        """
+    }
+
     private func activateApp() async -> FocusResult {
         await activator.activate(bundleIDs: bundleIDs) ? .appOnly : .failed(reason: "Terminal.app is not available")
     }

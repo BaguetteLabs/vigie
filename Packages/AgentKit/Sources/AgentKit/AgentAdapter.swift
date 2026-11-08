@@ -23,11 +23,24 @@ public struct LaunchCommand: Hashable, Sendable {
     public let arguments: [String]
     /// Extra environment for the launched agent.
     public let environment: [String: String]
+    /// Text typed into the agent's prompt once it runs, with no Return: an unsent prompt the user completes (Claude
+    /// Code: the `@` mentions of the files). Typed only by terminals that `supportsTypedText`. nil = nothing.
+    public let typedText: String?
+    /// Arguments that replace ``arguments`` when the terminal cannot type ``typedText``: the agent then starts with
+    /// the text as its first, sent prompt (Claude Code: `["@/a.swift "]`), so the files are still attached. nil
+    /// when the CLI has no such argument: the caller copies ``typedText`` for the user to paste
+    /// (`docs/decisions/ask-ai-launch.md`).
+    public let promptArguments: [String]?
 
-    public init(executable: String, arguments: [String], environment: [String: String] = [:]) {
+    public init(
+        executable: String, arguments: [String], environment: [String: String] = [:], typedText: String? = nil,
+        promptArguments: [String]? = nil
+    ) {
         self.executable = executable
         self.arguments = arguments
         self.environment = environment
+        self.typedText = typedText
+        self.promptArguments = promptArguments
     }
 }
 
@@ -77,6 +90,9 @@ public protocol AgentAdapter: Sendable {
 
     /// The Ask AI command for `files`, started in `cwd` (SPEC §7.1, §14.16). Default: nil (Ask AI unavailable).
     func launchCommand(files: [URL], cwd: URL?) -> LaunchCommand?
+    /// The absolute executable for `command` (Story 9.6). Default: `context.executables.resolve(command.executable)`;
+    /// an adapter with its own executable setting (Claude Code's `executable`) reads it first. nil = not installed.
+    func launchExecutable(for command: LaunchCommand, context: any AdapterContext) async -> URL?
 
     // MARK: Accounts (Story 7.10, A82)
 
@@ -111,6 +127,9 @@ extension AgentAdapter {
     public var logReader: (any AgentLogReader)? { nil }
     public var usageProvider: (any UsageProvider)? { nil }
     public func launchCommand(files: [URL], cwd: URL?) -> LaunchCommand? { nil }
+    public func launchExecutable(for command: LaunchCommand, context: any AdapterContext) async -> URL? {
+        await context.executables.resolve(command.executable)
+    }
     public var defaultAccountLocation: AccountLocation? { nil }
     public func accountLocationHint(env: [String: String]) -> AccountLocation? { nil }
     public func logReader(for location: AccountLocation) -> (any AgentLogReader)? {
@@ -138,5 +157,38 @@ extension AgentAdapter {
     /// events through, else `[]`.
     public func normalize(_ hook: HookPayload, sentAt: Date, support: AdapterSupport) -> [AgentEvent] {
         support.emitsEvents ? normalize(hook, sentAt: sentAt) : []
+    }
+}
+
+/// How one Ask AI launch runs on a given terminal (Story 9.6, `docs/decisions/ask-ai-launch.md`): pure.
+public struct LaunchPlan: Hashable, Sendable {
+    /// `argv[0]` absolute; `/usr/bin/env K=V …` first when the command has an environment.
+    public let argv: [String]
+    /// What the terminal types without Return (only when it `supportsTypedText`).
+    public let typedText: String?
+    /// What the caller copies for the user to paste into the agent once the tab runs (the CLI has no
+    /// `promptArguments` and the terminal cannot type). nil when nothing needs pasting.
+    public let pasteText: String?
+
+    public init(argv: [String], typedText: String?, pasteText: String?) {
+        self.argv = argv
+        self.typedText = typedText
+        self.pasteText = pasteText
+    }
+
+    /// Typed text when the terminal can type it; else the `promptArguments` form; else the bare launch with the
+    /// typed text left to paste.
+    public init(command: LaunchCommand, executable: URL, terminalTypesText: Bool) {
+        let prefix: [String] =
+            command.environment.isEmpty
+            ? [] : ["/usr/bin/env"] + command.environment.sorted { $0.key < $1.key }.map { "\($0.key)=\($0.value)" }
+        let typed = command.typedText.flatMap { $0.isEmpty ? nil : $0 }
+        if typed != nil, !terminalTypesText, let promptArguments = command.promptArguments {
+            self.init(argv: prefix + [executable.path] + promptArguments, typedText: nil, pasteText: nil)
+        } else if let typed, !terminalTypesText {
+            self.init(argv: prefix + [executable.path] + command.arguments, typedText: nil, pasteText: typed)
+        } else {
+            self.init(argv: prefix + [executable.path] + command.arguments, typedText: typed, pasteText: nil)
+        }
     }
 }

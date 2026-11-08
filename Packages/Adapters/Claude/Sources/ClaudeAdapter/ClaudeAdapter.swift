@@ -174,9 +174,30 @@ public struct ClaudeAdapter: AgentAdapter {
 
     // MARK: Ask AI
 
-    /// Bare `claude`; Epic 8 (`vigie run`, Ask AI) adds the file arguments.
+    /// Bare `claude` (interactive), with the files' `@` mentions as the unsent typed prompt, or as the first
+    /// (sent) prompt on a terminal that cannot type (`docs/decisions/ask-ai-launch.md`). No files: bare `claude`.
     public func launchCommand(files: [URL], cwd: URL?) -> LaunchCommand? {
-        LaunchCommand(executable: Self.executableName, arguments: [])
+        let mentions = Self.mentions(files)
+        guard !mentions.isEmpty else { return LaunchCommand(executable: Self.executableName, arguments: []) }
+        return LaunchCommand(
+            executable: Self.executableName, arguments: [], typedText: mentions, promptArguments: [mentions])
+    }
+
+    /// The `executable` setting first, else `claude` by name (as `detectVersion`).
+    public func launchExecutable(for command: LaunchCommand, context: any AdapterContext) async -> URL? {
+        await executableURL(context: context)
+    }
+
+    /// Claude Code's mention parser takes `@"<path>"` and an unquoted `@<non-whitespace>` token (verified in
+    /// 2.1.319). A path without whitespace → `@/a/b`; with whitespace → `@"/a b"`; with whitespace and a `"` → the
+    /// bare path (it cannot be mentioned). Joined by spaces, with a trailing space for the user's question.
+    static func mentions(_ files: [URL]) -> String {
+        let parts = files.map { url -> String in
+            let path = url.path
+            guard path.contains(where: \.isWhitespace) else { return "@" + path }
+            return path.contains("\"") ? path : "@\"" + path + "\""
+        }
+        return parts.isEmpty ? "" : parts.joined(separator: " ") + " "
     }
 
     // MARK: Integration (AD-22)

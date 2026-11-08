@@ -15,12 +15,17 @@ final class FakeModuleContext: ModuleContext, @unchecked Sendable {
     let fakeIntegrations: any IntegrationInstaller
     let fakePower: any PowerService
     let fakeHost: any HostControl
+    let fakeClipboard: any ClipboardService
+    let fakeExecutables: any ExecutableResolver
 
     init(
         settings: [String: any SettingValue] = [:], storage: FakeStorage = FakeStorage(),
         notifier: any Notifier = NoNotifier(), integrations: any IntegrationInstaller = NoIntegrations(),
-        power: any PowerService = NoPower(), host: any HostControl = NoHost()
+        power: any PowerService = NoPower(), host: any HostControl = NoHost(),
+        clipboard: any ClipboardService = NoClipboard(), executables: any ExecutableResolver = NoExecutables()
     ) {
+        fakeClipboard = clipboard
+        fakeExecutables = executables
         fakeSettings = FakeSettings(values: settings)
         fakeStorage = storage
         fakeNotifier = notifier
@@ -39,8 +44,8 @@ final class FakeModuleContext: ModuleContext, @unchecked Sendable {
     var host: any HostControl { fakeHost }
     var permissions: any PermissionsService { NoPermissions() }
     var power: any PowerService { fakePower }
-    var clipboard: any ClipboardService { NoClipboard() }
-    var executables: any ExecutableResolver { NoExecutables() }
+    var clipboard: any ClipboardService { fakeClipboard }
+    var executables: any ExecutableResolver { fakeExecutables }
     var privacy: any PrivacyService { NoPrivacy() }
     var away: any AwayService { NoAway() }
     var activity: any ActivityLog { NoActivity() }

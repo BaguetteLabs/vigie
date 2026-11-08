@@ -113,11 +113,20 @@ let context = AdapterContextBox(
         #expect(workspace.calls == ["bundle:com.mitchellh.ghostty", "pid:55"])
     }
 
-    @Test func openTabIsUnsupported() async {
+    /// Story 9.6: brings the first running known terminal forward; the command is left to the caller to copy.
+    @Test func openTabActivatesARunningTerminal() async throws {
+        let workspace = FakeWorkspace(running: ["com.googlecode.iterm2"])
+        let adapter = GenericTerminalAdapter(workspace: workspace)
+        #expect(!adapter.supportsTypedText)
+        let outcome = try await adapter.openTab(argv: ["/bin/echo"], cwd: nil, typedText: nil, context: context)
+        #expect(outcome == .commandNotRun)
+        #expect(workspace.calls == ["bundle:com.apple.Terminal", "bundle:com.googlecode.iterm2"])
+    }
+
+    @Test func openTabWithNoTerminalStillAsksForTheCopy() async throws {
         let adapter = GenericTerminalAdapter(workspace: FakeWorkspace())
-        await #expect(throws: AdapterError.notSupported) {
-            try await adapter.openTab(argv: ["/bin/echo"], cwd: nil, context: context)
-        }
+        let outcome = try await adapter.openTab(argv: ["/bin/echo"], cwd: nil, typedText: nil, context: context)
+        #expect(outcome == .commandNotRun)
     }
 
     @Test func appNamesForTheTerminalColumn() {

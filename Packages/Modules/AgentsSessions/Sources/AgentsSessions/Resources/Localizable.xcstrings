@@ -756,6 +756,270 @@
           }
         }
       }
+    },
+    "agentsSessions.ask.a11y" : {
+      "comment" : "VoiceOver label of the Ask AI zone. %1$@: agent name (Claude Code); %2$@: folder (~/dev, the file's folder).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ask AI, %1$@ in %2$@, Option for alternate folder"
+          }
+        }
+      }
+    },
+    "agentsSessions.ask.commandCopied" : {
+      "comment" : "Left-wing readout: the terminal could not run the agent; its command is on the clipboard.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "COMMAND COPIED"
+          }
+        }
+      }
+    },
+    "agentsSessions.ask.failed.noLaunch" : {
+      "comment" : "Drop failure: the Ask AI agent cannot be started by Vigie.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This agent cannot start from Ask AI"
+          }
+        }
+      }
+    },
+    "agentsSessions.ask.failed.notInstalled" : {
+      "comment" : "Drop failure: the Ask AI agent is not installed.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agent not installed"
+          }
+        }
+      }
+    },
+    "agentsSessions.ask.folder.fileFolder" : {
+      "comment" : "Ask AI meta: the dropped file's folder.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "FILE FOLDER"
+          }
+        }
+      }
+    },
+    "agentsSessions.ask.folder.fileFolder.spoken" : {
+      "comment" : "VoiceOver: the dropped file's folder, after 'Claude Code in'.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "the file's folder"
+          }
+        }
+      }
+    },
+    "agentsSessions.ask.folder.home" : {
+      "comment" : "Ask AI meta: the home folder.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HOME"
+          }
+        }
+      }
+    },
+    "agentsSessions.ask.folder.home.spoken" : {
+      "comment" : "VoiceOver: the home folder, after 'Claude Code in'.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "your home folder"
+          }
+        }
+      }
+    },
+    "agentsSessions.ask.hint" : {
+      "comment" : "Drop display: Ask AI modifier hint (Option = alternate folder).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "⌥ ALT FOLDER"
+          }
+        }
+      }
+    },
+    "agentsSessions.ask.hintActive" : {
+      "comment" : "Drop display: Ask AI modifier hint while Option is held.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ALT FOLDER"
+          }
+        }
+      }
+    },
+    "agentsSessions.ask.label" : {
+      "comment" : "Drop display: Ask AI zone label.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ASK AI"
+          }
+        }
+      }
+    },
+    "agentsSessions.ask.meta" : {
+      "comment" : "Drop display: Ask AI meta line. %1$@: agent id uppercased (CLAUDE); %2$@: folder (FILE FOLDER, HOME or a path).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ · %2$@"
+          }
+        }
+      }
+    },
+    "agentsSessions.ask.notInstalled.body" : {
+      "comment" : "Setup-problem alert body when the Ask AI agent is missing.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Install it, or choose another Ask AI agent in Settings › Agents."
+          }
+        }
+      }
+    },
+    "agentsSessions.ask.notInstalled.title" : {
+      "comment" : "Setup-problem alert title. %@: the agent name (Claude Code) or id.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ask AI: %@ is not installed"
+          }
+        }
+      }
+    },
+    "agentsSessions.ask.pathsCopied" : {
+      "comment" : "Left-wing readout: the agent runs, the file paths are on the clipboard to paste.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PATHS COPIED"
+          }
+        }
+      }
+    },
+    "agentsSessions.ask.release" : {
+      "comment" : "Drop display: Ask AI line while a drag hovers the zone.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RELEASE TO ASK"
+          }
+        }
+      }
+    },
+    "agentsSessions.setting.askAltCwd" : {
+      "comment" : "Setting label: the folder Ask AI uses when Option is held on drop.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ask AI ⌥ folder"
+          }
+        }
+      }
+    },
+    "agentsSessions.setting.askAltCwd.help" : {
+      "comment" : "Setting help for the Ask AI alternate folder.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Used instead when ⌥ is held while dropping."
+          }
+        }
+      }
+    },
+    "agentsSessions.setting.askCwd" : {
+      "comment" : "Setting label: the folder the Ask AI terminal tab opens in.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ask AI folder"
+          }
+        }
+      }
+    },
+    "agentsSessions.setting.askCwd.help" : {
+      "comment" : "Setting help for the Ask AI folder. Keep the values home and file_folder untranslated.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "home, file_folder (the dropped file's folder) or a folder path."
+          }
+        }
+      }
+    },
+    "agentsSessions.setting.askDefaultAgent" : {
+      "comment" : "Setting label: the agent Ask AI starts when files are dropped on it.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ask AI agent"
+          }
+        }
+      }
+    },
+    "agentsSessions.setting.askDefaultAgent.help" : {
+      "comment" : "Setting help for the Ask AI agent.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The adapter id of the agent Ask AI starts, e.g. claude."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

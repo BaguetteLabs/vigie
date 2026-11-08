@@ -262,11 +262,12 @@ func locator(_ fields: [String: String]) -> TerminalLocator {
         #expect(system.calls.filter { if case .launch = $0 { true } else { false } }.count == 3)
     }
 
-    @Test func openTabIsUnsupported() async {
-        let adapter = WarpAdapter(urlOpener: FakeSystem(), activator: FakeSystem())
-        await #expect(throws: AdapterError.notSupported) {
-            try await adapter.openTab(argv: ["/bin/echo"], cwd: nil, context: makeContext())
-        }
+    /// Story 9.6: the plain `openTab` opens a new tab (the command is left to the caller to copy).
+    @Test func openTabOpensANewTab() async throws {
+        let system = FakeSystem()
+        let adapter = WarpAdapter(urlOpener: system, activator: system)
+        try await adapter.openTab(argv: ["/bin/echo"], cwd: nil, context: makeContext())
+        #expect(system.calls.first == .open(URL(string: "warp://action/new_tab")!))
     }
 }
 
