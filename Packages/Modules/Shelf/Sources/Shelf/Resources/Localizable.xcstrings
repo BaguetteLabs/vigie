@@ -1,0 +1,426 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "shelf.module.name" : {
+      "comment" : "Module name (Settings, tab).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shelf"
+          }
+        }
+      }
+    },
+    "shelf.saved.imageName" : {
+      "comment" : "File name (without extension) of a dragged image saved on the shelf.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Image"
+          }
+        }
+      }
+    },
+    "shelf.saved.linkName" : {
+      "comment" : "File name (without extension) of a dragged link without a host, saved as .webloc.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Link"
+          }
+        }
+      }
+    },
+    "shelf.saved.textName" : {
+      "comment" : "File name (without extension) of dragged text saved on the shelf when its first line is empty.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Text"
+          }
+        }
+      }
+    },
+    "shelf.setting.expiryNotification" : {
+      "comment" : "Settings › Shelf: expiry_notification.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notify before an item expires"
+          }
+        }
+      }
+    },
+    "shelf.setting.expiryNotification.help" : {
+      "comment" : "Settings › Shelf: help under expiry_notification.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A macOS notification 24 hours before an item expires. No peek, no sound."
+          }
+        }
+      }
+    },
+    "shelf.setting.mode" : {
+      "comment" : "Settings › Shelf: reference or copy.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stash files as"
+          }
+        }
+      }
+    },
+    "shelf.setting.mode.help" : {
+      "comment" : "Settings › Shelf: help under mode.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "reference keeps a link to the original file; copy stores a copy, so the original can be deleted."
+          }
+        }
+      }
+    },
+    "shelf.setting.ttl" : {
+      "comment" : "Settings › Shelf: how long stashed items stay (ttl).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep items for"
+          }
+        }
+      }
+    },
+    "shelf.setting.ttl.help" : {
+      "comment" : "Settings › Shelf: help under ttl.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unpinned items expire after this long, for example 7d or 12h. References leave the shelf; copies and saved items go to the Trash."
+          }
+        }
+      }
+    },
+    "shelf.stash.a11y.days" : {
+      "comment" : "VoiceOver label of the Stash zone. Arg 1 = ttl in days, arg 2 = items.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stash, keep %#@days@, %#@items@"
+          },
+          "substitutions" : {
+            "days" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "zero" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg days"
+                    }
+                  },
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg day"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg days"
+                    }
+                  }
+                }
+              }
+            },
+            "items" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "zero" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg items"
+                    }
+                  },
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg item"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg items"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "shelf.stash.a11y.hours" : {
+      "comment" : "VoiceOver label of the Stash zone when ttl is not whole days. Arg 1 = hours, arg 2 = items.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stash, keep %#@hours@, %#@items@"
+          },
+          "substitutions" : {
+            "hours" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "zero" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg hours"
+                    }
+                  },
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg hour"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg hours"
+                    }
+                  }
+                }
+              }
+            },
+            "items" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "zero" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg items"
+                    }
+                  },
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg item"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg items"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "shelf.stash.label" : {
+      "comment" : "Drop display: Stash zone label.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stash"
+          }
+        }
+      }
+    },
+    "shelf.stash.meta.days" : {
+      "comment" : "Drop display: Stash meta line. Arg 1 = ttl in days, arg 2 = items on the shelf.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "KEEP %#@days@ · %#@items@"
+          },
+          "substitutions" : {
+            "days" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "zero" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg DAYS"
+                    }
+                  },
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg DAY"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg DAYS"
+                    }
+                  }
+                }
+              }
+            },
+            "items" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "zero" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg ITEMS"
+                    }
+                  },
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg ITEM"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg ITEMS"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "shelf.stash.meta.hours" : {
+      "comment" : "Drop display: Stash meta line when ttl is not whole days. Arg 1 = ttl in hours, arg 2 = items.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "KEEP %#@hours@ · %#@items@"
+          },
+          "substitutions" : {
+            "hours" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "zero" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg HOURS"
+                    }
+                  },
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg HOUR"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg HOURS"
+                    }
+                  }
+                }
+              }
+            },
+            "items" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "zero" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg ITEMS"
+                    }
+                  },
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg ITEM"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg ITEMS"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "shelf.stash.notStashed" : {
+      "comment" : "Closed notch transient readout (2 s) when a Stash drop could not be stored (UX-DR101).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NOT STASHED"
+          }
+        }
+      }
+    },
+    "shelf.stash.release" : {
+      "comment" : "Drop display: Stash zone line while a drag hovers it.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RELEASE TO STASH"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

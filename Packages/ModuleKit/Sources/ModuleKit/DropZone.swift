@@ -128,16 +128,35 @@ public struct DropCell: Hashable, Sendable {
 }
 
 /// What reached a drop zone handler.
+///
+/// File drags fill `urls`. A drag without any file (text, a web link, an image from another app) leaves `urls`
+/// empty and fills the one of `text`, `url` or `imageData` the pasteboard offered (Story 9.2): the host reads,
+/// in that order of preference, a web link (`public.url`), image data (PNG, else TIFF), then plain text.
 public struct DropPayload: Sendable {
     public let urls: [URL]
     public let modifiers: EventModifiers
     public let source: DropSource
+    /// Dragged plain text, when no file was dragged.
+    public let text: String?
+    /// A dragged web link (not a file URL), when no file was dragged.
+    public let url: URL?
+    /// Dragged image data (PNG or TIFF bytes), when no file was dragged.
+    public let imageData: Data?
 
-    public init(urls: [URL], modifiers: EventModifiers, source: DropSource) {
+    public init(
+        urls: [URL], modifiers: EventModifiers, source: DropSource, text: String? = nil, url: URL? = nil,
+        imageData: Data? = nil
+    ) {
         self.urls = urls
         self.modifiers = modifiers
         self.source = source
+        self.text = text
+        self.url = url
+        self.imageData = imageData
     }
+
+    /// True when the payload carries nothing a handler can use.
+    public var isEmpty: Bool { urls.isEmpty && text == nil && url == nil && imageData == nil }
 }
 
 public enum DropSource: Hashable, Sendable {
@@ -155,4 +174,8 @@ public enum DropResult: Sendable {
     /// The handler did not take the payload (wrong type, setting off, ...).
     case rejected
     case failed(LocalizedStringResource)
+    /// The handler did not take the payload and asks the host to say so briefly: the closed notch's left wing
+    /// shows the text as a transient readout for `motion.confirm-readout` (2 s), e.g. `NOT STASHED` (UX-DR101).
+    /// No alert, peek or sound follows.
+    case readout(LocalizedStringResource)
 }

@@ -7,12 +7,15 @@ public enum TransientReadout: Hashable, Sendable {
     case copied(lines: Int)
     /// `NO TEXT FOUND`
     case noTextFound
+    /// Text a module asked for, already localized (a drop handler's `DropResult.readout`, e.g. `NOT STASHED`).
+    case message(String)
 
     /// The readout text, uppercase, from the VigieUI catalog.
     public var text: String {
         switch self {
         case .copied(let lines): L10n.format("closed.copied.lines", lines)
         case .noTextFound: L10n.string("closed.noTextFound")
+        case .message(let text): text
         }
     }
 }

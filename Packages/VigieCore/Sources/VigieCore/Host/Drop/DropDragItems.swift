@@ -16,10 +16,18 @@ public protocol PromisedFileReceiving: AnyObject {
 }
 
 /// What is being dragged: file URLs, file promises, the item count and the drag session's sequence number.
+/// Without any file or promise, a drag can still carry a web link, image data or plain text (Story 9.2): those
+/// open the display too, and reach the handler as `DropPayload.url` / `imageData` / `text`.
 @MainActor
 public struct DropDragItems {
     public var fileURLs: [URL]
     public var promises: [any PromisedFileReceiving]
+    /// Dragged plain text (only read when there is no file, link or image).
+    public var text: String?
+    /// A dragged web link (not a file URL; only read when there is no file).
+    public var webURL: URL?
+    /// Dragged PNG (else TIFF) bytes (only read when there is no file or link).
+    public var imageData: Data?
     /// Pasteboard items (shown in the band as `DROP · <N> ITEMS`).
     public var count: Int
     /// `NSDraggingInfo.draggingSequenceNumber`: one drag session.
@@ -29,17 +37,26 @@ public struct DropDragItems {
 
     public init(
         fileURLs: [URL] = [], promises: [any PromisedFileReceiving] = [], count: Int? = nil, sequence: Int = 0,
-        sourceOperations: NSDragOperation = .every
+        sourceOperations: NSDragOperation = .every, text: String? = nil, webURL: URL? = nil, imageData: Data? = nil
     ) {
         self.fileURLs = fileURLs
         self.promises = promises
-        self.count = count ?? (fileURLs.count + promises.reduce(0) { $0 + max($1.fileCount, 1) })
+        self.text = text
+        self.webURL = webURL
+        self.imageData = imageData
+        let loose = text != nil || webURL != nil || imageData != nil
+        self.count =
+            count ?? (fileURLs.count + promises.reduce(0) { $0 + max($1.fileCount, 1) } + (loose ? 1 : 0))
         self.sequence = sequence
         self.sourceOperations = sourceOperations
     }
 
-    /// True when there is at least one file or promise: only file drags open the drop display.
+    /// True when there is at least one file or promise.
     public var hasFiles: Bool { !fileURLs.isEmpty || !promises.isEmpty }
+
+    /// True when the drag carries something a zone can take: a file, a promise, a web link, an image or text.
+    /// Only such drags open the drop display.
+    public var hasContent: Bool { hasFiles || webURL != nil || imageData != nil || text != nil }
 
     /// The dragged content types, for `DropZone.accepts(contentTypes:)`. A file whose type can't be read counts
     /// as `public.data`.
@@ -49,18 +66,28 @@ public struct DropDragItems {
             if url.hasDirectoryPath { return .folder }
             return UTType(filenameExtension: url.pathExtension) ?? .data
         }
-        return fileTypes + promises.flatMap { $0.contentTypes.isEmpty ? [UTType.data] : $0.contentTypes }
+        let fileAndPromiseTypes =
+            fileTypes + promises.flatMap { $0.contentTypes.isEmpty ? [UTType.data] : $0.contentTypes }
+        guard !hasFiles else { return fileAndPromiseTypes }
+        if webURL != nil { return [.url] }
+        if imageData != nil { return [.image] }
+        if text != nil { return [.plainText] }
+        return []
     }
 
-    /// The pasteboard types a drop destination registers for: file URLs and file promises.
+    /// The pasteboard types a drop destination registers for: file URLs, file promises, then web links, images
+    /// and text (Story 9.2).
     public static var draggedTypes: [NSPasteboard.PasteboardType] {
         [.fileURL] + NSFilePromiseReceiver.readableDraggedTypes.map { NSPasteboard.PasteboardType($0) }
+            + [.URL, .png, .tiff, .string]
     }
 
-    /// Reads a drag: per pasteboard item, a file URL when there is one, else a file promise.
+    /// Reads a drag: per pasteboard item, a file URL when there is one, else a file promise. Without either,
+    /// the first of a web link, image data (PNG, else TIFF) or plain text.
     public static func read(_ info: any NSDraggingInfo) -> DropDragItems {
+        let pasteboard = info.draggingPasteboard
         let objects =
-            info.draggingPasteboard.readObjects(
+            pasteboard.readObjects(
                 forClasses: [NSURL.self, NSFilePromiseReceiver.self],
                 options: [.urlReadingFileURLsOnly: true]) ?? []
         var urls: [URL] = []
@@ -72,10 +99,24 @@ public struct DropDragItems {
                 promises.append(SystemPromisedFile(receiver))
             }
         }
+        var text: String?
+        var webURL: URL?
+        var imageData: Data?
+        if urls.isEmpty, promises.isEmpty {
+            let links = (pasteboard.readObjects(forClasses: [NSURL.self]) as? [URL]) ?? []
+            webURL = links.first { !$0.isFileURL && $0.scheme != nil }
+            if webURL == nil {
+                imageData = pasteboard.data(forType: .png) ?? pasteboard.data(forType: .tiff)
+            }
+            if webURL == nil, imageData == nil, let string = pasteboard.string(forType: .string), !string.isEmpty {
+                text = string
+            }
+        }
         return DropDragItems(
             fileURLs: urls, promises: promises,
-            count: max(info.numberOfValidItemsForDrop, info.draggingPasteboard.pasteboardItems?.count ?? 0, 0),
-            sequence: info.draggingSequenceNumber, sourceOperations: info.draggingSourceOperationMask)
+            count: max(info.numberOfValidItemsForDrop, pasteboard.pasteboardItems?.count ?? 0, 0),
+            sequence: info.draggingSequenceNumber, sourceOperations: info.draggingSourceOperationMask,
+            text: text, webURL: webURL, imageData: imageData)
     }
 
     /// The operation the destination answers: copy when the source allows it (the host never moves the user's

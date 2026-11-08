@@ -48,6 +48,8 @@ public final class DropDisplayController {
 
     /// Called after every close (peeks queued meanwhile show then).
     @ObservationIgnored public var onClose: (@MainActor () -> Void)?
+    /// Shows a handler's `DropResult.readout` text on the closed notch (the Notch Host's transient readout).
+    @ObservationIgnored public var onReadout: (@MainActor (String) -> Void)?
     /// The anchor of an island; set by the Notch Host.
     @ObservationIgnored var anchorProvider: @MainActor (CGDirectDisplayID?) -> IslandAnchor? = { _ in nil }
     /// The last handler run (zone, payload, result), for tests and the log.
@@ -142,7 +144,7 @@ public final class DropDisplayController {
 
     /// A file drag entered the island of `displayID`: opens the display unless no zone is enabled.
     public func islandDragEntered(displayID: CGDirectDisplayID?, items: DropDragItems) -> NSDragOperation {
-        guard items.hasFiles, items.sequence != cancelledSequence else { return [] }
+        guard items.hasContent, items.sequence != cancelledSequence else { return [] }
         insideIsland = true
         exitTask?.cancel()
         if !isOpen, !open(displayID: displayID, items: items, zones: enabledZones()) { return [] }
@@ -209,6 +211,7 @@ public final class DropDisplayController {
             pending = .empty
         }
         let urls = items.fileURLs
+        let (text, webURL, imageData) = (items.text, items.webURL, items.imageData)
         let logger = logger
         pendingDrop = Task { @MainActor [weak self] in
             let promised = await pending.files()
@@ -216,11 +219,18 @@ public final class DropDisplayController {
                 logger.error("File promise failed: \(error, privacy: .public)")
             }
             let all = urls + promised.urls
-            guard !all.isEmpty else {
-                logger.error("Drop on \(id, privacy: .public) delivered no file; handler not called")
+            let payload: DropPayload
+            if all.isEmpty {
+                payload = DropPayload(
+                    urls: [], modifiers: modifiers, source: .dropDisplay, text: text, url: webURL,
+                    imageData: imageData)
+            } else {
+                payload = DropPayload(urls: all, modifiers: modifiers, source: .dropDisplay)
+            }
+            guard !payload.isEmpty else {
+                logger.error("Drop on \(id, privacy: .public) delivered nothing; handler not called")
                 return nil
             }
-            let payload = DropPayload(urls: all, modifiers: modifiers, source: .dropDisplay)
             let handler = zone.handler
             let result = await Task.detached { await handler(payload) }.value
             self?.lastDrop = (id, payload, result)
@@ -228,6 +238,9 @@ public final class DropDisplayController {
             case .accepted: logger.info("Drop on \(id, privacy: .public) accepted")
             case .rejected: logger.info("Drop on \(id, privacy: .public) rejected by its module")
             case .failed: logger.error("Drop on \(id, privacy: .public) failed")
+            case .readout(let text):
+                logger.info("Drop on \(id, privacy: .public) not taken; readout shown")
+                self?.onReadout?(String(localized: text))
             }
             return result
         }

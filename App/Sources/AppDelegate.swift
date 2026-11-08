@@ -7,6 +7,7 @@ import GenericTerminal
 import ITermTerminal
 import ModuleKit
 import OSLog
+import Shelf
 import TerminalAppTerminal
 import VigieCore
 import VigieUI
@@ -116,6 +117,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                     adapterSettingsStores: adapterAssembly.settings,
                     openSettings: { [weak self] pane in self?.openSettings(pane: pane) })
             },
+            // Stash zone and the items it keeps (SPEC §7.3, Story 9.2).
+            ModuleDescriptor(manifest: ShelfModule.staticManifest) { ShelfModule() },
         ]
         #if DEBUG
             // The Debug build shows the sample module without touching the user's config.
@@ -359,13 +362,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         simulateDropIfAsked(host)
     }
 
-    /// `-VigieSimulateDrop YES` (Debug) opens the drop display with two sample zones for 5 s at launch, as if a
-    /// file were dragged over the notch (screenshots, Story 9.1).
+    /// `-VigieSimulateDrop YES` (Debug) opens the drop display for 5 s at launch, as if a file were dragged over
+    /// the notch (screenshots, Story 9.1): the running modules' zones, plus a sample stand-in for a zone no
+    /// module declares yet (Ask AI until Story 9.6).
     private func simulateDropIfAsked(_ host: NotchHost) {
         #if DEBUG
             guard UserDefaults.standard.bool(forKey: "VigieSimulateDrop") else { return }
             logger.info("Drop display opened by -VigieSimulateDrop")
-            host.dropDisplay.simulate(zones: DropSampleZones.make(), for: .seconds(5))
+            let real = host.dropDisplay.enabledZones()
+            let hasPrimary = real.contains { $0.role == .primary }
+            let samples = DropSampleZones.make().filter { sample in
+                sample.role == .primary ? !hasPrimary : !real.contains { $0.style == sample.style }
+            }
+            host.dropDisplay.simulate(zones: real + samples, for: .seconds(5))
         #endif
     }
 

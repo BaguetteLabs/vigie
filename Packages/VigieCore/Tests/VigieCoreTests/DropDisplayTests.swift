@@ -517,3 +517,60 @@ final class DropFixture {
         #expect(resumed == 1)
     }
 }
+
+// MARK: - Non-file drags and readouts (Story 9.2)
+
+@MainActor @Suite(.serialized) struct DropDisplayContentTests {
+    @Test func textLinkAndImageDragsOpenTheDisplayAndReachTheHandler() async throws {
+        let f = DropFixture()
+        await f.start()
+        let link = try #require(URL(string: "https://example.com"))
+        let cases: [(DropDragItems, UTType)] = [
+            (DropDragItems(sequence: 21, text: "hello"), .plainText),
+            (DropDragItems(sequence: 22, webURL: link), .url),
+            (DropDragItems(sequence: 23, imageData: Data([1, 2, 3])), .image),
+        ]
+        for (items, type) in cases {
+            #expect(items.hasContent && !items.hasFiles)
+            #expect(items.contentTypes == [type])
+            #expect(items.count == 1)
+            #expect(f.display.islandDragEntered(displayID: nil, items: items) == .copy)
+            #expect(f.display.isOpen)
+            _ = f.display.displayDragEntered(at: f.center(of: "stash"))
+            #expect(f.display.performDrop(at: f.center(of: "stash"), items: items))
+            _ = await f.display.pendingDrop?.value
+            f.display.dragEnded()
+        }
+        let payloads = f.log.all.map(\.payload)
+        #expect(payloads.count == 3)
+        #expect(payloads.allSatisfy { $0.urls.isEmpty && $0.source == .dropDisplay })
+        #expect(payloads[0].text == "hello")
+        #expect(payloads[1].url == link)
+        #expect(payloads[2].imageData == Data([1, 2, 3]))
+        // Image to Text takes the image type but not text.
+        #expect(DropZones.imageToText().accepts(contentTypes: cases[2].0.contentTypes))
+        #expect(!DropZones.imageToText().accepts(contentTypes: cases[0].0.contentTypes))
+    }
+
+    @Test func draggedTypesIncludeLinksImagesAndText() {
+        let types = DropDragItems.draggedTypes
+        #expect(types.first == .fileURL)
+        for type in [NSPasteboard.PasteboardType.URL, .png, .tiff, .string] { #expect(types.contains(type)) }
+    }
+
+    @Test func aReadoutResultShowsAsTheTransientReadout() async throws {
+        let f = DropFixture()
+        let refusing = DropZone(
+            id: "refuse", label: "REFUSE", glyph: "drop.stash", accentToken: "iris-2", role: .primary,
+            cell: DropCell(preferredColumn: 1, preferredRow: 1, span: .init(columns: 2, rows: 2)), order: 0,
+            accepts: [], handler: { _ in .readout("NOT STASHED") })
+        f.shelf.dropZones = [refusing]
+        await f.start()
+        let items = DropFixture.png()
+        _ = f.display.islandDragEntered(displayID: nil, items: items)
+        #expect(f.display.performDrop(at: f.center(of: "refuse"), items: items))
+        _ = await f.display.pendingDrop?.value
+        #expect(f.host.transient == .message("NOT STASHED"))
+        #expect(TransientReadout.message("NOT STASHED").text == "NOT STASHED")
+    }
+}

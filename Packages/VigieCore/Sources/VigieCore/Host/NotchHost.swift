@@ -259,6 +259,7 @@ public final class NotchHost {
             logger: logger)
         expandedSurface.host = self
         dropDisplay.anchorProvider = { [weak self] id in self?.dropAnchor(for: id) }
+        dropDisplay.onReadout = { [weak self] text in self?.showTransient(.message(text)) }
     }
 
     /// Where the drop display grows: the island of `displayID`, else the one under the pointer (else main).
