@@ -1009,6 +1009,30 @@
         }
       }
     },
+    "sessions.home.meta" : {
+      "comment" : "Home sessions card meta: the session count (Story 11.2).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld active"
+          }
+        }
+      }
+    },
+    "sessions.home.title" : {
+      "comment" : "Home sessions card title (Story 11.2).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agents"
+          }
+        }
+      }
+    },
     "sessions.header" : {
       "comment" : "Agents tab card title with the session count, no alert (FR39).",
       "extractionState" : "manual",

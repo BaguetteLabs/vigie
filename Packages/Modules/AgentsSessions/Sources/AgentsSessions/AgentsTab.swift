@@ -19,15 +19,26 @@ extension AgentsSessionsModule {
         return AnyView(
             SessionsTabView(
                 snapshot: { [weak self] now in self?.tabSnapshot(now: now) ?? SessionsSnapshot(rows: []) },
-                onFocus: { [weak self] id in
-                    guard let self, let key = SessionKey(id) else { return }
-                    Task { await self.focus(key) }
-                },
+                onFocus: { [weak self] id in self?.focusRow(id) },
                 onDismiss: { [weak self] id in
                     guard let self, let key = SessionKey(id), self.canDismiss(key) else { return }
                     Task { await self.dismiss(key) }
                 },
                 openSettings: settingsAction))
+    }
+
+    /// The Home card (Story 11.2): the same rows as the tab, compact, bound to the live snapshot; a row press is
+    /// Focus.
+    public func homeCard() -> AnyView? {
+        AnyView(
+            SessionsHomeCardView(
+                snapshot: { [weak self] now in self?.tabSnapshot(now: now) ?? SessionsSnapshot(rows: []) },
+                onFocus: { [weak self] id in self?.focusRow(id) }))
+    }
+
+    func focusRow(_ id: String) {
+        guard let key = SessionKey(id) else { return }
+        Task { await self.focus(key) }
     }
 
     /// What the tab shows at `now`: rows in display order, or the empty state.

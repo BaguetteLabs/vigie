@@ -240,3 +240,47 @@ final class RecordingActivity: ActivityLog, @unchecked Sendable {
         #expect(!module.endedProcesses.contains(a) || module.store.table[a] == nil)
     }
 }
+
+@MainActor @Suite struct SessionsHomeCardTests {
+    typealias T = AgentsTabTests
+
+    @Test func homeCardIsOffered() {
+        #expect(T.setup().module.homeCard() != nil)
+    }
+
+    @Test func cardSnapshotIsTheTabSnapshot() {
+        let module = T.setup().module
+        module.apply(
+            [
+                .toolStart(T.context("api", at: T.now - 360), tool: "Edit"),
+                .needsInput(T.context("vigie", at: T.now - 720), reason: .permissionPrompt),
+                .promptSubmit(T.context("idle", at: T.now - 60)),
+            ], now: T.now)
+        let tab = module.tabSnapshot(now: T.now)
+        #expect(tab.rows.first?.id == "fake:vigie")
+        #expect(tab.rows.count == 3)
+        // The Home card binds `tabSnapshot` itself (see `homeCard()`), so order and labels are the tab's:
+        // urgency first, nothing capped (the card scrolls).
+        #expect(Set(tab.rows.map(\.id)) == ["fake:vigie", "fake:api", "fake:idle"])
+    }
+
+    @Test func emptyStatesMatchTheTab() {
+        for (adapters, expected) in [
+            ([any AgentAdapter](), SessionsEmptyState.noAgentConnected), ([FakeAdapter()], .noActiveSessions),
+        ] {
+            let snapshot = T.setup(adapters: adapters).module.tabSnapshot(now: T.now)
+            #expect(snapshot.empty == expected)
+        }
+    }
+
+    @Test func rowFocusCallsTheModuleFocusPath() async throws {
+        let setup = T.setup()
+        setup.module.apply([.promptSubmit(T.context("a", pid: 4242))], now: T.now)
+        setup.module.focusRow("fake:a")
+        for _ in 0..<200 where setup.warp.focused.isEmpty { try await Task.sleep(for: .milliseconds(10)) }
+        #expect(setup.warp.focused.map(\.fields) == [["program": "WarpTerminal", "pid": "4242"]])
+        setup.module.focusRow("not a key")
+        try await Task.sleep(for: .milliseconds(50))
+        #expect(setup.warp.focused.count == 1)
+    }
+}
