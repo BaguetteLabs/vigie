@@ -7,7 +7,7 @@
 
 ## Decision
 
-**(d) Undetermined, pending one manual check with the screen unlocked.** The evidence points strongly toward **(a) exact pane focus**, using a technique the spike plan did not expect: Warp's own per-session deep link, not the Accessibility API.
+**(a) Exact pane focus via Warp's per-session deep link — confirmed by Romain on 2026-11-08:** `open "$WARP_FOCUS_URL"` brought a second window to the front with keyboard focus, switched to the target tab inside a window, and focused the right pane in a split tab. The paragraph below is the pre-check reasoning, kept for the record. ~~(d) Undetermined, pending one manual check with the screen unlocked.~~ The evidence points strongly toward **(a) exact pane focus**, using a technique the spike plan did not expect: Warp's own per-session deep link, not the Accessibility API.
 
 - Warp exports `WARP_FOCUS_URL=warp://session/<uuid>` and `WARP_TERMINAL_SESSION_UUID=<uuid>` into every local shell. The uuid is per **pane**, which is finer than per tab.
 - Opening that URL makes Warp log `received url` → `dispatching action for "root_view:handle_pane_navigation_event"` → `PaneGroupAction::HandleFocusChange`. So Warp routes the URL to its own pane-focus handler.

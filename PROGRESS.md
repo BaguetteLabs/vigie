@@ -25,7 +25,7 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - [x] 1.2 AppEnvironment and dev build isolation
 - [x] 1.3 Continuous integration for pull requests (first runs failed: runner has no Xcode 27.1; pinned 26.6 on 2026-11-07; workflow is **manual-trigger only** until Romain watches a green run, then restore `pull_request` + `push` triggers)
 - [x] 1.4 Spike — Claude Code hook reaches a socket listener (record: docs/decisions/spike-hook-path.md; fixtures moved to Packages/Adapters/Claude/Tests/Fixtures/2.1.319 by Story 4.6)
-- [P] 1.5 Spike — focus a specific Warp tab (record in docs/decisions/spike-warp-focus.md; deep link found; needs a visual check by Romain)
+- [x] 1.5 Spike — focus a specific Warp tab (decision (a): deep link, confirmed live by Romain 2026-11-08 incl. window, tab and pane)
 - [ ] 1.6 Spike — Ghostty tab focus investigation (Ghostty not installed)
 - [x] 1.7 UX design pass (done in docs, 2026-11-07)
 
@@ -77,7 +77,7 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - [x] 5.1 Focus permissions and terminal selection (Settings › agents.sessions pane should surface `focusPermissionIssues()`; 5.5/17.x)
 - [x] 5.2 Terminal.app focus (manual 3×2 tab test blocked on the Automation prompt; see Packages/Terminals/TerminalApp/MANUAL-TEST.md)
 - [x] 5.3 iTerm2 focus (iTerm2 not installed: manual test pending; MANUAL-TEST.md)
-- [x] 5.4 Warp focus per spike decision (ships `.tabViaURL` unverified; one-line flip after Romain's check)
+- [x] 5.4 Warp focus per spike decision (`.tabViaURL`, confirmed live 2026-11-08)
 - [ ] 5.5 Ghostty focus per spike decision
 
 ### Epic 6 — Signed releases that update themselves
@@ -104,7 +104,6 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 
 ## Waiting on Romain
 
-- **Warp focus check (Story 1.5, 5 min, screen unlocked, no permission needed):** open three Warp tabs (one in a second window), run `echo $WARP_FOCUS_URL` in each, then from another tab run `open '<one of those urls>'`. Does the exact tab/pane come to the front? Yes → decision (a) exact focus via deep link; Warp activates but the tab does not switch → (c) app-level. Details and the prototype commands: `docs/decisions/spike-warp-focus.md` § How to re-run.
 - **Notch check on hardware (Story 2.5, 2 min):** open the MacBook lid (or make the built-in display active), build and launch the Debug app (`cd App && xcodegen generate && xcodebuild -scheme Vigie -configuration Debug build CODE_SIGN_IDENTITY=- -derivedDataPath .build-dd && open .build-dd/Build/Products/Debug/Vigie\ Dev.app`). Expected: a black island hugging the notch with two wings, a thin iris rim, `Dev sample` in the left wing; right-click shows Settings…/Quit; typing in another app is not disturbed. Tell me what you see. Without a notch, `-VigieSimulateNotch YES` draws a fake one on the main display.
 - **CI re-enable:** `.github/workflows/ci.yml` is `workflow_dispatch` only (your request, 2026-11-07 evening, after ~20 failure mails). Cause found from your pasted log: the `macos-26` runner has Xcode 26.0…26.6 only, no 27.1. `.xcode-version` is now `26.6`. When you can watch: trigger the workflow manually from the Actions tab (or `gh workflow run ci`), and if green tell me to restore the triggers.
 - **gh auth:** `gh` is installed but not logged in. Run `! gh auth login -w` in this session (or `gh auth login` in a terminal) so CI runs on BaguetteLabs/vigie can be checked. Until then the `ci.yml` first run is unverified.
@@ -119,6 +118,7 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 
 ## Decisions log
 
+- 2026-11-08 — Romain verified Warp deep-link focus live: window, tab and pane all focus correctly → spike 1.5 decision (a); `WarpAdapter.decision = .tabViaURL` stays.
 - 2026-11-08 — Romain: adapter table path stays `[modules."agents.sessions".adapter.<id>]` (singular) with `adapters` as the list. AD-23 and SPEC §11 amended.
 - 2026-11-08 — Romain: 7.10 code confirmed — Accounts in the adapter table (`adapter.<id>.accounts` + `account.<id>.*`), Keychain owner `adapter.<id>` with per-Account keys. AD-23 and SPEC §7.2/§11 amended.
 - 2026-11-08 — Romain: hook installation per Account location added to Epic 7 as Story 7.11 (not deferred to v0.4).
