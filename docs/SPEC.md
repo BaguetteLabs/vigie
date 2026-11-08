@@ -739,6 +739,8 @@ prices = true               # fetch the signed per-provider price table at check
 
 [closed]
 max_side_width = 120
+# notch_overlap = 2          # local (local.toml); points added below the reported notch height (0-12), physical notch only
+# notch_side_inset = 4       # local (local.toml); points added each side of the notch slot (0-16), physical notch only
 slots = 3                     # items per side, max about 4; the rest collapse into +X
 peek = true
 peek_duration = "5s"          # dwell, paused on hover

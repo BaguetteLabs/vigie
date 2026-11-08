@@ -139,6 +139,10 @@ update_checks = true          # scripts installed from a link, at most once a da
 # [sync]
 # icloud = false              # config/personalization and notes only
 #
+# [closed]
+# notch_overlap = 2           # points added below the reported notch height (0-12); physical notch only
+# notch_side_inset = 4        # points added each side of the notch slot (0-16); physical notch only
+#
 # [display]
 # display = "notched"         # main | notched | all | "<name>"
 #

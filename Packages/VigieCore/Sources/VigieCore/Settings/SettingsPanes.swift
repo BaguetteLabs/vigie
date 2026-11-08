@@ -95,7 +95,10 @@ public enum SettingsPaneCatalog {
                 content: .activity),
             SettingsPane(
                 id: "appearance", title: SettingsText.resource("settings.pane.appearance"), icon: "paintpalette",
-                content: .core([SettingsSection(keys: keys("appearance", ["theme", "mode", "presence"]))])),
+                content: .core([
+                    SettingsSection(keys: keys("appearance", ["theme", "mode", "presence"])),
+                    SettingsSection(keys: keys("closed", ["notch_overlap", "notch_side_inset"])),
+                ])),
             SettingsPane(
                 id: "closed", title: SettingsText.resource("settings.pane.closed"),
                 icon: "rectangle.topthird.inset.filled",

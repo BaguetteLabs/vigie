@@ -103,6 +103,9 @@ public final class NotchHost {
     @ObservationIgnored let registry: ModuleRegistry
     @ObservationIgnored private let contextMenu: NotchContextMenu
     @ObservationIgnored private let maxSideWidth: @MainActor () -> CGFloat
+    @ObservationIgnored private var lastNotchGeometryLine: String?
+    @ObservationIgnored private let notchOverlap: @MainActor () -> CGFloat
+    @ObservationIgnored private let notchSideInset: @MainActor () -> CGFloat
     @ObservationIgnored private let closedSlots: @MainActor () -> Int
     @ObservationIgnored private let virtualNotch: @MainActor () -> VirtualNotchSettings
     @ObservationIgnored private let displaySelection: @MainActor () -> DisplaySelection
@@ -165,6 +168,8 @@ public final class NotchHost {
 
     /// - Parameters:
     ///   - maxSideWidth: `closed.max_side_width` (SPEC §5.3, default 120).
+    ///   - notchOverlap: `closed.notch_overlap` (default 2): points added below the reported physical notch height.
+    ///   - notchSideInset: `closed.notch_side_inset` (default 4): points added to each side of the notch slot.
     ///   - closedSlots: `closed.slots` (SPEC §5, default 3, clamped 1…4).
     ///   - virtualNotch: `[virtual_notch]` (SPEC §5.5); `VirtualNotchSettings(configStore:)` in production.
     ///   - displaySelection: `[display] display` (SPEC §5.4); `DisplaySelection(configStore:)` in production.
@@ -198,6 +203,8 @@ public final class NotchHost {
         registry: ModuleRegistry,
         contextMenu: NotchContextMenu,
         maxSideWidth: @escaping @MainActor () -> CGFloat = { 120 },
+        notchOverlap: @escaping @MainActor () -> CGFloat = { 0 },
+        notchSideInset: @escaping @MainActor () -> CGFloat = { 0 },
         closedSlots: @escaping @MainActor () -> Int = { ClosedNotchArbiter.defaultSlots },
         virtualNotch: @escaping @MainActor () -> VirtualNotchSettings = { .default },
         displaySelection: @escaping @MainActor () -> DisplaySelection = { .notched },
@@ -235,6 +242,8 @@ public final class NotchHost {
         self.registry = registry
         self.contextMenu = contextMenu
         self.maxSideWidth = maxSideWidth
+        self.notchOverlap = notchOverlap
+        self.notchSideInset = notchSideInset
         self.closedSlots = closedSlots
         self.virtualNotch = virtualNotch
         self.displaySelection = displaySelection
@@ -398,11 +407,12 @@ public final class NotchHost {
             guard
                 let geometry = NotchGeometry.physical(
                     screen: display.metrics, bandHeight: bandHeight, maxSideWidth: maxSideWidth(),
-                    cornerRadius: radius)
+                    cornerRadius: radius, overlap: notchOverlap(), sideInset: notchSideInset())
             else {
                 logger.error("Notch geometry unavailable for \(display.name, privacy: .public)")
                 return nil
             }
+            logNotchGeometry(display.metrics, geometry)
             return PlacedIsland(display: display, geometry: geometry, surface: .black, isHidden: false)
         }
         let geometry = NotchGeometry.virtual(
@@ -412,6 +422,20 @@ public final class NotchHost {
         return PlacedIsland(
             display: display, geometry: geometry, surface: settings.style == .menuBar ? .menuBar : .black,
             isHidden: idleHidden || hiddenMenuBars.contains(display.id))
+    }
+
+    /// The reported notch metrics next to what Vigie draws, so they can be read with `log show` when a notch
+    /// looks off. Logged when they change (host start, display change, settings change).
+    private func logNotchGeometry(_ metrics: ScreenMetrics, _ geometry: NotchGeometry) {
+        let left = metrics.auxiliaryTopLeftArea?.size ?? .zero
+        let right = metrics.auxiliaryTopRightArea?.size ?? .zero
+        let line =
+            "notch geometry: safeAreaTop=\(metrics.safeAreaTop) left=\(left.width)x\(left.height) "
+            + "right=\(right.width)x\(right.height) overlap=\(notchOverlap()) inset=\(notchSideInset()) "
+            + "island=\(NSStringFromRect(geometry.islandFrame))"
+        guard line != lastNotchGeometryLine else { return }
+        lastNotchGeometryLine = line
+        logger.debug("\(line, privacy: .public)")
     }
 
     private func syncPanels() {

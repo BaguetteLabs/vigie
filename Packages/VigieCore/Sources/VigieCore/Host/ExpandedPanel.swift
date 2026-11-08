@@ -174,7 +174,7 @@ struct ExpandedRootView: View {
         ExpandedShellView(
             tabs: host.expandedTabs,
             selection: Binding(get: { host.selectedTabID }, set: { host.selectedTabID = $0 }),
-            bandTheme: themeController.islandTheme,
+            bandTheme: themeController.islandTheme.withBandHeight(atLeast: host.expansionOrigin.height),
             openSettings: host.openSettings,
             content: { host.expandedContent(for: $0) }
         )
@@ -192,6 +192,6 @@ struct ExpandedRootView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         // Privacy mode (AD-24): tabs, Home cards and the tab-row indicator read it.
         .privacyActive(host.privacy.isActive)
-        .vigieTheme(theme)
+        .vigieTheme(theme.withBandHeight(atLeast: host.expansionOrigin.height))
     }
 }

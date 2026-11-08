@@ -109,6 +109,30 @@
         }
       }
     },
+    "config.closed.notch_overlap": {
+      "comment": "Settings label for the config key closed.notch_overlap.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notch overlap"
+          }
+        }
+      }
+    },
+    "config.closed.notch_side_inset": {
+      "comment": "Settings label for the config key closed.notch_side_inset.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notch side inset"
+          }
+        }
+      }
+    },
     "config.closed.peek": {
       "comment": "Settings label for the config key closed.peek.",
       "extractionState": "manual",

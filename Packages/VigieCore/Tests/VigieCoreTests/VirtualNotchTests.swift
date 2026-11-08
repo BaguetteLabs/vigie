@@ -186,6 +186,8 @@ final class DisplayHostFixture {
     var settings = VirtualNotchSettings.default
     var selection = DisplaySelection.notched
     var hideInFullScreen = true
+    var notchOverlap: CGFloat = 0
+    var notchSideInset: CGFloat = 0
     var promptPending = false
     var answers: [DisplayPromptAnswer] = []
     var pointer = CGPoint.zero
@@ -209,6 +211,8 @@ final class DisplayHostFixture {
             library: try! ThemeLoader.loadBundled(), mode: look, accessibility: accessibility)
         host = NotchHost(
             themeController: themeController, registry: registry, contextMenu: NotchContextMenu(),
+            notchOverlap: { [unowned self] in self.notchOverlap },
+            notchSideInset: { [unowned self] in self.notchSideInset },
             virtualNotch: { [unowned self] in self.settings },
             displaySelection: { [unowned self] in self.selection },
             hideInFullScreen: { [unowned self] in self.hideInFullScreen },

@@ -8,6 +8,7 @@ import Testing
         for key in [
             CoreSettings.path("display", "display"), CoreSettings.path("virtual_notch", "width"),
             CoreSettings.path("virtual_notch", "style"), CoreSettings.path("closed", "max_side_width"),
+            CoreSettings.path("closed", "notch_overlap"), CoreSettings.path("closed", "notch_side_inset"),
             CoreSettings.path("general", "hide_in_fullscreen"),
         ] {
             #expect(HostConfigBridge.actions(for: [key]) == .init(reloadDisplays: true, rearbitrate: false))

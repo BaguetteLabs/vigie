@@ -320,6 +320,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 configStore.value(CoreSettings.path("closed", "max_side_width"), as: Int.self)
                     .map { CGFloat($0) } ?? 120
             },
+            notchOverlap: {
+                configStore.value(CoreSettings.path("closed", "notch_overlap"), as: Int.self).map { CGFloat($0) } ?? 2
+            },
+            notchSideInset: {
+                configStore.value(CoreSettings.path("closed", "notch_side_inset"), as: Int.self)
+                    .map { CGFloat($0) } ?? 4
+            },
             closedSlots: {
                 configStore.value(CoreSettings.path("closed", "slots"), as: Int.self) ?? ClosedNotchArbiter.defaultSlots
             },

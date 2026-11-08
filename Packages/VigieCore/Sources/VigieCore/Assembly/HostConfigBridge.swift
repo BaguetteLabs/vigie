@@ -55,7 +55,8 @@ public final class HostConfigBridge {
     }
 
     static let displayKeys: Set<ConfigKeyPath> = [
-        CoreSettings.path("closed", "max_side_width"), CoreSettings.path("general", "hide_in_fullscreen"),
+        CoreSettings.path("closed", "max_side_width"), CoreSettings.path("closed", "notch_overlap"),
+        CoreSettings.path("closed", "notch_side_inset"), CoreSettings.path("general", "hide_in_fullscreen"),
     ]
 
     /// The host work a set of changed keys calls for.

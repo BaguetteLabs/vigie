@@ -83,6 +83,58 @@ import Testing
         #expect(g.islandFrame.minY == 944)
     }
 
+    func overlapped(_ screen: ScreenMetrics = macBookPro14, overlap: CGFloat, inset: CGFloat, maxSide: CGFloat = 120)
+        -> NotchGeometry?
+    {
+        NotchGeometry.physical(
+            screen: screen, bandHeight: 34, maxSideWidth: maxSide, cornerRadius: 14, overlap: overlap,
+            sideInset: inset)
+    }
+
+    @Test func overlapAddsToTheReportedNotchHeight() throws {
+        var screen = Self.macBookPro14
+        screen.safeAreaTop = 38
+        let g = try #require(overlapped(screen, overlap: 2, inset: 0))
+        #expect(g.height == 40)
+        #expect(g.islandFrame.maxY == 982)
+        #expect(g.islandFrame.minY == 942)
+        #expect(g.leadingWing.height == 40 && g.notchSlot.height == 40 && g.trailingWing.height == 40)
+        // A band taller than the notch still gets the overlap on top.
+        #expect(try #require(overlapped(overlap: 2, inset: 0)).height == 36)
+    }
+
+    @Test func insetWidensTheSlotAndShrinksTheWings() throws {
+        let g = try #require(overlapped(overlap: 0, inset: 4))
+        #expect(g.leadingWing == CGRect(x: 0, y: 0, width: 116, height: 34))
+        #expect(g.notchSlot == CGRect(x: 116, y: 0, width: 208, height: 34))
+        #expect(g.trailingWing == CGRect(x: 324, y: 0, width: 116, height: 34))
+        #expect(g.islandFrame.width == 440)
+        #expect(g.wings.totalWidth == g.islandFrame.width)
+        #expect(g.notchRect.width == 200)
+    }
+
+    @Test func insetKeepsTheCapsAndNeverExceedsAWing() throws {
+        let narrow = try #require(overlapped(overlap: 0, inset: 4, maxSide: 80))
+        #expect(narrow.leadingWing.width == 76 && narrow.trailingWing.width == 76)
+        #expect(narrow.notchSlot.width == 208)
+        let tiny = try #require(overlapped(overlap: 0, inset: 16, maxSide: 10))
+        #expect(tiny.leadingWing.width == 0 && tiny.notchSlot.width == 220)
+        #expect(tiny.wings.totalWidth == tiny.islandFrame.width)
+    }
+
+    @Test func zeroValuesReproduceTheOldFrames() throws {
+        let old = try #require(geometry(Self.macBookPro14))
+        #expect(overlapped(overlap: 0, inset: 0) == old)
+    }
+
+    @Test func notchSettingsAreLocalWithTheDocumentedRanges() throws {
+        for (key, def, lo, hi) in [("notch_overlap", 2, 0, 12), ("notch_side_inset", 4, 0, 16)] {
+            let setting = try #require(CoreSettings.all.first { $0.path == CoreSettings.path("closed", key) })
+            #expect(setting.descriptor.scope == .local)
+            #expect(setting.descriptor.kind == .int(default: def, min: lo, max: hi))
+        }
+    }
+
     #if DEBUG
         @Test func simulatedNotchIsCentered() throws {
             let metrics = DisplayInfo.simulatedMetrics(for: CGRect(x: 0, y: 0, width: 2560, height: 1440))
@@ -109,5 +161,36 @@ import Testing
         #expect(!panel.isOpaque && !panel.hasShadow && !panel.hidesOnDeactivate && !panel.isMovable)
         let rect = CGRect(x: 10, y: 2000, width: 440, height: 34)
         #expect(panel.constrainFrameRect(rect, to: nil) == rect)
+    }
+}
+
+@MainActor
+@Suite struct NotchOverlapHostTests {
+    @Test func virtualNotchIsUnaffected() {
+        let f = DisplayHostFixture([.plain(1, main: true)])
+        let before = {
+            f.host.start()
+            defer { f.host.stop() }
+            return f.host.islands.first?.geometry
+        }()
+        f.notchOverlap = 12
+        f.notchSideInset = 16
+        f.host.start()
+        defer { f.host.stop() }
+        #expect(f.host.islands.first?.geometry == before)
+    }
+
+    @Test func settingChangesRecomputeTheIslandLive() throws {
+        let f = DisplayHostFixture([.notched(1, main: true)])
+        f.host.start()
+        defer { f.host.stop() }
+        #expect(try #require(f.host.islands.first).geometry.height == 34)
+        f.notchOverlap = 3
+        f.notchSideInset = 5
+        f.host.reloadDisplayConfiguration()
+        let g = try #require(f.host.islands.first).geometry
+        #expect(g.height == 37)
+        #expect(g.notchSlot.width == 210)
+        #expect(f.panel(1)?.frame == g.islandFrame)
     }
 }

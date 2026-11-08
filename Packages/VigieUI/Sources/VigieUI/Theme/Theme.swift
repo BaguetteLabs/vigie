@@ -106,6 +106,15 @@ public struct Theme: Sendable, Equatable {
         spacing[role.rawValue].flatMap(ThemeValue.length) ?? 0
     }
 
+    /// A copy whose `spacing.band-height` is at least `height`: the band over a physical notch must cover the
+    /// glass (reported height plus `closed.notch_overlap`).
+    public func withBandHeight(atLeast height: CGFloat) -> Theme {
+        guard height > spacing(.bandHeight) else { return self }
+        var copy = self
+        copy.spacing[SpacingRole.bandHeight.rawValue] = "\(height)px"
+        return copy
+    }
+
     public func motion(_ role: MotionRole) -> Duration {
         motion[role.rawValue].flatMap(ThemeValue.duration) ?? .zero
     }

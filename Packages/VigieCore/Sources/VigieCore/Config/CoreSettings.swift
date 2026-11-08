@@ -92,6 +92,8 @@ public enum CoreSettings {
         make("updates", "channel", .enumeration(options: ["stable", "beta"], default: "stable")),
         // [closed]
         make("closed", "max_side_width", .int(default: 120, min: 40, max: 600)),
+        make("closed", "notch_overlap", .int(default: 2, min: 0, max: 12), .local),
+        make("closed", "notch_side_inset", .int(default: 4, min: 0, max: 16), .local),
         make("closed", "slots", .int(default: 3, min: 1, max: 4)),
         make("closed", "peek", .bool(default: true)),
         make("closed", "peek_duration", .duration(default: .seconds(5))),

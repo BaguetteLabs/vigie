@@ -57,6 +57,8 @@ final class PeekPanelModel {
     /// Changes per presentation, so the dwell line restarts.
     var presentation = 0
     var shadowMargin: CGFloat = 0
+    /// The anchored island's height: a physical notch's band is at least this tall.
+    var bandHeight: CGFloat = 0
     @ObservationIgnored var handlers: PeekHandlers?
 }
 
@@ -88,6 +90,7 @@ public final class PeekPanelController: PeekPanelDriver {
         model.dwell = dwell
         model.handlers = handlers
         model.shadowMargin = margin
+        model.bandHeight = anchor.bandHeight
         model.presentation += 1
         model.isRevealed = false
         let panel =
@@ -144,7 +147,7 @@ struct PeekRootView: View {
             .padding(.bottom, model.shadowMargin)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             .privacyActive(privacy?.isActive ?? false)
-            .vigieTheme(themeController.theme)
+            .vigieTheme(themeController.theme.withBandHeight(atLeast: model.bandHeight))
         }
     }
 }

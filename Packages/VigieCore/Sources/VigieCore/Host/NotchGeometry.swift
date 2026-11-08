@@ -80,8 +80,14 @@ public struct NotchGeometry: Sendable, Equatable {
     /// The notch spans the screen width minus the two auxiliary areas (only their widths are used, so the
     /// result does not depend on which coordinate space AppKit reports them in). Each wing is the auxiliary
     /// area's width capped by `maxSideWidth` (`closed.max_side_width`, default 120).
+    ///
+    /// The reported cut-out can be a few points smaller than the glass, so `overlap` (`closed.notch_overlap`)
+    /// points are added below the reported height and `sideInset` (`closed.notch_side_inset`) points to each side
+    /// of the notch slot (the wings shrink accordingly: the island keeps its outer width). Zero values give the
+    /// reported cut-out exactly.
     public static func physical(
-        screen: ScreenMetrics, bandHeight: CGFloat, maxSideWidth: CGFloat, cornerRadius: CGFloat
+        screen: ScreenMetrics, bandHeight: CGFloat, maxSideWidth: CGFloat, cornerRadius: CGFloat,
+        overlap: CGFloat = 0, sideInset: CGFloat = 0
     ) -> NotchGeometry? {
         guard let left = screen.auxiliaryTopLeftArea, let right = screen.auxiliaryTopRightArea else { return nil }
         let frame = screen.frame
@@ -95,16 +101,23 @@ public struct NotchGeometry: Sendable, Equatable {
         let cap = max(maxSideWidth, 0)
         let leadingWidth = min(left.width, cap)
         let trailingWidth = min(right.width, cap)
-        let height = max(bandHeight, notchHeight)
+        let height = max(bandHeight, notchHeight) + max(overlap, 0)
+        let inset = max(sideInset, 0)
         let islandFrame = CGRect(
             x: notchMinX - leadingWidth, y: frame.maxY - height,
             width: leadingWidth + notchRect.width + trailingWidth, height: height)
+        // The slot eats `inset` from each wing (never more than the wing has).
+        let leadingInset = min(inset, leadingWidth)
+        let trailingInset = min(inset, trailingWidth)
+        let leadingWing = leadingWidth - leadingInset
+        let trailingWing = trailingWidth - trailingInset
+        let slotWidth = notchRect.width + leadingInset + trailingInset
         return NotchGeometry(
             notchRect: notchRect,
             islandFrame: islandFrame,
-            leadingWing: CGRect(x: 0, y: 0, width: leadingWidth, height: height),
-            notchSlot: CGRect(x: leadingWidth, y: 0, width: notchRect.width, height: height),
-            trailingWing: CGRect(x: leadingWidth + notchRect.width, y: 0, width: trailingWidth, height: height),
+            leadingWing: CGRect(x: 0, y: 0, width: leadingWing, height: height),
+            notchSlot: CGRect(x: leadingWing, y: 0, width: slotWidth, height: height),
+            trailingWing: CGRect(x: leadingWing + slotWidth, y: 0, width: trailingWing, height: height),
             cornerRadius: cornerRadius)
     }
 
