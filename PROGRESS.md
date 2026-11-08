@@ -109,7 +109,6 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 
 
 
-- Test the live Claude plan endpoint once: Settings › Usage › Claude plan usage › Use Claude Code's login › Allow (macOS Keychain prompt), then check the status line / `log show … | grep "Plan usage"`. Patch `PLAN-ENDPOINT.md` + client + fixtures if the shape differs.
 
 
 - Drag a file from Finder over the notch once (Vigie Dev): the drop display should grow out without focus change; press Esc to cancel. Report if nothing appears.
@@ -123,6 +122,7 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - 2026-11-08 — Romain: hook installation per Account location added to Epic 7 as Story 7.11 (not deferred to v0.4).
 - 2026-11-08 — `prices.json` checked against platform.claude.com pricing: Sonnet 5.5 cache read fixed to $0.10; Mythos 5/5.1 added; Haiku 5.5 >100K tier not modeled. Prices stay bundled (A56, AD-16); app cannot update them without a release.
 - 2026-11-08 — Romain: add a remote price table covering every provider (Anthropic, OpenAI, Google, extensible) → Story 6.5; A56 superseded; AD-16 amended to allow the signed fetch; SPEC `[updates] prices`.
+- 2026-11-08 — Live Claude plan endpoint verified by Romain on the Dev build: provider enabled in Settings › Usage, `plan_auth = "claude_code"` + consent written to local.toml, Keychain prompt answered, HTTP 200, `Plan usage for claude: 2 windows` (5h + weekly). `PLAN-ENDPOINT.md` shape confirmed; no patch needed.
 
 - 2026-11-07 — Working mode, signing, installs, remote: see "Working mode" above.
 - 2026-11-07 — XcodeGen chosen for the App target project (AD-2 keeps the target thin; no hand-edited pbxproj in git).
