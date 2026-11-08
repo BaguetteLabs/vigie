@@ -378,7 +378,7 @@ final class DropFixture {
         #expect(f.log.all.count == 1)
     }
 
-    @Test func escRetractsWithoutActionAndTheSameDragDoesNotReopen() async {
+    @Test func escRetractsWithoutActionAndTheSameHoverDoesNotReopen() async {
         let f = DropFixture()
         await f.start()
         let items = DropFixture.png()
@@ -393,6 +393,41 @@ final class DropFixture {
         _ = f.display.islandDragEntered(displayID: nil, items: DropFixture.png("next.png"))
         #expect(f.display.isOpen)
         #expect(f.log.all.isEmpty)
+    }
+
+    @Test func escThenLeavingAndReenteringInTheSameDragReopens() async {
+        let f = DropFixture()
+        await f.start()
+        let items = DropFixture.png()
+        _ = f.display.islandDragEntered(displayID: nil, items: items)
+        f.escape.press()
+        #expect(!f.display.isOpen)
+        // Still hovering: stays closed.
+        #expect(f.display.islandDragEntered(displayID: nil, items: items) == [])
+        #expect(!f.display.isOpen)
+        // Pointer leaves, then comes back during the same drag.
+        f.display.islandDragExited()
+        _ = f.display.islandDragEntered(displayID: nil, items: items)
+        #expect(f.display.isOpen)
+        // A second Esc works the same way.
+        f.escape.press()
+        #expect(!f.display.isOpen)
+        #expect(f.display.islandDragEntered(displayID: nil, items: items) == [])
+        f.display.islandDragExited()
+        _ = f.display.islandDragEntered(displayID: nil, items: items)
+        #expect(f.display.isOpen)
+        #expect(f.log.all.isEmpty)
+    }
+
+    @Test func dragEndingAfterEscResetsTheState() async {
+        let f = DropFixture()
+        await f.start()
+        let items = DropFixture.png()
+        _ = f.display.islandDragEntered(displayID: nil, items: items)
+        f.escape.press()
+        f.display.dragEnded()
+        _ = f.display.islandDragEntered(displayID: nil, items: items)
+        #expect(f.display.isOpen)
     }
 
     @Test func leavingTheNotchAndTheDisplayRetractsWithoutAction() async {

@@ -159,6 +159,7 @@ public final class DropDisplayController {
 
     public func islandDragExited() {
         insideIsland = false
+        rearmAfterCancel()
         scheduleExitCheck()
     }
 
@@ -191,6 +192,7 @@ public final class DropDisplayController {
             model.hoveredZoneID = nil
             model.hoveredAccepts = false
         }
+        rearmAfterCancel()
         scheduleExitCheck()
     }
 
@@ -296,7 +298,15 @@ public final class DropDisplayController {
         close()
     }
 
-    /// Esc: retracts with no action; the same drag does not reopen it.
+    /// The pointer left the island or the display: an Esc ends only the hover it dismissed, so the same drag may
+    /// open the display again on its next entry.
+    private func rearmAfterCancel() {
+        guard !isOpen else { return }
+        cancelledSequence = nil
+    }
+
+    /// Esc: retracts with no action; the hover that was dismissed does not reopen it, but the same drag does
+    /// once the pointer has left and entered again.
     public func cancel() {
         guard isOpen else { return }
         cancelledSequence = sequence
