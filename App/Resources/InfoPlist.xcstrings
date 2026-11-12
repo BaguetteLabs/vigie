@@ -13,6 +13,18 @@
         }
       }
     },
+    "NSCalendarsFullAccessUsageDescription" : {
+      "comment" : "Privacy - Calendars Full Access Usage Description (AD-20): the Calendar module reads your events and their alarms.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vigie shows your calendar events and reminds you of them at their alarm times."
+          }
+        }
+      }
+    },
     "NSHumanReadableCopyright" : {
       "comment" : "Copyright (human-readable).",
       "extractionState" : "manual",

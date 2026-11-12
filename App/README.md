@@ -14,13 +14,26 @@ Debug builds are `Vigie Dev.app` (`fr.baguettelabs.vigie.dev`); Release builds a
 
 ## Signing
 
-`Config/Signing.xcconfig` (the `configFiles` of `project.yml`) signs ad-hoc by default. An ad-hoc signature has no stable designated requirement, so macOS forgets a Keychain "Always Allow" at every rebuild and asks again (for example when `plan_auth = "claude_code"` reads Claude Code's login). Run this once per Mac:
+All signing settings live in `Config/Signing.xcconfig` (the `configFiles` of `project.yml`; the target sets no signing key, since target settings would win). Maintainer prerequisites (certificates, profiles, API key, Sparkle keys, GitHub secrets) are in [`docs/release-setup.md`](../docs/release-setup.md).
+
+| | Debug (`fr.baguettelabs.vigie.dev`) | Release (`fr.baguettelabs.vigie`) |
+|---|---|---|
+| Default (committed) | ad-hoc, `Vigie.entitlements` (apple-events only) | Developer ID Application, team `BWMPMACCYZ`, manual, profile `Vigie Developer ID`, `Vigie.signed.entitlements`, `--timestamp`, no `get-task-allow` |
+| With `Signing.local.xcconfig --team` | automatic, Apple Development of the team, Xcode-managed `.dev` profile, `Vigie.signed.entitlements` | unchanged |
+
+Both: Hardened Runtime, no App Sandbox. The bundled `vigie` / `vigie-dev` helper is signed with the app's identity, Hardened Runtime and no entitlements (timestamped for a signed Release). CI passes `CODE_SIGN_IDENTITY=- CODE_SIGNING_ALLOWED=NO`, which wins over both files; building Release on a Mac without the Developer ID certificate and profile needs `CODE_SIGNING_ALLOWED=NO`.
+
+Once per Mac with the Baguette Labs team in Xcode:
 
 ```sh
-Scripts/dev-signing.sh          # --print shows what it would write
+Scripts/dev-signing.sh --team BWMPMACCYZ   # --print shows what it would write
+cd App && xcodegen generate && xcodebuild -project Vigie.xcodeproj -scheme Vigie -configuration Debug build \
+  -allowProvisioningUpdates -allowProvisioningDeviceRegistration   # first build: registers the Mac, App ID, profile
 ```
 
-It writes the gitignored `Config/Signing.local.xcconfig` with the SHA-1 of this Mac's first `Apple Development:` identity, so Debug builds (and their `vigie-dev` helper) keep the same designated requirement across rebuilds and "Always Allow" sticks. Without one it prints the steps to create a self-signed code-signing certificate named `Vigie Dev Signing` in Keychain Access; run it again afterwards. Check with `codesign -dr - "Vigie Dev.app"` (`anchor apple generic` for an Apple Development identity). CI (`CODE_SIGN_IDENTITY=- CODE_SIGNING_ALLOWED=NO` on the command line) and Release builds stay ad-hoc until Developer ID signing (Story 6.1).
+The script writes the gitignored `Config/Signing.local.xcconfig`: `DEVELOPMENT_TEAM`, `CODE_SIGN_STYLE = Automatic`, `CODE_SIGN_IDENTITY = Apple Development` (automatic signing refuses a pinned SHA-1; the team picks the identity whose certificate OU is the team) and `CODE_SIGN_ENTITLEMENTS = Vigie.signed.entitlements`, all for Debug only. The Debug build then carries `keychain-access-groups` = `BWMPMACCYZ.fr.baguettelabs.vigie.dev` and SecretStore (AD-9) is available. Check with `codesign -d --entitlements - "Vigie Dev.app"`.
+
+Without a team: with exactly one `Apple Development:` identity, or a self-signed `Vigie Dev Signing` code-signing certificate (the script prints how to create one), `Scripts/dev-signing.sh` pins that identity's SHA-1 for Debug, so Keychain "Always Allow" answers survive rebuilds (`anchor apple generic` in `codesign -dr -` for Apple Development); there is no profile, so Debug keeps `Vigie.entitlements` and SecretStore reports "unavailable". With several Apple Development identities and no `--team`, it lists them with their team and exits 1.
 
 ## Bundled CLI
 

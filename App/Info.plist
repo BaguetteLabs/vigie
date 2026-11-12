@@ -28,6 +28,8 @@
 	<true/>
 	<key>NSAppleEventsUsageDescription</key>
 	<string>Vigie asks your terminal app to bring an agent session to the front.</string>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>Vigie shows your calendar events and reminds you of them at their alarm times.</string>
 	<key>NSServices</key>
 	<array>
 		<dict>
