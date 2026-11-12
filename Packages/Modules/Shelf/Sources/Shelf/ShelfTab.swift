@@ -6,7 +6,7 @@ import VigieUI
 /// The Shelf tab (Story 9.3): the snapshot the view reads and the handlers of its actions.
 extension ShelfModule {
     /// The tab, bound to the live module: the rows re-render on every item change and on each expiry sweep
-    /// (every minute), so time left keeps counting. No Home card here (Story 11.3).
+    /// (every minute), so time left keeps counting. The Home card is in HomeWidget.swift (Story 11.3).
     public func expandedView() -> AnyView? {
         AnyView(
             ShelfTabView(

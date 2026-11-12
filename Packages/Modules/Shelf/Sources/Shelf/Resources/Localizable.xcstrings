@@ -1088,6 +1088,88 @@
           }
         }
       }
+    },
+    "shelf.home.title" : {
+      "comment" : "Home shelf widget card title (Story 11.3).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shelf"
+          }
+        }
+      }
+    },
+    "shelf.home.meta" : {
+      "comment" : "Home shelf widget card meta: items on the shelf (Story 11.3).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld item"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld items"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "shelf.home.tag" : {
+      "comment" : "Home shelf widget: tag of an item in its last 24 hours. Arg = hours left, rounded up, at least 1 (5H).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lldH"
+          }
+        }
+      }
+    },
+    "shelf.home.warning" : {
+      "comment" : "Home shelf widget: warning line along the Stash zone's bottom. Arg 1 = items in their last 24 hours, arg 2 = hours left of the soonest, rounded up (1 EXPIRES IN 5H). Uppercase.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@items@ IN %2$lldH"
+          },
+          "substitutions" : {
+            "items" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg EXPIRES"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg EXPIRE"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

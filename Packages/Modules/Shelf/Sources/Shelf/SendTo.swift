@@ -74,9 +74,12 @@ extension ShelfModule {
         }
     }
 
-    /// Runs `zoneID` with the item's file and `source = .stashItem`, its access held until the handler returns.
+    /// Runs `zoneID` with the item's file and `source` (default `.stashItem`; the Home widget passes
+    /// `.homeWidget`), its access held until the handler returns.
     @discardableResult
-    func send(_ id: UUID, to zoneID: String, modifiers: EventModifiers) async -> DropResult {
+    func send(
+        _ id: UUID, to zoneID: String, modifiers: EventModifiers, source: DropSource = .stashItem
+    ) async -> DropResult {
         guard let zoneDirectory else { return .rejected }
         guard let access = openFile(id) else {
             notice = ShelfText.string("shelf.notice.missing")
@@ -84,6 +87,6 @@ extension ShelfModule {
         }
         defer { access.close() }
         return await zoneDirectory.perform(
-            zoneID: zoneID, payload: DropPayload(urls: [access.url], modifiers: modifiers, source: .stashItem))
+            zoneID: zoneID, payload: DropPayload(urls: [access.url], modifiers: modifiers, source: source))
     }
 }

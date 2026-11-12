@@ -40,8 +40,7 @@ public enum ShelfExpiry {
     /// (the last 24 h, hours rounded up, at least 1). Nil when pinned.
     public static func timeLeftLabel(_ item: ShelfItem, now: Date) -> String? {
         guard let remaining = remaining(item, now: now) else { return nil }
-        if remaining <= warningWindow {
-            let hours = max(Int((remaining / 3600).rounded(.up)), 1)
+        if let hours = warningHours(item, now: now) {
             return ShelfText.format("shelf.timeLeft.hours", hours)
         }
         if remaining < 2 * warningWindow {
@@ -50,6 +49,13 @@ public enum ShelfExpiry {
                 ? ShelfText.format("shelf.timeLeft.dayHours", 1, hours) : ShelfText.format("shelf.timeLeft.day", 1)
         }
         return ShelfText.format("shelf.timeLeft.days", Int((remaining / warningWindow).rounded(.down)))
+    }
+
+    /// Hours left in the last 24 h (or past due, before the sweep), rounded up, at least 1: the `5H` of
+    /// `EXPIRES IN 5H` and of the Home widget's tag. Nil when pinned or more than 24 h away.
+    public static func warningHours(_ item: ShelfItem, now: Date) -> Int? {
+        guard let remaining = remaining(item, now: now), remaining <= warningWindow else { return nil }
+        return max(Int((remaining / 3600).rounded(.up)), 1)
     }
 
     /// True in the last 24 h before expiry (not yet expired).

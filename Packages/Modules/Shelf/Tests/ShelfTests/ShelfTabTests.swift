@@ -145,7 +145,7 @@ final class RecordingRevealer: FileRevealer, @unchecked Sendable {
         h.base.clock.advance(3.5 * day)
         #expect(h.module.tabSnapshot(now: h.base.clock.now).expiringMeta == "1 EXPIRING")
         #expect(h.module.expandedView() != nil)
-        #expect(h.module.homeCard() == nil)
+        #expect(h.module.homeCard() != nil)
     }
 
     @Test func selectionFollowsTheRows() async throws {

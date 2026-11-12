@@ -202,7 +202,7 @@ public struct SendToCardView: View {
     }
 }
 
-/// The 84px Ask AI zone of the card.
+/// The 84px Ask AI zone of the card; compact, the 70px column of the Home shelf widget (Story 11.3).
 struct SendToAskZone: View {
     @Environment(\.vigieTheme) private var theme
     @State private var breathing = false
@@ -211,12 +211,22 @@ struct SendToAskZone: View {
     /// Hovered by a drag it does not take: dimmed.
     let isRefused: Bool
     let modifiers: EventModifiers
+    /// True draws only the `+` and the label (two lines at most), filling the height it is given: the Home
+    /// shelf widget's narrow column has no room for the sentence or the release target.
+    var compact = false
 
     var body: some View {
         let shape = RoundedRectangle(cornerRadius: radius, style: .continuous)
         VStack(spacing: SendToMetrics.askGap) {
             plus
-            if isLit {
+            if compact {
+                Text(isLit ? (target.zone.releaseLine ?? target.zone.label) : target.zone.label)
+                    .font(theme.font(.kicker))
+                    .tracking(theme.tracking(.kicker))
+                    .textCase(.uppercase)
+                    .foregroundStyle(accentText)
+                    .lineLimit(SendToMetrics.compactLabelLines)
+            } else if isLit {
                 Text(target.zone.releaseLine ?? target.zone.label)
                     .font(theme.font(.kicker))
                     .tracking(theme.tracking(.kicker))
@@ -244,7 +254,8 @@ struct SendToAskZone: View {
         .multilineTextAlignment(.center)
         .padding(.horizontal, theme.spacing(.glyphGap))
         .frame(maxWidth: .infinity)
-        .frame(height: theme.componentLength("send-to-card", "ask-zone-height") ?? ShelfTabMetrics.askZoneHeight)
+        .frame(height: compact ? nil : askZoneHeight)
+        .frame(maxHeight: compact ? .infinity : nil)
         .background(shape.fill(fill))
         .overlay(border(shape))
         .opacity(isRefused ? DropMiniZone.disabledOpacity : 1)
@@ -254,6 +265,9 @@ struct SendToAskZone: View {
         .accessibilityAddTraits(isLit ? .isSelected : [])
     }
 
+    private var askZoneHeight: CGFloat {
+        theme.componentLength("send-to-card", "ask-zone-height") ?? ShelfTabMetrics.askZoneHeight
+    }
     private var radius: CGFloat { theme.usesCornerMarks ? 0 : theme.radius(.zone) }
     private var accent: Color { theme.color(theme.usesCornerMarks ? .gold : target.zone.accent) }
     private var accentText: Color { theme.color(theme.usesCornerMarks ? .goldText : target.zone.accent) }
@@ -443,6 +457,8 @@ enum SendToMetrics {
     static let plusMark: CGFloat = 11
     static let minScale: CGFloat = 0.8
     static let tintRadius: CGFloat = 90
+    /// The compact zone's label wraps to two lines (`RELEASE TO ASK` in the Home widget's 70px column).
+    static let compactLabelLines = 2
     /// Rows: 12px under the zone, 58px label column, 8px gaps, value 11px; a dimmed row at 45%.
     static let rowsTop: CGFloat = 12
     static let labelColumn: CGFloat = 58
