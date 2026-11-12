@@ -45,6 +45,7 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - [x] 2.13 ConfigStore writer (comment-preserving TOML patcher)
 - [x] 2.14 Generated Settings window (App wiring in integration pass 3; not yet exercised in the running app)
 - [x] 2.15 Accessibility floor in v0.1 (contrast check in CI; docs/accessibility-floor.md)
+- [ ] 2.16 Virtual notch height follows the menu bar (ruled 2026-11-12; in progress)
 
 ### Epic 3 — Alerts that never steal focus
 - [x] 3.1 Notifier rules engine
@@ -115,6 +116,8 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 
 ## Decisions log
 
+- 2026-11-12 — **Virtual notch height (Story 2.16):** Romain saw the island overhang the external monitor's menu bar (34px theme band vs 24 pt bar). Ruling: the virtual notch matches the measured menu bar height of its screen exactly, no legibility floor; closed-notch content scales down to fit. Built-in vs external detection (`CGDisplayIsBuiltin`) rejected as the criterion: the menu bar height is the signal that matters.
+- 2026-11-12 — Keychain prompt loop fix approved (all three parts) and Story 20.5 started; Romain asked for parallel agents today since the weekly quota resets tonight.
 - 2026-11-08 — Romain ran the privacy probe with Google Meet in Brave (entire screen): shipped patterns matched nothing; raw window dump shows a layer-25 browser banner only while sharing. Recorded in the spike; Automatic detection queued as a 21.3 follow-up.
 - 2026-11-08 — Romain, after the first live session: Finder drag → drop display works (Stash, zones, focus kept). Rulings: Home return gets a configurable cooldown incl. never (Story 11.4, `[general] home_after`); Esc-during-drag re-open defect queued.
 - 2026-11-08 — Romain verified Warp deep-link focus live: window, tab and pane all focus correctly → spike 1.5 decision (a); `WarpAdapter.decision = .tabViaURL` stays.
