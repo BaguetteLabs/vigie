@@ -842,6 +842,13 @@ update_checks = true          # scripts installed from a link, at most once a da
 enabled = true
 priority = 5
 repo = "me/project"
+
+# local (local.toml only; a [scripts] table in config.toml confirms nothing): per-Mac script confirmations (§9.2,
+# Story 12.3), keyed by the file's path relative to the config folder, SHA-256 of the file bytes
+[scripts.confirmations."modules/github.md"]
+sha256 = "9f2c…"              # lowercase hex; any other bytes are awaiting confirmation again
+[scripts.declined."modules/other.md"]
+sha256 = "41ab…"              # declined on this Mac only; a byte change asks again
 ```
 
 ### 11.1 Sync and secrets
