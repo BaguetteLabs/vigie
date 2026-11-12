@@ -178,3 +178,33 @@ Settings › Scripts (Story 12.6, UX-DR74) is the module's pane (`settingsView()
   field stays blank, shows "Stored" once set, and offers Set and Clear. Secrets must be entered on each Mac.
 - **Footer:** "More examples in the Script repository" (SPEC §9.6, A84: `vigie-scripts` under the releases owner).
   The owner is still the `OWNER` placeholder (A49), so `ScriptRepository.url` is nil and the text shows disabled.
+## Surfaces
+
+Story 12.5 (AD-18, SPEC §7.4, DESIGN "Script widget" and "Side-slot item").
+
+- **One module per script:** after every scan and every confirmation change, each file that parsed and is not
+  declined on this Mac becomes a `ScriptModule` (manifest from the front matter: `id`, `name`, `icon`), registered
+  through `context.host.registerDynamicModule`. A file awaiting confirmation is registered too (its surfaces show
+  `NOT CONFIRMED`) but never runs. Removal, a parse error or a decline cancels the registration token; a
+  front-matter change re-registers the module; a code or documentation change keeps it. Registration does not
+  depend on `enabled`. VigieCore's `ModuleRegistry.registerDynamic` lists the module right after `integrations`,
+  so arbitration, Home, the tabs and Settings › Home see it like a built-in; it goes away when `integrations` stops.
+- **State** (arbitration): awaiting confirmation or not run yet → `ambient`; a good run → the output's `state`; a
+  failed run → the last good output's `state`, at least `ambient`.
+- **`home`:** the script card (VigieUI `ScriptCard`, `components.script-card`, 222 × 138): `NAME · TARGET` and
+  `EVERY 1M`; status = 26 px glyph, level (`OK · <detail>`) over the value, `CHECKED <n> MIN AGO` or
+  `DOWN SINCE <time>`; number = numeral and label, the segmented bar (5 segments, the last outlined in the
+  quota-warning yellow), the detail, `UPDATED <n> MIN AGO`; text = label (`TEXT` without one) over the value,
+  `UPDATED <n> MIN AGO`. A status widget's `label` is its target. After a failure the last good output stays with
+  the WARN triangle and the failure (`EXIT 3`) on the meta line.
+- **`side`:** one left-wing item (`script`) with the front matter's `priority` (default 5): 16 px glyph and level
+  over the target (status), or value over label (number, text). VoiceOver: "<name>, <level>". Clicking the closed
+  notch opens Home as always (EXPERIENCE).
+- **`page`:** a tab named after the script; its body is a placeholder until Story 12.11.
+- **Actions** (a click on the widget body, confirmed scripts only, on the last good output): `open` →
+  `NSWorkspace.open`; `copy` → `context.clipboard`; `run` → `ScriptRunner.run(argv:for:)`: `argv[0]` resolved
+  through `context.executables` (an absolute path as is), same environment, working directory, timeout and
+  process-group rules as the script's runs, recorded in its runs with `action` set and outcome `EXIT <code>`; the
+  widget keeps its output. `NOT CONFIRMED` opens the Script Confirmation (`openConfirmation(for:)`).
+- **Privacy mode** (AD-24): every script-provided string (target, values of status and text widgets, labels,
+  details) renders as the fixed-width dots, with no opt-out; levels, numbers and the script's name stay.
