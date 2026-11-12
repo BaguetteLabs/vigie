@@ -226,7 +226,7 @@ Story 12.5 (AD-18, SPEC §7.4, DESIGN "Script widget" and "Side-slot item").
 - **`side`:** one left-wing item (`script`) with the front matter's `priority` (default 5): 16 px glyph and level
   over the target (status), or value over label (number, text). VoiceOver: "<name>, <level>". Clicking the closed
   notch opens Home as always (EXPERIENCE).
-- **`page`:** a tab named after the script; its body is a placeholder until Story 12.11.
+- **`page`:** a tab named after the script holding the script page (see Page below).
 - **Actions** (a click on the widget body, confirmed scripts only, on the last good output): `open` →
   `NSWorkspace.open`; `copy` → `context.clipboard`; `run` → `ScriptRunner.run(argv:for:)`: `argv[0]` resolved
   through `context.executables` (an absolute path as is), same environment, working directory, timeout and
@@ -234,3 +234,31 @@ Story 12.5 (AD-18, SPEC §7.4, DESIGN "Script widget" and "Side-slot item").
   widget keeps its output. `NOT CONFIRMED` opens the Script Confirmation (`openConfirmation(for:)`).
 - **Privacy mode** (AD-24): every script-provided string (target, values of status and text widgets, labels,
   details) renders as the fixed-width dots, with no opt-out; levels, numbers and the script's name stay.
+
+## Page
+
+Story 12.11 (DESIGN "Script page", UX-DR86, UX-DR87, AD-18). A script whose `surfaces` include `page` gets a tab
+whose body is VigieUI `ScriptPage`, fed a `ScriptPageModel` built by `ScriptSurfaces.page(_:definition:)`.
+
+- **Layout:** the `components.script-page` grid (`1fr 212px` × `118px 1fr`, read from the theme by
+  `ScriptPageMetrics.grid`). Hero across the top (118 px): the Home card's model at full width, header
+  `NAME · TARGET` / `STATUS WIDGET · EVERY 1M`. Left: the documentation, `ABOUT` / `FROM <file>`, rendered in the
+  island's prose style (headings and paragraphs with inline Markdown, the parser of the Script Confirmation).
+  Right (212 px): `RUNS` with the runtime, `LAST RUN` (time, `exit 0 · 0.4 s`), `NEXT RUN` (time, `in 38 s ·
+  every 1 m`, a live countdown; `RUNNING` during a run), `TIMEOUT` (`min(interval, 30 s)`), `SOURCE` (file name,
+  folder), the runs list (time, duration, `OK` / `EXIT 3` / `TIMED OUT · 30S` / the runner's failure label; widget
+  `run` actions are not listed), then the `REVEAL` and `OPEN SOURCE` chips.
+- **Hero states:** `NOT CONFIRMED` (ink-3, no glyph; click, `↵` or Space opens the Script Confirmation),
+  `WAITING · FIRST RUN`, the output, the last good output with the WARN badge after a failure, the failure label
+  when there is no good output. An output with an `action` runs it from the hero.
+- **Live:** the tab view reads `ScriptModule.pageModel`, which reads the runner's observable `states` and the
+  confirmation records, so it re-renders as runs complete; the countdown ticks every second.
+- **Keyboard:** Tab moves hero → About → runs list → `REVEAL` → `OPEN SOURCE` (`ScriptPageFocus.order`, the
+  layout order); each stop is focusable, draws the selection ring, and `↵` / Space activates the hero and chips.
+  Tests check the stops' order in the accessibility tree; the real Tab traversal is a manual check in the app.
+- **VoiceOver:** the hero reads "<name>, <level>, <qualifier>, <values…>, checked <n> minutes ago" (e.g. "vigie.app,
+  OK, up, 200, 142 ms, checked 2 minutes ago"); each run row reads time, duration, result.
+- **Actions:** `REVEAL` → `surfaces.revealInFinder` (`NSWorkspace.activateFileViewerSelecting`); `OPEN SOURCE` →
+  `surfaces.openFile` (`NSWorkspace.open`, the default app for the file's type). Tests replace both seams.
+- **Privacy mode** (AD-24): hero script text and the documentation render as dots, no opt-out; run times,
+  durations, exit codes, the runtime and the file name stay.

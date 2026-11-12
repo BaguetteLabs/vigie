@@ -337,30 +337,6 @@
         }
       }
     },
-    "script.page.placeholder.label": {
-      "comment": "Tab of a script that declares a page, until the page layout ships (Story 12.11). Uppercase.",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "SCRIPT PAGE"
-          }
-        }
-      }
-    },
-    "script.page.placeholder.sentence": {
-      "comment": "Tab of a script that declares a page, until the page layout ships (Story 12.11).",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "This script's page arrives in a later version. Its widget shows on Home."
-          }
-        }
-      }
-    },
     "script.parse.builtin_id": {
       "comment": "Script parse error. %@ = the script id, equal to a built-in module id.",
       "extractionState": "manual",
