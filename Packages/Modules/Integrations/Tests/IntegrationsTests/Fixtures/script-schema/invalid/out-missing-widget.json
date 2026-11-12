@@ -1,0 +1,8 @@
+{
+  "description": "widget is required.",
+  "kind": "output",
+  "document": {
+    "state": "active"
+  },
+  "error": "widget"
+}

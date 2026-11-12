@@ -1,0 +1,13 @@
+{
+  "description": "icon is an SF Symbol name.",
+  "kind": "front-matter",
+  "document": {
+    "id": "dev.minimal",
+    "name": "Minimal",
+    "interval": "5m",
+    "runtime": "bash",
+    "widget": "text",
+    "icon": "Arrow Up"
+  },
+  "error": "icon"
+}

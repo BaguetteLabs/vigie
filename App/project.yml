@@ -27,6 +27,8 @@ packages:
     path: ../Packages/Modules/Shelf
   Time:
     path: ../Packages/Modules/Time
+  Integrations:
+    path: ../Packages/Modules/Integrations
   ClaudeAdapter:
     path: ../Packages/Adapters/Claude
   GenericTerminal:
@@ -81,6 +83,7 @@ targets:
       - package: AgentsUsage
       - package: Shelf
       - package: Time
+      - package: Integrations
       - package: ClaudeAdapter
       - package: GenericTerminal
       - package: TerminalAppTerminal

@@ -1,0 +1,12 @@
+{
+  "description": "A bare number is not a duration.",
+  "kind": "front-matter",
+  "document": {
+    "id": "dev.minimal",
+    "name": "Minimal",
+    "interval": "5",
+    "runtime": "bash",
+    "widget": "text"
+  },
+  "error": "interval"
+}

@@ -1,0 +1,134 @@
+{
+  "description": "Every setting type with every key it accepts.",
+  "kind": "front-matter",
+  "document": {
+    "schema": 1,
+    "id": "site-status",
+    "name": "Site status",
+    "icon": "globe",
+    "interval": "1m",
+    "runtime": "bash",
+    "widget": "status",
+    "surfaces": [
+      "side",
+      "page"
+    ],
+    "priority": -1,
+    "settings": [
+      {
+        "key": "verbose",
+        "type": "bool",
+        "label": "Verbose",
+        "help": "Log every request.",
+        "default": true
+      },
+      {
+        "key": "quiet",
+        "type": "bool",
+        "label": "Quiet"
+      },
+      {
+        "key": "retries",
+        "type": "int",
+        "label": "Retries",
+        "help": "Help.",
+        "default": 2,
+        "min": 0,
+        "max": 5,
+        "step": 1
+      },
+      {
+        "key": "count",
+        "type": "int",
+        "label": "Count"
+      },
+      {
+        "key": "threshold",
+        "type": "double",
+        "label": "Threshold",
+        "help": "Help.",
+        "default": 0.5,
+        "min": 0,
+        "max": 1.5,
+        "step": 0.1
+      },
+      {
+        "key": "ratio",
+        "type": "double",
+        "label": "Ratio",
+        "default": 2
+      },
+      {
+        "key": "url",
+        "type": "string",
+        "label": "URL",
+        "help": "Help.",
+        "default": "https://vigie.app"
+      },
+      {
+        "key": "api_key",
+        "type": "secret",
+        "label": "API key",
+        "help": "Stored in the Keychain."
+      },
+      {
+        "key": "method",
+        "type": "enum",
+        "label": "Method",
+        "help": "Help.",
+        "options": [
+          "GET",
+          "HEAD"
+        ],
+        "default": "HEAD"
+      },
+      {
+        "key": "timeout",
+        "type": "duration",
+        "label": "Request timeout",
+        "help": "Help.",
+        "default": "10s"
+      },
+      {
+        "key": "grace",
+        "type": "duration",
+        "label": "Grace",
+        "default": "0s"
+      },
+      {
+        "key": "log_file",
+        "type": "path",
+        "label": "Log file",
+        "help": "Help.",
+        "default": "~/Library/Logs/site.log"
+      },
+      {
+        "key": "cert",
+        "type": "path",
+        "label": "Certificate"
+      },
+      {
+        "key": "hosts",
+        "type": "list",
+        "label": "Hosts",
+        "help": "Help.",
+        "of": "string",
+        "default": [
+          "vigie.app",
+          "example.com"
+        ]
+      },
+      {
+        "key": "watch_dirs",
+        "type": "list",
+        "label": "Folders",
+        "of": "path"
+      },
+      {
+        "key": "tags",
+        "type": "list",
+        "label": "Tags"
+      }
+    ]
+  }
+}

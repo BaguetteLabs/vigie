@@ -1,0 +1,10 @@
+{
+  "description": "widget.type is required.",
+  "kind": "output",
+  "document": {
+    "widget": {
+      "value": "3"
+    }
+  },
+  "error": "widget.type"
+}

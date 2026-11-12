@@ -1,0 +1,14 @@
+{
+  "description": "open has no whitespace.",
+  "kind": "output",
+  "document": {
+    "widget": {
+      "type": "status",
+      "level": "ok"
+    },
+    "action": {
+      "open": "https://a.b/c d"
+    }
+  },
+  "error": "action.open"
+}

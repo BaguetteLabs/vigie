@@ -1,0 +1,12 @@
+{
+  "description": "States are hidden, ambient, active, alert.",
+  "kind": "output",
+  "document": {
+    "state": "urgent",
+    "widget": {
+      "type": "status",
+      "level": "ok"
+    }
+  },
+  "error": "state"
+}

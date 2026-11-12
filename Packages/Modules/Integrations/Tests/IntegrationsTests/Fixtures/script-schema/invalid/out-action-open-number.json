@@ -1,0 +1,14 @@
+{
+  "description": "open is a string.",
+  "kind": "output",
+  "document": {
+    "widget": {
+      "type": "status",
+      "level": "ok"
+    },
+    "action": {
+      "open": 1
+    }
+  },
+  "error": "action.open"
+}

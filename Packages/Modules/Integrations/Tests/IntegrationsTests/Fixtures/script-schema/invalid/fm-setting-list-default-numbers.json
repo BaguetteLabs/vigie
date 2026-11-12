@@ -1,0 +1,23 @@
+{
+  "description": "A list default holds strings.",
+  "kind": "front-matter",
+  "document": {
+    "id": "dev.minimal",
+    "name": "Minimal",
+    "interval": "5m",
+    "runtime": "bash",
+    "widget": "text",
+    "settings": [
+      {
+        "label": "Label",
+        "key": "a",
+        "type": "list",
+        "default": [
+          1,
+          2
+        ]
+      }
+    ]
+  },
+  "error": "settings[0].default[0]"
+}

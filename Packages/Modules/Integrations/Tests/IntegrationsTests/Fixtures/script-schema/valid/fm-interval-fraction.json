@@ -1,0 +1,11 @@
+{
+  "description": "Interval 1.5m follows the config duration grammar.",
+  "kind": "front-matter",
+  "document": {
+    "id": "dev.minimal",
+    "name": "Minimal",
+    "interval": "1.5m",
+    "runtime": "bash",
+    "widget": "text"
+  }
+}

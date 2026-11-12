@@ -1,0 +1,11 @@
+{
+  "description": "A runtime name with dots, plus and dashes.",
+  "kind": "front-matter",
+  "document": {
+    "id": "dev.minimal",
+    "name": "Minimal",
+    "interval": "5m",
+    "runtime": "python3.12-c++",
+    "widget": "text"
+  }
+}

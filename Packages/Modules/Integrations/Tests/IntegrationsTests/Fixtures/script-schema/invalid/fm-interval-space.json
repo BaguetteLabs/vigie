@@ -1,0 +1,12 @@
+{
+  "description": "No spaces between parts.",
+  "kind": "front-matter",
+  "document": {
+    "id": "dev.minimal",
+    "name": "Minimal",
+    "interval": "1h 30m",
+    "runtime": "bash",
+    "widget": "text"
+  },
+  "error": "interval"
+}

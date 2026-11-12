@@ -1,0 +1,11 @@
+{
+  "description": "widget is required.",
+  "kind": "front-matter",
+  "document": {
+    "id": "dev.minimal",
+    "name": "Minimal",
+    "interval": "5m",
+    "runtime": "bash"
+  },
+  "error": "widget"
+}

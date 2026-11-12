@@ -1,0 +1,15 @@
+{
+  "description": "A setting is an object.",
+  "kind": "front-matter",
+  "document": {
+    "id": "dev.minimal",
+    "name": "Minimal",
+    "interval": "5m",
+    "runtime": "bash",
+    "widget": "text",
+    "settings": [
+      "token"
+    ]
+  },
+  "error": "settings[0]"
+}

@@ -1,0 +1,12 @@
+{
+  "description": "action is an object.",
+  "kind": "output",
+  "document": {
+    "widget": {
+      "type": "status",
+      "level": "ok"
+    },
+    "action": "https://a.b"
+  },
+  "error": "action"
+}

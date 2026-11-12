@@ -1,0 +1,13 @@
+{
+  "description": "open accepts any URL scheme.",
+  "kind": "output",
+  "document": {
+    "widget": {
+      "type": "status",
+      "level": "warn"
+    },
+    "action": {
+      "open": "x-github-client://openRepo/me/project"
+    }
+  }
+}

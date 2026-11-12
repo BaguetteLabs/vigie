@@ -1,0 +1,330 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "integrations.module.name" : {
+      "comment" : "Module name of the script modules runtime (Settings, module list).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Integrations"
+          }
+        }
+      }
+    },
+    "script.error.action_count" : {
+      "comment" : "Script schema error. %@ = key path of the action.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@: needs exactly one of open, run or copy."
+          }
+        }
+      }
+    },
+    "script.error.document" : {
+      "comment" : "Script schema error: names the whole document when the problem is not one key.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "the document"
+          }
+        }
+      }
+    },
+    "script.error.duplicate" : {
+      "comment" : "Script schema error. %1$@ = key path, %2$@ = the repeated value.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@: “%2$@” is listed twice."
+          }
+        }
+      }
+    },
+    "script.error.empty" : {
+      "comment" : "Script schema error. %@ = key path.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@: must not be empty."
+          }
+        }
+      }
+    },
+    "script.error.invalid_format" : {
+      "comment" : "Script schema error. %1$@ = key path, %2$@ = the value, %3$@ = expected format (script.format.*).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@: “%2$@” is not %3$@."
+          }
+        }
+      }
+    },
+    "script.error.missing_key" : {
+      "comment" : "Script schema error. %@ = key path, e.g. settings[1].label.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@: required key is missing."
+          }
+        }
+      }
+    },
+    "script.error.not_positive" : {
+      "comment" : "Script schema error. %@ = key path.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@: must be greater than zero."
+          }
+        }
+      }
+    },
+    "script.error.reserved_key" : {
+      "comment" : "Script schema error. %1$@ = key path, %2$@ = the reserved setting key.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@: “%2$@” is reserved by Vigie (enabled, side, priority, surfaces, notify)."
+          }
+        }
+      }
+    },
+    "script.error.unknown_key" : {
+      "comment" : "Script schema error. %@ = key path.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@: unknown key."
+          }
+        }
+      }
+    },
+    "script.error.unknown_value" : {
+      "comment" : "Script schema error. %1$@ = key path, %2$@ = the value, %3$@ = accepted values.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@: unknown value “%2$@” (expected one of: %3$@)."
+          }
+        }
+      }
+    },
+    "script.error.unsupported_schema" : {
+      "comment" : "Script schema error. %1$@ = key path, %2$lld = version in the file, %3$lld = newest supported version.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@: schema version %2$lld is not supported by this version of Vigie (it reads up to %3$lld)."
+          }
+        }
+      }
+    },
+    "script.error.wrong_type" : {
+      "comment" : "Script schema error. %1$@ = key path, %2$@ = expected kind (script.kind.*).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@: expected %2$@."
+          }
+        }
+      }
+    },
+    "script.format.duration" : {
+      "comment" : "Expected format in a script schema error.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "a duration such as 30s, 5m or 1h30m"
+          }
+        }
+      }
+    },
+    "script.format.icon" : {
+      "comment" : "Expected format in a script schema error.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "an SF Symbol name such as arrow.triangle.pull"
+          }
+        }
+      }
+    },
+    "script.format.interval" : {
+      "comment" : "Expected format in a script schema error.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "a duration above zero such as 30s, 5m or 1h30m"
+          }
+        }
+      }
+    },
+    "script.format.moduleID" : {
+      "comment" : "Expected format in a script schema error.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "a valid id (lowercase and dotted, e.g. github.prs)"
+          }
+        }
+      }
+    },
+    "script.format.runtime" : {
+      "comment" : "Expected format in a script schema error.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "an executable name such as bash or python3"
+          }
+        }
+      }
+    },
+    "script.format.settingKey" : {
+      "comment" : "Expected format in a script schema error.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "a snake_case key"
+          }
+        }
+      }
+    },
+    "script.format.url" : {
+      "comment" : "Expected format in a script schema error.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "a URL with a scheme such as https://"
+          }
+        }
+      }
+    },
+    "script.kind.array" : {
+      "comment" : "Expected kind in a script schema error.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "a list"
+          }
+        }
+      }
+    },
+    "script.kind.boolean" : {
+      "comment" : "Expected kind in a script schema error.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "true or false"
+          }
+        }
+      }
+    },
+    "script.kind.integer" : {
+      "comment" : "Expected kind in a script schema error.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "a whole number"
+          }
+        }
+      }
+    },
+    "script.kind.number" : {
+      "comment" : "Expected kind in a script schema error.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "a number"
+          }
+        }
+      }
+    },
+    "script.kind.object" : {
+      "comment" : "Expected kind in a script schema error.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "an object"
+          }
+        }
+      }
+    },
+    "script.kind.string" : {
+      "comment" : "Expected kind in a script schema error.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "a string"
+          }
+        }
+      }
+    },
+    "script.kind.stringOrNumber" : {
+      "comment" : "Expected kind in a script schema error.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "a string or a number"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

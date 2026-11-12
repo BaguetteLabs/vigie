@@ -1,0 +1,11 @@
+{
+  "description": "null is not a value.",
+  "kind": "output",
+  "document": {
+    "widget": {
+      "type": "number",
+      "value": null
+    }
+  },
+  "error": "widget.value"
+}

@@ -1,0 +1,390 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vigie.app/schemas/script-module.schema.json",
+  "title": "Vigie script module",
+  "description": "Script modules (SPEC §9, AD-18), schema version 1. A script module is a Markdown file whose YAML front matter is described by #/$defs/frontMatter; each run prints one JSON document to stdout described by #/$defs/output. Front matter is strict (an unknown key is an error, so a typo never silently falls back to a default); output is tolerant (unknown keys are ignored, so a script may print extra fields). Validated without a JSON Schema library: Vigie decodes both with Swift Codable types, and Scripts/check-script-schema.sh checks that this file and those types accept and reject the same sample documents.",
+  "oneOf": [
+    { "$ref": "#/$defs/frontMatter" },
+    { "$ref": "#/$defs/output" }
+  ],
+  "$defs": {
+    "schemaVersion": {
+      "title": "Schema version",
+      "description": "Version of this schema the document is written for. Defaults to 1. Bumped on every breaking change; a document with a version this Vigie does not support is rejected with an error naming the version.",
+      "type": "integer",
+      "enum": [1],
+      "default": 1
+    },
+    "duration": {
+      "title": "Duration",
+      "description": "Same grammar as durations in config.toml: one or more <number><unit> parts with no spaces, units ms, s, m, h, d (e.g. 30s, 5m, 1h30m, 7d). A bare number is not a duration.",
+      "type": "string",
+      "pattern": "^(([0-9]+(\\.[0-9]*)?|\\.[0-9]+)(ms|s|m|h|d))+$"
+    },
+    "interval": {
+      "title": "Interval",
+      "description": "A duration (#/$defs/duration) greater than zero.",
+      "type": "string",
+      "pattern": "^(?=.*[1-9])(([0-9]+(\\.[0-9]*)?|\\.[0-9]+)(ms|s|m|h|d))+$"
+    },
+    "frontMatter": {
+      "title": "Front matter",
+      "description": "The YAML front matter of a script module file. Unknown keys are rejected.",
+      "type": "object",
+      "required": ["id", "name", "interval", "runtime", "widget"],
+      "additionalProperties": false,
+      "properties": {
+        "schema": { "$ref": "#/$defs/schemaVersion" },
+        "id": {
+          "title": "Module id",
+          "description": "Lowercase dotted id, stable forever (e.g. github.prs): each dot-separated segment starts with a lowercase letter and holds lowercase letters, digits, _ or -. It must not equal a built-in module id, start with agents., or be declared by another script (checked by Vigie when it loads the scripts folder, not by this schema).",
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]*(\\.[a-z][a-z0-9_-]*)*$"
+        },
+        "name": {
+          "title": "Name",
+          "description": "Display name: the tab title, the widget header and the Settings entry.",
+          "type": "string",
+          "minLength": 1
+        },
+        "icon": {
+          "title": "Icon",
+          "description": "SF Symbol name, e.g. arrow.triangle.pull.",
+          "type": "string",
+          "pattern": "^[a-z0-9]+(\\.[a-z0-9]+)*$",
+          "default": "terminal"
+        },
+        "interval": {
+          "$ref": "#/$defs/interval",
+          "description": "How often the script runs, besides once at startup and on Refresh. The run timeout is min(interval, 30s)."
+        },
+        "runtime": {
+          "title": "Runtime",
+          "description": "Name of the executable that runs the code block (e.g. bash, sh, zsh, python3, node, ruby, osascript), resolved from the login-shell PATH or a per-runtime override in local.toml. A bare name: no path, no spaces, no arguments.",
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._+-]*$"
+        },
+        "widget": {
+          "title": "Widget type",
+          "description": "The widget the script's output fills: status (a level, OK / WARN / DOWN), number (a big numeral) or text (short text). The output's widget.type must be the same.",
+          "type": "string",
+          "enum": ["status", "number", "text"]
+        },
+        "surfaces": {
+          "title": "Surfaces",
+          "description": "Where the widget shows: home (Home card), side (an item on the closed notch's left-wing lane; there is no per-script side setting, the right wing is sessions only) and page (its own tab). Host-owned: [modules.\"<id>\"] surfaces in config overrides it.",
+          "type": "array",
+          "items": { "type": "string", "enum": ["home", "side", "page"] },
+          "minItems": 1,
+          "uniqueItems": true,
+          "default": ["home"]
+        },
+        "priority": {
+          "title": "Priority",
+          "description": "Priority of the side item on the left-wing lane (lower is shown first). Host-owned: [modules.\"<id>\"] priority in config overrides it. Omitted: the host's default.",
+          "type": "integer"
+        },
+        "settings": {
+          "title": "Settings",
+          "description": "Settings the user edits in Settings › Scripts; each is passed to the script as the environment variable VIGIE_SETTING_<KEY> (key in upper case).",
+          "type": "array",
+          "items": { "$ref": "#/$defs/setting" },
+          "default": []
+        }
+      }
+    },
+    "settingKey": {
+      "title": "Setting key",
+      "description": "snake_case key, unique in the file. Host-owned keys (enabled, side, priority, surfaces, notify) are reserved.",
+      "type": "string",
+      "pattern": "^(?!(enabled|side|priority|surfaces|notify)$)[a-z][a-z0-9_]*$"
+    },
+    "settingLabel": {
+      "title": "Label",
+      "description": "Label of the generated control.",
+      "type": "string",
+      "minLength": 1
+    },
+    "settingHelp": {
+      "title": "Help",
+      "description": "Optional help line under the control.",
+      "type": "string"
+    },
+    "setting": {
+      "title": "Setting",
+      "description": "One declared setting (SPEC §4.4 types, without hotkey). Unknown keys are rejected.",
+      "type": "object",
+      "oneOf": [
+        { "$ref": "#/$defs/settingBool" },
+        { "$ref": "#/$defs/settingInt" },
+        { "$ref": "#/$defs/settingDouble" },
+        { "$ref": "#/$defs/settingString" },
+        { "$ref": "#/$defs/settingSecret" },
+        { "$ref": "#/$defs/settingEnum" },
+        { "$ref": "#/$defs/settingDuration" },
+        { "$ref": "#/$defs/settingPath" },
+        { "$ref": "#/$defs/settingList" }
+      ]
+    },
+    "settingBool": {
+      "title": "bool setting",
+      "type": "object",
+      "required": ["key", "type", "label"],
+      "additionalProperties": false,
+      "properties": {
+        "key": { "$ref": "#/$defs/settingKey" },
+        "type": { "const": "bool", "description": "A switch; passed as true or false." },
+        "label": { "$ref": "#/$defs/settingLabel" },
+        "help": { "$ref": "#/$defs/settingHelp" },
+        "default": { "type": "boolean", "default": false, "description": "Default value; false when omitted." }
+      }
+    },
+    "settingInt": {
+      "title": "int setting",
+      "type": "object",
+      "required": ["key", "type", "label"],
+      "additionalProperties": false,
+      "properties": {
+        "key": { "$ref": "#/$defs/settingKey" },
+        "type": { "const": "int", "description": "A whole number." },
+        "label": { "$ref": "#/$defs/settingLabel" },
+        "help": { "$ref": "#/$defs/settingHelp" },
+        "default": { "type": "integer", "default": 0, "description": "Default value; 0 when omitted." },
+        "min": { "type": "integer", "description": "Smallest accepted value." },
+        "max": { "type": "integer", "description": "Largest accepted value." },
+        "step": { "type": "integer", "minimum": 1, "description": "Stepper increment." }
+      }
+    },
+    "settingDouble": {
+      "title": "double setting",
+      "type": "object",
+      "required": ["key", "type", "label"],
+      "additionalProperties": false,
+      "properties": {
+        "key": { "$ref": "#/$defs/settingKey" },
+        "type": { "const": "double", "description": "A decimal number." },
+        "label": { "$ref": "#/$defs/settingLabel" },
+        "help": { "$ref": "#/$defs/settingHelp" },
+        "default": { "type": "number", "default": 0, "description": "Default value; 0 when omitted." },
+        "min": { "type": "number", "description": "Smallest accepted value." },
+        "max": { "type": "number", "description": "Largest accepted value." },
+        "step": { "type": "number", "exclusiveMinimum": 0, "description": "Stepper increment." }
+      }
+    },
+    "settingString": {
+      "title": "string setting",
+      "type": "object",
+      "required": ["key", "type", "label"],
+      "additionalProperties": false,
+      "properties": {
+        "key": { "$ref": "#/$defs/settingKey" },
+        "type": { "const": "string", "description": "One line of text." },
+        "label": { "$ref": "#/$defs/settingLabel" },
+        "help": { "$ref": "#/$defs/settingHelp" },
+        "default": { "type": "string", "default": "", "description": "Default value; empty when omitted." }
+      }
+    },
+    "settingSecret": {
+      "title": "secret setting",
+      "type": "object",
+      "required": ["key", "type", "label"],
+      "additionalProperties": false,
+      "properties": {
+        "key": { "$ref": "#/$defs/settingKey" },
+        "type": {
+          "const": "secret",
+          "description": "Entered on each Mac and kept only in the Keychain, never in a file, never synced; read at run time and injected only into the script's environment. Has no default."
+        },
+        "label": { "$ref": "#/$defs/settingLabel" },
+        "help": { "$ref": "#/$defs/settingHelp" }
+      }
+    },
+    "settingEnum": {
+      "title": "enum setting",
+      "type": "object",
+      "required": ["key", "type", "label", "options", "default"],
+      "additionalProperties": false,
+      "properties": {
+        "key": { "$ref": "#/$defs/settingKey" },
+        "type": { "const": "enum", "description": "One of a fixed list of options." },
+        "label": { "$ref": "#/$defs/settingLabel" },
+        "help": { "$ref": "#/$defs/settingHelp" },
+        "options": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1,
+          "uniqueItems": true,
+          "description": "The accepted values, in display order."
+        },
+        "default": { "type": "string", "description": "Default value, one of options." }
+      }
+    },
+    "settingDuration": {
+      "title": "duration setting",
+      "type": "object",
+      "required": ["key", "type", "label", "default"],
+      "additionalProperties": false,
+      "properties": {
+        "key": { "$ref": "#/$defs/settingKey" },
+        "type": { "const": "duration", "description": "A duration such as 5m; passed as written." },
+        "label": { "$ref": "#/$defs/settingLabel" },
+        "help": { "$ref": "#/$defs/settingHelp" },
+        "default": { "$ref": "#/$defs/duration", "description": "Default value." }
+      }
+    },
+    "settingPath": {
+      "title": "path setting",
+      "type": "object",
+      "required": ["key", "type", "label"],
+      "additionalProperties": false,
+      "properties": {
+        "key": { "$ref": "#/$defs/settingKey" },
+        "type": { "const": "path", "description": "A file or folder path (may start with ~)." },
+        "label": { "$ref": "#/$defs/settingLabel" },
+        "help": { "$ref": "#/$defs/settingHelp" },
+        "default": { "type": "string", "description": "Default path; none when omitted." }
+      }
+    },
+    "settingList": {
+      "title": "list setting",
+      "type": "object",
+      "required": ["key", "type", "label"],
+      "additionalProperties": false,
+      "properties": {
+        "key": { "$ref": "#/$defs/settingKey" },
+        "type": { "const": "list", "description": "A list of strings or paths." },
+        "label": { "$ref": "#/$defs/settingLabel" },
+        "help": { "$ref": "#/$defs/settingHelp" },
+        "of": { "type": "string", "enum": ["string", "path"], "default": "string", "description": "Element type." },
+        "default": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": [],
+          "description": "Default list; empty when omitted."
+        }
+      }
+    },
+    "output": {
+      "title": "Output",
+      "description": "The JSON document a run prints to stdout. Unknown keys are ignored.",
+      "type": "object",
+      "required": ["widget"],
+      "additionalProperties": true,
+      "properties": {
+        "schema": { "$ref": "#/$defs/schemaVersion" },
+        "state": {
+          "title": "State",
+          "description": "The module's relevance for closed-notch arbitration. Defaults to ambient.",
+          "type": "string",
+          "enum": ["hidden", "ambient", "active", "alert"],
+          "default": "ambient"
+        },
+        "widget": { "$ref": "#/$defs/widget" },
+        "action": { "$ref": "#/$defs/action" },
+        "notify": {
+          "title": "Notify (ignored in v1)",
+          "description": "Reserved for script-raised alerts, deferred after v1. Accepted with any value and ignored."
+        }
+      }
+    },
+    "level": {
+      "title": "Level",
+      "description": "Shared status vocabulary: ok → OK (ring), warn → WARN (triangle), error → DOWN (cross).",
+      "type": "string",
+      "enum": ["ok", "warn", "error"]
+    },
+    "widgetText": {
+      "description": "Display text: a string, or a number shown as printed.",
+      "type": ["string", "number"]
+    },
+    "widget": {
+      "title": "Widget",
+      "description": "Rendered by Vigie's templates on every surface the script enables. type must match the front matter widget. Unknown keys are ignored.",
+      "type": "object",
+      "oneOf": [
+        { "$ref": "#/$defs/widgetStatus" },
+        { "$ref": "#/$defs/widgetNumber" },
+        { "$ref": "#/$defs/widgetTextType" }
+      ]
+    },
+    "widgetStatus": {
+      "title": "status widget",
+      "type": "object",
+      "required": ["type", "level"],
+      "additionalProperties": true,
+      "properties": {
+        "type": { "const": "status" },
+        "level": { "$ref": "#/$defs/level" },
+        "value": { "$ref": "#/$defs/widgetText", "description": "Value line under the level, e.g. 200 · 142 ms." },
+        "label": { "type": "string", "description": "Target or qualifier, e.g. VIGIE.APP." },
+        "detail": { "type": "string", "description": "Secondary line." }
+      }
+    },
+    "widgetNumber": {
+      "title": "number widget",
+      "type": "object",
+      "required": ["type", "value"],
+      "additionalProperties": true,
+      "properties": {
+        "type": { "const": "number" },
+        "value": { "$ref": "#/$defs/widgetText", "description": "The numeral, e.g. 3." },
+        "label": { "type": "string", "description": "What is counted, e.g. OPEN PRS." },
+        "detail": { "type": "string", "description": "Secondary line, e.g. 2 awaiting review." },
+        "level": { "$ref": "#/$defs/level" }
+      }
+    },
+    "widgetTextType": {
+      "title": "text widget",
+      "type": "object",
+      "required": ["type", "value"],
+      "additionalProperties": true,
+      "properties": {
+        "type": { "const": "text" },
+        "value": { "$ref": "#/$defs/widgetText", "description": "The short text." },
+        "label": { "type": "string", "description": "Label over the text." },
+        "detail": { "type": "string", "description": "Secondary line." },
+        "level": { "$ref": "#/$defs/level" }
+      }
+    },
+    "action": {
+      "title": "Action",
+      "description": "What a click on the widget does: exactly one of open, run or copy. Unknown keys are ignored.",
+      "type": "object",
+      "oneOf": [
+        {
+          "title": "open",
+          "type": "object",
+          "required": ["open"],
+          "properties": {
+            "open": {
+              "type": "string",
+              "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\s]+$",
+              "description": "URL to open (any scheme, e.g. https://…)."
+            }
+          }
+        },
+        {
+          "title": "run",
+          "type": "object",
+          "required": ["run"],
+          "properties": {
+            "run": {
+              "type": "array",
+              "items": { "type": "string" },
+              "minItems": 1,
+              "description": "argv run by the script runner; the first item is resolved like runtime."
+            }
+          }
+        },
+        {
+          "title": "copy",
+          "type": "object",
+          "required": ["copy"],
+          "properties": {
+            "copy": { "type": "string", "description": "Text copied to the clipboard." }
+          }
+        }
+      ]
+    }
+  }
+}

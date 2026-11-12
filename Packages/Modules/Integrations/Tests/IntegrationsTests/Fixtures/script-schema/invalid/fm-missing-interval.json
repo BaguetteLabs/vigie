@@ -1,0 +1,11 @@
+{
+  "description": "interval is required.",
+  "kind": "front-matter",
+  "document": {
+    "id": "dev.minimal",
+    "name": "Minimal",
+    "runtime": "bash",
+    "widget": "text"
+  },
+  "error": "interval"
+}

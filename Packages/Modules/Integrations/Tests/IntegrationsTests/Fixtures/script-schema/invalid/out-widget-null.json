@@ -1,0 +1,8 @@
+{
+  "description": "null is not a widget.",
+  "kind": "output",
+  "document": {
+    "widget": null
+  },
+  "error": "widget"
+}

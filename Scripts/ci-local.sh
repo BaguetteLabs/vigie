@@ -49,6 +49,9 @@ echo "==> module-away guard"
 Scripts/check-module-away.sh
 Scripts/tests/module-away-test.sh
 
+echo "==> script schema"
+Scripts/check-script-schema.sh
+
 echo "==> services plist"
 Scripts/check-services-plist.sh
 

@@ -1,0 +1,14 @@
+{
+  "description": "copy is a string.",
+  "kind": "output",
+  "document": {
+    "widget": {
+      "type": "status",
+      "level": "ok"
+    },
+    "action": {
+      "copy": 7
+    }
+  },
+  "error": "action.copy"
+}

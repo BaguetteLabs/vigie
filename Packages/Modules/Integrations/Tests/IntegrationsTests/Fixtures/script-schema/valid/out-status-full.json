@@ -1,0 +1,23 @@
+{
+  "description": "Every widget key, a run action and an explicit schema.",
+  "kind": "output",
+  "document": {
+    "schema": 1,
+    "state": "alert",
+    "widget": {
+      "type": "status",
+      "level": "error",
+      "value": "503 · 1.2 s",
+      "label": "VIGIE.APP",
+      "detail": "since 14:44"
+    },
+    "action": {
+      "run": [
+        "open",
+        "-a",
+        "Safari",
+        "https://vigie.app"
+      ]
+    }
+  }
+}

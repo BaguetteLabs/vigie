@@ -1,0 +1,36 @@
+{
+  "description": "The SPEC §9.1 example (GitHub PRs).",
+  "kind": "front-matter",
+  "document": {
+    "id": "github.prs",
+    "name": "GitHub PRs",
+    "icon": "arrow.triangle.pull",
+    "interval": "5m",
+    "runtime": "python3",
+    "widget": "number",
+    "surfaces": [
+      "home",
+      "side",
+      "page"
+    ],
+    "priority": 5,
+    "settings": [
+      {
+        "key": "token",
+        "type": "secret",
+        "label": "GitHub token"
+      },
+      {
+        "key": "repo",
+        "type": "string",
+        "label": "Repository (owner/name)"
+      },
+      {
+        "key": "warn_at",
+        "type": "int",
+        "label": "Warn when open PRs ≥",
+        "default": 5
+      }
+    ]
+  }
+}

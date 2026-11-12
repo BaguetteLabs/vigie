@@ -1,0 +1,14 @@
+{
+  "description": "open is a URL with a scheme.",
+  "kind": "output",
+  "document": {
+    "widget": {
+      "type": "status",
+      "level": "ok"
+    },
+    "action": {
+      "open": "github.com/me"
+    }
+  },
+  "error": "action.open"
+}

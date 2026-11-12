@@ -1,0 +1,11 @@
+{
+  "description": "No list widget in v1.",
+  "kind": "output",
+  "document": {
+    "widget": {
+      "type": "list",
+      "value": "3"
+    }
+  },
+  "error": "widget.type"
+}

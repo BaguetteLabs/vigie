@@ -1,0 +1,9 @@
+{
+  "description": "Front matter is a mapping.",
+  "kind": "front-matter",
+  "document": [
+    "id",
+    "name"
+  ],
+  "error": "(document)"
+}

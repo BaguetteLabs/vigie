@@ -1,0 +1,12 @@
+{
+  "description": "A number value may be a JSON number.",
+  "kind": "output",
+  "document": {
+    "state": "ambient",
+    "widget": {
+      "type": "number",
+      "value": 42,
+      "level": "ok"
+    }
+  }
+}

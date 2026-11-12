@@ -1,0 +1,11 @@
+{
+  "description": "Levels are ok, warn, error.",
+  "kind": "output",
+  "document": {
+    "widget": {
+      "type": "status",
+      "level": "critical"
+    }
+  },
+  "error": "widget.level"
+}

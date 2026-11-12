@@ -1,0 +1,17 @@
+{
+  "description": "The SPEC §9.3 example: number widget with a level and an open action.",
+  "kind": "output",
+  "document": {
+    "state": "active",
+    "widget": {
+      "type": "number",
+      "value": "3",
+      "label": "OPEN PRS",
+      "detail": "2 awaiting review",
+      "level": "warn"
+    },
+    "action": {
+      "open": "https://github.com/me/project/pulls"
+    }
+  }
+}

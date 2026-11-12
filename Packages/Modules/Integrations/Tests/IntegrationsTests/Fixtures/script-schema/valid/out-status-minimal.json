@@ -1,0 +1,10 @@
+{
+  "description": "Only what a status widget needs: state ambient and schema 1 by default.",
+  "kind": "output",
+  "document": {
+    "widget": {
+      "type": "status",
+      "level": "ok"
+    }
+  }
+}

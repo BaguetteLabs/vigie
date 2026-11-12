@@ -1,0 +1,12 @@
+{
+  "description": "A text widget may carry a level.",
+  "kind": "output",
+  "document": {
+    "widget": {
+      "type": "text",
+      "value": "ok",
+      "level": "warn",
+      "detail": "d"
+    }
+  }
+}

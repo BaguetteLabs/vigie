@@ -1,0 +1,8 @@
+{
+  "description": "widget is an object.",
+  "kind": "output",
+  "document": {
+    "widget": "3"
+  },
+  "error": "widget"
+}

@@ -1,0 +1,15 @@
+{
+  "description": "Exactly one of open, run, copy.",
+  "kind": "output",
+  "document": {
+    "widget": {
+      "type": "status",
+      "level": "ok"
+    },
+    "action": {
+      "open": "https://a.b",
+      "copy": "x"
+    }
+  },
+  "error": "action"
+}

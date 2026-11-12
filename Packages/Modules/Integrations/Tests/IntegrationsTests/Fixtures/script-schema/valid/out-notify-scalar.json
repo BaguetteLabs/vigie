@@ -1,0 +1,11 @@
+{
+  "description": "notify accepts any value.",
+  "kind": "output",
+  "document": {
+    "widget": {
+      "type": "status",
+      "level": "ok"
+    },
+    "notify": "anything"
+  }
+}

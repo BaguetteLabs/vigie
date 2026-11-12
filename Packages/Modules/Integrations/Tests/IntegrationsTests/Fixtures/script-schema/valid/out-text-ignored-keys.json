@@ -1,0 +1,24 @@
+{
+  "description": "notify and unknown keys are ignored in v1; copy action.",
+  "kind": "output",
+  "document": {
+    "state": "hidden",
+    "widget": {
+      "type": "text",
+      "value": "Fri 14:00 · release/0.3",
+      "label": "NEXT RELEASE",
+      "unit": "x"
+    },
+    "action": {
+      "copy": "release/0.3",
+      "note": "ignored"
+    },
+    "notify": {
+      "title": "ignored"
+    },
+    "extra": [
+      1,
+      2
+    ]
+  }
+}

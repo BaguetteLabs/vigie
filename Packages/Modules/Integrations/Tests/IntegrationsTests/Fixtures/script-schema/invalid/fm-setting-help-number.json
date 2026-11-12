@@ -1,0 +1,20 @@
+{
+  "description": "help is a string.",
+  "kind": "front-matter",
+  "document": {
+    "id": "dev.minimal",
+    "name": "Minimal",
+    "interval": "5m",
+    "runtime": "bash",
+    "widget": "text",
+    "settings": [
+      {
+        "label": "Label",
+        "key": "a",
+        "type": "string",
+        "help": 1
+      }
+    ]
+  },
+  "error": "settings[0].help"
+}

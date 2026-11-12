@@ -1,0 +1,13 @@
+{
+  "description": "notify is not a front matter key.",
+  "kind": "front-matter",
+  "document": {
+    "id": "dev.minimal",
+    "name": "Minimal",
+    "interval": "5m",
+    "runtime": "bash",
+    "widget": "text",
+    "notify": true
+  },
+  "error": "notify"
+}

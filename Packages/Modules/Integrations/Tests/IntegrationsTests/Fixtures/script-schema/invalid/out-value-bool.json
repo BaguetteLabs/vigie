@@ -1,0 +1,11 @@
+{
+  "description": "value is a string or a number.",
+  "kind": "output",
+  "document": {
+    "widget": {
+      "type": "number",
+      "value": true
+    }
+  },
+  "error": "widget.value"
+}

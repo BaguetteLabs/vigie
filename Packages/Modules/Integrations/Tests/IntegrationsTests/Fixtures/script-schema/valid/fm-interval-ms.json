@@ -1,0 +1,11 @@
+{
+  "description": "Interval 500ms follows the config duration grammar.",
+  "kind": "front-matter",
+  "document": {
+    "id": "dev.minimal",
+    "name": "Minimal",
+    "interval": "500ms",
+    "runtime": "bash",
+    "widget": "text"
+  }
+}

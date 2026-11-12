@@ -1,0 +1,13 @@
+{
+  "description": "There is no per-script side key (SPEC v0.8); the side is a surface.",
+  "kind": "front-matter",
+  "document": {
+    "id": "dev.minimal",
+    "name": "Minimal",
+    "interval": "5m",
+    "runtime": "bash",
+    "widget": "text",
+    "side": "left"
+  },
+  "error": "side"
+}

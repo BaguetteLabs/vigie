@@ -1,0 +1,14 @@
+{
+  "description": "An action needs open, run or copy.",
+  "kind": "output",
+  "document": {
+    "widget": {
+      "type": "status",
+      "level": "ok"
+    },
+    "action": {
+      "mail": "a@b.c"
+    }
+  },
+  "error": "action"
+}

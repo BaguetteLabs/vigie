@@ -1,0 +1,12 @@
+{
+  "description": "runtime is a bare name.",
+  "kind": "front-matter",
+  "document": {
+    "id": "dev.minimal",
+    "name": "Minimal",
+    "interval": "5m",
+    "runtime": "/usr/bin/python3",
+    "widget": "text"
+  },
+  "error": "runtime"
+}

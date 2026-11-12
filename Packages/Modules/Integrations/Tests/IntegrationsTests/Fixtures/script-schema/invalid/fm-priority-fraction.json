@@ -1,0 +1,13 @@
+{
+  "description": "priority is a whole number.",
+  "kind": "front-matter",
+  "document": {
+    "id": "dev.minimal",
+    "name": "Minimal",
+    "interval": "5m",
+    "runtime": "bash",
+    "widget": "text",
+    "priority": 2.5
+  },
+  "error": "priority"
+}

@@ -1,0 +1,12 @@
+{
+  "description": "Each id segment starts with a letter.",
+  "kind": "front-matter",
+  "document": {
+    "id": "github.2prs",
+    "name": "Minimal",
+    "interval": "5m",
+    "runtime": "bash",
+    "widget": "text"
+  },
+  "error": "id"
+}

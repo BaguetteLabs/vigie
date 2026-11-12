@@ -1,0 +1,18 @@
+{
+  "description": "type is required.",
+  "kind": "front-matter",
+  "document": {
+    "id": "dev.minimal",
+    "name": "Minimal",
+    "interval": "5m",
+    "runtime": "bash",
+    "widget": "text",
+    "settings": [
+      {
+        "label": "Label",
+        "key": "a"
+      }
+    ]
+  },
+  "error": "settings[0].type"
+}

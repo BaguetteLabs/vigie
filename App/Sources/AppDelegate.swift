@@ -6,6 +6,7 @@ import AppKit
 import ClaudeAdapter
 import GenericTerminal
 import ITermTerminal
+import Integrations
 import ModuleKit
 import OSLog
 import Shelf
@@ -141,6 +142,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             ModuleDescriptor(manifest: ShelfModule.staticManifest) { ShelfModule() },
             // Timers and Countdowns, the Time tab and the Timer-end alert (SPEC §7.7, Story 20.2). Off by default.
             ModuleDescriptor(manifest: TimeModule.staticManifest) { TimeModule() },
+            // Script modules runtime (SPEC §7.4, §9); Story 12.1 skeleton, scripts arrive with Stories 12.2–12.5.
+            ModuleDescriptor(manifest: IntegrationsModule.staticManifest) { IntegrationsModule() },
         ]
         #if DEBUG
             // The Debug build shows the sample module without touching the user's config.

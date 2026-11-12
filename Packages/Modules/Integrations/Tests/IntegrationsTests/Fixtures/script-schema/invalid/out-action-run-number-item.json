@@ -1,0 +1,17 @@
+{
+  "description": "run items are strings.",
+  "kind": "output",
+  "document": {
+    "widget": {
+      "type": "status",
+      "level": "ok"
+    },
+    "action": {
+      "run": [
+        "ls",
+        1
+      ]
+    }
+  },
+  "error": "action.run[1]"
+}

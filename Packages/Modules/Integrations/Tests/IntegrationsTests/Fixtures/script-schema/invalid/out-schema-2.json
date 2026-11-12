@@ -1,0 +1,12 @@
+{
+  "description": "A newer schema version is rejected.",
+  "kind": "output",
+  "document": {
+    "schema": 2,
+    "widget": {
+      "type": "status",
+      "level": "ok"
+    }
+  },
+  "error": "schema"
+}

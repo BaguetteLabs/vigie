@@ -1,0 +1,11 @@
+{
+  "description": "runtime is required.",
+  "kind": "front-matter",
+  "document": {
+    "id": "dev.minimal",
+    "name": "Minimal",
+    "interval": "5m",
+    "widget": "text"
+  },
+  "error": "runtime"
+}

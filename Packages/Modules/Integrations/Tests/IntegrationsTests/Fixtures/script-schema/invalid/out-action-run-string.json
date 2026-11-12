@@ -1,0 +1,14 @@
+{
+  "description": "run is an argv list.",
+  "kind": "output",
+  "document": {
+    "widget": {
+      "type": "status",
+      "level": "ok"
+    },
+    "action": {
+      "run": "ls -l"
+    }
+  },
+  "error": "action.run"
+}

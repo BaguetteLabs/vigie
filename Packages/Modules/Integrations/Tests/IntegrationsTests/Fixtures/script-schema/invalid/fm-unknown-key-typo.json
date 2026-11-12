@@ -1,0 +1,13 @@
+{
+  "description": "A typo is an unknown key, not a silent default.",
+  "kind": "front-matter",
+  "document": {
+    "id": "dev.minimal",
+    "name": "Minimal",
+    "interval": "5m",
+    "runtime": "bash",
+    "widget": "text",
+    "intervall": "1m"
+  },
+  "error": "intervall"
+}

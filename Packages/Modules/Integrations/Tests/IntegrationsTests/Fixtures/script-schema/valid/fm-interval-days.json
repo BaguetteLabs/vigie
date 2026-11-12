@@ -1,0 +1,11 @@
+{
+  "description": "Interval 7d follows the config duration grammar.",
+  "kind": "front-matter",
+  "document": {
+    "id": "dev.minimal",
+    "name": "Minimal",
+    "interval": "7d",
+    "runtime": "bash",
+    "widget": "text"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "description": "A text widget on its own page, compound interval.",
+  "kind": "front-matter",
+  "document": {
+    "id": "release.train",
+    "name": "Release train",
+    "icon": "tram",
+    "interval": "1h30m",
+    "runtime": "node",
+    "widget": "text",
+    "surfaces": [
+      "page"
+    ],
+    "settings": []
+  }
+}

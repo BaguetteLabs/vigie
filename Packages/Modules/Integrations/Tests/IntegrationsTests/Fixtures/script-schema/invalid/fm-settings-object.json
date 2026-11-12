@@ -1,0 +1,15 @@
+{
+  "description": "settings is a list.",
+  "kind": "front-matter",
+  "document": {
+    "id": "dev.minimal",
+    "name": "Minimal",
+    "interval": "5m",
+    "runtime": "bash",
+    "widget": "text",
+    "settings": {
+      "key": "a"
+    }
+  },
+  "error": "settings"
+}

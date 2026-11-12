@@ -1,0 +1,11 @@
+{
+  "description": "A status widget needs a level.",
+  "kind": "output",
+  "document": {
+    "widget": {
+      "type": "status",
+      "value": "200"
+    }
+  },
+  "error": "widget.level"
+}

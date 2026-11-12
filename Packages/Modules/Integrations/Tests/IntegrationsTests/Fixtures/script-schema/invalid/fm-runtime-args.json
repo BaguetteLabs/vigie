@@ -1,0 +1,12 @@
+{
+  "description": "runtime takes no arguments.",
+  "kind": "front-matter",
+  "document": {
+    "id": "dev.minimal",
+    "name": "Minimal",
+    "interval": "5m",
+    "runtime": "python3 -u",
+    "widget": "text"
+  },
+  "error": "runtime"
+}

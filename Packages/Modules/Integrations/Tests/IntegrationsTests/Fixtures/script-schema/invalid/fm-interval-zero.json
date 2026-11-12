@@ -1,0 +1,12 @@
+{
+  "description": "The interval is above zero.",
+  "kind": "front-matter",
+  "document": {
+    "id": "dev.minimal",
+    "name": "Minimal",
+    "interval": "0s",
+    "runtime": "bash",
+    "widget": "text"
+  },
+  "error": "interval"
+}

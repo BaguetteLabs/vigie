@@ -1,0 +1,12 @@
+{
+  "description": "widget is status, number or text.",
+  "kind": "front-matter",
+  "document": {
+    "id": "dev.minimal",
+    "name": "Minimal",
+    "interval": "5m",
+    "runtime": "bash",
+    "widget": "chart"
+  },
+  "error": "widget"
+}

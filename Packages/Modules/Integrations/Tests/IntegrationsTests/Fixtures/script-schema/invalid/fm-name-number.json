@@ -1,0 +1,12 @@
+{
+  "description": "name is a string.",
+  "kind": "front-matter",
+  "document": {
+    "id": "dev.minimal",
+    "name": 42,
+    "interval": "5m",
+    "runtime": "bash",
+    "widget": "text"
+  },
+  "error": "name"
+}

@@ -1,0 +1,14 @@
+{
+  "description": "run has at least one item.",
+  "kind": "output",
+  "document": {
+    "widget": {
+      "type": "status",
+      "level": "ok"
+    },
+    "action": {
+      "run": []
+    }
+  },
+  "error": "action.run"
+}

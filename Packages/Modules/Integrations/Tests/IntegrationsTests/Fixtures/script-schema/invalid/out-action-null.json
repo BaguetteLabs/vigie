@@ -1,0 +1,12 @@
+{
+  "description": "null is not an action.",
+  "kind": "output",
+  "document": {
+    "widget": {
+      "type": "status",
+      "level": "ok"
+    },
+    "action": null
+  },
+  "error": "action"
+}

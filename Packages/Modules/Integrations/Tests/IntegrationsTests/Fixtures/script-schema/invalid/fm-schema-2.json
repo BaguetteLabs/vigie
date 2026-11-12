@@ -1,0 +1,13 @@
+{
+  "description": "A newer schema version is rejected.",
+  "kind": "front-matter",
+  "document": {
+    "id": "dev.minimal",
+    "name": "Minimal",
+    "interval": "5m",
+    "runtime": "bash",
+    "widget": "text",
+    "schema": 2
+  },
+  "error": "schema"
+}

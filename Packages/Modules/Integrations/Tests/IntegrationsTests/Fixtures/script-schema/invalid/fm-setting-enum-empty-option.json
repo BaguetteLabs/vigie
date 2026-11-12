@@ -1,0 +1,24 @@
+{
+  "description": "An option is not empty.",
+  "kind": "front-matter",
+  "document": {
+    "id": "dev.minimal",
+    "name": "Minimal",
+    "interval": "5m",
+    "runtime": "bash",
+    "widget": "text",
+    "settings": [
+      {
+        "label": "Label",
+        "key": "a",
+        "type": "enum",
+        "options": [
+          "x",
+          ""
+        ],
+        "default": "x"
+      }
+    ]
+  },
+  "error": "settings[0].options[1]"
+}

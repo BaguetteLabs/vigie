@@ -140,6 +140,10 @@ jobs:
         id: services-plist
         run: Scripts/check-services-plist.sh
 
+      - name: script-schema
+        id: script-schema
+        run: Scripts/check-script-schema.sh
+
       - name: adapter-fixtures
         id: adapter-fixtures
         run: echo "not yet"

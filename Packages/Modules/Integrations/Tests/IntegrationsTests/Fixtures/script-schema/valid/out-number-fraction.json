@@ -1,0 +1,10 @@
+{
+  "description": "A fractional number value.",
+  "kind": "output",
+  "document": {
+    "widget": {
+      "type": "number",
+      "value": 2.5
+    }
+  }
+}

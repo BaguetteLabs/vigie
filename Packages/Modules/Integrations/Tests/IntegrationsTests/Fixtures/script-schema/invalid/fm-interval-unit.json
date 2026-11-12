@@ -1,0 +1,12 @@
+{
+  "description": "Units are ms, s, m, h, d.",
+  "kind": "front-matter",
+  "document": {
+    "id": "dev.minimal",
+    "name": "Minimal",
+    "interval": "5min",
+    "runtime": "bash",
+    "widget": "text"
+  },
+  "error": "interval"
+}

@@ -1,0 +1,11 @@
+{
+  "description": "Output is a JSON object.",
+  "kind": "output",
+  "document": [
+    {
+      "type": "status",
+      "level": "ok"
+    }
+  ],
+  "error": "(document)"
+}

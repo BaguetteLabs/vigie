@@ -1,0 +1,12 @@
+{
+  "description": "interval is a string.",
+  "kind": "front-matter",
+  "document": {
+    "id": "dev.minimal",
+    "name": "Minimal",
+    "interval": 300,
+    "runtime": "bash",
+    "widget": "text"
+  },
+  "error": "interval"
+}

@@ -1,0 +1,19 @@
+{
+  "description": "label is not empty.",
+  "kind": "front-matter",
+  "document": {
+    "id": "dev.minimal",
+    "name": "Minimal",
+    "interval": "5m",
+    "runtime": "bash",
+    "widget": "text",
+    "settings": [
+      {
+        "key": "a",
+        "type": "string",
+        "label": ""
+      }
+    ]
+  },
+  "error": "settings[0].label"
+}

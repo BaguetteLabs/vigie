@@ -1,0 +1,16 @@
+{
+  "description": "surfaces are home, side, page.",
+  "kind": "front-matter",
+  "document": {
+    "id": "dev.minimal",
+    "name": "Minimal",
+    "interval": "5m",
+    "runtime": "bash",
+    "widget": "text",
+    "surfaces": [
+      "home",
+      "menu"
+    ]
+  },
+  "error": "surfaces[1]"
+}

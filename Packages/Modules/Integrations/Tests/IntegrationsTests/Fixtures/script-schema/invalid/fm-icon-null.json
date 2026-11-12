@@ -1,0 +1,13 @@
+{
+  "description": "null is not a value.",
+  "kind": "front-matter",
+  "document": {
+    "id": "dev.minimal",
+    "name": "Minimal",
+    "interval": "5m",
+    "runtime": "bash",
+    "widget": "text",
+    "icon": null
+  },
+  "error": "icon"
+}

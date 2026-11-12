@@ -1,0 +1,12 @@
+{
+  "description": "Ids have no empty segment.",
+  "kind": "front-matter",
+  "document": {
+    "id": "github..prs",
+    "name": "Minimal",
+    "interval": "5m",
+    "runtime": "bash",
+    "widget": "text"
+  },
+  "error": "id"
+}

@@ -1,0 +1,11 @@
+{
+  "description": "name is required.",
+  "kind": "front-matter",
+  "document": {
+    "id": "dev.minimal",
+    "interval": "5m",
+    "runtime": "bash",
+    "widget": "text"
+  },
+  "error": "name"
+}
