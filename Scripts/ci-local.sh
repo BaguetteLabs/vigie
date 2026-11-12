@@ -51,6 +51,8 @@ Scripts/tests/module-away-test.sh
 
 echo "==> script schema"
 Scripts/check-script-schema.sh
+echo "==> example scripts"
+Scripts/check-example-scripts.sh
 
 echo "==> services plist"
 Scripts/check-services-plist.sh

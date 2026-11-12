@@ -647,6 +647,7 @@ v1 widget types: **status** (e.g. a website health check), **number** (stats), *
 
 - Community scripts live in a separate, curated, **public** GitHub repository (name TBD, e.g. `vigie-scripts`) with its own license (§14): one folder per script, pull requests reviewed by the maintainer, CI that validates front matter against the JSON schema and signs merged scripts (§9.4). Review policy is open (§14).
 - **Examples:** GitHub PRs, site up/down, CI or deploy status, revenue (Stripe-style), and a text widget. They live in the repository; the app bundles a small subset.
+- **Bundled subset** (Story 12.7): `github-prs.md` (number, secret token), `site-status.md` (status) and `uptime.md` (text, no network); Settings › Scripts › Add example… copies one into `<config folder>/modules/` (never over an existing file) and it then waits for confirmation like any new file.
 - **Settings link:** Settings › Scripts ends with "More examples in the Script repository", pointing at `https://github.com/<owner>/vigie-scripts` (A84: same owner as the releases host). While the owner is still the `OWNER` placeholder (A49), the link is shown disabled (Story 12.6).
 - **Later:** a public website (static, generated from the repository) with install buttons.
 

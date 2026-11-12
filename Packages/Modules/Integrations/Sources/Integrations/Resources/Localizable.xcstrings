@@ -781,6 +781,78 @@
         }
       }
     },
+    "script.settings.addExample": {
+      "comment": "Settings › Scripts footer menu: copies a bundled example script into the scripts folder.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add example…"
+          }
+        }
+      }
+    },
+    "script.settings.addExample.added": {
+      "comment": "Settings › Scripts: an example was copied. %@ = file name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Added %@. It is awaiting your confirmation."
+          }
+        }
+      }
+    },
+    "script.settings.addExample.exists": {
+      "comment": "Settings › Scripts: the example file already exists and was not replaced. %@ = file name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ already exists and was not replaced."
+          }
+        }
+      }
+    },
+    "script.settings.addExample.idInUse": {
+      "comment": "Settings › Scripts: another script file already declares the example's id. %1$@ = file name, %2$@ = that file.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ was not added: %2$@ already declares the same id."
+          }
+        }
+      }
+    },
+    "script.settings.addExample.noFolder": {
+      "comment": "Settings › Scripts: there is no scripts folder to copy into.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "There is no scripts folder on this Mac to add the example to."
+          }
+        }
+      }
+    },
+    "script.settings.addExample.help": {
+      "comment": "Tooltip of the Add example menu; states the trust rule.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copies an example script into your scripts folder. You review it before it can run. Scripts run unsandboxed, as you: only install scripts you trust."
+          }
+        }
+      }
+    },
     "script.settings.saveFailed": {
       "comment": "Settings › Integrations: confirming or declining could not be saved. %1$@ = file name, %2$@ = error.",
       "extractionState": "manual",

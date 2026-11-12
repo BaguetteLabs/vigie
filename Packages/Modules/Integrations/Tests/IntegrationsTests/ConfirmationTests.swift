@@ -297,7 +297,7 @@ import VigieUI
             locales.formUnion((entry["localizations"] as? [String: Any])?.keys ?? [:].keys)
         }
         let keys = strings.keys.filter { $0.hasPrefix("script.settings.") }
-        #expect(keys.count == 18)  // 7 from Story 12.3, 11 from Settings › Scripts (12.6)
+        #expect(keys.count == 24)  // 7 from Story 12.3, 11 from Settings › Scripts (12.6), 6 from Add example (12.7)
         for key in keys {
             let entry = try #require(strings[key] as? [String: Any])
             let localized = Set((entry["localizations"] as? [String: Any])?.keys ?? [:].keys)

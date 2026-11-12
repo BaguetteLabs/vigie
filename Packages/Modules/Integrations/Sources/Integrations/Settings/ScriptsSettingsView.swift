@@ -13,6 +13,7 @@ struct ScriptsSettingsView: View {
     let module: IntegrationsModule
     @State private var failure: String?
     @State private var expanded: String?
+    @State private var notice: String?
 
     var body: some View {
         // A Group, so each part is its own row of the pane's Form section; the sheet hangs on the heading only
@@ -49,7 +50,14 @@ struct ScriptsSettingsView: View {
                 }
                 .font(.caption)
             }
-            repositoryFooter
+            if let notice {
+                Text(verbatim: notice).font(.caption).foregroundStyle(.secondary)
+            }
+            HStack {
+                examplesMenu
+                Spacer()
+                repositoryFooter
+            }
         }
     }
 
@@ -144,7 +152,47 @@ struct ScriptsSettingsView: View {
         }
     }
 
+    /// "Add example…" (Story 12.7): copies a bundled example into the scripts folder; the copy then waits for
+    /// confirmation like any new file.
+    private var examplesMenu: some View {
+        Menu {
+            ForEach(IntegrationsModule.bundledExamples) { example in
+                Button {
+                    add(example)
+                } label: {
+                    Text(verbatim: example.name)
+                }
+                .disabled(module.scripts.contains { $0.fileName == example.fileName })
+            }
+        } label: {
+            Text(verbatim: IntegrationsText.string("script.settings.addExample"))
+        }
+        .fixedSize()
+        .help(IntegrationsText.string("script.settings.addExample.help"))
+    }
+
     // MARK: - Actions
+
+    private func add(_ example: BundledExample) {
+        failure = nil
+        notice = nil
+        Task {
+            do {
+                try await module.addExample(example)
+                notice = IntegrationsText.format("script.settings.addExample.added", example.fileName)
+            } catch let error as ExampleAddError {
+                switch error {
+                case .noFolder: failure = IntegrationsText.string("script.settings.addExample.noFolder")
+                case .exists(let name): failure = IntegrationsText.format("script.settings.addExample.exists", name)
+                case .idInUse(let name, let other):
+                    failure = IntegrationsText.format("script.settings.addExample.idInUse", name, other)
+                }
+            } catch {
+                failure = IntegrationsText.format(
+                    "script.settings.saveFailed", example.fileName, String(describing: error))
+            }
+        }
+    }
 
     private func setEnabled(_ script: ScriptModuleDefinition, _ enabled: Bool) {
         failure = nil

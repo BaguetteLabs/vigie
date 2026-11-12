@@ -145,6 +145,10 @@ jobs:
         id: script-schema
         run: Scripts/check-script-schema.sh
 
+      - name: example-scripts
+        id: example-scripts
+        run: Scripts/check-example-scripts.sh
+
       - name: adapter-fixtures
         id: adapter-fixtures
         run: echo "not yet"

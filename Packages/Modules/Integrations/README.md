@@ -178,6 +178,32 @@ Settings › Scripts (Story 12.6, UX-DR74) is the module's pane (`settingsView()
   field stays blank, shows "Stored" once set, and offers Set and Clear. Secrets must be entered on each Mac.
 - **Footer:** "More examples in the Script repository" (SPEC §9.6, A84: `vigie-scripts` under the releases owner).
   The owner is still the `OWNER` placeholder (A49), so `ScriptRepository.url` is nil and the text shows disabled.
+## Examples
+
+Story 12.7 (A85, PRD FR-41). The app bundles three example scripts in `Sources/Integrations/Resources/Examples/`;
+the others (CI or deploy status, revenue) live in the Script repository.
+
+| File | Id | Widget | Runtime | Settings |
+|---|---|---|---|---|
+| `github-prs.md` | `github.prs` | number (open PRs, opens the PR list) | `sh` + `curl` | `repo` (string), `token` (secret, `VIGIE_SETTING_TOKEN`) |
+| `site-status.md` | `site.status` | status (`OK` / `WARN` / `DOWN`, detail `200 · 142 ms`) | `sh` + `curl` | `url` (string) |
+| `uptime.md` | `system.uptime` | text (`3d 4h`), no network | `sh` | none |
+
+Each prints one JSON document to stdout and exits non-zero with a message on stderr when it cannot work (a missing
+`repo`, an unreadable boot time). Each has a `<name>.sample.json` next to it (a sample of its stdout, not bundled).
+`Scripts/check-example-scripts.sh` (CI and `ci-local`) validates every example's front matter and its sample
+against `schemas/script-module.schema.json` and checks for exactly one code block; `ExamplesTests` parses them with
+`ScriptMarkdown` and runs `uptime.md` for real through `ScriptProcessLauncher`.
+
+`IntegrationsModule.bundledExamples` lists them (`BundledExample`: URL and parsed definition).
+`addExample(_:)`, behind Settings › Scripts › **Add example…**, copies one into `<config folder>/modules/` (creating
+the folder if needed) and rescans. It never overwrites a file (`ExampleAddError.exists`) and refuses an example whose
+id another file already declares (`.idInUse`). The copy is a new file, so it is awaiting confirmation and does not
+run until you review and confirm it.
+
+**Scripts run unsandboxed, as you, with your files and network. Only install scripts you trust**, bundled or not:
+read the whole file in the review sheet, which says the same, before you confirm.
+
 ## Surfaces
 
 Story 12.5 (AD-18, SPEC §7.4, DESIGN "Script widget" and "Side-slot item").

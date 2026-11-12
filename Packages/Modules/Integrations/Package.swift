@@ -24,6 +24,11 @@ let package = Package(
                 .product(name: "VigieUI", package: "VigieUI"),
                 .product(name: "Yams", package: "Yams"),
             ],
+            exclude: [
+                "Resources/Examples/github-prs.sample.json",
+                "Resources/Examples/site-status.sample.json",
+                "Resources/Examples/uptime.sample.json",
+            ],
             resources: [.process("Resources")]
         ),
         .testTarget(
