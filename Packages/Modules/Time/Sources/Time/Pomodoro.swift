@@ -1,7 +1,8 @@
 import Foundation
 import ModuleKit
 
-/// `[modules.time] pomodoro = { work = "25m", short_break = "5m", long_break = "15m", long_every = 4 }` (SPEC §11).
+/// `[modules.time.pomodoro]`: `work = "25m"`, `short_break = "5m"`, `long_break = "15m"`, `long_every = 4`
+/// (SPEC §11; a table so Settings can write it, an inline table in a user's file still reads).
 public struct PomodoroLengths: Codable, Hashable, Sendable {
     nonisolated static let workKey = "pomodoro.work"
     nonisolated static let shortBreakKey = "pomodoro.short_break"

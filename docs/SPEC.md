@@ -806,7 +806,12 @@ enabled = false
 closed_notch = "off"          # off | time | ring | both: nearest-to-end item on the left wing
 priority = 3                  # left-wing item priority
 # hotkey = "…"                # optional global hotkey, no default
-pomodoro = { work = "25m", short_break = "5m", long_break = "15m", long_every = 4 }
+
+[modules.time.pomodoro]       # (table, not inline: Settings writes it)
+work = "25m"
+short_break = "5m"
+long_break = "15m"
+long_every = 4                # work periods before a long break
 
 [modules.time.breaks]
 enabled = false

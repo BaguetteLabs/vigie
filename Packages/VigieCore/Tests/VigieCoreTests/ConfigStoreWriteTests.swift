@@ -1,6 +1,7 @@
 import Foundation
 import ModuleKit
 import Testing
+import VigieUI
 import Wire
 
 @testable import VigieCore
@@ -178,6 +179,51 @@ import Wire
         await #expect(throws: ConfigError.unsupportedLocation(key: "modules.time.pomodoro.work")) {
             try await store.set(.module("time", "pomodoro.work"), to: .duration(.seconds(60)))
         }
+        #expect(try read(fixture.configURL) == text)
+    }
+
+    /// The Time module's Pomodoro settings (Story 20.5), as Settings › Time declares them.
+    private static let pomodoroManifest = ModuleManifest(
+        id: "time", name: "Time", icon: "timer",
+        settings: [
+            SettingDescriptor(key: "pomodoro.work", label: "Work", kind: .duration(default: .seconds(1500))),
+            SettingDescriptor(key: "pomodoro.short_break", label: "Short", kind: .duration(default: .seconds(300))),
+            SettingDescriptor(key: "pomodoro.long_break", label: "Long", kind: .duration(default: .seconds(900))),
+            SettingDescriptor(key: "pomodoro.long_every", label: "Every", kind: .int(default: 4, min: 1, max: 12)),
+        ])
+
+    @Test func pomodoroSettingsWriteIntoTheShippedDefaultConfig() async throws {
+        let fixture = ConfigFixture()
+        let (store, _) = try await fixture.makeStore(manifests: [Self.pomodoroManifest])
+        defer { store.stop() }
+        let before = try read(fixture.configURL)
+        #expect(before.contains("[modules.time.pomodoro]"), "a table, not inline: Settings writes it")
+        try await store.set(.module("time", "pomodoro.work"), to: .duration(.seconds(50 * 60)))
+        try await store.set(.module("time", "pomodoro.long_every"), to: .int(3))
+        let diff = changedLines(before, try read(fixture.configURL))
+        #expect(
+            diff.removed.sorted() == [
+                "long_every = 4                # work periods before a long break", "work = \"25m\"",
+            ])
+        #expect(
+            diff.added.sorted() == [
+                "long_every = 3                # work periods before a long break", "work = \"50m\"",
+            ])
+        #expect(store.value(.module("time", "pomodoro.work"), as: Duration.self) == .seconds(3000))
+        #expect(store.value(.module("time", "pomodoro.long_every"), as: Int.self) == 3)
+    }
+
+    @Test func inlinePomodoroInAUserFileStillReadsAndSettingsSaysChangeItInTheFile() async throws {
+        let fixture = ConfigFixture()
+        let text = "[modules.time]\npomodoro = { work = \"50m\", long_every = 3 }\n"
+        let (store, _) = try await fixture.makeStore(manifests: [Self.pomodoroManifest], config: text)
+        defer { store.stop() }
+        #expect(store.value(.module("time", "pomodoro.work"), as: Duration.self) == .seconds(3000))
+        #expect(store.value(.module("time", "pomodoro.long_every"), as: Int.self) == 3)
+        let binding = store.settingBinding(for: .module("time", "pomodoro.work"))
+        let state = SettingFieldState()
+        #expect(!(await state.commitDuration("20m", to: binding, services: CoreSettingServices.make())))
+        #expect(state.error == "This setting is written in a form Vigie can't edit. Change it in the file.")
         #expect(try read(fixture.configURL) == text)
     }
 
