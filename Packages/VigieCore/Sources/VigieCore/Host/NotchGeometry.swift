@@ -67,8 +67,9 @@ public struct NotchGeometry: Sendable, Equatable {
     /// screen's top edge, wider than the pill. Nil on a hardware notch, where the island itself is the target.
     public var hoverStrip: CGRect?
 
-    /// Island height: the band height, or the hardware notch height when that is taller so the cut-out
-    /// never shows below the island.
+    /// Island height. Physical: the band height, or the hardware notch height when that is taller so the
+    /// cut-out never shows below the island (plus `notch_overlap`). Virtual: the menu bar height (plus
+    /// `notch_overlap`).
     public var height: CGFloat { islandFrame.height }
 
     public var wings: IslandWings {
@@ -130,22 +131,25 @@ public struct NotchGeometry: Sendable, Equatable {
 
     /// Geometry for a virtual notch on a display without a hardware notch (SPEC §5.3, §5.5).
     ///
-    /// The notch part is `settings.width` wide (default 200, the MacBook notch) and `bandHeight` tall. Each wing
+    /// The notch part is `settings.width` wide (default 200, the MacBook notch) and exactly as tall as the
+    /// display's menu bar (`menuBar.height`, Story 2.16), plus `overlap` (`closed.notch_overlap`) points below it
+    /// like the physical island; the theme band height is never used here, so the pill does not overhang a
+    /// 24 pt menu bar. Each wing
     /// is `maxSideWidth` (`closed.max_side_width`) while a module wants a side, or with `idle = keep`; when
     /// `isIdle` and `idle` is `shrink` or `hide` the pill is the notch alone (the host hides it for `hide`).
     /// `placement = menu_bar` puts the top edge on the screen edge, over the menu bar; `below` hangs it just
     /// under the menu bar. `position = center` centres it; `right` puts its right edge just left of the status
     /// items (centred when they are unknown). The pill always stays on screen.
     public static func virtual(
-        screen: ScreenMetrics, settings: VirtualNotchSettings, menuBar: MenuBarMetrics, bandHeight: CGFloat,
-        maxSideWidth: CGFloat, cornerRadius: CGFloat, isIdle: Bool
+        screen: ScreenMetrics, settings: VirtualNotchSettings, menuBar: MenuBarMetrics, maxSideWidth: CGFloat,
+        cornerRadius: CGFloat, isIdle: Bool, overlap: CGFloat = 0
     ) -> NotchGeometry {
         let frame = screen.frame
         let notchWidth = min(max(settings.width, 1), frame.width)
         let showsWings = !isIdle || settings.idle == .keep
         let side = showsWings ? min(max(maxSideWidth, 0), max((frame.width - notchWidth) / 2, 0)) : 0
         let width = notchWidth + 2 * side
-        let height = bandHeight
+        let height = max(menuBar.height, 0) + max(overlap, 0)
         let top = settings.placement == .menuBar ? frame.maxY : frame.maxY - max(menuBar.height, 0)
 
         var minX = frame.midX - width / 2

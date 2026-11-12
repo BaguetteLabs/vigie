@@ -103,7 +103,8 @@ public final class NotchHost {
     @ObservationIgnored let registry: ModuleRegistry
     @ObservationIgnored private let contextMenu: NotchContextMenu
     @ObservationIgnored private let maxSideWidth: @MainActor () -> CGFloat
-    @ObservationIgnored private var lastNotchGeometryLine: String?
+    /// The last `notch geometry` debug line per display (read by tests).
+    @ObservationIgnored private(set) var lastNotchGeometryLines: [CGDirectDisplayID: String] = [:]
     @ObservationIgnored private let notchOverlap: @MainActor () -> CGFloat
     @ObservationIgnored private let notchSideInset: @MainActor () -> CGFloat
     @ObservationIgnored private let closedSlots: @MainActor () -> Int
@@ -401,23 +402,24 @@ public final class NotchHost {
 
     private func place(_ display: DisplayInfo, settings: VirtualNotchSettings, isIdle: Bool) -> PlacedIsland? {
         let theme = themeController.islandTheme
-        let bandHeight = theme.spacing(.bandHeight)
         let radius = theme.radius(.islandClosed)
         if display.hasNotch {
             guard
                 let geometry = NotchGeometry.physical(
-                    screen: display.metrics, bandHeight: bandHeight, maxSideWidth: maxSideWidth(),
+                    screen: display.metrics, bandHeight: theme.spacing(.bandHeight), maxSideWidth: maxSideWidth(),
                     cornerRadius: radius, overlap: notchOverlap(), sideInset: notchSideInset())
             else {
                 logger.error("Notch geometry unavailable for \(display.name, privacy: .public)")
                 return nil
             }
-            logNotchGeometry(display.metrics, geometry)
+            logNotchGeometry(display, geometry)
             return PlacedIsland(display: display, geometry: geometry, surface: .black, isHidden: false)
         }
+        let menuBar = menuBarProbe.menuBar(on: display.frame)
         let geometry = NotchGeometry.virtual(
-            screen: display.metrics, settings: settings, menuBar: menuBarProbe.menuBar(on: display.frame),
-            bandHeight: bandHeight, maxSideWidth: maxSideWidth(), cornerRadius: radius, isIdle: isIdle)
+            screen: display.metrics, settings: settings, menuBar: menuBar, maxSideWidth: maxSideWidth(),
+            cornerRadius: radius, isIdle: isIdle, overlap: notchOverlap())
+        logVirtualNotchGeometry(display, menuBar: menuBar, geometry)
         let idleHidden = isIdle && settings.idle == .hide && hoverStripDisplayID != display.id
         return PlacedIsland(
             display: display, geometry: geometry, surface: settings.style == .menuBar ? .menuBar : .black,
@@ -426,15 +428,30 @@ public final class NotchHost {
 
     /// The reported notch metrics next to what Vigie draws, so they can be read with `log show` when a notch
     /// looks off. Logged when they change (host start, display change, settings change).
-    private func logNotchGeometry(_ metrics: ScreenMetrics, _ geometry: NotchGeometry) {
+    private func logNotchGeometry(_ display: DisplayInfo, _ geometry: NotchGeometry) {
+        let metrics = display.metrics
         let left = metrics.auxiliaryTopLeftArea?.size ?? .zero
         let right = metrics.auxiliaryTopRightArea?.size ?? .zero
         let line =
             "notch geometry: safeAreaTop=\(metrics.safeAreaTop) left=\(left.width)x\(left.height) "
             + "right=\(right.width)x\(right.height) overlap=\(notchOverlap()) inset=\(notchSideInset()) "
             + "island=\(NSStringFromRect(geometry.islandFrame))"
-        guard line != lastNotchGeometryLine else { return }
-        lastNotchGeometryLine = line
+        logGeometryLine(line, display: display.id)
+    }
+
+    /// The virtual-notch counterpart (Story 2.16): the measured menu bar height the island follows, next to the
+    /// island frame.
+    private func logVirtualNotchGeometry(_ display: DisplayInfo, menuBar: MenuBarMetrics, _ geometry: NotchGeometry) {
+        let line =
+            "notch geometry: virtual display=\(display.id) menuBarHeight=\(menuBar.height) "
+            + "overlap=\(notchOverlap()) island=\(NSStringFromRect(geometry.islandFrame))"
+        logGeometryLine(line, display: display.id)
+    }
+
+    /// Logs `line` when it changed for that display (one line per display, so two islands do not alternate).
+    private func logGeometryLine(_ line: String, display: CGDirectDisplayID) {
+        guard line != lastNotchGeometryLines[display] else { return }
+        lastNotchGeometryLines[display] = line
         logger.debug("\(line, privacy: .public)")
     }
 
@@ -468,7 +485,10 @@ public final class NotchHost {
     /// `surface-vn-*`), the island (dark) theme otherwise (UX-DR76, OQ15).
     public func theme(for island: PlacedIsland) -> Theme {
         let main = themeController.theme
-        return island.surface == .menuBar && main.look == .light ? main : themeController.islandTheme
+        let theme = island.surface == .menuBar && main.look == .light ? main : themeController.islandTheme
+        // A virtual notch is as tall as the menu bar (Story 2.16): its content gets that band exactly, lower or
+        // higher than the theme's. A physical band keeps the theme's (its island is never shorter).
+        return island.geometry.isVirtual ? theme.withBandHeight(island.geometry.height) : theme
     }
 
     /// The islands on screen, main Vigie display first.

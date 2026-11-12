@@ -15,22 +15,50 @@ import VigieUI
 
     func geometry(
         _ settings: VirtualNotchSettings = .default, screen: ScreenMetrics = Self.plain1080,
-        menuBar: MenuBarMetrics = Self.menuBar, idle: Bool = false
+        menuBar: MenuBarMetrics = Self.menuBar, idle: Bool = false, overlap: CGFloat = 0
     ) -> NotchGeometry {
         NotchGeometry.virtual(
-            screen: screen, settings: settings, menuBar: menuBar, bandHeight: 34, maxSideWidth: 120,
-            cornerRadius: 14, isIdle: idle)
+            screen: screen, settings: settings, menuBar: menuBar, maxSideWidth: 120, cornerRadius: 14,
+            isIdle: idle, overlap: overlap)
     }
 
-    @Test func plainDisplayGetsTheConfiguredBandCentredOverTheMenuBar() {
+    @Test func plainDisplayGetsAMenuBarTallPillCentredOverTheMenuBar() {
         let g = geometry()
         #expect(g.isVirtual)
         #expect(!g.isFloating)
-        #expect(g.notchRect == CGRect(x: 860, y: 1046, width: 200, height: 34))
-        #expect(g.islandFrame == CGRect(x: 740, y: 1046, width: 440, height: 34))
+        #expect(g.notchRect == CGRect(x: 860, y: 1056, width: 200, height: 24))
+        #expect(g.islandFrame == CGRect(x: 740, y: 1056, width: 440, height: 24))
         #expect(g.islandFrame.maxY == 1080)  // over the menu bar, top edge on the screen edge
         #expect(g.wings == IslandWings(leading: 120, notch: 200, trailing: 120))
         #expect(g.cornerRadius == 14)
+    }
+
+    // Story 2.16: the virtual notch is exactly as tall as the measured menu bar, plus `notch_overlap`.
+    @Test(arguments: [CGFloat(24), 37])
+    func heightIsTheMenuBarHeightOverTheMenuBar(menuBarHeight: CGFloat) {
+        let g = geometry(menuBar: MenuBarMetrics(height: menuBarHeight))
+        #expect(g.height == menuBarHeight)
+        #expect(g.islandFrame.maxY == 1080)
+        #expect(g.islandFrame.minY == 1080 - menuBarHeight)
+        #expect(g.notchSlot.height == menuBarHeight)
+        #expect(g.leadingWing.height == menuBarHeight && g.trailingWing.height == menuBarHeight)
+        let overlapped = geometry(menuBar: MenuBarMetrics(height: menuBarHeight), overlap: 2)
+        #expect(overlapped.height == menuBarHeight + 2)
+        #expect(overlapped.islandFrame.maxY == 1080)  // the overlap hangs below the menu bar
+        #expect(overlapped.notchRect.height == menuBarHeight + 2)
+    }
+
+    @Test(arguments: [CGFloat(24), 37])
+    func belowPlacementIsMenuBarTallUnderTheMenuBar(menuBarHeight: CGFloat) {
+        let g = geometry(
+            VirtualNotchSettings(placement: .below), menuBar: MenuBarMetrics(height: menuBarHeight), overlap: 2)
+        #expect(g.isFloating)
+        #expect(g.islandFrame.maxY == 1080 - menuBarHeight)
+        #expect(g.height == menuBarHeight + 2)
+    }
+
+    @Test func negativeOverlapIsIgnored() {
+        #expect(geometry(overlap: -5).height == 24)
     }
 
     @Test func widthComesFromTheSettings() {
@@ -386,6 +414,78 @@ final class DisplayHostFixture {
         f.host.reloadDisplayConfiguration()
         #expect(f.host.geometry?.islandFrame.maxY == CGFloat(1056))
         #expect(f.host.geometry?.isFloating == true)
+    }
+
+    // Story 2.16: the theme band (34 px) never sets a virtual notch's height.
+    @Test func themeBandHeightIsIgnoredForAVirtualNotch() throws {
+        let f = DisplayHostFixture([.plain(1, main: true)])
+        #expect(f.themeController.islandTheme.spacing(.bandHeight) == 34)
+        f.notchOverlap = 2
+        f.host.start()
+        defer { f.host.stop() }
+        let island = try #require(f.host.islands.first)
+        #expect(island.geometry.height == 26)
+        #expect(island.geometry.islandFrame.maxY == 1080)
+        #expect(f.panel(1)?.frame == island.geometry.islandFrame)
+    }
+
+    @Test func menuBarHeightChangeIsFollowedOnReplace() throws {
+        let f = DisplayHostFixture([.plain(1, main: true)])
+        f.probe.height = 24
+        f.host.start()
+        defer { f.host.stop() }
+        #expect(f.host.islands.first?.geometry.height == 24)
+        #expect(f.panel(1)?.frame?.height == 24)
+
+        f.probe.height = 37  // display scaling changed
+        f.host.reloadDisplayConfiguration()
+        #expect(f.host.islands.first?.geometry.height == 37)
+        #expect(f.panel(1)?.frame?.height == 37)
+        #expect(f.panel(1)?.frame?.maxY == 1080)
+        let island = try #require(f.host.islands.first)
+        #expect(f.host.theme(for: island).spacing(.bandHeight) == 37)
+    }
+
+    @Test func virtualIslandContentGetsTheIslandHeightAsItsBand() throws {
+        let f = DisplayHostFixture([.plain(1, main: true)])
+        f.host.start()
+        defer { f.host.stop() }
+        let island = try #require(f.host.islands.first)
+        let theme = f.host.theme(for: island)
+        #expect(theme.spacing(.bandHeight) == 24)
+        #expect(theme.closedBand.isCompact)
+        #expect(theme.look == f.themeController.islandTheme.look)
+    }
+
+    @Test func physicalIslandKeepsTheThemeBand() throws {
+        let f = DisplayHostFixture([.notched(1, main: true)])
+        f.notchOverlap = 2
+        f.host.start()
+        defer { f.host.stop() }
+        let island = try #require(f.host.islands.first)
+        #expect(!island.geometry.isVirtual)
+        let expected = try #require(
+            NotchGeometry.physical(
+                screen: NotchGeometryTests.macBookPro14, bandHeight: 34, maxSideWidth: 120, cornerRadius: 14,
+                overlap: 2))
+        #expect(island.geometry.islandFrame == expected.islandFrame)  // max(band 34, notch 32) + overlap
+        #expect(f.host.theme(for: island) == f.themeController.islandTheme)
+    }
+
+    @Test func geometryLogRecordsTheMenuBarHeightForAVirtualIsland() throws {
+        let f = DisplayHostFixture([.plain(1, main: true), .notched(2, x: 1920)])
+        f.selection = .all
+        f.notchOverlap = 2
+        f.probe.height = 24
+        f.host.start()
+        defer { f.host.stop() }
+        let line = try #require(f.host.lastNotchGeometryLines[1])
+        #expect(line.contains("virtual"))
+        #expect(line.contains("menuBarHeight=24.0"))
+        #expect(line.contains("overlap=2.0"))
+        let frame = try #require(f.host.islands.first { $0.display.id == 1 }?.geometry.islandFrame)
+        #expect(line.contains("island=\(NSStringFromRect(frame))"))
+        #expect(f.host.lastNotchGeometryLines[2]?.contains("safeAreaTop=") == true)
     }
 
     @Test func noDisplayNoIsland() {
