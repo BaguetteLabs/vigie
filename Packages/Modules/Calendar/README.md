@@ -18,6 +18,35 @@
   false), `calendars` (included calendar ids, empty = all; drawn by the module's own pane view as checkboxes
   grouped by account with the calendar color, `customControl`). The last checked calendar cannot be unchecked.
 - **No closed-notch glance**: no left-wing item, no compact view, no Home card (Story 13.3 adds the card).
+  The state stays `hidden`, reminders included.
+
+## Reminders (Story 13.4)
+
+`CalendarReminders` posts `calendar.reminder` (declared in the manifest) through `context.notifier` at each
+alarm of `events` (so `calendars` and `hide_all_day` apply; location alarms never reach the module), while
+`[modules.calendar] reminders` is on.
+
+- **Planning.** One `context.scheduler.at` job at the next instant that matters: the next alarm, or the end of an
+  event whose reminder is open. It is re-planned when `events` reload (store change, hourly, settings), when
+  `reminders` changes, on wake (`context.power.sleepWake`) and on `NSSystemClockDidChange`. Each pass raises the
+  alarms whose fire date lies after the previous pass and at or before now, if their event has not ended. So an
+  alarm missed while the Mac slept is raised once on wake (only the latest one of an event), an alarm already
+  past at launch or added in the past is not, and one past its event's end never is.
+- **Dedupe.** Each alarm posts once: dedupe key `calendar:<occurrence id>:<fire date epoch>`, kept in memory for
+  the alarms still planned. A newer alarm of the same occurrence replaces the open alert.
+- **Peek.** Kicker category `in 10 min` (minutes to the start, rounded; `in 1h30` from an hour, `in 2 d` from a
+  day, `now` at or after the start), shown by the core as `CALENDAR · IN 10 MIN`. Title = event title; detail
+  `16:00–17:00 · Work`, the day first when not today, `All day` for all-day events, the video service last
+  (`· Zoom`). Both are `Sensitive` (dots in Privacy mode; macOS notifications carry only `CALENDAR`). Primary:
+  `Join call` (`reminder.join`, opens the link) when the event has a video link, else `Open calendar`
+  (`reminder.open`: `focusEvent(id)` selects the event's day in the grid and sets `focusedEventID`, then the
+  tab opens). Dismiss is the event's `secondaryAction` (`reminder.dismiss`). Every action resolves the alert.
+- **Resolution.** The alert stays unresolved until its event ends (so `[notify] after_focus = "replay"` replays
+  it after a Focus, and `drop` drops it), until an action is taken, until the occurrence disappears from the
+  store, or until `reminders` is turned off or the module stops.
+- **Core side.** Peek style (now accent, 26 px event-track beacon), urgency rank 2, Focus/DND withholding and
+  replay, and the `[sounds] calendar_reminder` sound (off by default, listed in Settings › Sounds) are the
+  Notifier's.
 
 ## Month grid
 
