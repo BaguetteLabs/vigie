@@ -64,6 +64,9 @@ Scripts/tests/version-test.sh
 echo "==> dev signing script test"
 Scripts/tests/dev-signing-test.sh
 
+echo "==> signing xcconfig test"
+Scripts/tests/signing-xcconfig-test.sh
+
 echo "==> xcodegen generate"
 Scripts/version.sh --xcconfig App/Config/Version.xcconfig
 (cd App && xcodegen generate)

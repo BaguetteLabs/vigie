@@ -68,6 +68,8 @@ jobs:
           tag=""
           if [ "${GITHUB_REF_TYPE:-}" = "tag" ]; then tag="$GITHUB_REF_NAME"; fi
           Scripts/tests/version-test.sh
+          Scripts/tests/dev-signing-test.sh
+          Scripts/tests/signing-xcconfig-test.sh
           Scripts/version.sh ${tag:+--tag "$tag"} --build "$GITHUB_RUN_NUMBER" --xcconfig App/Config/Version.xcconfig
           cat App/Config/Version.xcconfig
 
