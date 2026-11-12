@@ -29,9 +29,14 @@ for b in openssl /opt/homebrew/bin/openssl /usr/local/bin/openssl; do
   if command -v "$b" >/dev/null 2>&1 && "$b" genpkey -algorithm ed25519 >/dev/null 2>&1; then OSSL="$(command -v "$b")"; break; fi
 done
 if [ -n "$OSSL" ]; then
-  "$OSSL" genpkey -algorithm ed25519 -out "$TMP/k.pem" 2>/dev/null
-  SEED="$("$OSSL" pkey -in "$TMP/k.pem" -outform DER | tail -c 32 | base64)"
-  PUB="$("$OSSL" pkey -in "$TMP/k.pem" -pubout -outform DER | tail -c 32 | base64)"
+  # An xcconfig treats `//` as a comment, so a key whose base64 contains it cannot be configured; the
+  # setup doc says to regenerate such a key. Do the same here so the check-config step is deterministic.
+  PUB=//
+  while [[ "$PUB" == *//* ]]; do
+    "$OSSL" genpkey -algorithm ed25519 -out "$TMP/k.pem" 2>/dev/null
+    SEED="$("$OSSL" pkey -in "$TMP/k.pem" -outform DER | tail -c 32 | base64)"
+    PUB="$("$OSSL" pkey -in "$TMP/k.pem" -pubout -outform DER | tail -c 32 | base64)"
+  done
   eq "$(SPARKLE_PRIVATE_KEY="$SEED" "$REL/sign-update.sh" public-key)" "$PUB" "public key derived from the seed"
 else
   echo "release-sparkle-test: no openssl with Ed25519; using the fixed test vector (public-key checks skipped)"

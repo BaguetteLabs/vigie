@@ -123,6 +123,8 @@ environment.
    file. Losing it means installed copies can no longer accept updates; leaking it means anyone can sign one.
 4. Public key into the app: in `App/Config/Updates.xcconfig` set `VIGIE_SPARKLE_PUBLIC_KEY = <public key>` (the
    base64 string `generate_keys` printed; `"$BIN/generate_keys" -p` prints it again) and commit. It is not a secret.
+   If the printed key contains `//`, delete the keychain item and generate again: an xcconfig reads `//` as the
+   start of a comment and would cut the key short (`sign-update.sh check-config` refuses such a key).
    Release builds then carry it as `SUPublicEDKey`. Debug (`Vigie Dev`) never gets it: dev builds do not update.
    Cross-check: `SPARKLE_PRIVATE_KEY="$(cat sparkle_private_key.txt)" Scripts/release/sign-update.sh public-key`
    prints the same string (needs Homebrew `openssl`, OpenSSL 3).

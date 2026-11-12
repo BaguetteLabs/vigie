@@ -165,7 +165,7 @@ case "$cmd" in
       || problem "App/Config/Updates.xcconfig VIGIE_RELEASE_REPO is '$configured', the release goes to '$repo': the app would read another feed"
     key="$(xcconfig_key)"
     [ "$(printf '%s' "$key" | base64 -D 2>/dev/null | wc -c | tr -d ' ')" = 32 ] \
-      || problem "App/Config/Updates.xcconfig VIGIE_SPARKLE_PUBLIC_KEY is not set: the release could never update itself"
+      || problem "App/Config/Updates.xcconfig VIGIE_SPARKLE_PUBLIC_KEY is not set or is cut short: an xcconfig reads '//' as a comment, so a key whose base64 contains '//' must be regenerated (docs/release-setup.md step 2)"
     if [ "$DRY_RUN" = 1 ] || [ -z "${SPARKLE_PRIVATE_KEY:-}" ]; then
       say "sign-update: config names $repo and a public key (private key not compared)"
       exit 0
