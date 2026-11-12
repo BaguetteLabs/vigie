@@ -6,8 +6,8 @@
 #   package.sh checksums --dist DIR [--dry-run]                               -> SHA256SUMS.txt
 # V is the tag without its `v` (1.2.0, 1.2.0-beta.1). Run zip and dmg on the notarized, stapled app, so the
 # ticket travels in both. SHA256SUMS.txt is `shasum -a 256` output ("<64 hex>  <file name>" per line, sorted by
-# name) for every Vigie-* file in DIST, checkable with `shasum -a 256 -c SHA256SUMS.txt`. Story 6.3 adds the
-# Sparkle signature and appcast.xml to DIST between these steps and publish.sh.
+# name) for every Vigie-* file in DIST, checkable with `shasum -a 256 -c SHA256SUMS.txt`. Story 6.3 adds
+# appcast.xml (stable tags) to DIST between these steps and publish.sh (sign-update.sh, appcast.sh).
 set -euo pipefail
 . "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 

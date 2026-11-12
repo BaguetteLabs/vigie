@@ -47,6 +47,9 @@ public final class SettingsController {
     public var privacy: CorePrivacyService?
     /// Settings › Home state (Story 11.1).
     public let home: HomePaneModel
+    /// The app's updater (Story 6.3), for Settings › Updates › Check for Updates…. The App sets it; nil (tests, or
+    /// before assembly) shows the button disabled.
+    public var updater: (any UpdaterControlling)?
     /// Home card providers that are not modules (scripts with the `home` surface, Epic 12); listed after the
     /// modules in Settings › Home.
     @ObservationIgnored public var additionalHomeProviders: @MainActor () -> [HomeProviderDescriptor] = { [] }
@@ -314,6 +317,22 @@ public final class SettingsController {
             case .screenRecording: "Privacy_ScreenCapture"
             }
         return URL(string: "x-apple.systempreferences:com.apple.preference.security?\(anchor)")!
+    }
+
+    // MARK: - Updates (Story 6.3)
+
+    /// `Check for Updates…` is enabled only with a working updater that is not already busy.
+    public var canCheckForUpdates: Bool { updater?.canCheckForUpdates ?? false }
+
+    /// The line under the button when this build cannot update; nil when it can.
+    public var updatesUnavailableText: LocalizedStringResource? {
+        guard let updater else { return SettingsText.resource("settings.updates.unavailable") }
+        return updater.isAvailable ? nil : SettingsText.resource("settings.updates.unavailable")
+    }
+
+    public func checkForUpdates() {
+        guard canCheckForUpdates else { return }
+        updater?.checkForUpdates()
     }
 
     // MARK: - General extras

@@ -93,6 +93,7 @@ struct SettingsPaneView: View {
                 }
                 // Focus detection setup and the Shortcuts recipe (Story 3.10).
                 if pane.id == "notify" { FocusSettingsSection(controller: controller) }
+                if pane.id == "updates" { UpdatesActionSection(controller: controller) }
                 if pane.id == "general" {
                     CLISection(controller: controller)
                     Section {
@@ -149,6 +150,30 @@ struct PrivacyAutoRow: View {
     private func apply(_ value: Bool) {
         isOn = value
         Task { try? await model.binding.set(.bool(value)) }
+    }
+}
+
+/// Settings › Updates action row (Story 6.3): `Check for Updates…`, with a line when this build cannot update.
+struct UpdatesActionSection: View {
+    let controller: SettingsController
+
+    var body: some View {
+        Section {
+            HStack {
+                if let unavailable = controller.updatesUnavailableText {
+                    Text(unavailable)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                Button {
+                    controller.checkForUpdates()
+                } label: {
+                    Text(SettingsText.resource("settings.updates.checkNow"))
+                }
+                .disabled(!controller.canCheckForUpdates)
+            }
+        }
     }
 }
 

@@ -1,0 +1,20 @@
+// Sparkle updater settings of the Vigie app target (Story 6.3, SPEC §12.4, AD-16, AD-20). Info.plist reads them as
+// SUFeedURL and SUPublicEDKey. Not secrets: both are public by design. Maintainer steps: docs/release-setup.md
+// (step 6 for the key, step 7 for the release repository).
+
+// OWNER/NAME of the public releases-only repository (A49, A86): the same value as the `RELEASE_REPO` variable of
+// the `release` environment; release.yml stops when they differ. `OWNER/…` is the placeholder while A49 is open:
+// the app then treats the feed as unconfigured and never checks.
+VIGIE_RELEASE_REPO = OWNER/vigie-releases
+
+// The stable appcast (A63: no beta feed before the public release). GitHub redirects releases/latest to the
+// newest non-pre-release. `$()` keeps xcconfig from reading `//` as a comment.
+VIGIE_SPARKLE_FEED_URL = https:/$()/github.com/$(VIGIE_RELEASE_REPO)/releases/latest/download/appcast.xml
+
+// Base64 Ed25519 public key printed by Sparkle's `generate_keys` (or `Scripts/release/sparkle.sh public-key`).
+// Empty = updater off: the app logs it once and never starts Sparkle (no crash, no network call).
+VIGIE_SPARKLE_PUBLIC_KEY =
+
+// Debug is the dev flavor (fr.baguettelabs.vigie.dev, AD-17): it must never replace itself with a release build,
+// so it never gets a key.
+VIGIE_SPARKLE_PUBLIC_KEY[config=Debug] =

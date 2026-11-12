@@ -181,6 +181,18 @@
         }
       }
     },
+    "menu.checkForUpdates": {
+      "comment": "Closed notch context menu: ask the updater to check for a new version now.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check for Updates…"
+          }
+        }
+      }
+    },
     "menu.quit": {
       "comment": "Closed notch context menu: quit the app.",
       "extractionState": "manual",
@@ -1017,6 +1029,30 @@
           "stringUnit": {
             "state": "translated",
             "value": "Show Activity Log"
+          }
+        }
+      }
+    },
+    "settings.updates.checkNow": {
+      "comment": "Button in Settings › Updates that checks for a new version now.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check for Updates…"
+          }
+        }
+      }
+    },
+    "settings.updates.unavailable": {
+      "comment": "Settings › Updates, next to the disabled Check for Updates button, when the build has no update feed or key (dev builds).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Updates are not set up in this build."
           }
         }
       }

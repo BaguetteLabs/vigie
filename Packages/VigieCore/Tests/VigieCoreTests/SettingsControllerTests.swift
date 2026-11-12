@@ -133,13 +133,15 @@ struct SettingsHarness {
         for id in ["agents.sessions", "calendar.test", "custom.test"] { #expect(ids.contains(id)) }
         #expect(Array(ids.prefix(SettingsPaneCatalog.corePaneIDs.count)) == SettingsPaneCatalog.corePaneIDs)
         // Every core key has a row in exactly one pane, except [appearance.colors] (free-form) and
-        // `[home] cards`, which the Settings › Home card list edits (Story 11.1).
+        // `[home] cards`, which the Settings › Home card list edits (Story 11.1), and `[updates] channel`, which has
+        // no row until the beta feed exists (A63, Story 6.3).
         let placed = h.controller.panes.flatMap { pane -> [ConfigKeyPath] in
             if case .core(let sections) = pane.content { return sections.flatMap(\.keys) }
             return []
         }
         let core = Set(CoreSettings.all.map(\.path)).subtracting([
             CoreSettings.path("general", "launch_at_login"), HomePaneModel.cardsPath, FocusFilterSetup.path,
+            CoreSettings.path("updates", "channel"),
         ])
         #expect(Set(placed) == core)
         #expect(placed.count == core.count)

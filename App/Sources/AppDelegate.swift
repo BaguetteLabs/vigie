@@ -47,6 +47,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var privacyConfig: PrivacyConfigBridge?
     private var stashService: StashServiceProvider?
     private var privacy: CorePrivacyService?
+    private var updater: SparkleUpdater?
+    private var updatesConfig: UpdatesConfigBridge?
     private var isShuttingDown = false
 
     private let environment = AppEnvironment.current
@@ -92,7 +94,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let themeController = ThemeController(library: library)
         themeController.startObservingSystem()
 
-        let contextMenu = NotchContextMenu(openSettings: { [weak self] in self?.openSettings(pane: nil) })
+        // Sparkle (Story 6.3): created here, started later by UpdatesConfigBridge once `[updates]` is loaded.
+        let updater = SparkleUpdater(logger: Logger(subsystem: environment.logSubsystem, category: "updates"))
+        self.updater = updater
+        let contextMenu = NotchContextMenu(
+            openSettings: { [weak self] in self?.openSettings(pane: nil) }, updater: updater)
         self.themeController = themeController
         self.contextMenu = contextMenu
 
@@ -333,6 +339,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             }, secretStore: secretStore)
         settings.sounds.player = soundPlayer
         settings.privacy = privacy
+        settings.updater = updater
         self.settings = settings
 
         let general = { (key: String) in CoreSettings.path("general", key) }
@@ -398,6 +405,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let privacyConfig = PrivacyConfigBridge(store: configStore, privacy: privacy, permissions: coordinator)
         privacyConfig.start()
         self.privacyConfig = privacyConfig
+        // `[updates]` drives Sparkle, live (Story 6.3); a build without key or feed logs once and never checks.
+        if let updater {
+            let updatesConfig = UpdatesConfigBridge(
+                store: configStore, updater: updater,
+                logger: Logger(subsystem: environment.logSubsystem, category: "updates"))
+            updatesConfig.start()
+            self.updatesConfig = updatesConfig
+        }
 
         // `vigie reload` and `app.expand` (Story 4.3, AD-21), and the Shortcuts Focus bridge `app.focus` (Story
         // 3.10). Subscribed before the server's queue is released.
@@ -466,7 +481,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    /// Stops modules before quitting (their storage flushes asynchronously).
+    /// Stops modules before quitting (their storage flushes asynchronously). This is also the path of a Sparkle
+    /// "Install and Relaunch" (Story 6.3): Sparkle calls `NSApp.terminate`, the Event Server stops here (socket
+    /// closed and unlinked if still ours), the instance lock is released in `applicationWillTerminate`, and only then
+    /// does Sparkle's installer replace the bundle and launch the new instance, which replays the spool (AD-21).
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
         guard !isShuttingDown else { return .terminateNow }
         isShuttingDown = true
@@ -477,6 +495,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         settings?.close()
         hostConfig?.stop()
         privacyConfig?.stop()
+        updatesConfig?.stop()
         notchHost?.stop()
         hotkeyBridge?.stop()
         setupProblems?.stop()

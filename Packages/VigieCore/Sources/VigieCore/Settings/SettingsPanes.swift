@@ -140,7 +140,8 @@ public enum SettingsPaneCatalog {
                 id: "updates", title: SettingsText.resource("settings.pane.updates"),
                 icon: "arrow.triangle.2.circlepath",
                 content: .core([
-                    SettingsSection(keys: keys("updates", ["auto_check", "check_interval", "auto_install", "channel"]))
+                    // `channel` has no row: A63 keeps a single stable feed until the public release (Story 19.3).
+                    SettingsSection(keys: keys("updates", ["auto_check", "check_interval", "auto_install"]))
                 ])),
         ]
     }

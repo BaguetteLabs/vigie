@@ -54,6 +54,18 @@
 			</array>
 		</dict>
 	</array>
+	<key>SUFeedURL</key>
+	<string>$(VIGIE_SPARKLE_FEED_URL)</string>
+	<key>SUPublicEDKey</key>
+	<string>$(VIGIE_SPARKLE_PUBLIC_KEY)</string>
+	<key>SUEnableAutomaticChecks</key>
+	<false/>
+	<key>SUAllowsAutomaticUpdates</key>
+	<true/>
+	<key>SUVerifyUpdateBeforeExtraction</key>
+	<true/>
+	<key>SURequireSignedFeed</key>
+	<true/>
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright © 2026 Baguette Labs. Licensed under the GNU GPLv3.</string>
 </dict>

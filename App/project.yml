@@ -39,6 +39,11 @@ packages:
     path: ../Packages/Terminals/ITerm
   WarpTerminal:
     path: ../Packages/Terminals/Warp
+  # Auto-update (Story 6.3, AD-16 allowlist): App target only (AD-2), never a package dependency. Pinned exactly;
+  # Scripts/release/sparkle.sh downloads the same version's command-line tools (sign_update) by checksum.
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    exactVersion: 2.10.1
 
 # Signing (Story 6.1, AD-17, AD-20; maintainer steps in docs/release-setup.md). Config/Signing.xcconfig
 # (committed) is the only place signing is set: the target below sets no signing key, since target settings
@@ -89,6 +94,12 @@ targets:
       - package: TerminalAppTerminal
       - package: ITermTerminal
       - package: WarpTerminal
+      - package: Sparkle
+    # Feed URL and public EdDSA key of the updater (Story 6.3), read by Info.plist. Target level, so it stays out of
+    # Config/Signing.xcconfig.
+    configFiles:
+      Debug: Config/Updates.xcconfig
+      Release: Config/Updates.xcconfig
     settings:
       base:
         INFOPLIST_FILE: Info.plist

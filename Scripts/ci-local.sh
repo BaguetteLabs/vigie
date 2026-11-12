@@ -74,6 +74,7 @@ echo "==> release script tests"
 Scripts/tests/release-check-tag-test.sh
 Scripts/tests/release-package-test.sh
 Scripts/tests/release-dry-run-test.sh
+Scripts/tests/release-sparkle-test.sh
 
 echo "==> xcodegen generate"
 Scripts/version.sh --xcconfig App/Config/Version.xcconfig
