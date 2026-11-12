@@ -45,7 +45,7 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - [x] 2.13 ConfigStore writer (comment-preserving TOML patcher)
 - [x] 2.14 Generated Settings window (App wiring in integration pass 3; not yet exercised in the running app)
 - [x] 2.15 Accessibility floor in v0.1 (contrast check in CI; docs/accessibility-floor.md)
-- [ ] 2.16 Virtual notch height follows the menu bar (ruled 2026-11-12; in progress)
+- [x] 2.16 Virtual notch height follows the menu bar (not yet seen on a real external display; see Waiting on Romain)
 
 ### Epic 3 — Alerts that never steal focus
 - [x] 3.1 Notifier rules engine
@@ -106,6 +106,7 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 
 ## Waiting on Romain
 
+- **Virtual notch on the external monitor (Story 2.16, 1 min):** with the next build, check on the Air + external display that the pill is exactly the menu bar height and that the wing readouts (quota dial, session glyphs) still read at 24 pt. Report what looks cramped.
 - **Notch check on hardware (Story 2.5, 2 min):** open the MacBook lid (or make the built-in display active), build and launch the Debug app (`cd App && xcodegen generate && xcodebuild -scheme Vigie -configuration Debug build CODE_SIGN_IDENTITY=- -derivedDataPath .build-dd && open .build-dd/Build/Products/Debug/Vigie\ Dev.app`). Expected: a black island hugging the notch with two wings, a thin iris rim, `Dev sample` in the left wing; right-click shows Settings…/Quit; typing in another app is not disturbed. Tell me what you see. Without a notch, `-VigieSimulateNotch YES` draws a fake one on the main display.
 
 
@@ -116,6 +117,7 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 
 ## Decisions log
 
+- 2026-11-12 — **Story 2.16 merged.** Virtual islands are exactly the measured menu bar height (PM corrected the agent's `notch_overlap` application to virtual islands: the setting covers the hardware cut-out only). `ClosedBandMetrics` (`theme.closedBand`): below 34 px rings/glyphs cap at band − 2 pt per side, two-line readouts scale by band ÷ 34, a quota dial drops the provider name under it (VoiceOver keeps it), pill radii clamp. Expanded view, peeks and drop display keep 34 px. **To confirm with Romain:** dials without names in a 24 pt band (several providers told apart by value only); 5 pt labels at 24 pt per the no-floor ruling.
 - 2026-11-12 — **Story 20.5 Pomodoro, agent decisions where docs were silent (to confirm with Romain):** `items.json` schema 2 `{items, pomodoro}` (schema 1 arrays still decode); Skip during work ends the work now and starts its break at once without a peek; Skip on a due/running break starts the next work now (new set after the long break); manual PAUSE allowed in work and break, end line `PAUSED <time>`, only an Away pause shows `AWAY · PAUSED`; sleep counts as Away; a break ending while Away starts the next work paused; length changes apply from the next phase, `long_every` capped at 12; alert copy work end `N cycle(s) done / X min break` body `Focused <set work> since <set start>`, break end `Back to work / 25 min`; a due break is not re-posted across relaunch (readout and row persist); row sorted by end time, due break right after ended items; chips PAUSE/RESUME, SKIP, STOP (new dim STOP chip), quick-start disabled while running; pips hatch the current pip during a break, sizes in `TimeMetrics`; the module holds `context.away` while reminders are on or a Pomodoro runs. Closed-notch running readout left to 20.6. Shipped config: `[modules.time.pomodoro]` table (not inline) so Settings can write it.
 - 2026-11-12 — **Keychain prompt loop fixed (merged):** (1) Debug builds sign with a stable identity through `App/Config/Signing.xcconfig` + gitignored `Signing.local.xcconfig` written by `Scripts/dev-signing.sh` (run once per Mac; this Mac uses the Apple Development certificate, `CODE_SIGN_IDENTITY[config=Debug]` only, Release stays ad-hoc, CI unchanged); (2) Claude Code's login is read once per launch into `ExternalCredentialCache` (token + expiry only, re-read on expiry or 401/403; AD-9 and SPEC §7.2 amended); (3) a refused prompt maps to `PlanUsageError.credentialDenied`, one setup problem, 1 h back-off cleared by Stop/Allow in Settings or a relaunch. Follow-up noted: Wire `PathLiteralGuardTests` scans `App/.build*` and fails on a GRDB checkout directory; the guard should skip `.build*`.
 - 2026-11-12 — **Virtual notch height (Story 2.16):** Romain saw the island overhang the external monitor's menu bar (34px theme band vs 24 pt bar). Ruling: the virtual notch matches the measured menu bar height of its screen exactly, no legibility floor; closed-notch content scales down to fit. Built-in vs external detection (`CGDisplayIsBuiltin`) rejected as the criterion: the menu bar height is the signal that matters.

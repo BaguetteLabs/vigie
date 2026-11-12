@@ -270,7 +270,7 @@ Behavior details: EXPERIENCE.md (Component Patterns, Interaction Primitives).
   - When idle, the virtual notch uses its minimum width (or hides, per `virtual_notch.idle`).
   - `virtual_notch.position = "center" | "right"`: `right` places it just left of the status items, away from app menus.
   - `virtual_notch.placement = "menu_bar" | "below"`: `below` puts it just under the menu bar so that it never covers menu items.
-- **Height.** The virtual notch is exactly as tall as that display's menu bar (plus `notch_overlap`); closed-notch content scales to the band.
+- **Height.** The virtual notch is exactly as tall as that display's menu bar (`notch_overlap` applies to the hardware cut-out only); closed-notch content scales to the band.
 - **Style.** `virtual_notch.style = "black" | "menu_bar"`. `black` looks like a hardware notch. `menu_bar` matches the menu bar's material, so it doesn't stand out on light or translucent menu bars.
 - **Auto-hidden menu bar.** When "Automatically hide menu bar" is on, the virtual notch hides with the menu bar and comes back with it. Alerts still peek.
 - **Hover target.** The hover zone is the whole top-center strip, a few points tall and wider than the pill, so that a mouse pushed to the top edge reliably hits it.

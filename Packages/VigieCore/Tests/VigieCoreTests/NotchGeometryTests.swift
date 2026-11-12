@@ -166,8 +166,8 @@ import Testing
 
 @MainActor
 @Suite struct NotchOverlapHostTests {
-    /// Story 2.16: the overlap hangs below the menu bar like the physical island; the side inset is physical only.
-    @Test func virtualNotchTakesTheOverlapButNotTheSideInset() throws {
+    /// Story 2.16 (ruled: match the menu bar exactly): neither the overlap nor the side inset moves a virtual island.
+    @Test func virtualNotchIgnoresTheOverlapAndTheSideInset() throws {
         let f = DisplayHostFixture([.plain(1, main: true)])
         let before = try #require(
             {
@@ -180,8 +180,8 @@ import Testing
         f.host.start()
         defer { f.host.stop() }
         let after = try #require(f.host.islands.first?.geometry)
-        #expect(after.height == before.height + 12)
-        #expect(after.islandFrame.maxY == before.islandFrame.maxY)
+        #expect(after.height == before.height)
+        #expect(after.islandFrame == before.islandFrame)
         #expect(after.wings == before.wings)
     }
 

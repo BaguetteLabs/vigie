@@ -1608,7 +1608,7 @@ So that Vigie does not overhang the menu bar on plain displays.
 
 **Given** a plain display selected for Vigie
 **When** the virtual notch is placed
-**Then** its height is that display's measured menu bar height (24 pt on a default external display, more on scaled ones), plus `[closed] notch_overlap` below it like the physical island; the theme band height is no longer used for virtual height
+**Then** its height is that display's measured menu bar height (24 pt on a default external display, more on scaled ones), exactly: `[closed] notch_overlap` stays a hardware cut-out setting (ruled 2026-11-12, match the menu bar exactly); the theme band height is no longer used for virtual height
 
 **Given** the measured height changes (display scaling, display hot-plug, menu bar probe fallback)
 **When** the host re-places its islands

@@ -418,7 +418,7 @@ public final class NotchHost {
         let menuBar = menuBarProbe.menuBar(on: display.frame)
         let geometry = NotchGeometry.virtual(
             screen: display.metrics, settings: settings, menuBar: menuBar, maxSideWidth: maxSideWidth(),
-            cornerRadius: radius, isIdle: isIdle, overlap: notchOverlap())
+            cornerRadius: radius, isIdle: isIdle)
         logVirtualNotchGeometry(display, menuBar: menuBar, geometry)
         let idleHidden = isIdle && settings.idle == .hide && hoverStripDisplayID != display.id
         return PlacedIsland(
@@ -444,7 +444,7 @@ public final class NotchHost {
     private func logVirtualNotchGeometry(_ display: DisplayInfo, menuBar: MenuBarMetrics, _ geometry: NotchGeometry) {
         let line =
             "notch geometry: virtual display=\(display.id) menuBarHeight=\(menuBar.height) "
-            + "overlap=\(notchOverlap()) island=\(NSStringFromRect(geometry.islandFrame))"
+            + "island=\(NSStringFromRect(geometry.islandFrame))"
         logGeometryLine(line, display: display.id)
     }
 

@@ -33,7 +33,7 @@ import VigieUI
         #expect(g.cornerRadius == 14)
     }
 
-    // Story 2.16: the virtual notch is exactly as tall as the measured menu bar, plus `notch_overlap`.
+    // Story 2.16: the virtual notch is exactly as tall as the measured menu bar (the host passes no overlap).
     @Test(arguments: [CGFloat(24), 37])
     func heightIsTheMenuBarHeightOverTheMenuBar(menuBarHeight: CGFloat) {
         let g = geometry(menuBar: MenuBarMetrics(height: menuBarHeight))
@@ -424,7 +424,7 @@ final class DisplayHostFixture {
         f.host.start()
         defer { f.host.stop() }
         let island = try #require(f.host.islands.first)
-        #expect(island.geometry.height == 26)
+        #expect(island.geometry.height == 24)  // notch_overlap is for the hardware cut-out only
         #expect(island.geometry.islandFrame.maxY == 1080)
         #expect(f.panel(1)?.frame == island.geometry.islandFrame)
     }
@@ -482,7 +482,7 @@ final class DisplayHostFixture {
         let line = try #require(f.host.lastNotchGeometryLines[1])
         #expect(line.contains("virtual"))
         #expect(line.contains("menuBarHeight=24.0"))
-        #expect(line.contains("overlap=2.0"))
+        #expect(!line.contains("overlap="))
         let frame = try #require(f.host.islands.first { $0.display.id == 1 }?.geometry.islandFrame)
         #expect(line.contains("island=\(NSStringFromRect(frame))"))
         #expect(f.host.lastNotchGeometryLines[2]?.contains("safeAreaTop=") == true)

@@ -68,8 +68,7 @@ public struct NotchGeometry: Sendable, Equatable {
     public var hoverStrip: CGRect?
 
     /// Island height. Physical: the band height, or the hardware notch height when that is taller so the
-    /// cut-out never shows below the island (plus `notch_overlap`). Virtual: the menu bar height (plus
-    /// `notch_overlap`).
+    /// cut-out never shows below the island (plus `notch_overlap`). Virtual: exactly the menu bar height.
     public var height: CGFloat { islandFrame.height }
 
     public var wings: IslandWings {
@@ -132,9 +131,9 @@ public struct NotchGeometry: Sendable, Equatable {
     /// Geometry for a virtual notch on a display without a hardware notch (SPEC §5.3, §5.5).
     ///
     /// The notch part is `settings.width` wide (default 200, the MacBook notch) and exactly as tall as the
-    /// display's menu bar (`menuBar.height`, Story 2.16), plus `overlap` (`closed.notch_overlap`) points below it
-    /// like the physical island; the theme band height is never used here, so the pill does not overhang a
-    /// 24 pt menu bar. Each wing
+    /// display's menu bar (`menuBar.height`, Story 2.16, ruled: match exactly; the host passes no `overlap`,
+    /// `closed.notch_overlap` covers the hardware cut-out only); the theme band height is never used here, so the
+    /// pill does not overhang a 24 pt menu bar. Each wing
     /// is `maxSideWidth` (`closed.max_side_width`) while a module wants a side, or with `idle = keep`; when
     /// `isIdle` and `idle` is `shrink` or `hide` the pill is the notch alone (the host hides it for `hide`).
     /// `placement = menu_bar` puts the top edge on the screen edge, over the menu bar; `below` hangs it just
