@@ -1,6 +1,6 @@
 # Release setup: what the maintainer does by hand
 
-Stories 6.1, 6.2 and 6.3 (AD-17, AD-20, SPEC §12, A49, A86). The build settings for signing are committed in
+Stories 6.1, 6.2, 6.3 and 6.5 (AD-17, AD-20, SPEC §12, A49, A86). The build settings for signing are committed in
 `App/Config/Signing.xcconfig`; everything below lives in Apple's portals, the maintainer's keychain or GitHub and
 cannot be committed. Romain owns every step. Do them in order: later steps use what earlier ones create.
 
@@ -108,7 +108,7 @@ Access **Developer** (the least role `notarytool` accepts) › Generate.
 
 ## 6. Sparkle EdDSA keys (To do)
 
-One Ed25519 key pair signs every update zip and appcast (Story 6.3) and, later, the price table (Story 6.5). The
+One Ed25519 key pair signs every update zip and appcast (Story 6.3) and the price table (Story 6.5). The
 public key is built into the app; the private key exists only in your password manager and the `release`
 environment.
 
@@ -168,7 +168,8 @@ Private code repository › Settings › Environments › New environment `relea
 - Deployment protection rules: **Required reviewers** › Romain; tick Prevent self-review only if a second
   maintainer exists.
 - Deployment branches and tags › **Selected branches and tags** › Add deployment branch or tag rule › Ref type
-  **Tag**, pattern `v*.*.*`.
+  **Tag**, pattern `v*.*.*`; and a second rule › Ref type **Branch**, pattern `master`, for `prices.yml` (Story 6.5:
+  it publishes the price table when `prices/` changes on `master`; pull requests never run it).
 - Environment variables › Add environment variable: `RELEASE_REPO` = `<org>/vigie-releases` (step 7; not a
   secret, it appears in the release URLs). A repository variable of the same name works too.
 - Environment secrets › Add environment secret, one per name (names are what `release.yml`, Story 6.2, reads):
@@ -189,6 +190,10 @@ lists only registered Macs; CI never signs Debug builds, so it is never stored i
 2026-11-12 by Story 6.2). The Homebrew tap token (SPEC §12.3 step 8) comes with the tap story.
 
 ## Releasing (Story 6.2)
+
+**CI minutes are currently off (2026-11-12): do not push release tags and do not push `prices/` changes expecting
+them to publish.** `release.yml` and `prices.yml` are checked with `actionlint` and dry runs only until minutes are
+back.
 
 `.github/workflows/release.yml` does the whole release on a GitHub macOS runner; the logic is in
 `Scripts/release/*.sh`, each runnable locally with `--dry-run`.
@@ -283,3 +288,31 @@ What only a real release can verify: a Developer ID export re-signing Sparkle's 
 Runtime and passing notarization; the redirect of `releases/latest/download/appcast.xml`; an actual update from
 one published version to the next (download, signature check, install, relaunch, spool replay); the "ask first"
 alert. Test it with two stable tags in a row (for example `v0.1.0` then `v0.1.1`) once steps 2 to 8 are done.
+
+## Price table (Story 6.5)
+
+- **Source:** `prices/prices.json` at the repository root (schema 2: `schema`, integer `version`, a `providers` map
+  keyed by adapter id, each with `currency`, `unit`, `updated` and `models`; optional `tiers` per model are kept but
+  not applied yet). The app bundles a copy in `Packages/Modules/AgentsUsage/Sources/AgentsUsage/Resources/prices.json`;
+  a Swift test and `prices.sh` refuse a copy that differs. To change prices: edit `prices/prices.json`, bump
+  `version` by one, set the section's `updated`, copy the file over the bundled one, commit on `master`.
+- **Location:** `https://github.com/<RELEASE_REPO>/releases/latest/download/prices.json` and `prices.json.sig`,
+  next to `appcast.xml`. The app derives it from `SUFeedURL`; while `VIGIE_RELEASE_REPO` is the `OWNER/…`
+  placeholder or `VIGIE_SPARKLE_PUBLIC_KEY` is empty, the app logs "price table updates off in this build" once
+  and never requests it.
+- **Signing:** `Scripts/release/prices.sh sign --dist DIR` checks the table, copies it to `DIR/prices.json` and
+  writes `DIR/prices.json.sig`: one line, the base64 Ed25519 signature of the file's bytes made by Sparkle's
+  `sign_update` with `SPARKLE_PRIVATE_KEY` (the same key as updates). The app verifies it with `SUPublicEDKey`
+  (CryptoKit), refuses a lower version or a bad signature (one setup problem), and keeps an accepted table in
+  `modules/agents.usage/` of its Application Support folder.
+- **Publishing:** every release tag publishes both files (`release.yml`, step "Sparkle signature, appcast and price
+  table"; `publish.sh` uploads all of `$DIST`). Between releases, a push to `master` that changes `prices/` runs
+  `prices.yml`: it signs the table and replaces both files on the latest release of `RELEASE_REPO`
+  (`prices.sh publish-latest`, `RELEASE_REPO_TOKEN`). A pre-release is never "latest", so it never serves the
+  table. Test: `Scripts/tests/release-prices-test.sh` (dry runs, refusals, sign and verify round trip).
+- **In the app:** `[updates] prices` (default on, Settings › Updates) and `[updates] check_interval`; Settings ›
+  Usage has `Check now`. Off or offline: no request, the newest table already on disk is used.
+
+What only a real release can verify: the `releases/latest/download/prices.json` redirect, `prices.yml` running
+with the `release` environment on `master`, and an installed app picking up a newer table.
+
