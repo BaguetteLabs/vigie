@@ -159,11 +159,22 @@ public struct IslandShape: Shape {
     }
 
     public func path(in rect: CGRect) -> Path {
-        UnevenRoundedRectangle(
-            topLeadingRadius: topRadius, bottomLeadingRadius: radius, bottomTrailingRadius: radius,
-            topTrailingRadius: topRadius, style: .continuous
+        let (top, bottom) = Self.radii(top: topRadius, bottom: radius, in: rect.size)
+        return UnevenRoundedRectangle(
+            topLeadingRadius: top, bottomLeadingRadius: bottom, bottomTrailingRadius: bottom,
+            topTrailingRadius: top, style: .continuous
         )
         .path(in: rect)
+    }
+
+    /// The corner radii clamped to `size`, so a floating pill in a short band (Story 2.16: a 24 pt menu bar)
+    /// stays a pill instead of overlapping its top and bottom corners. Unchanged when they fit (a 34 px band
+    /// with `island-closed` 14 px).
+    static func radii(top: CGFloat, bottom: CGFloat, in size: CGSize) -> (top: CGFloat, bottom: CGFloat) {
+        let halfWidth = max(size.width / 2, 0)
+        let height = max(size.height, 0)
+        let maxBottom = top > 0 ? height / 2 : height
+        return (min(top, height / 2, halfWidth), min(bottom, maxBottom, halfWidth))
     }
 }
 

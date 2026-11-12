@@ -110,6 +110,14 @@ public struct Theme: Sendable, Equatable {
     /// glass (reported height plus `closed.notch_overlap`).
     public func withBandHeight(atLeast height: CGFloat) -> Theme {
         guard height > spacing(.bandHeight) else { return self }
+        return withBandHeight(height)
+    }
+
+    /// A copy whose `spacing.band-height` is exactly `height`, lower or higher: a virtual notch is as tall as
+    /// its display's menu bar (Story 2.16), and the closed-notch content scales to that band
+    /// (``ClosedBandMetrics``). A non-positive or non-finite `height` keeps the theme as it is.
+    public func withBandHeight(_ height: CGFloat) -> Theme {
+        guard height > 0, height.isFinite, height != spacing(.bandHeight) else { return self }
         var copy = self
         copy.spacing[SpacingRole.bandHeight.rawValue] = "\(height)px"
         return copy

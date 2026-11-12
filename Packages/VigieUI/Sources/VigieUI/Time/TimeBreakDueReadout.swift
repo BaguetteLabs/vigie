@@ -20,7 +20,8 @@ public struct TimeBreakDueReadout: View {
     }
 
     public var body: some View {
-        let side = theme.componentLength("time-ring", "size-closed") ?? TimeMetrics.wingRingSize
+        let side = theme.closedBand.rowLength(
+            theme.componentLength("time-ring", "size-closed") ?? TimeMetrics.wingRingSize)
         HStack(spacing: theme.spacing(.glyphGap)) {
             ZStack {
                 TimeRing(fractionLeft: 1, dashed: true, size: side, lineWidth: TimeMetrics.wingRingStroke)

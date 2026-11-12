@@ -77,7 +77,7 @@ public struct SessionGlyphView: View {
     }
 
     public var body: some View {
-        let length = size.length(in: theme)
+        let length = theme.closedBand.rowLength(size.length(in: theme))
         let motion = SessionGlyphMotion.resolve(status, theme: theme)
         SessionGlyphShape(
             glyph: status.glyph(in: theme), status: status, unit: length / StatusMarkSize.medium.fallback,

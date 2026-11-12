@@ -235,10 +235,10 @@ public struct QuotaDialView: View {
 
     public var body: some View {
         let model = model.privacy(privacyActive)
-        let length = size.length(in: theme)
+        let length = closedLength
         VStack(spacing: length / 24) {
             QuotaDialRing(model: model, length: length, showsValue: showsValue)
-            if showsName {
+            if drawsName {
                 Text(verbatim: model.nameLabel)
                     .font(theme.font(.readoutLabel))
                     .tracking(theme.tracking(.readoutLabel))
@@ -249,6 +249,18 @@ public struct QuotaDialView: View {
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text(verbatim: model.accessibilityLabel))
+    }
+
+    /// The name under the ring. In a band shorter than designed (a virtual notch on a 24 pt menu bar, Story
+    /// 2.16) the name is dropped: a ring and a line under it do not both fit, so the ring keeps the row with its
+    /// value inside (VoiceOver still reads the provider).
+    private var drawsName: Bool { showsName && !theme.closedBand.isCompact }
+
+    /// The side length: on the band, capped to a band shorter than designed. The Usage tab dial is never on the
+    /// band.
+    private var closedLength: CGFloat {
+        let designed = size.length(in: theme)
+        return size == .tab ? designed : theme.closedBand.rowLength(designed)
     }
 }
 
@@ -266,7 +278,9 @@ public struct QuotaReadoutView: View {
     public var body: some View {
         let model = model.privacy(privacyActive)
         HStack(spacing: theme.spacing(.glyphGap)) {
-            QuotaDialRing(model: model, length: QuotaDialSize.wing.length(in: theme), showsValue: false)
+            QuotaDialRing(
+                model: model, length: theme.closedBand.rowLength(QuotaDialSize.wing.length(in: theme)),
+                showsValue: false)
             WingReadout(value: model.readoutValue ?? "", label: model.readoutLabel, stale: model.stale)
         }
         .accessibilityElement(children: .ignore)
@@ -289,14 +303,18 @@ public struct WingReadout: View {
     }
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: theme.spacing(.glyphGap) / 2) {
+        // Value and label scale together to a band shorter than designed (Story 2.16, ``ClosedBandMetrics``).
+        let band = theme.closedBand
+        let valueFont = band.fontSpec(.readoutValue, in: theme)
+        let labelFont = band.fontSpec(.readoutLabel, in: theme)
+        VStack(alignment: .leading, spacing: band.stackedLength(theme.spacing(.glyphGap) / 2)) {
             Text(verbatim: value)
-                .font(theme.font(.readoutValue))
-                .tracking(theme.tracking(.readoutValue))
+                .font(valueFont.font)
+                .tracking(valueFont.tracking)
                 .foregroundStyle(theme.color(stale ? .ink2 : .ink1))
             Text(verbatim: label)
-                .font(theme.font(.readoutLabel))
-                .tracking(theme.tracking(.readoutLabel))
+                .font(labelFont.font)
+                .tracking(labelFont.tracking)
                 .foregroundStyle(theme.color(.ink3))
         }
         .lineLimit(1)
