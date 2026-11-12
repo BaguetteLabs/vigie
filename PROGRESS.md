@@ -52,11 +52,12 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 - [x] 3.2 Peek presentation (NotchHost ↔ PeekAnchorProvider conformance + AlertSinks wiring in integration pass 3)
 - [x] 3.3 Peek actions with temporary global shortcuts
 - [x] 3.4 Setup-problem alerts (App wiring in integration pass 3)
-- [x] 3.5 Do Not Disturb and Focus modes (App wiring in integration pass 3; sandbox readability of Assertions.json to confirm on first run)
+- [x] 3.5 Do Not Disturb and Focus modes (shipped `Assertions.json` route found non-working on 2026-11-12: EPERM without Full Disk Access, stale with it; replaced by 3.10)
 - [x] 3.6 macOS notification output (App wiring in integration pass 3)
 - [x] 3.7 Alert settings generated from declared kinds
 - [x] 3.8 Local activity log (store + API; Settings › Activity pane deferred to 2.14/17.x)
 - [x] 3.9 Peek concurrency and suppression
+- [ ] 3.10 Detect Focus through a Vigie Focus Filter (added 2026-11-12; in progress)
 
 ### Epic 4 — Track Claude Code sessions
 - [x] 4.1 Event Server (App wiring pending: start after lock, releaseQueue after registry.start, stop before lock release)
@@ -101,7 +102,6 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 
 - 2026-11-08 — **Privacy Automatic detection, follow-up to 21.3:** live test (Meet in Brave) found two usable signals, see `docs/decisions/spike-privacy-detection.md` § Live results: a Chromium layer-25 share banner (owner + layer readable **without** Screen Recording) and the banner title (needs the permission). Next: verify layer 25 has no false positives (download bubble, permission prompt, fullscreen toast, tab share), then ship a `ChromiumShareBannerDetector` (no permission, auto on by default per A88 if it holds) + the title heuristic for native apps behind the permission. Zoom/Teams/Slack/QuickTime/⇧⌘5/OBS still untested.
 - 2026-11-08 — **Idea (Notchi screenshot):** settings as a page inside the open notch (Back / pin / close, rows with status chips `Not Verified`, `Connected`, `No Key`, `Up to date`, external links, a red Quit row). Worth considering for Epic 17 (Settings) as a quick-settings page in the expanded view, keeping the full Settings window for the generated panes.
-- 2026-11-08 — **Spike: Focus/DND detection route** (Story 3.5 follow-up). Romain ruled "research another route" instead of accepting no Focus suppression. Candidates: Full Disk Access to read `~/Library/DoNotDisturb/DB/Assertions.json`; `defaults`/`plutil` of the ModeConfigurations store; Shortcuts automation bridge (a Focus-triggered Shortcut that writes a flag Vigie watches or calls `vigie event`); `NSWorkspace`/private `DNDModeState` observers (rejected if private); menu-bar Focus item accessibility query. Record permission cost and latency; write `docs/decisions/spike-focus-detection.md`.
 
 ## Waiting on Romain
 
@@ -118,6 +118,7 @@ Legend: `[ ]` backlog · `[~]` in progress · `[x]` done (committed) · `[P]` pa
 
 ## Decisions log
 
+- 2026-11-12 — **Focus spike merged (`docs/decisions/spike-focus-detection.md`).** Verdict: `~/Library/DoNotDisturb/DB` is EPERM for Vigie (Full Disk Access, never prompts; Warp had it, which explains the earlier shell read) and `Assertions.json` does not record scheduled DND anyway, so Story 3.5 suppression never worked live. No public notification exists; `INFocusStatusCenter` needs a disallowed entitlement; Accessibility and private frameworks rejected. Route: a `SetFocusFilterIntent` "Silence Vigie" Focus Filter (no permission), Shortcuts bridge via `vigie event app.focus` as fallback. PM lifted Story 3.10 into Epic 3 and started it. Side effect: the probe `fr.baguettelabs.spike.focusprobe` is listed (off) under Privacy & Security › Full Disk Access and Accessibility; `tccutil reset All fr.baguettelabs.spike.focusprobe` removes it (Romain's call).
 - 2026-11-12 — **Story 11.3 merged, Epic 11 done.** Widget follows the Home mockup (Shelf / N items, Stash zone with the list, Ask AI 70 px compact: `+` and ASK AI only), rows 16 pt with a 10×13 glass tile and no label so three rows fit beside the warning line; expiring items all first (soonest first), warning shows count + soonest hours, pinned items never tagged; empty shelf keeps both zones; the tile is the drag handle (drag-out to Finder works, stash item on Ask AI goes out with `.homeWidget`, dropped back on Stash refused); hover chips, Send to and Quick Look not on widget rows; Privacy masks names. Live checks for Romain: Finder drag onto the widget with the view open by click; tile drag not opening the tab.
 - 2026-11-12 — **Story 11.4 merged.** `home_after` enumeration (0s/30s/2m/10m/never) also accepts any duration (hand-edited `5m` works, picker shows empty); first open or a vanished tab lands on Home; invalid value → setup problem + 2m default. `vigie expand --tab` does not exist yet: when built it must go through `NotchHost.openTab`.
 - 2026-11-12 — **Story 7.11 merged.** Hook command unchanged (`<cli> hook claude`): Claude Code passes `CLAUDE_CONFIG_DIR` to its hooks and `AgentAccounts.attribute` already normalises paths. One combined confirmation lists every location's diff (default first); Account add/remove shows a confirmation for that location only, in Settings › Agents (Accounts are edited in Settings › Usage; modules cannot import each other). A missing folder is a `setup.problem` (path masked in Privacy mode), a folder without `settings.json` gets a Vigie-only file. `hooks_scope = "project"` plans nothing for extra Accounts. Known limits: a cancelled removal leaves hooks in place; an Account removed while Vigie is not running keeps its hooks.

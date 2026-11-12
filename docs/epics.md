@@ -1899,6 +1899,58 @@ So that a peek is always about something that still needs me.
 **When** unit tests run against the peek queue
 **Then** they cover preemption, rank order, ties, resolved-before-shown drops and suppression while expanded (the wait while the drop display is open is added by Story 9.1)
 
+### Story 3.10: Detect Focus through a Vigie Focus Filter
+
+*Added 2026-11-12 from `docs/decisions/spike-focus-detection.md` (Romain ruled "research another route" on 3.5; the spike found the shipped `Assertions.json` route unreadable without Full Disk Access and stale even with it).*
+
+As a user who turns on Do Not Disturb or another Focus,
+I want Vigie to go quiet for the Focus modes I choose, without granting Full Disk Access,
+So that Story 3.5's suppression actually works in the shipped app.
+
+**Requirements:** FR17, UX-DR62, UX-DR55, A21, AD-19, AD-20 (no new entitlement or permission), Story 3.5,
+`docs/decisions/spike-focus-detection.md`
+
+**Acceptance Criteria:**
+
+**Given** the App target
+**When** it is built
+**Then** it declares one `SetFocusFilterIntent` ("Silence Vigie", parameter `silence: Bool`, default `false`,
+suggested `true`, strings from the String Catalog) whose `perform()` only forwards `silence` to the core
+`FocusFilterMonitor` and returns
+**And** no entitlement, `Permission` case, usage string or extension target is added
+
+**Given** a Focus with Vigie's filter set to silence
+**When** that Focus turns on (manually, by schedule, smart activation or from another device)
+**Then** `FocusFilterMonitor.isActive` becomes `true` and Story 3.5 suppression applies; when it turns off,
+`isActive` becomes `false` and `[notify] after_focus` applies
+
+**Given** Vigie launches while a filtered Focus is already on
+**When** the monitor starts
+**Then** it reads `SetFocusFilterIntent.current` and starts active; `notFound` or `silence == false` reads as off
+
+**Given** the user has never added the filter
+**When** they open Settings › Alerts or the Alerts tab
+**Then** a "Focus" row shows a needs-setup state with "Open Focus settings" and a three-step how-to; nothing
+is shown at launch and no modal appears; the state clears once `perform()` has run once (recorded in
+`local.toml`)
+
+**Given** a user who prefers Shortcuts
+**When** `vigie event app.focus '{"active":true}'` (or `false`) arrives
+**Then** the core feeds the same monitor; an "on" with no later message for 12 h is treated as off
+**And** Settings › Alerts links to the two-automation recipe from the spike
+
+**Given** the old route
+**When** this story lands
+**Then** `SystemFocusModeMonitor` no longer reads `~/Library/DoNotDisturb/DB/Assertions.json`; the App wires
+`FocusFilterMonitor`; `FocusModeMonitor` and `ManualFocusModeMonitor` keep their API and tests
+
+**Given** tests
+**When** `swift test --build-system swiftbuild` runs
+**Then** the monitor is covered with a fake filter source (on, off, launch-time `current` on / off / not
+found, Shortcuts topic, 12 h cap) and the 3.5 Focus tests pass unchanged
+**And** the spike's checklist items 1 to 3 are run by hand on the first build and their results recorded in
+the spike file
+
 ## Epic 4: Track Claude Code sessions
 
 Users who run Claude Code (or any tool via `vigie agent`) see every session's status in the closed notch and the Agents tab, get blocked / done / failed alerts, never lose events across restarts, and learn about sessions interrupted by sleep.
