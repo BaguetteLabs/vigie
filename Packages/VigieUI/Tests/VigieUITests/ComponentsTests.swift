@@ -308,6 +308,8 @@ private func minutes(_ count: Int) -> Duration { .seconds(count * 60) }
                     Text(verbatim: "row").rowHoverBrighten().keyboardSelectionRing(isSelected: true)
                 }
             }, look: look, variant: variant)
+        // The header-less frame (the Calendar month grid draws its own header).
+        render(WidgetCard { Text(verbatim: "NOVEMBER 2026") }, look: look, variant: variant)
         render(EmptyStateBlock(VigieCopy.noUsageProvider, settingsShortcut: "⌘,") {}, look: look, variant: variant)
         render(EmptyStateBlock(label: VigieCopy.noMatch.label), look: look, variant: variant)
         render(

@@ -1,6 +1,114 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "calendar.grid.cell.calendars": {
+      "comment": "Month grid day cell accessibility label part: how many calendars have events that day.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld calendar with events"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld calendars with events"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "calendar.grid.cell.selected": {
+      "comment": "Month grid day cell accessibility label part: the cell is the selected day.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "selected"
+          }
+        }
+      }
+    },
+    "calendar.grid.cell.separator": {
+      "comment": "Month grid day cell accessibility label: separator between the date and each part.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": ", "
+          }
+        }
+      }
+    },
+    "calendar.grid.cell.today": {
+      "comment": "Month grid day cell accessibility label part: the cell is today.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "today"
+          }
+        }
+      }
+    },
+    "calendar.grid.next": {
+      "comment": "Month grid: accessibility label of the › button (shows the next month).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next month"
+          }
+        }
+      }
+    },
+    "calendar.grid.previous": {
+      "comment": "Month grid: accessibility label of the ‹ button (shows the previous month).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Previous month"
+          }
+        }
+      }
+    },
+    "calendar.grid.today": {
+      "comment": "Month grid: accessibility label of the header dot (returns to today and the current month).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Back to today"
+          }
+        }
+      }
+    },
+    "calendar.grid.week": {
+      "comment": "Month grid: accessibility label of an ISO week number.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Week %lld"
+          }
+        }
+      }
+    },
     "calendar.module.name": {
       "comment": "Module name (tab title, Settings pane).",
       "extractionState": "manual",
@@ -98,7 +206,7 @@
       }
     },
     "calendar.tab.today": {
-      "comment": "Calendar tab placeholder label (uppercase): today's event count. Story 13.2 replaces it.",
+      "comment": "Calendar tab list placeholder label (uppercase): today's event count. Story 13.3 replaces it with the upcoming list.",
       "extractionState": "manual",
       "localizations": {
         "en": {

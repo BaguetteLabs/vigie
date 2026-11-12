@@ -439,6 +439,13 @@ components:
     columns: '22px repeat(7, 36px)'
     cell-height: 37px
     a-today-radius: '{rounded.a-day-cell}'
+    # Story 13.2 (from the mockup): header row, nav buttons, weekday row, day dots and the dot cap
+    header-height: 20px
+    nav-size: 20px
+    weekday-height: 16px
+    dot-size: 4px
+    dot-gap: 3px
+    max-dots: '4'
   send-to-card:
     # Shelf tab right card, headed SEND TO (Story 1.7c; was ask-ai-card)
     width: 212px
@@ -911,7 +918,7 @@ Columns: item (name, then `size · mode` where mode is `REF`, `COPY` or `SAVED`)
 ### Month grid
 → [`mockups/key-calendar-tab.html`](mockups/key-calendar-tab.html), `imports/ref-itsycal-month.png`
 
-Itsycal structure in a 300px card (`components.month-grid`): header `NOVEMBER 2026` with `‹ ● ›`, weekday initials (Monday first), ISO week-number column, day cells 36 × 37px. One dot per calendar with events that day (macOS calendar color), no count. Adjacent-month days dimmed. A 1px platinum line at 28% traces the month's days, inside the card. Calendar legend under the grid.
+Itsycal structure in a 300px card (`components.month-grid`): header `NOVEMBER 2026` with `‹ ● ›`, weekday initials (Monday first), ISO week-number column, day cells 36 × 37px. One dot per calendar with events that day (macOS calendar color), no count; at most `max-dots` (4) per day, ordered by calendar title, with no overflow mark (Story 13.2). Adjacent-month days dimmed. A 1px platinum line at 28% traces the month's days, inside the card. Calendar legend under the grid.
 - **Today:** 1px outline in the "now" color: A `iris-1`, rounded; C `gold`, square, with the day number in `gold-text` (`c-light-gold-text` in C light). Decided 2026-11-07 (1.7f); the ink-1 alternative was rejected.
 - **Selected day:** platinum tint with a hairline. Both show when the selected day is not today.
 - **Header dot:** dim when today is in view and selected; lit in the now color when the user can jump back.

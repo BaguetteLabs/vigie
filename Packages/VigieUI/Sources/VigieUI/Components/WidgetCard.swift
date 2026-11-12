@@ -7,7 +7,7 @@ import SwiftUI
 /// inner corner marks in `struct` at 38%. Tab bodies reuse the same frame.
 public struct WidgetCard<Content: View>: View {
     @Environment(\.vigieTheme) private var theme
-    private let title: Text
+    private let title: Text?
     private let meta: Text?
     private var leading: AnyView?
     private let content: Content
@@ -15,6 +15,14 @@ public struct WidgetCard<Content: View>: View {
     public init(title: Text, meta: Text? = nil, @ViewBuilder content: () -> Content) {
         self.title = title
         self.meta = meta
+        self.content = content()
+    }
+
+    /// The card frame without the header row, for a card that draws its own header (the Calendar month grid,
+    /// whose `NOVEMBER 2026` title and `‹ ● ›` buttons are not card-title type).
+    public init(@ViewBuilder content: () -> Content) {
+        title = nil
+        meta = nil
         self.content = content()
     }
 
@@ -46,7 +54,7 @@ public struct WidgetCard<Content: View>: View {
     public var body: some View {
         let shape = RoundedRectangle(cornerRadius: theme.radius(.card), style: .continuous)
         VStack(alignment: .leading, spacing: theme.spacing(.rowGap)) {
-            header
+            if let title { header(title) }
             content
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         }
@@ -73,7 +81,7 @@ public struct WidgetCard<Content: View>: View {
         .clipShape(shape)
     }
 
-    private var header: some View {
+    private func header(_ title: Text) -> some View {
         HStack(alignment: leading == nil ? .firstTextBaseline : .center, spacing: theme.spacing(.glyphGap)) {
             if let leading { leading }
             title

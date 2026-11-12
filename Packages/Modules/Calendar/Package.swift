@@ -24,7 +24,7 @@ let package = Package(
         ),
         .testTarget(
             name: "CalendarTests",
-            dependencies: ["Calendar"]
+            dependencies: ["Calendar", .product(name: "VigieUI", package: "VigieUI")]
         ),
     ],
     swiftLanguageModes: [.v6]

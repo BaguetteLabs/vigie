@@ -55,6 +55,12 @@ a-today-radius = "{rounded.a-day-cell}"
 card-width = "300px"
 cell-height = "37px"
 columns = "22px repeat(7, 36px)"
+dot-gap = "3px"
+dot-size = "4px"
+header-height = "20px"
+max-dots = "4"
+nav-size = "20px"
+weekday-height = "16px"
 
 [components.notes-panel]
 height = "372px"

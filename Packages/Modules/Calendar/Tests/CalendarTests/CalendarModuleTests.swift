@@ -180,7 +180,7 @@ func eventually(_ condition: @MainActor () -> Bool) async -> Bool {
         #expect(h.module.calendars.map(\.id) == ["work", "family", "personal"])  // account, then title
         #expect(h.source.eventQueries.last?.calendars == nil)  // all calendars
         #expect(h.module.todayEvents.map(\.eventID) == ["holiday", "standup"])
-        #expect(h.module.tabContent == .placeholder(todayCount: 2))
+        #expect(h.module.tabContent == .grid(todayCount: 2))
         #expect(h.module.events.first { $0.eventID == "standup" }?.alarms == [.relative(-600)])
         await h.module.stop()
     }
@@ -225,7 +225,7 @@ func eventually(_ condition: @MainActor () -> Bool) async -> Bool {
         #expect(job.interval == .seconds(3600))
         let before = h.source.eventQueries.count
         await job.body()
-        #expect(h.source.eventQueries.count == before + 1)
+        #expect(h.source.eventQueries.count == before + 2)  // the 15-day window and the grid month
         await h.module.stop()
         #expect(h.context.fakeScheduler.liveRepeating.isEmpty)
     }

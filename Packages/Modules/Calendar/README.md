@@ -19,4 +19,34 @@
   grouped by account with the calendar color, `customControl`). The last checked calendar cannot be unchecked.
 - **No closed-notch glance**: no left-wing item, no compact view, no Home card (Story 13.3 adds the card).
 
-The tab is a placeholder (today's event count) until Stories 13.2 (month grid) and 13.3 (upcoming list).
+## Month grid
+
+Story 13.2, DESIGN "Month grid" (`components.month-grid`), mockup `key-calendar-tab.html`. The tab shows the 300px
+grid card left and the list area right (Story 13.3's upcoming list; until then `NO EVENTS TODAY` or
+`N EVENTS TODAY`). The setup card replaces both while access is missing.
+
+- **Model.** `MonthGrid.build(month:today:selected:events:calendars:calendar:locale:maxDots:)` is pure: always six
+  rows of seven days (the card height never changes), Monday first with ISO 8601 week numbers (an `.iso8601`
+  calendar in the user's time zone), each `MonthGridDay` with `isCurrentMonth` (adjacent-month days are dimmed but
+  keep their dots), `isToday`, `isSelected` and `dots`. Header `NOVEMBER 2026` and the weekday initials come from
+  the locale (`LLLLyyyy`, `veryShortStandaloneWeekdaySymbols` rotated to Monday), uppercased.
+- **Dots.** One per calendar with at least one event that day (timed, all-day, multi-day on each day it covers, a
+  zero-length event on its day), in the EventKit color (UX-DR79), ordered by calendar title, at most `max-dots`
+  (4) with no overflow mark. `hide_all_day` and `calendars` apply, as for `events`.
+- **Data window.** `events` keeps today → +14 days (13.1, used by 13.3/13.4). The grid loads its own interval,
+  `MonthGrid.interval(month:calendar:)` (first cell → end of the 42nd), into `gridEvents` / `gridInterval`,
+  through the source off the main actor, one month at a time, cached per month; every reload (store change,
+  settings change, hourly) empties the cache and loads the visible month again.
+- **State.** `visibleMonth` (today's month unless `‹ ›` moved it), `selectedDay` (today unless a day was
+  clicked), `canReturnToToday` (the header dot is lit in the now color). `‹ ›` change only the month; a click
+  selects the day (and moves the grid when the day belongs to an adjacent month); the dot returns to today and
+  the current month.
+- **Look.** Every length comes from `components.month-grid` (`card-width`, `columns`, `cell-height`,
+  `a-today-radius`, `header-height`, `nav-size`, `weekday-height`, `dot-size`, `dot-gap`, `max-dots`). Today: 1px
+  outline in the now color (A `iris-1`, rounded 8px; C `gold`, square, number in `gold-text`). Selected: `ink-1`
+  tint with a hairline. A 1px line at 28% traces the month's days. The legend lists the calendars with events
+  this month; their titles are `.sensitive()` (Privacy mode), the dots are not.
+- **Keyboard.** With the grid focused, ←/→ move the selection by a day and ↑/↓ by a week. EXPERIENCE names no
+  month shortcut, so `‹ ›` are pointer and VoiceOver controls only.
+- **Accessibility.** Each cell reads `Wednesday 4 November, 2 calendars with events, today, selected`; the
+  buttons read `Previous month`, `Back to today`, `Next month`.

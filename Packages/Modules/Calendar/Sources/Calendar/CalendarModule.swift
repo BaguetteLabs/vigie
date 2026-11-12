@@ -16,8 +16,12 @@ import os
 ///
 /// With access, ``events`` holds the occurrences from the start of today through the next 14 days of the
 /// included calendars (`calendars`, empty = all), without all-day events when `hide_all_day` is on. It reloads on
-/// each store change, each settings change and every hour. Stories 13.2–13.4 read ``events``, ``calendars`` and
+/// each store change, each settings change and every hour. Stories 13.3–13.4 read ``events``, ``calendars`` and
 /// ``options``.
+///
+/// The month grid (Story 13.2) has its own state: ``visibleMonth`` (`‹ ›`), ``selectedDay`` (a day click; Story
+/// 13.3's list starts there) and ``gridEvents``, the visible month's 42 cells loaded per month, cached until the
+/// next reload, never widening ``events``.
 ///
 /// No closed-notch glance (amended 2026-11-07): no left-wing item, no compact view, no Home card yet. The state
 /// stays `hidden` (Story 13.4 sets `alert` while a reminder is unresolved).
@@ -73,6 +77,15 @@ public final class CalendarModule: NotchModule {
     public private(set) var window: DateInterval?
     public private(set) var options = CalendarOptions()
     public private(set) var isRunning = false
+    /// The month grid's events (Story 13.2): the occurrences of ``gridInterval`` (the visible month's 42 cells),
+    /// filtered like ``events``. Loaded per month and kept in a per-month cache that every reload empties.
+    public private(set) var gridEvents: [CalendarEvent] = []
+    /// The interval ``gridEvents`` covers, nil before the first grid load.
+    public private(set) var gridInterval: DateInterval?
+    /// The month the grid shows when the user moved away from today's month; nil follows today.
+    private var monthOverride: Date?
+    /// The day the user selected when it is not today; nil follows today.
+    private var selectionOverride: Date?
 
     @ObservationIgnored let source: any CalendarSource
     @ObservationIgnored let openSettings: (@MainActor @Sendable (String) -> Void)?
@@ -85,6 +98,9 @@ public final class CalendarModule: NotchModule {
     @ObservationIgnored private var changeTask: Task<Void, Never>?
     @ObservationIgnored private var reloadJob: RegistrationToken?
     @ObservationIgnored private var generation = 0
+    @ObservationIgnored private var gridGeneration = 0
+    @ObservationIgnored private var gridCache: [Date: [CalendarEvent]] = [:]
+    @ObservationIgnored private var gridTask: Task<Void, Never>?
 
     /// - Parameters:
     ///   - source: the calendar store; EventKit in the app.
@@ -143,10 +159,13 @@ public final class CalendarModule: NotchModule {
         tasks = []
         changeTask?.cancel()
         changeTask = nil
+        gridTask?.cancel()
+        gridTask = nil
         reloadJob?.cancel()
         reloadJob = nil
         isRunning = false
         generation += 1
+        gridGeneration += 1
     }
 
     // MARK: Access
@@ -177,6 +196,10 @@ public final class CalendarModule: NotchModule {
             calendars = []
             events = []
             window = nil
+            gridGeneration += 1
+            gridCache = [:]
+            gridEvents = []
+            gridInterval = nil
         }
     }
 
@@ -209,6 +232,9 @@ public final class CalendarModule: NotchModule {
         calendars = all.sorted { ($0.account, $0.title) < ($1.account, $1.title) }
         events = Self.filter(loaded, options: options)
         window = interval
+        // The store or the settings changed: every cached month is stale.
+        gridCache = [:]
+        await loadGrid()
     }
 
     /// From the start of today through the end of the 14th day after it.
@@ -230,6 +256,97 @@ public final class CalendarModule: NotchModule {
         let today = calendar.dateInterval(of: .day, for: now()) ?? DateInterval(start: now(), duration: 86_400)
         return events.filter { $0.start < today.end && $0.end > today.start }
     }
+
+    // MARK: Month grid (Story 13.2)
+
+    /// The first day of the month the grid shows (today's month unless the user moved with `‹ ›`).
+    public var visibleMonth: Date {
+        monthOverride ?? MonthGrid.monthStart(of: now(), calendar: gridCalendar)
+    }
+
+    /// The start of the selected day (today unless the user clicked another day). Story 13.3's upcoming list
+    /// starts there.
+    public var selectedDay: Date {
+        selectionOverride ?? calendar.startOfDay(for: now())
+    }
+
+    /// The header dot is lit: another month is shown or another day is selected, so clicking it jumps back.
+    public var canReturnToToday: Bool {
+        visibleMonth != MonthGrid.monthStart(of: now(), calendar: gridCalendar)
+            || selectedDay != calendar.startOfDay(for: now())
+    }
+
+    /// The grid for the visible month, today and the selected day. The visible month's dots appear once its
+    /// events are loaded (until then, or for another month still loading, no dots).
+    public func monthGrid(locale: Locale = .current, maxDots: Int = MonthGrid.defaultMaxDots) -> MonthGrid {
+        let month = visibleMonth
+        let loaded = gridInterval == MonthGrid.interval(month: month, calendar: calendar)
+        return MonthGrid.build(
+            month: month, today: now(), selected: selectedDay, events: loaded ? gridEvents : [],
+            calendars: calendars, calendar: calendar, locale: locale, maxDots: maxDots)
+    }
+
+    /// `‹`: the previous month (the selection does not change).
+    public func showPreviousMonth() { showMonth(offset: -1) }
+
+    /// `›`: the next month (the selection does not change).
+    public func showNextMonth() { showMonth(offset: 1) }
+
+    private func showMonth(offset: Int) {
+        let next = gridCalendar.date(byAdding: .month, value: offset, to: visibleMonth) ?? visibleMonth
+        setVisibleMonth(next)
+    }
+
+    /// A day click (or an arrow key): selects that day. A day of an adjacent month also moves the grid there.
+    public func select(_ day: Date) {
+        let start = calendar.startOfDay(for: day)
+        selectionOverride = start == calendar.startOfDay(for: now()) ? nil : start
+        let month = MonthGrid.monthStart(of: start, calendar: gridCalendar)
+        if month != visibleMonth { setVisibleMonth(month) }
+    }
+
+    /// Arrow keys: moves the selection by `days` (±1 day, ±7 for a week).
+    public func moveSelection(byDays days: Int) {
+        select(calendar.date(byAdding: .day, value: days, to: selectedDay) ?? selectedDay)
+    }
+
+    /// The lit header dot: back to today's month with today selected.
+    public func returnToToday() {
+        selectionOverride = nil
+        setVisibleMonth(MonthGrid.monthStart(of: now(), calendar: gridCalendar))
+    }
+
+    private func setVisibleMonth(_ month: Date) {
+        let start = MonthGrid.monthStart(of: month, calendar: gridCalendar)
+        monthOverride = start == MonthGrid.monthStart(of: now(), calendar: gridCalendar) ? nil : start
+        gridTask?.cancel()
+        gridTask = Task { @MainActor [weak self] in await self?.loadGrid() }
+    }
+
+    /// Loads the visible month's grid interval (from the cache when this month was loaded since the last reload).
+    func loadGrid() async {
+        guard isRunning, access == .granted else { return }
+        let interval = MonthGrid.interval(month: visibleMonth, calendar: calendar)
+        if let cached = gridCache[interval.start] {
+            gridEvents = cached
+            gridInterval = interval
+            return
+        }
+        gridGeneration += 1
+        let current = gridGeneration
+        let options = options
+        let ids = options.includedCalendarIDs.isEmpty ? nil : Set(options.includedCalendarIDs)
+        let loaded = await source.events(in: interval, calendars: ids)
+        guard current == gridGeneration, isRunning, access == .granted else { return }
+        let filtered = Self.filter(loaded, options: options)
+        gridCache[interval.start] = filtered
+        // The user may have moved on while this month loaded: cache it, show only the visible one.
+        guard interval == MonthGrid.interval(month: visibleMonth, calendar: calendar) else { return }
+        gridEvents = filtered
+        gridInterval = interval
+    }
+
+    private var gridCalendar: Calendar { MonthGrid.gridCalendar(calendar) }
 
     // MARK: Settings
 
