@@ -2,7 +2,8 @@
 
 The `integrations` module is the runtime of script modules (SPEC §7.4, §9, AD-18). This package holds the script
 schema types (Story 12.1, checked against `schemas/script-module.schema.json`), script discovery (Story 12.2) and
-per-Mac confirmation (Story 12.3) and the runner (Story 12.4). The per-script dynamic modules come with Story 12.5.
+per-Mac confirmation (Story 12.3), the runner (Story 12.4) and Settings › Scripts (Story 12.6). The per-script
+dynamic modules come with Story 12.5.
 
 ## Where scripts live
 
@@ -86,9 +87,8 @@ sha256 = "<lowercase hex SHA-256 of the declined bytes>"
 Confirming removes the file's decline and declining removes its confirmation. Records of deleted files stay
 (harmless: they only match the same bytes at the same path).
 
-**Review.** `openConfirmation(for:)` sets `reviewing`; the module's Settings pane (`settingsView()`, Settings ›
-Integrations, grown into Settings › Scripts by Story 12.6) lists every script with its state (`NOT CONFIRMED`
-without a glyph, `CONFIRMED`, `DECLINED`, `CAN'T LOAD`) and a Review button, and presents
+**Review.** `openConfirmation(for:)` sets `reviewing`; Settings › Scripts (`settingsView()`, see Settings below)
+lists every script with its state and a Review button, and presents
 `VigieUI.ScriptConfirmationView` as a sheet while `reviewing` is set. The sheet shows the file name and path, the
 SPEC §9.2 warning ("Scripts run as the user, with no sandbox. Only install scripts you trust."), the documentation
 (headings and inline Markdown), the front matter and the code (monospaced, with the language tag), and the whole
@@ -125,8 +125,9 @@ it is `enabled`); call `updateRunner()` after eligibility changes.
   front-matter default: booleans `true`/`false`, numbers as written, durations in the config grammar (`1h30m`),
   paths with `~` expanded, lists as a JSON array of strings; a `path` without value is left unset. A `secret` is
   read from SecretStore at each run under `<script id>.<setting key>` and exists only in the child's environment
-  (never in the code file, on disk or in the log); an absent secret leaves its variable unset. Scripts' own config
-  keys reach the runner with their dynamic modules (Stories 12.5, 12.6); until then every setting uses its default.
+  (never in the code file, on disk or in the log); an absent secret leaves its variable unset. Configured values
+  are read at each run from `context.scriptFolder.settings` (`Dependencies.configuredValue`, Story 12.6), so a
+  change in Settings or in `config.toml`, and a new secret, apply at the next run.
 - **Timeout:** `min(interval, 30s)`. When it hits, the whole process group gets `SIGKILL` (`kill(-pgid)`), so
   children the script started die with it; the run is recorded as `TIMED OUT · <n>S`.
 - **Result:** exit 0 with a stdout that decodes as the output schema and declares the front matter's widget type
@@ -142,3 +143,38 @@ it is `enabled`); call `updateRunner()` after eligibility changes.
 - **Logged** (`context.log`, private): the end of each run's stderr (last 4 KB, every secret value replaced by
   `••••`), each failed run with its label and reason, an unresolved runtime, a launch failure. Never the
   environment or a secret.
+
+## Settings
+
+Settings › Scripts (Story 12.6, UX-DR74) is the module's pane (`settingsView()`; pane id `integrations`, titled
+"Scripts"). It sits under the module's own `enabled` switch, which turns the whole runtime on or off.
+
+- **List:** one row per file, in file order (`paneRows()`, a `ScriptPaneRow` each): name (or file name), the
+  relative path, the state label and `Last run <relative time>` (`Not run yet` before the first run of this launch).
+  States, most urgent first: `CAN'T LOAD` (parse problem in its help text), `DECLINED`, `NOT CONFIRMED` (opens the
+  review), `DISABLED`, `RUNNING`, `WAITING · FIRST RUN`, `OK`, or the failed run's label (`EXIT 2`,
+  `TIMED OUT · 30S`, ...). Actions: **Refresh** (`refresh(scriptID:)`; enabled only for an eligible script that is
+  not running), **Review…** (the Script Confirmation sheet) and the **Enabled on this Mac** switch.
+- **Detail:** expanding a row shows the script's declared settings as the generated controls every module pane
+  uses (`VigieUI.SettingRow`): bool switch, int field and stepper within min/max/step, double slider when bounded
+  (else a number field), string field, enum picker, duration field in the config grammar (`1h30m`), path field
+  with Choose…, list editor (one row per item; Choose… for lists of paths), and a secure field for `secret`.
+  Labels and help are the script's own text, shown as written. Numbers are clamped to min/max before they are
+  written. Reset to default (context menu) removes the key.
+- **Enabled on this Mac** (AD-8): `context.scriptFolder.settings.setEnabled`, kept in `local.toml` by file, never
+  synced; absent means enabled. A change (from Settings or an edit of `local.toml`) arrives on
+  `settings.changes()` and updates `enabled` and the runner at once, without a rescan.
+
+  ```toml
+  [scripts.enabled]
+  "modules/github.md" = false
+  ```
+- **Configured values:** `[modules."<script id>"] <key>` in the synced `config.toml`, through ConfigStore. After
+  every scan the module registers each usable script's declared settings (`settings.register`), replaces them when
+  the declarations change, and unregisters them when the file goes away or errors (values stay in the file).
+  `ScriptRunner` reads them at each run.
+- **Secrets:** a `secret` setting is never registered and never written to TOML. The secure field saves to the
+  module's `context.secrets` under `<script id>.<setting key>` (the key the runner reads), on this Mac only; the
+  field stays blank, shows "Stored" once set, and offers Set and Clear. Secrets must be entered on each Mac.
+- **Footer:** "More examples in the Script repository" (SPEC §9.6, A84: `vigie-scripts` under the releases owner).
+  The owner is still the `OWNER` placeholder (A49), so `ScriptRepository.url` is nil and the text shows disabled.

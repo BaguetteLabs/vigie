@@ -607,7 +607,7 @@ import os, json
 ### 9.2 Execution
 - **Confirmation per Mac.** A script runs only after the user confirms it on this Mac, after seeing the whole file (documentation, front matter and code). A script that arrives through sync (§11.1), a git pull or a link (§9.4), or whose content changes in any way, shows as "awaiting confirmation" and does not run until confirmed; declining disables it on that Mac only. Secrets must be entered on each Mac.
 - Runs every `interval`, plus once at startup and whenever the user clicks "refresh".
-- Settings are passed as environment variables: `VIGIE_SETTING_TOKEN`, `VIGIE_SETTING_REPO`, … (the configured value, else the front-matter default). Secrets are read from the Keychain at run time and exist only in the script's environment. The environment holds nothing else but `PATH` (the login shell's), `HOME` and `LANG` (Story 12.4).
+- Settings are passed as environment variables: `VIGIE_SETTING_TOKEN`, `VIGIE_SETTING_REPO`, … (the configured value, else the front-matter default). Configured values live in `[modules."<script id>"]` of the synced `config.toml` (§11), written by Settings › Scripts through ConfigStore; `secret` values only in the Keychain of each Mac, under `<script id>.<setting key>` in the integrations module's store. Whether a script runs on a Mac is per Mac (AD-8): `[scripts.enabled]` in `local.toml`, default enabled (Story 12.6). Secrets are read from the Keychain at run time and exist only in the script's environment. The environment holds nothing else but `PATH` (the login shell's), `HOME` and `LANG` (Story 12.4).
 - Timeout: `min(interval, 30s)`; on timeout the script's process group is killed. stderr goes to the module log. A non-zero exit code, a timeout or invalid output marks the module as errored and keeps showing the last good output with a warning badge until the next good run.
 - Scripts run as the user, with no sandbox. The README and the confirmation screen must say so clearly: only install scripts you trust.
 
@@ -647,6 +647,7 @@ v1 widget types: **status** (e.g. a website health check), **number** (stats), *
 
 - Community scripts live in a separate, curated, **public** GitHub repository (name TBD, e.g. `vigie-scripts`) with its own license (§14): one folder per script, pull requests reviewed by the maintainer, CI that validates front matter against the JSON schema and signs merged scripts (§9.4). Review policy is open (§14).
 - **Examples:** GitHub PRs, site up/down, CI or deploy status, revenue (Stripe-style), and a text widget. They live in the repository; the app bundles a small subset.
+- **Settings link:** Settings › Scripts ends with "More examples in the Script repository", pointing at `https://github.com/<owner>/vigie-scripts` (A84: same owner as the releases host). While the owner is still the `OWNER` placeholder (A49), the link is shown disabled (Story 12.6).
 - **Later:** a public website (static, generated from the repository) with install buttons.
 
 ---
@@ -838,8 +839,7 @@ reminders = true              # peek at each event's own Calendar alarm times; n
 [modules.integrations]
 update_checks = true          # scripts installed from a link, at most once a day (§9.5)
 
-[modules."github.prs"]        # script module
-enabled = true
+[modules."github.prs"]        # script module: its declared settings (secrets stay in the Keychain, §11.1)
 priority = 5
 repo = "me/project"
 
@@ -849,6 +849,9 @@ repo = "me/project"
 sha256 = "9f2c…"              # lowercase hex; any other bytes are awaiting confirmation again
 [scripts.declined."modules/other.md"]
 sha256 = "41ab…"              # declined on this Mac only; a byte change asks again
+# local (local.toml only): scripts turned off on this Mac (Settings › Scripts, Story 12.6, AD-8); absent = enabled
+[scripts.enabled]
+"modules/other.md" = false
 ```
 
 ### 11.1 Sync and secrets
@@ -856,7 +859,7 @@ sha256 = "41ab…"              # declined on this Mac only; a byte change asks 
 | Data | Where | Sync |
 |---|---|---|
 | Config and personalization (theme, presence, colors, alert and sound settings, module settings) | Config folder | iCloud, optional |
-| Machine-specific settings (displays, virtual notch, terminal, config folder location, script confirmations) | Local | Never |
+| Machine-specific settings (displays, virtual notch, terminal, config folder location, script confirmations, scripts enabled per Mac) | Local | Never |
 | AI auth tokens (per Account), settings marked `secret` | Keychain | Never |
 | Activity log (30 days), running timers | Application Support | Never |
 | Script modules | Config folder, readable Markdown | With the config folder; confirmation required on each Mac before first run (§9.2) |
