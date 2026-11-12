@@ -51,6 +51,10 @@ public struct AppEnvironment: Sendable {
     /// The config folder in effect: the override if present, else the default.
     public var configFolderURL: URL { configFolderOverride ?? defaultConfigFolderURL }
 
+    /// `<config folder>/modules/`: one Markdown file per script module (SPEC §9.1, AD-18). Synced with the config
+    /// folder; Vigie never creates it.
+    public var scriptModulesFolderURL: URL { configFolderURL.appendingPathComponent("modules", isDirectory: true) }
+
     public init(
         flavor: Flavor,
         applicationSupportURL: URL? = nil,

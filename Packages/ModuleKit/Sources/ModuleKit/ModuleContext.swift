@@ -26,12 +26,16 @@ public protocol ModuleContext: Sendable {
     /// The running modules' drop zones, to show and invoke zones of other modules (Stories 9.7, 9.10).
     /// Default: an empty directory.
     var dropZones: any DropZoneDirectory { get }
+    /// The script modules folder, the built-in ids scripts must not take, and scripts' `enabled` keys (AD-18).
+    /// Used by `integrations` only. Default: no folder.
+    var scriptFolder: any ScriptFolderService { get }
     /// `os.Logger`, subsystem = bundle id, category = module id. Never log secrets or note content.
     var log: Logger { get }
 }
 
 extension ModuleContext {
     public var dropZones: any DropZoneDirectory { EmptyDropZoneDirectory() }
+    public var scriptFolder: any ScriptFolderService { NoScriptFolder() }
 }
 
 /// Error thrown by a service that is declared but not available yet (or not in this build).

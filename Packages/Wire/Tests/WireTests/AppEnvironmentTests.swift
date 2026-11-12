@@ -61,6 +61,8 @@ import Testing
         let env = make(.dev, override: custom)
         #expect(env.configFolderURL == custom)
         #expect(env.defaultConfigFolderURL == make(.dev).defaultConfigFolderURL)
+        // Script modules follow the config folder in effect (SPEC §9.1, Story 12.2).
+        #expect(env.scriptModulesFolderURL == custom.appendingPathComponent("modules", isDirectory: true))
     }
 
     @Test func configOverrideViaEnvironmentVariableInDevOnly() {

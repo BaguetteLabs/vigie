@@ -324,6 +324,186 @@
           }
         }
       }
+    },
+    "script.parse.builtin_id" : {
+      "comment" : "Script parse error. %@ = the script id, equal to a built-in module id.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "id: “%@” is the id of a built-in module."
+          }
+        }
+      }
+    },
+    "script.parse.code_block_unclosed" : {
+      "comment" : "Script parse error. %lld = line of the opening fence.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "the code block opened on line %lld is never closed."
+          }
+        }
+      }
+    },
+    "script.parse.duplicate_id" : {
+      "comment" : "Script parse error. %1$@ = the script id, %2$@ = the other files declaring it, comma-separated.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "id: “%1$@” is also declared by %2$@."
+          }
+        }
+      }
+    },
+    "script.parse.front_matter_missing" : {
+      "comment" : "Script parse error: no front matter at the top of the file.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "the file must start with front matter between two --- lines."
+          }
+        }
+      }
+    },
+    "script.parse.front_matter_unclosed" : {
+      "comment" : "Script parse error: the front matter is not closed.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "the front matter has no closing --- line."
+          }
+        }
+      }
+    },
+    "script.parse.in_file" : {
+      "comment" : "A script problem prefixed with its file. %1$@ = file name, %2$@ = the problem.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@: %2$@"
+          }
+        }
+      }
+    },
+    "script.parse.no_code_block" : {
+      "comment" : "Script parse error: the file has no fenced code block.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "no fenced code block; a script needs exactly one."
+          }
+        }
+      }
+    },
+    "script.parse.not_text" : {
+      "comment" : "Script parse error: the file is not UTF-8 text.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "the file is not UTF-8 text."
+          }
+        }
+      }
+    },
+    "script.parse.reserved_prefix" : {
+      "comment" : "Script parse error. %1$@ = the script id, %2$@ = the reserved prefix (agents.).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "id: “%1$@” starts with %2$@, which is reserved for built-in modules."
+          }
+        }
+      }
+    },
+    "script.parse.several_code_blocks" : {
+      "comment" : "Script parse error. %lld = number of fenced code blocks (2 or more).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld fenced code blocks; a script needs exactly one."
+          }
+        }
+      }
+    },
+    "script.parse.yaml" : {
+      "comment" : "Script parse error: YAML that does not parse, no line known.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "the front matter is not valid YAML."
+          }
+        }
+      }
+    },
+    "script.parse.yaml_line" : {
+      "comment" : "Script parse error. %lld = line in the file.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "the front matter is not valid YAML (line %lld)."
+          }
+        }
+      }
+    },
+    "script.problem.body" : {
+      "comment" : "Setup-problem alert body. %1$@ = full path of the script file, %2$@ = the problem.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@\n%2$@"
+          }
+        }
+      }
+    },
+    "script.problem.category" : {
+      "comment" : "Setup-problem kicker category (SETUP · SCRIPTS), uppercase.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SCRIPTS"
+          }
+        }
+      }
+    },
+    "script.problem.title" : {
+      "comment" : "Setup-problem alert title for a script file that cannot be used. %@ = file name.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Script %@ can’t be loaded"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

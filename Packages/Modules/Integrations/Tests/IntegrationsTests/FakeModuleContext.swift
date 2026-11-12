@@ -15,10 +15,15 @@ final class FakeModuleContext: ModuleContext, @unchecked Sendable {
     let fakeHost = RecordingHost()
     let fakePower = FakePower()
     let fakeAway = FakeAway()
+    let fakeScriptFolder: FakeScriptFolder
 
-    init(settings: [String: any SettingValue] = [:], storage: FakeStorage = FakeStorage()) {
+    init(
+        settings: [String: any SettingValue] = [:], storage: FakeStorage = FakeStorage(),
+        scriptFolder: FakeScriptFolder = FakeScriptFolder(url: nil)
+    ) {
         fakeSettings = FakeSettings(values: settings)
         fakeStorage = storage
+        fakeScriptFolder = scriptFolder
     }
 
     var settings: any ModuleSettings { fakeSettings }
@@ -37,6 +42,7 @@ final class FakeModuleContext: ModuleContext, @unchecked Sendable {
     var away: any AwayService { fakeAway }
     var activity: any ActivityLog { NoActivity() }
     var integrations: any IntegrationInstaller { NoIntegrations() }
+    var scriptFolder: any ScriptFolderService { fakeScriptFolder }
     var log: Logger { Logger(subsystem: "test", category: "integrations") }
 }
 
@@ -299,5 +305,40 @@ struct NoIntegrations: IntegrationInstaller {
     }
     func apply(_ preview: IntegrationPreview) async throws -> IntegrationResult {
         IntegrationResult(appliedPaths: [], backupPaths: [])
+    }
+}
+
+/// `context.scriptFolder` on a temp folder: `send()` stands for a watcher event (the deterministic change source;
+/// the real watch is `CoreScriptFolder`, tested in VigieCore).
+final class FakeScriptFolder: ScriptFolderService, @unchecked Sendable {
+    private let lock = NSLock()
+    private var continuations: [AsyncStream<Void>.Continuation] = []
+    private var enabledValues: [ModuleID: Bool]
+    let url: URL?
+    let builtInModuleIDs: Set<ModuleID>
+
+    init(
+        url: URL?, builtIns: Set<ModuleID> = ["agents.sessions", "agents.usage", "shelf", "time", "integrations"],
+        enabled: [ModuleID: Bool] = [:]
+    ) {
+        self.url = url
+        builtInModuleIDs = builtIns
+        enabledValues = enabled
+    }
+
+    func isEnabled(_ id: ModuleID) -> Bool? { lock.withLock { enabledValues[id] } }
+
+    func setEnabled(_ value: Bool?, for id: ModuleID) { lock.withLock { enabledValues[id] = value } }
+
+    @MainActor func changes() -> AsyncStream<Void> {
+        let (stream, continuation) = AsyncStream<Void>.makeStream()
+        lock.withLock { continuations.append(continuation) }
+        return stream
+    }
+
+    var subscribers: Int { lock.withLock { continuations.count } }
+
+    func send() {
+        for continuation in lock.withLock({ continuations }) { continuation.yield() }
     }
 }

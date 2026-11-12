@@ -23,6 +23,7 @@ public struct CoreModuleContext: ModuleContext {
     public let activity: any ActivityLog
     public let integrations: any IntegrationInstaller
     public let dropZones: any DropZoneDirectory
+    public let scriptFolder: any ScriptFolderService
     public let log: Logger
 
     public init(
@@ -43,6 +44,7 @@ public struct CoreModuleContext: ModuleContext {
         activity: any ActivityLog,
         integrations: any IntegrationInstaller,
         dropZones: any DropZoneDirectory = EmptyDropZoneDirectory(),
+        scriptFolder: any ScriptFolderService = NoScriptFolder(),
         log: Logger
     ) {
         self.settings = settings
@@ -62,6 +64,7 @@ public struct CoreModuleContext: ModuleContext {
         self.activity = activity
         self.integrations = integrations
         self.dropZones = dropZones
+        self.scriptFolder = scriptFolder
         self.log = log
     }
 }
@@ -103,6 +106,9 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
     /// The launch's Away service (Story 20.3, AD-25); each module gets a ``TrackedAwayService`` on its
     /// ``CoreAwayService/context``.
     public let away: CoreAwayService
+    /// Ids a script module must not declare (AD-18): the modules registered with `configStore` when the factory
+    /// is built (App assembly passes every built-in manifest to ConfigStore) plus ``ModuleID/specBuiltIns``.
+    public let builtInModuleIDs: Set<ModuleID>
 
     /// - Parameters:
     ///   - environment: injected by the App (`AppEnvironment.current`); VigieCore never reads `.current`.
@@ -123,6 +129,8 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
     ///   - dropZones: `context.dropZones`; nil gives every module an empty directory.
     ///   - privacy: the launch's Privacy mode state, shared with the host and the Notifier outputs; defaults to
     ///     one that is off.
+    ///   - builtInModuleIDs: the ids scripts must not take; defaults to the modules `configStore` knows plus
+    ///     ``ModuleID/specBuiltIns``.
     ///   - away: the launch's Away service; defaults to one on the real idle reader and screen signals, its
     ///     threshold read from `[modules.time.breaks] away_after` (90 s without it), transitions recorded in
     ///     `activityStore`.
@@ -137,7 +145,8 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
         clipboard: (any ClipboardService)? = nil,
         dropZones: (any DropZoneDirectory)? = nil,
         privacy: CorePrivacyService? = nil,
-        away: CoreAwayService? = nil
+        away: CoreAwayService? = nil,
+        builtInModuleIDs: Set<ModuleID>? = nil
     ) {
         self.environment = environment
         self.eventBus = eventBus
@@ -159,6 +168,8 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
         self.clipboard = clipboard ?? CoreClipboardService()
         self.dropZones = dropZones
         self.privacy = privacy ?? CorePrivacyService()
+        self.builtInModuleIDs =
+            builtInModuleIDs ?? (configStore?.schema.registeredModules ?? []).union(ModuleID.specBuiltIns)
         self.away =
             away
             ?? Self.makeAway(
@@ -195,6 +206,9 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
             integrations: CoreIntegrationInstaller(
                 environment: environment, configStore: configStore, activity: activity),
             dropZones: dropZones ?? EmptyDropZoneDirectory(),
+            scriptFolder: CoreScriptFolder(
+                url: environment.scriptModulesFolderURL, builtInModuleIDs: builtInModuleIDs,
+                enablement: configStore.map { ConfigModuleEnablement(store: $0) }, tracker: tracker),
             log: log
         )
     }

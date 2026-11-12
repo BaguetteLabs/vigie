@@ -4,14 +4,15 @@ import Testing
 
 @testable import Integrations
 
-/// Story 12.1: the `integrations` skeleton registers with its manifest and renders nothing yet.
+/// Story 12.1: the `integrations` skeleton registers with its manifest and renders nothing yet. Story 12.2 adds
+/// the `setup.problem` kind (one alert per errored script file).
 @MainActor @Suite struct IntegrationsModuleTests {
     @Test func manifest() {
         let manifest = IntegrationsModule.staticManifest
         #expect(manifest.id == "integrations")
         #expect(String(localized: manifest.name) == "Integrations")
         #expect(manifest.settings.isEmpty)
-        #expect(manifest.alertKinds.isEmpty)
+        #expect(manifest.alertKinds == ["setup.problem"])
         #expect(manifest.permissions.isEmpty)
     }
 
