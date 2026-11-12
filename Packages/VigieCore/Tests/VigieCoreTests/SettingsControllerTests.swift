@@ -328,6 +328,21 @@ struct SettingsHarness {
         await h.tearDown()
     }
 
+    @Test func customControlSettingsHaveNoGeneratedRow() async throws {
+        let h = try await SettingsHarness()
+        let manifest = ModuleManifest(
+            id: "custom.test", name: "Custom", icon: "star",
+            settings: customManifest.settings.map { descriptor in
+                SettingDescriptor(
+                    key: descriptor.key, label: descriptor.label, kind: descriptor.kind, scope: descriptor.scope,
+                    help: descriptor.help, customControl: descriptor.key == "folders")
+            })
+        let ids = h.controller.moduleRows(manifest).map(\.id)
+        #expect(ids.count == customManifest.settings.count - 1)
+        #expect(!ids.contains { $0.hasSuffix(".folders") })
+        await h.tearDown()
+    }
+
     @Test func launchAtLoginTogglesTheLoginItemAndMirrorsItsState() async throws {
         let h = try await SettingsHarness()
         let path = CoreSettings.path("general", "launch_at_login")

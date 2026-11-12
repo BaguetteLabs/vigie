@@ -235,8 +235,9 @@ public final class SettingsController {
     }
 
     /// Rows of a module pane: its descriptors, in manifest order.
+    /// The generated rows of a module pane; settings the module draws itself (`customControl`) have none.
     public func moduleRows(_ manifest: ModuleManifest) -> [SettingRowModel] {
-        manifest.settings.compactMap { descriptor in
+        manifest.settings.filter { !$0.customControl }.compactMap { descriptor in
             rowModel(for: .module(manifest.id, descriptor.key, scope: descriptor.scope))
         }
     }

@@ -453,6 +453,7 @@ Runs script modules (§9). Each script appears as its own module in arbitration,
 - **Reminder peek:** two actions (§5.2): primary `⌥⌘↵` **Join call** when the event has a video link (Meet, Zoom, Teams) [ASSUMPTION], otherwise **Open Calendar** (the Calendar tab, upcoming list at that event); `⌥⌘⌫` Dismiss. Sound off by default (`[sounds] calendar_reminder`) [ASSUMPTION].
 - **Expanded tab:** month grid (one dot per calendar per day in macOS calendar colors, ISO week numbers, month navigation, return to today) and an upcoming list from now or from the clicked day, at most about 5 events then `+N LATER`, next event highlighted with a countdown. `JOIN CALL` on events with a video link (user-triggered). Missing calendar access shows a setup card in the tab. Week view: maybe later.
 - **Settings:** calendars to include, reminders on/off, hide all-day events (a hidden all-day event raises no reminder [ASSUMPTION]).
+- **Access:** asked only when the module starts enabled. Unlike other modules (§4.3 step 3) it keeps running without access, so its tab and Settings pane can show the setup card; access is read again when Vigie becomes active, when the tab or pane appears and on calendar store changes.
 
 ### 7.6 `notes`: quick notes (nice-to-have, v0.4)
 
@@ -840,6 +841,8 @@ clipboard_clear = "30s"
 [modules.calendar]
 enabled = false
 reminders = true              # peek at each event's own Calendar alarm times; no closed-notch glance (§7.5)
+hide_all_day = false          # leave all-day events out of the tab and the reminders
+calendars = []                # included calendar ids (EventKit); empty = every calendar
 
 [modules.integrations]
 update_checks = true          # scripts installed from a link, at most once a day (§9.5)

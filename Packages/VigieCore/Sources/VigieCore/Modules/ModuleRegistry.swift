@@ -260,7 +260,10 @@ public final class ModuleRegistry {
     private func startModule(_ descriptor: ModuleDescriptor) async {
         let id = descriptor.manifest.id
         clearWaiter(id)
-        if let missing = await permissions.ensure(descriptor.manifest.permissions) {
+        // A module that handles its own missing permission (setup card, Story 13.1) asks for it in `start`.
+        if !descriptor.manifest.startsWithoutPermissions,
+            let missing = await permissions.ensure(descriptor.manifest.permissions)
+        {
             statuses[id] = .needsPermission(missing)
             await waitForGrant(of: missing, module: id)
             logger.info("Module \(id.rawValue, privacy: .public) waits for a permission")

@@ -3,6 +3,7 @@ import AgentsSessions
 import AgentsUsage
 import AppIntents
 import AppKit
+import Calendar
 import ClaudeAdapter
 import GenericTerminal
 import ITermTerminal
@@ -151,6 +152,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             ModuleDescriptor(manifest: ShelfModule.staticManifest) { ShelfModule() },
             // Timers and Countdowns, the Time tab and the Timer-end alert (SPEC §7.7, Story 20.2). Off by default.
             ModuleDescriptor(manifest: TimeModule.staticManifest) { TimeModule() },
+            // EventKit calendars and the Calendar tab (SPEC §7.5, Story 13.1). Off by default; asks access when enabled.
+            ModuleDescriptor(manifest: CalendarModule.staticManifest) {
+                CalendarModule(openSettings: { [weak self] pane in self?.openSettings(pane: pane) })
+            },
             // Script modules runtime (SPEC §7.4, §9); Story 12.1 skeleton, scripts arrive with Stories 12.2–12.5.
             ModuleDescriptor(manifest: IntegrationsModule.staticManifest) { IntegrationsModule() },
         ]

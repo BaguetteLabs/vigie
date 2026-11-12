@@ -1,0 +1,126 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "calendar.module.name": {
+      "comment": "Module name (tab title, Settings pane).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calendar"
+          }
+        }
+      }
+    },
+    "calendar.setting.calendars": {
+      "comment": "Heading of the calendars to include (checkboxes grouped by account).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calendars"
+          }
+        }
+      }
+    },
+    "calendar.setting.calendars.help": {
+      "comment": "Help for the calendars to include.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vigie shows events from the checked calendars."
+          }
+        }
+      }
+    },
+    "calendar.setting.hideAllDay": {
+      "comment": "Settings row: leave all-day events out.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hide all-day events"
+          }
+        }
+      }
+    },
+    "calendar.setting.hideAllDay.help": {
+      "comment": "Help under the Hide all-day events row.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All-day events are not shown and raise no reminder."
+          }
+        }
+      }
+    },
+    "calendar.setting.reminders": {
+      "comment": "Settings row: peek at each event's own Calendar alarm times.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reminders"
+          }
+        }
+      }
+    },
+    "calendar.setting.reminders.help": {
+      "comment": "Help under the Reminders row.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Peek in the notch at the alarm times set on each event in Calendar."
+          }
+        }
+      }
+    },
+    "calendar.settings.noCalendars": {
+      "comment": "Calendar pane: the calendar store holds no event calendar.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No calendars found."
+          }
+        }
+      }
+    },
+    "calendar.tab.today": {
+      "comment": "Calendar tab placeholder label (uppercase): today's event count. Story 13.2 replaces it.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld EVENT TODAY"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld EVENTS TODAY"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

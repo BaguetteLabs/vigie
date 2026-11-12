@@ -38,19 +38,24 @@ public struct SettingDescriptor: Sendable {
     public let kind: SettingKind
     public let scope: SettingScope
     public let help: LocalizedStringResource?
+    /// The module's `settingsView()` draws this setting (e.g. Calendar's calendar checkboxes, Story 13.1), so the
+    /// pane generates no row for it. It stays a known config key that `ModuleSettings.set` writes. Default false.
+    public let customControl: Bool
 
     public init(
         key: String,
         label: LocalizedStringResource,
         kind: SettingKind,
         scope: SettingScope = .synced,
-        help: LocalizedStringResource? = nil
+        help: LocalizedStringResource? = nil,
+        customControl: Bool = false
     ) {
         self.key = key
         self.label = label
         self.kind = kind
         self.scope = scope
         self.help = help
+        self.customControl = customControl
     }
 
     /// The declared default, as the Swift type `ModuleSettings.value(_:as:)` returns for this kind

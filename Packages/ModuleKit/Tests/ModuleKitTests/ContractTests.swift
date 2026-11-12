@@ -58,6 +58,18 @@ final class MinimalModule: NotchModule {
         #expect(descriptor.help == nil)
         let local = SettingDescriptor(key: "folder", label: "Folder", kind: .path(default: nil), scope: .local)
         #expect(local.scope == .local)
+        #expect(!local.customControl)
+        let custom = SettingDescriptor(
+            key: "calendars", label: "Calendars", kind: .list(of: .string, default: []), customControl: true)
+        #expect(custom.customControl)
+    }
+
+    @Test func manifestPermissionGateDefaultsToTheRegistry() {
+        #expect(!ModuleManifest(id: "a", name: "A", icon: "circle").startsWithoutPermissions)
+        let own = ModuleManifest(
+            id: "calendar", name: "Calendar", icon: "calendar", permissions: [.calendar],
+            startsWithoutPermissions: true)
+        #expect(own.startsWithoutPermissions && own.permissions == [.calendar])
     }
 
     @Test func settingDescriptorDefaults() {

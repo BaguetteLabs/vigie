@@ -27,6 +27,8 @@ packages:
     path: ../Packages/Modules/Shelf
   Time:
     path: ../Packages/Modules/Time
+  Calendar:
+    path: ../Packages/Modules/Calendar
   Integrations:
     path: ../Packages/Modules/Integrations
   ClaudeAdapter:
@@ -88,6 +90,7 @@ targets:
       - package: AgentsUsage
       - package: Shelf
       - package: Time
+      - package: Calendar
       - package: Integrations
       - package: ClaudeAdapter
       - package: GenericTerminal

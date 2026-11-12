@@ -103,13 +103,14 @@ struct PermissionHarness {
     let enablement: TestEnablement
     let registry: ModuleRegistry
 
-    init(permissions: Set<Permission>, enabled: Bool = true) {
+    init(permissions: Set<Permission>, enabled: Bool = true, startsWithoutPermissions: Bool = false) {
         let (stream, continuation) = AsyncStream.makeStream(of: Void.self)
         activations = continuation
         coordinator = PermissionsCoordinator(
             checker: checker, clock: clock, activationNotifications: stream)
         let manifest = ModuleManifest(
-            id: "perm", name: "Perm", icon: "circle", permissions: permissions, defaultEnabled: true)
+            id: "perm", name: "Perm", icon: "circle", permissions: permissions, defaultEnabled: true,
+            startsWithoutPermissions: startsWithoutPermissions)
         let spies = spies
         let descriptor = ModuleDescriptor(manifest: manifest) {
             let module = SpyModule(manifest: manifest, shouldThrow: false)
@@ -205,6 +206,17 @@ struct PermissionHarness {
         await h.registry.start()
         #expect(h.registry.status(of: "perm") == .needsPermission(second))
         #expect(h.spies.made["perm"] == nil)
+        await h.registry.shutdown()
+    }
+
+    @Test func selfManagedModuleStartsWithoutAskingAndNeverWaits() async {
+        let h = PermissionHarness(permissions: [.calendar], startsWithoutPermissions: true)
+        h.checker.set(.calendar, .denied)
+        await h.registry.start()
+        #expect(h.registry.status(of: "perm") == .running)
+        #expect(h.spies.made["perm"]?.count == 1)
+        #expect(h.checker.totalCalls == 0)  // the module asks itself, through context.permissions
+        #expect(h.clock.sleeperCount == 0)
         await h.registry.shutdown()
     }
 
