@@ -226,8 +226,10 @@ intent) and Settings › Scripts presents the Script Confirmation for `installRe
    (UX-DR100).
 2. **Signature**: the link's `sig`, else `<url>.sig` (query kept). A 404 or any other failure means unsigned. Format
    and keys: [`docs/script-signing.md`](../../../docs/script-signing.md).
-3. **Parse**: `ScriptMarkdown` and the schema, as if the file were in the folder. An invalid file, or an id another
-   file already declares (updates are Story 12.10), shows the error with only Close.
+3. **Parse**: `ScriptMarkdown` and the schema, as if the file were in the folder. An invalid file shows the error
+   with only Close. A script id another file already declares continues as an **update** of that file (Story
+   12.10, see Updates): the diff sheet, or "This script is already installed and up to date." with only Close when
+   the bytes are identical.
 4. **Verify**: Ed25519 over the exact bytes against `TrustedScriptKeys` (empty until A84). Valid → `Verified: Vigie
    Script repository`. Unsigned, a signature that matches no trusted key (tampered bytes and unknown keys look the
    same), or a valid signature on a file whose front matter `source` names another host than the download →
@@ -249,7 +251,53 @@ intent) and Settings › Scripts presents the Script Confirmation for `installRe
 never modified (its hash and signature cover the exact bytes), so its own front matter `source` stays a claim.
 Nothing is synced: another Mac that receives the file through the config folder has no confirmation and no source
 record, so it shows the script `NOT CONFIRMED` until confirmed there (PRD FR-39). Story 12.10's update checks read
-the record (and may fall back to the front matter `source` on other Macs).
+the record (and fall back to the front matter `source` on other Macs).
+
+## Updates
+
+Story 12.10 (SPEC §9.5, AD-18, AD-16 amended 2026-11-06, PRD FR-43, UX-DR87, UX-DR106). Code in `Updates/`.
+
+- **Setting:** `[modules.integrations] update_checks` (synced, default `true`), declared in the manifest so Settings
+  › Scripts shows it as a generated toggle above the pane. Off: no request for script updates at all, scheduled or
+  manual (`Check for updates` is disabled). Turning it on runs the due checks at once.
+- **What is checked:** every script file with a source: `[scripts.sources."modules/<file>"] url, sig` (this Mac's
+  link install), else, on a Mac that received the file by sync, the front matter `source` when it is `https` (its
+  signature at `<source>.sig`). Files without either are never fetched.
+- **Cadence:** a `context.scheduler.every(15 min)` tick (and one at start, after the first scan) fetches each source
+  whose last check is at least 24 h old (`ScriptUpdateChecker.checkInterval`), through the same `ScriptDownloading`
+  as link installs (HTTPS only, 256 KB). The last check per relative path persists in `context.storage`
+  (`script-updates.json`, schema 1, `lastChecked`), so a relaunch never fetches early. A failed fetch counts as a
+  check (retried the next day; `Check for updates` retries at once). `Check for updates` in Settings › Scripts
+  fetches every source now, whatever its last check, and reports `Checked N scripts · M updates available`.
+- **Comparison:** the fetched bytes' SHA-256 against the installed file's (exact bytes). Identical → only the check
+  is recorded (and an older candidate is dropped). Different → the file must parse (else logged and ignored) and
+  not take another file's id; its signature is fetched and verified exactly as for a link install, then the bytes
+  and signature are stored as the candidate (`<module storage>/updates/<file>.md` and `.md.sig`, metadata in
+  `script-updates.json` `pending`), and the script shows `UPDATE AVAILABLE`. A candidate whose hash the user
+  declined for that file is never stored or offered.
+- **Declined updates:** `[scripts.declined_updates."modules/<file>"] sha256` in `local.toml`
+  (`ScriptConfirmationStore.declineUpdate`), one per file (the latest decline), so it survives a wipe of the
+  module's storage; never synced. A later, different change is offered again.
+- **Badge:** `UPDATE AVAILABLE` (VigieUI `ScriptUpdateBadge`, `quota-warning-text`) on the Home card's meta line
+  and the page hero's meta line (`ScriptSurfaceSnapshot.updateAvailable` → `ScriptCardModel.updateAvailable`),
+  clickable on both, and in the Settings › Scripts row (`ScriptPaneRow.updateAvailable`) with `Review update…`.
+  The side-slot item is unchanged (too small). No alert kind (A88). The confirmed version keeps running throughout.
+- **Review:** the Script Confirmation in its update variant (`ScriptConfirmationContent.update`): title "Review
+  script update", `Version old → new`, the line diff from the installed file (`VigieUI.ScriptLineDiff`, Myers,
+  folded to 3 context lines), the whole new file on demand, the source, author and verification state of the new
+  version (re-verified from the stored bytes when the sheet opens), the stronger warning when not validly signed.
+  Privacy mode masks the diff, author and source and disables Confirm.
+  - **Confirm**: only while the installed file still has the reviewed bytes (else "The script file changed…"), the
+    new bytes are written to a temporary file on the same volume and `rename(2)`d over the file (atomic), the new
+    hash is confirmed on this Mac (if that fails the old bytes are put back), the source record is refreshed
+    (`installed_at` = now, `url`/`sig` from the candidate), the candidate is removed and the folder rescanned: the
+    new version runs.
+  - **Decline**: the hash goes to `declined_updates`, the candidate is removed; the old version keeps running.
+  - **Close**: nothing changes; the badge and the candidate stay.
+- **Same-id link:** a `vigie://install` link whose id is already installed opens the same update review (from the
+  install sheet; Confirm replaces that file, never a second one; Decline records the declined hash).
+- Like `NOT CONFIRMED`, the badge on island surfaces only sets the review; the sheet shows in Settings › Scripts
+  (modules have no window API and no `UserIntent` from a card click).
 
 After the first run of a status script its widget reads `CHECKED JUST NOW` (VigieUI `ScriptCardMeta`, under a
 minute; Flow 7, UX-DR106).

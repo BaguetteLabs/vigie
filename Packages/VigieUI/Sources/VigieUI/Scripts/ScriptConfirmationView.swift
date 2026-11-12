@@ -28,6 +28,24 @@ public struct ScriptConfirmationContent: Equatable, Sendable, Identifiable {
     public var verification: Verification?
     /// Link installs: whether there is a file to review yet (UX-DR100).
     public var availability: Availability
+    /// Updates (Story 12.10): the diff from the confirmed version and the versions; nil for a first review. The
+    /// other fields describe the new version.
+    public var update: Update?
+
+    /// An update of an installed script (Story 12.10, Flow 7 step 6).
+    public struct Update: Equatable, Sendable {
+        /// Every line of the confirmed file and the new one (``ScriptLineDiff/lines(old:new:)``).
+        public var diff: [ScriptLineDiff.Line]
+        /// The front matter `version` of the confirmed file and of the new one, when they state one.
+        public var oldVersion: String?
+        public var newVersion: String?
+
+        public init(diff: [ScriptLineDiff.Line], oldVersion: String? = nil, newVersion: String? = nil) {
+            self.diff = diff
+            self.oldVersion = oldVersion
+            self.newVersion = newVersion
+        }
+    }
 
     /// Where a link-installed file comes from (SPEC §9.4, AD-18).
     public enum Verification: Equatable, Sendable {
@@ -59,7 +77,8 @@ public struct ScriptConfirmationContent: Equatable, Sendable, Identifiable {
     public init(
         fileName: String, path: String, documentation: String, frontMatter: String?, code: String?,
         language: String?, fileText: String?, problem: String? = nil, sourceURL: String? = nil,
-        author: String? = nil, verification: Verification? = nil, availability: Availability = .ready
+        author: String? = nil, verification: Verification? = nil, availability: Availability = .ready,
+        update: Update? = nil
     ) {
         self.fileName = fileName
         self.path = path
@@ -73,6 +92,7 @@ public struct ScriptConfirmationContent: Equatable, Sendable, Identifiable {
         self.author = author
         self.verification = verification
         self.availability = availability
+        self.update = update
     }
 
     /// A link install with nothing to review yet (downloading) or nothing to confirm (failed).
@@ -107,6 +127,34 @@ public enum ScriptConfirmationCopy {
     public static var installNote: String { L10n.string("script.confirmation.installNote") }
     public static var downloading: String { L10n.string("script.confirmation.downloading") }
     public static var noAuthor: String { L10n.string("script.confirmation.author.none") }
+    /// Story 12.10: the update variant.
+    public static var updateTitle: String { L10n.string("script.confirmation.update.title") }
+    public static var updateNote: String { L10n.string("script.confirmation.update.note") }
+    public static var changes: String { L10n.string("script.confirmation.update.changes") }
+    public static var newFileText: String { L10n.string("script.confirmation.update.fileText") }
+
+    /// `Version 1.0.0 → 1.1.0`; a side that states none reads `not given`.
+    public static func version(old: String?, new: String?) -> String {
+        let none = L10n.string("script.confirmation.update.version.none")
+        return L10n.format("script.confirmation.update.version", old ?? none, new ?? none)
+    }
+
+    /// `+3 −1 lines`.
+    public static func changeCounts(added: Int, removed: Int) -> String {
+        L10n.format("script.confirmation.update.counts", added, removed)
+    }
+
+    /// `12 unchanged lines`, a folded run of the diff.
+    public static func skipped(_ count: Int) -> String { L10n.format("script.confirmation.update.skipped", count) }
+
+    /// What VoiceOver reads for a diff line: `Added: …`, `Removed: …`, or the line itself.
+    public static func spoken(_ line: ScriptLineDiff.Line) -> String {
+        switch line.kind {
+        case .added: L10n.format("script.confirmation.update.added", line.text)
+        case .removed: L10n.format("script.confirmation.update.removed", line.text)
+        case .context: line.text
+        }
+    }
 
     /// The verification line: `Verified: Vigie Script repository`, or the stronger warning's reason.
     public static func verification(_ state: ScriptConfirmationContent.Verification) -> String {
@@ -147,6 +195,11 @@ public enum ScriptConfirmationCopy {
         "script.confirmation.unverified.explanation", "script.confirmation.installNote",
         "script.confirmation.downloading", "script.confirmation.source", "script.confirmation.author",
         "script.confirmation.author.claimed", "script.confirmation.author.none", "script.meta.checkedJustNow",
+        "script.confirmation.update.title", "script.confirmation.update.note", "script.confirmation.update.changes",
+        "script.confirmation.update.fileText", "script.confirmation.update.version",
+        "script.confirmation.update.version.none", "script.confirmation.update.counts",
+        "script.confirmation.update.skipped", "script.confirmation.update.added", "script.confirmation.update.removed",
+        "script.state.updateAvailable", "script.state.updateAvailable.hint",
     ]
 }
 
@@ -182,7 +235,8 @@ public struct ScriptConfirmationView: View {
         VStack(alignment: .leading, spacing: ScriptConfirmationMetrics.sectionSpacing) {
             header
             switch content.availability {
-            case .ready: fileSections
+            case .ready:
+                if let update = content.update { updateSections(update) } else { fileSections }
             case .downloading: downloadingSection
             case .failed(let title, let detail): failureSection(title: title, detail: detail)
             }
@@ -209,6 +263,35 @@ public struct ScriptConfirmationView: View {
                         CodeBlock(text: fileText)
                     } label: {
                         Text(verbatim: ScriptConfirmationCopy.fileText).font(.headline)
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    /// Story 12.10: the diff from the confirmed version, then the whole new file on demand.
+    private func updateSections(_ update: ScriptConfirmationContent.Update) -> some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: ScriptConfirmationMetrics.sectionSpacing) {
+                VStack(alignment: .leading, spacing: ScriptConfirmationMetrics.lineSpacing) {
+                    let counts = ScriptLineDiff.counts(update.diff)
+                    HStack {
+                        Text(verbatim: ScriptConfirmationCopy.changes).font(.headline)
+                        Spacer()
+                        Text(
+                            verbatim: ScriptConfirmationCopy.changeCounts(added: counts.added, removed: counts.removed)
+                        )
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    }
+                    ScriptDiffView(lines: update.diff)
+                }
+                if let fileText = content.fileText {
+                    DisclosureGroup(isExpanded: $showsFileText) {
+                        CodeBlock(text: fileText)
+                    } label: {
+                        Text(verbatim: ScriptConfirmationCopy.newFileText).font(.headline)
                     }
                 }
             }
@@ -281,9 +364,15 @@ public struct ScriptConfirmationView: View {
 
     private var header: some View {
         VStack(alignment: .leading, spacing: ScriptConfirmationMetrics.lineSpacing) {
-            Text(verbatim: ScriptConfirmationCopy.title).font(.title2.weight(.semibold))
+            Text(verbatim: content.update == nil ? ScriptConfirmationCopy.title : ScriptConfirmationCopy.updateTitle)
+                .font(.title2.weight(.semibold))
             if content.availability.canConfirm {
                 Text(verbatim: content.fileName).font(.headline).sensitive()
+                if let update = content.update {
+                    Text(verbatim: ScriptConfirmationCopy.version(old: update.oldVersion, new: update.newVersion))
+                        .font(.callout)
+                        .sensitive()
+                }
                 Text(verbatim: content.path)
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -304,10 +393,13 @@ public struct ScriptConfirmationView: View {
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
             if content.verification != nil, content.availability.canConfirm {
-                Text(verbatim: ScriptConfirmationCopy.installNote)
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
+                Text(
+                    verbatim: content.update == nil
+                        ? ScriptConfirmationCopy.installNote : ScriptConfirmationCopy.updateNote
+                )
+                .font(.callout)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
             }
             if let problem = content.problem {
                 Label {
@@ -359,8 +451,13 @@ public struct ScriptConfirmationView: View {
             }
             HStack {
                 if content.availability.canConfirm {
-                    Button(action: onCancel) { Text(verbatim: ScriptConfirmationCopy.cancel) }
-                        .keyboardShortcut(.cancelAction)
+                    // An update's Close leaves the candidate pending (Story 12.10); a first review's Cancel records nothing.
+                    Button(action: onCancel) {
+                        Text(
+                            verbatim: content.update == nil
+                                ? ScriptConfirmationCopy.cancel : ScriptConfirmationCopy.close)
+                    }
+                    .keyboardShortcut(.cancelAction)
                     Spacer()
                     // No `.defaultAction` on either: Return never confirms or declines (explicit click only).
                     Button(action: onDecline) { Text(verbatim: ScriptConfirmationCopy.decline) }
@@ -393,6 +490,8 @@ enum ScriptConfirmationMetrics {
     static let codePadding: CGFloat = 8
     static let codeCornerRadius: CGFloat = 6
     static let codeBackgroundOpacity: Double = 0.5
+    /// The tint behind an added or removed diff line (Story 12.10).
+    static let diffTintOpacity: Double = 0.16
     static let minWidth: CGFloat = 520
     static let idealWidth: CGFloat = 640
     static let minHeight: CGFloat = 420

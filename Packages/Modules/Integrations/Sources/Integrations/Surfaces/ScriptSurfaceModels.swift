@@ -8,11 +8,16 @@ public struct ScriptSurfaceSnapshot: Equatable, Sendable {
     public var local: ScriptLocalState
     /// Nil while the runner does not run the script (not confirmed, disabled, or stopped).
     public var run: ScriptRunState?
+    /// A newer version waits for review (Story 12.10): `UPDATE AVAILABLE` on the card and the page hero.
+    public var updateAvailable: Bool
 
-    public init(frontMatter: ScriptFrontMatter, local: ScriptLocalState, run: ScriptRunState?) {
+    public init(
+        frontMatter: ScriptFrontMatter, local: ScriptLocalState, run: ScriptRunState?, updateAvailable: Bool = false
+    ) {
         self.frontMatter = frontMatter
         self.local = local
         self.run = run
+        self.updateAvailable = updateAvailable
     }
 }
 
@@ -101,7 +106,8 @@ public enum ScriptSurfaces {
     public static func card(_ snapshot: ScriptSurfaceSnapshot) -> ScriptCardModel {
         let frontMatter = snapshot.frontMatter
         var model = ScriptCardModel(
-            name: frontMatter.name, cadence: cadence(frontMatter), body: .state(ScriptRunLabel.waitingFirstRun))
+            name: frontMatter.name, cadence: cadence(frontMatter), body: .state(ScriptRunLabel.waitingFirstRun),
+            updateAvailable: snapshot.updateAvailable)
         guard snapshot.local == .confirmed else {
             model.body = .notConfirmed
             return model

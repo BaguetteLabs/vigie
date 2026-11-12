@@ -54,6 +54,19 @@ final class MemoryScriptConfirmations: ScriptConfirmationStore, @unchecked Senda
         lock.withLock { sources[relativePath] = source }
     }
 
+    private var declinedUpdates: [String: String] = [:]
+    var declinedUpdateRecords: [String: String] { lock.withLock { declinedUpdates } }
+
+    @MainActor func declinedUpdate(for relativePath: String) -> String? {
+        lock.withLock { declinedUpdates[relativePath] }
+    }
+
+    func declineUpdate(_ relativePath: String, sha256: String) async throws {
+        if let failure = lock.withLock({ failure }) { throw failure }
+        lock.withLock { declinedUpdates[relativePath] = sha256 }
+        notify()
+    }
+
     /// An outside edit of `local.toml`.
     func edit(_ relativePath: String, _ record: ScriptConfirmationRecord?) {
         lock.withLock { stored[relativePath] = record }

@@ -21,6 +21,13 @@ import ModuleKit
 /// installed_at = "2026-11-12T21:04:00Z"
 /// ```
 ///
+/// An update the user declined (Story 12.10) is kept so the same content is never offered again:
+///
+/// ```toml
+/// [scripts.declined_updates."modules/ci-status.md"]
+/// sha256 = "<lowercase hex SHA-256 of the declined update's bytes>"
+/// ```
+///
 /// Records are read from `local.toml` only: a `[scripts]` table in the synced `config.toml` never confirms
 /// anything (it is an open table there, ignored without a problem). Confirming removes the file's decline and
 /// declining removes its confirmation.
@@ -90,6 +97,16 @@ public struct ConfigScriptConfirmations: ScriptConfirmationStore {
         try await store.set(
             CoreSettings.scriptSourcePath(relativePath, .installedAt),
             to: .string(source.installedAt.formatted(.iso8601)))
+    }
+
+    @MainActor public func declinedUpdate(for relativePath: String) -> String? {
+        hash(.declinedUpdates, relativePath)
+    }
+
+    public func declineUpdate(_ relativePath: String, sha256: String) async throws {
+        await MainActor.run { store.registerScriptRecord(relativePath) }
+        try await store.set(
+            CoreSettings.scriptRecordPath(.declinedUpdates, relativePath), to: .string(sha256.lowercased()))
     }
 
     /// Yields after each load or write that changes a key under `[scripts]`; ends when the module stops.

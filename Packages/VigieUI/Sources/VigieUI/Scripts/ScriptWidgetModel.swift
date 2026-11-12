@@ -165,10 +165,13 @@ public struct ScriptCardModel: Sendable, Equatable, PrivacyRedactable {
     public var warningBadge: Bool
     /// The output's `action`, when the body is clickable.
     public var action: ScriptWidgetAction?
+    /// A newer version waits for review (Story 12.10): the meta line ends with `UPDATE AVAILABLE` while the
+    /// confirmed version keeps running (UX-DR87, A88).
+    public var updateAvailable: Bool
 
     public init(
         name: String, target: String? = nil, cadence: String, body: Body, meta: ScriptCardMeta? = nil,
-        warningBadge: Bool = false, action: ScriptWidgetAction? = nil
+        warningBadge: Bool = false, action: ScriptWidgetAction? = nil, updateAvailable: Bool = false
     ) {
         self.name = name
         self.target = target
@@ -177,6 +180,7 @@ public struct ScriptCardModel: Sendable, Equatable, PrivacyRedactable {
         self.meta = meta
         self.warningBadge = warningBadge
         self.action = action
+        self.updateAvailable = updateAvailable
     }
 
     /// `GitHub PRs · vigie`, or the name alone.
@@ -203,6 +207,7 @@ public struct ScriptCardModel: Sendable, Equatable, PrivacyRedactable {
         }
         if warningBadge { parts.append(StatusLabelFormatter().label(for: StatusLevel.warn)) }
         if let meta { parts.append(meta.text(now: now, timeZone: timeZone)) }
+        if updateAvailable { parts.append(ScriptUpdateBadge.text) }
         return parts.dropFirst().reduce(parts[0]) { AccessibilityLabel.joined($0, $1) }
     }
 }

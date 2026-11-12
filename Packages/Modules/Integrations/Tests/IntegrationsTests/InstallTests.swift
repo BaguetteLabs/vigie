@@ -201,14 +201,18 @@ final class FakeDownloader: ScriptDownloading, @unchecked Sendable {
         await setup.cleanUp()
     }
 
-    @Test func aScriptIDAlreadyInstalledIsRefused() async throws {
+    /// Story 12.10: a link whose content is exactly the installed file says so and offers Close only.
+    @Test func anIdenticalSameIDLinkSaysAlreadyInstalled() async throws {
         let setup = try Setup()
         try setup.folder.write("mine.md", Self.script())
         try await setup.start()
         setup.downloader.set(Self.fileURL, .ok(Data(Self.script().utf8)))
         let review = try await setup.install()
-        #expect(review.phase == .failed(.idInUse(id: "ci.status", fileName: "mine.md")))
+        #expect(review.phase == .failed(.alreadyInstalled(fileName: "mine.md")))
+        let content = setup.module.installContent(for: review)
+        #expect(!content.availability.canConfirm)
         #expect(setup.folderFiles() == ["mine.md"])
+        #expect(setup.tempFiles().isEmpty)
         await setup.cleanUp()
     }
 
@@ -449,7 +453,7 @@ final class FakeDownloader: ScriptDownloading, @unchecked Sendable {
         }
         for error in [
             ScriptInstallError.notHTTPS(scheme: "ftp"), .insecureRedirect, .tooLarge(limit: 262_144),
-            .httpStatus(500), .idInUse(id: "a.b", fileName: "a.md"), .noFolder, .writeFailed("disk full"),
+            .httpStatus(500), .alreadyInstalled(fileName: "a.md"), .noFolder, .writeFailed("disk full"),
         ] {
             #expect(!error.title.hasPrefix("script."))
             #expect(!(error.detail ?? "").hasPrefix("script."))

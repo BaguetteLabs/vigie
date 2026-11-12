@@ -9,6 +9,9 @@ public struct ScriptInstallReview: Identifiable, Equatable, Sendable {
         /// Nothing to confirm; nothing was written.
         case failed(ScriptInstallError)
         case ready(ScriptInstallCandidate)
+        /// The link's script id is already installed: the review continues as an update of that file, with the
+        /// diff (Story 12.10). Nothing is in a temporary file; the bytes are in the candidate.
+        case update(ScriptUpdateCandidate)
     }
 
     public let id: UUID
@@ -79,8 +82,26 @@ extension IntegrationsModule {
                 if case .ready(let candidate) = phase { await installer.discard(candidate) }
                 return
             }
-            self.installReview?.phase = phase
+            self.installReview?.phase = await self.continuingAsUpdate(phase)
         }
+    }
+
+    /// A same-id link (Story 12.10): the candidate becomes an update of the installed file, or `alreadyInstalled`
+    /// when the bytes are identical. Its temporary file is removed either way.
+    private func continuingAsUpdate(_ phase: ScriptInstallReview.Phase) async -> ScriptInstallReview.Phase {
+        guard case .ready(let candidate) = phase, let replacing = candidate.replacing else { return phase }
+        await installer.discard(candidate)
+        guard let installed = scripts.first(where: { $0.fileName == replacing }) else { return .failed(.noFolder) }
+        if installed.contentHash == candidate.contentHash { return .failed(.alreadyInstalled(fileName: replacing)) }
+        let folderName = installed.url.deletingLastPathComponent().lastPathComponent
+        let enabled = installed.enabled
+        let definition = ScriptModuleDefinition(
+            url: installed.url, folderName: folderName, data: candidate.data, enabled: { _ in enabled })
+        return .update(
+            ScriptUpdateCandidate(
+                relativePath: installed.relativePath, installed: installed, definition: definition,
+                data: candidate.data, signature: candidate.signature, fileURL: candidate.fileURL,
+                signatureURL: candidate.signatureURL, verification: candidate.verification))
     }
 
     /// What the Script Confirmation shows for `review`.
@@ -97,6 +118,8 @@ extension IntegrationsModule {
             content.author = candidate.definition.frontMatter?.author
             content.verification = candidate.verification
             return content
+        case .update(let candidate):
+            return updateContent(for: candidate)
         }
     }
 
@@ -105,6 +128,18 @@ extension IntegrationsModule {
     /// Returns the installed file.
     @discardableResult
     public func confirmInstall() async throws -> URL {
+        if let review = installReview, case .update(let update) = review.phase {
+            do throws(ScriptUpdateError) {
+                try await applyUpdate(update)
+            } catch {
+                if installReview?.id == review.id {
+                    installReview?.phase = .failed(.writeFailed(error.message))
+                }
+                throw error
+            }
+            if installReview?.id == review.id { installReview = nil }
+            return update.installed.url
+        }
         guard let review = installReview, let candidate = review.candidate else { throw ScriptInstallError.noFolder }
         guard let folder = context?.scriptFolder.url else { throw ScriptInstallError.noFolder }
         let target: URL
@@ -131,6 +166,17 @@ extension IntegrationsModule {
         context?.log.info("install link: confirmed as \(relativePath, privacy: .public)")
         await rescan()
         return target
+    }
+
+    /// Decline of a link review: for a same-id update the content is recorded as declined (never offered again,
+    /// Story 12.10); for a new script it is Close.
+    public func declineInstall() async throws {
+        if let review = installReview, case .update(let update) = review.phase {
+            try await recordDeclinedUpdate(update)
+            if installReview?.id == review.id { installReview = nil }
+            return
+        }
+        await cancelInstall()
     }
 
     /// Decline or Close: nothing is recorded (there is no file in the folder), the temporary file is removed.

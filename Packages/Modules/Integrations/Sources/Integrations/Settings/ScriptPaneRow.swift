@@ -56,10 +56,14 @@ public struct ScriptPaneRow: Identifiable, Equatable, Sendable {
     public let isEnabled: Bool
     /// The parse problem of a file that can't load, for its help text.
     public let problem: String?
+    /// A newer version waits for review (Story 12.10): `UPDATE AVAILABLE` and `Review update…` next to the state.
+    public let updateAvailable: Bool
 
     init(
-        script: ScriptModuleDefinition, localState: ScriptLocalState, isEligible: Bool, runState: ScriptRunState?
+        script: ScriptModuleDefinition, localState: ScriptLocalState, isEligible: Bool, runState: ScriptRunState?,
+        updateAvailable: Bool = false
     ) {
+        self.updateAvailable = updateAvailable
         id = script.id
         name = script.frontMatter?.name ?? script.fileName
         file = script.relativePath

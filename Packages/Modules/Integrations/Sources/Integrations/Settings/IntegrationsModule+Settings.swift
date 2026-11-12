@@ -81,7 +81,7 @@ extension IntegrationsModule {
         scripts.map { script in
             ScriptPaneRow(
                 script: script, localState: localState(for: script), isEligible: isEligible(script),
-                runState: runner?.states[script.id])
+                runState: runner?.states[script.id], updateAvailable: updateAvailable(for: script))
         }
     }
 }

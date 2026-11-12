@@ -14,15 +14,18 @@ public struct ScriptCard: View {
     private let now: Date?
     private let onActivate: (@MainActor () -> Void)?
     private let onReview: @MainActor () -> Void
+    private let onReviewUpdate: (@MainActor () -> Void)?
 
+    /// - Parameter onReviewUpdate: `UPDATE AVAILABLE` was clicked (Story 12.10); nil draws the badge as a label.
     public init(
         model: ScriptCardModel, now: Date? = nil, onActivate: (@MainActor () -> Void)? = nil,
-        onReview: @escaping @MainActor () -> Void = {}
+        onReview: @escaping @MainActor () -> Void = {}, onReviewUpdate: (@MainActor () -> Void)? = nil
     ) {
         self.model = model
         self.now = now
         self.onActivate = onActivate
         self.onReview = onReview
+        self.onReviewUpdate = onReviewUpdate
     }
 
     public var body: some View {
@@ -37,7 +40,8 @@ public struct ScriptCard: View {
         let shown = model.privacy(privacyActive)
         let size = ScriptCardMetrics.size(theme)
         return WidgetCard(title: Text(verbatim: shown.title), meta: Text(verbatim: shown.cadence)) {
-            ScriptCardContent(shown: shown, now: now, onActivate: onActivate, onReview: onReview)
+            ScriptCardContent(
+                shown: shown, now: now, onActivate: onActivate, onReview: onReview, onReviewUpdate: onReviewUpdate)
         }
         .frame(width: size.width, height: size.height)
         .accessibilityElement(children: .contain)
@@ -55,6 +59,8 @@ struct ScriptCardContent: View {
     var interactive = true
     var onActivate: (@MainActor () -> Void)?
     var onReview: @MainActor () -> Void = {}
+    /// `UPDATE AVAILABLE` on the meta line opens the update review (Story 12.10), also on the page hero.
+    var onReviewUpdate: (@MainActor () -> Void)?
 
     var body: some View {
         VStack(alignment: .leading, spacing: theme.spacing(.rowGap)) {
@@ -96,7 +102,7 @@ struct ScriptCardContent: View {
     }
 
     @ViewBuilder private var metaLine: some View {
-        if shown.meta != nil || shown.warningBadge {
+        if shown.meta != nil || shown.warningBadge || shown.updateAvailable {
             HStack(spacing: theme.spacing(.glyphGap) / 2) {
                 if shown.warningBadge {
                     StatusMarkGlyph(level: .warn, size: .small)
@@ -107,6 +113,10 @@ struct ScriptCardContent: View {
                         .tracking(theme.tracking(.cardTitle))
                         .foregroundStyle(theme.color(.ink3))
                         .lineLimit(1)
+                }
+                if shown.updateAvailable {
+                    ScriptUpdateBadge(action: onReviewUpdate)
+                        .layoutPriority(1)
                 }
             }
         }

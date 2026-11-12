@@ -15,11 +15,19 @@ public final class IntegrationsModule: NotchModule {
     public nonisolated static let setupProblemKind = "setup.problem"
     /// Settings pane of the module: Settings › Scripts (Story 12.6).
     public nonisolated static let settingsPane = "integrations"
+    /// `[modules.integrations] update_checks` (SPEC §11, Story 12.10): check link-installed scripts for updates at
+    /// most once a day. Off: no network request for script updates at all.
+    public nonisolated static let updateChecksKey = "update_checks"
 
     public nonisolated static let staticManifest = ModuleManifest(
         id: "integrations",
         name: IntegrationsText.resource("integrations.module.name"),
         icon: "puzzlepiece.extension",
+        settings: [
+            SettingDescriptor(
+                key: updateChecksKey, label: IntegrationsText.resource("integrations.setting.updateChecks"),
+                kind: .bool(default: true), help: IntegrationsText.resource("integrations.setting.updateChecks.help"))
+        ],
         alertKinds: [setupProblemKind]
     )
 
@@ -37,6 +45,22 @@ public final class IntegrationsModule: NotchModule {
     @ObservationIgnored public var installer = ScriptInstaller()
     @ObservationIgnored var installTask: Task<Void, Never>?
     @ObservationIgnored var prepareTask: Task<Void, Never>?
+
+    /// Update candidates waiting for review by relative path (Story 12.10); drives `UPDATE AVAILABLE`.
+    public internal(set) var pendingUpdates: [String: ScriptPendingUpdate] = [:]
+    /// The update under review in the Script Confirmation (Story 12.10), nil when none is open.
+    public internal(set) var updateReview: ScriptUpdateReview?
+    /// The state of `Check for updates` in Settings › Scripts.
+    public internal(set) var updateCheck = ScriptUpdateCheckStatus()
+    /// Fetches and verifies script updates (Story 12.10). Tests inject a fake downloader and keys.
+    @ObservationIgnored public var updateChecker = ScriptUpdateChecker()
+    /// The clock of the update cadence (tests move it).
+    @ObservationIgnored public var now: @Sendable () -> Date = { Date() }
+    @ObservationIgnored var updateState = ScriptUpdateState()
+    @ObservationIgnored var updateJob: RegistrationToken?
+    @ObservationIgnored var updateTasks: [Task<Void, Never>] = []
+    /// Scheduled update ticks finished so far (a test seam).
+    @ObservationIgnored var completedUpdateTicks = 0
 
     /// Runs the eligible scripts (Story 12.4); nil while stopped. Its `states` are the scripts' run states.
     public private(set) var runner: ScriptRunner?
@@ -84,6 +108,7 @@ public final class IntegrationsModule: NotchModule {
         await rescan()
         // After the first scan, so a link received while launching sees the folder's ids.
         startInstalls(context)
+        await startUpdates(context)
         watchTask = Task { [weak self] in
             for await _ in changes {
                 guard !Task.isCancelled else { return }
@@ -94,6 +119,7 @@ public final class IntegrationsModule: NotchModule {
 
     public func stop() async {
         await stopInstalls()
+        stopUpdates()
         watchTask?.cancel()
         watchTask = nil
         await runner?.stop()

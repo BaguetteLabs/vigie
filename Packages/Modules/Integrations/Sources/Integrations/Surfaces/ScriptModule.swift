@@ -18,6 +18,10 @@ struct ScriptModuleSource {
     var reveal: @MainActor (ScriptModuleDefinition) -> Void = { _ in }
     /// `OPEN SOURCE`: open the file in the default editor for its type (Story 12.11).
     var openSource: @MainActor (ScriptModuleDefinition) -> Void = { _ in }
+    /// Whether a newer version waits for review (Story 12.10).
+    var updateAvailable: @MainActor (ScriptModuleDefinition) -> Bool = { _ in false }
+    /// `UPDATE AVAILABLE` was clicked: open the update review.
+    var reviewUpdate: @MainActor (ScriptModuleDefinition) -> Void = { _ in }
 }
 
 /// One script as its own module (SPEC §7.4, AD-18, Story 12.5): registered by ``IntegrationsModule`` through
@@ -58,7 +62,8 @@ public final class ScriptModule: NotchModule {
     /// What the surfaces render now. Reading it tracks the confirmation records and the run state.
     public var snapshot: ScriptSurfaceSnapshot {
         ScriptSurfaceSnapshot(
-            frontMatter: frontMatter, local: source.localState(definition), run: source.runState(scriptID))
+            frontMatter: frontMatter, local: source.localState(definition), run: source.runState(scriptID),
+            updateAvailable: source.updateAvailable(definition))
     }
 
     /// Arbitration state (``ScriptSurfaces/state(_:)``), derived from observed state.
@@ -106,6 +111,11 @@ public final class ScriptModule: NotchModule {
         source.review(definition)
     }
 
+    /// A click on `UPDATE AVAILABLE` (Story 12.10).
+    public func reviewUpdate() {
+        source.reviewUpdate(definition)
+    }
+
     /// The script page's model now (Story 12.11). Reading it tracks the definition, the confirmation records
     /// and the run state, so the tab re-renders as runs complete.
     public var pageModel: ScriptPageModel {
@@ -131,7 +141,7 @@ struct ScriptHomeCard: View {
         let model = ScriptSurfaces.card(module.snapshot)
         ScriptCard(
             model: model, onActivate: model.action == nil ? nil : { module.activate() },
-            onReview: { module.review() })
+            onReview: { module.review() }, onReviewUpdate: { module.reviewUpdate() })
     }
 }
 
@@ -144,6 +154,6 @@ struct ScriptPageTab: View {
             model: module.pageModel,
             actions: ScriptPageActions(
                 activate: { module.activate() }, review: { module.review() }, reveal: { module.reveal() },
-                openSource: { module.openSource() }))
+                openSource: { module.openSource() }, reviewUpdate: { module.reviewUpdate() }))
     }
 }

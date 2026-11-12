@@ -193,6 +193,7 @@ public struct ScriptPageModel: Sendable, Equatable, PrivacyRedactable {
         }
         if hero.warningBadge { parts.append(StatusLabelFormatter().label(for: StatusLevel.warn)) }
         if let meta = hero.meta { parts.append(ScriptPageFormat.spoken(meta, now: now, timeZone: timeZone)) }
+        if hero.updateAvailable { parts.append(ScriptUpdateBadge.text) }
         return parts.dropFirst().reduce(parts[0]) { AccessibilityLabel.joined($0, $1) }
     }
 }

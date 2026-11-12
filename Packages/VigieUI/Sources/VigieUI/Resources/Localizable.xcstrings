@@ -3552,6 +3552,150 @@
           }
         }
       }
+    },
+    "script.confirmation.update.title": {
+      "comment": "Script Confirmation title for an update of an installed script (Story 12.10).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Review script update"
+          }
+        }
+      }
+    },
+    "script.confirmation.update.note": {
+      "comment": "Script Confirmation of an update: what Confirm, Decline and Close do (Story 12.10, PRD FR-43).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The confirmed version keeps running until you confirm this update. Decline and Vigie won't offer this version again; Close keeps it waiting."
+          }
+        }
+      }
+    },
+    "script.confirmation.update.changes": {
+      "comment": "Script Confirmation of an update: heading of the line diff from the confirmed version.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Changes"
+          }
+        }
+      }
+    },
+    "script.confirmation.update.fileText": {
+      "comment": "Script Confirmation of an update: disclosure showing the whole new file as text.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Whole new file"
+          }
+        }
+      }
+    },
+    "script.confirmation.update.version": {
+      "comment": "Script Confirmation of an update: front matter versions, old then new. %1$@ = confirmed version, %2$@ = new version.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Version %1$@ → %2$@"
+          }
+        }
+      }
+    },
+    "script.confirmation.update.version.none": {
+      "comment": "Script Confirmation of an update: shown for a side whose front matter states no version.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "not given"
+          }
+        }
+      }
+    },
+    "script.confirmation.update.counts": {
+      "comment": "Script Confirmation of an update: line counts of the diff. %1$lld = added lines, %2$lld = removed lines.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "+%1$lld −%2$lld lines"
+          }
+        }
+      }
+    },
+    "script.confirmation.update.skipped": {
+      "comment": "Script update diff: a folded run of unchanged lines. %lld = line count.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld unchanged lines"
+          }
+        }
+      }
+    },
+    "script.confirmation.update.added": {
+      "comment": "VoiceOver label of an added line in a script update diff. %@ = the line.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Added: %@"
+          }
+        }
+      }
+    },
+    "script.confirmation.update.removed": {
+      "comment": "VoiceOver label of a removed line in a script update diff. %@ = the line.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Removed: %@"
+          }
+        }
+      }
+    },
+    "script.state.updateAvailable": {
+      "comment": "Script badge on the Home card, the script page and Settings › Scripts: a newer version waits for review while the confirmed one keeps running (UX-DR87, A88).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "UPDATE AVAILABLE"
+          }
+        }
+      }
+    },
+    "script.state.updateAvailable.hint": {
+      "comment": "VoiceOver hint / accessibility action of the UPDATE AVAILABLE badge.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Review the update"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

@@ -74,7 +74,11 @@ extension IntegrationsModule {
             perform: { [weak self] action, id in self?.perform(action, scriptID: id) },
             review: { [weak self] definition in self?.openConfirmation(for: definition) },
             reveal: { [weak self] definition in self?.surfaces.revealInFinder(definition.url) },
-            openSource: { [weak self] definition in self?.surfaces.openFile(definition.url) })
+            openSource: { [weak self] definition in self?.surfaces.openFile(definition.url) },
+            updateAvailable: { [weak self] definition in self?.updateAvailable(for: definition) ?? false },
+            reviewUpdate: { [weak self] definition in
+                Task { await self?.openUpdate(for: definition) }
+            })
     }
 
     /// A widget click (Story 12.5): `open` opens the URL, `run` runs argv through the runner (same rules as the

@@ -11,7 +11,8 @@ import Testing
         let manifest = IntegrationsModule.staticManifest
         #expect(manifest.id == "integrations")
         #expect(String(localized: manifest.name) == "Scripts")  // the Settings › Scripts pane title (UX-DR74)
-        #expect(manifest.settings.isEmpty)
+        // `[modules.integrations] update_checks`, default on (Story 12.10, SPEC §11).
+        #expect(manifest.settings.map(\.key) == ["update_checks"])
         #expect(manifest.alertKinds == ["setup.problem"])
         #expect(manifest.permissions.isEmpty)
     }

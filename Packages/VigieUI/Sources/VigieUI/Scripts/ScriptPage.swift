@@ -10,15 +10,19 @@ public struct ScriptPageActions {
     public var reveal: @MainActor () -> Void
     /// `OPEN SOURCE`: opens the file in the default editor for its type.
     public var openSource: @MainActor () -> Void
+    /// `UPDATE AVAILABLE` on the hero's meta line: opens the update review (Story 12.10).
+    public var reviewUpdate: @MainActor () -> Void
 
     public init(
         activate: @escaping @MainActor () -> Void = {}, review: @escaping @MainActor () -> Void = {},
-        reveal: @escaping @MainActor () -> Void = {}, openSource: @escaping @MainActor () -> Void = {}
+        reveal: @escaping @MainActor () -> Void = {}, openSource: @escaping @MainActor () -> Void = {},
+        reviewUpdate: @escaping @MainActor () -> Void = {}
     ) {
         self.activate = activate
         self.review = review
         self.reveal = reveal
         self.openSource = openSource
+        self.reviewUpdate = reviewUpdate
     }
 }
 
@@ -88,8 +92,11 @@ public struct ScriptPage: View {
 
     private func hero(_ shown: ScriptPageModel, now: Date) -> some View {
         let card = shown.hero
+        let reviewUpdate: (@MainActor () -> Void)? = card.updateAvailable ? actions.reviewUpdate : nil
         return WidgetCard(title: Text(verbatim: card.title), meta: Text(verbatim: shown.heroMeta)) {
-            ScriptCardContent(shown: card, now: now, interactive: false)
+            ScriptCardContent(
+                shown: card, now: now, interactive: false,
+                onReviewUpdate: reviewUpdate)
         }
         .contentShape(Rectangle())
         .onTapGesture { activateHero(shown) }
@@ -107,6 +114,7 @@ public struct ScriptPage: View {
         .accessibilityAddTraits(shown.heroIsActionable ? .isButton : [])
         .accessibilityHint(Text(verbatim: heroHint(shown)))
         .accessibilityAction { activateHero(shown) }
+        .modifier(ScriptUpdateAction(isAvailable: card.updateAvailable, action: actions.reviewUpdate))
         .accessibilityIdentifier(ScriptPageFocus.hero.accessibilityID)
     }
 
@@ -316,5 +324,19 @@ public enum ScriptPageMetrics {
     /// The one fixed track of a two-track CSS grid value (`1fr 212px` → 212, `118px 1fr` → 118).
     static func fixed(_ tracks: String?) -> CGFloat? {
         tracks?.split(separator: " ").lazy.compactMap { ThemeValue.length(String($0)) }.first
+    }
+}
+
+/// The hero's named accessibility action `Review the update` while `UPDATE AVAILABLE` shows (Story 12.10).
+private struct ScriptUpdateAction: ViewModifier {
+    let isAvailable: Bool
+    let action: @MainActor () -> Void
+
+    func body(content: Content) -> some View {
+        if isAvailable {
+            content.accessibilityAction(named: Text(verbatim: ScriptUpdateBadge.hint)) { action() }
+        } else {
+            content
+        }
     }
 }

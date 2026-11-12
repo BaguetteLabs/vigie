@@ -103,4 +103,30 @@ import Wire
         #expect(records.record(for: path) == .none)
         await #expect(throws: ModuleServiceError.notAvailable) { try await records.confirm(path, sha256: hash) }
     }
+
+    /// Story 12.10: a declined update's hash lives in `local.toml` beside the file's records, survives a relaunch
+    /// and leaves the confirmation alone.
+    @Test func aDeclinedUpdateIsKeptInLocalTomlOnly() async throws {
+        let fixture = ConfigFixture()
+        let (store, _) = try await fixture.makeStore(config: "[general]\nopen_on_hover = false\n")
+        let syncedBefore = try Data(contentsOf: fixture.configURL)
+        let records = ConfigScriptConfirmations(store: store, tracker: RegistrationTracker())
+        #expect(records.declinedUpdate(for: path) == nil)
+        try await records.confirm(path, sha256: hash)
+        try await records.declineUpdate(path, sha256: other.uppercased())
+        #expect(records.declinedUpdate(for: path) == other)
+        #expect(records.record(for: path) == ScriptConfirmationRecord(confirmedSHA256: hash))
+        let local = try String(contentsOf: fixture.localURL, encoding: .utf8)
+        #expect(local.contains(#"[scripts.declined_updates."modules/github.md"]"#))
+        #expect(try Data(contentsOf: fixture.configURL) == syncedBefore)
+        #expect(store.problems.isEmpty)
+
+        let (reloaded, _) = try await fixture.makeStore()
+        let again = ConfigScriptConfirmations(store: reloaded, tracker: RegistrationTracker())
+        #expect(again.declinedUpdate(for: path) == other)
+        #expect(reloaded.problems.isEmpty)
+        #expect(NoScriptConfirmations().declinedUpdate(for: path) == nil)
+        store.stop()
+        reloaded.stop()
+    }
 }

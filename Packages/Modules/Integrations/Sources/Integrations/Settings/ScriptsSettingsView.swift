@@ -53,6 +53,15 @@ struct ScriptsSettingsView: View {
             if let notice {
                 Text(verbatim: notice).font(.caption).foregroundStyle(.secondary)
             }
+            updatesRow
+                // An update review (Story 12.10): from `UPDATE AVAILABLE` or `Review update…`.
+                .sheet(item: updateBinding) { review in
+                    ScriptConfirmationView(
+                        content: module.updateContent(for: review.candidate),
+                        onConfirm: { confirmUpdate(review) },
+                        onDecline: { declineUpdate(review) },
+                        onCancel: { module.closeUpdate() })
+                }
             HStack {
                 examplesMenu
                 Spacer()
@@ -64,7 +73,7 @@ struct ScriptsSettingsView: View {
                 ScriptConfirmationView(
                     content: module.installContent(for: review),
                     onConfirm: { confirmInstall() },
-                    onDecline: { Task { await module.cancelInstall() } },
+                    onDecline: { declineInstall() },
                     onCancel: { Task { await module.cancelInstall() } })
             }
         }
@@ -89,6 +98,75 @@ struct ScriptsSettingsView: View {
         }
     }
 
+    private func declineInstall() {
+        var name = ""
+        if case .update(let update) = module.installReview?.phase { name = update.installed.fileName }
+        Task {
+            do {
+                try await module.declineInstall()
+            } catch {
+                failure = IntegrationsText.format("script.settings.saveFailed", name, String(describing: error))
+                await module.cancelInstall()
+            }
+        }
+    }
+
+    // MARK: - Updates (Story 12.10)
+
+    private var updateBinding: Binding<ScriptUpdateReview?> {
+        Binding(get: { module.updateReview }, set: { if $0 == nil { module.closeUpdate() } })
+    }
+
+    /// `Check for updates`, and what the last check found; a note when update checks are off.
+    private var updatesRow: some View {
+        HStack {
+            Button {
+                failure = nil
+                Task { await module.checkForUpdatesNow() }
+            } label: {
+                Text(verbatim: IntegrationsText.string("script.settings.checkUpdates"))
+            }
+            .disabled(!module.canCheckForUpdates)
+            .help(IntegrationsText.string("script.settings.checkUpdates.help"))
+            Text(verbatim: updatesStatus)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    private var updatesStatus: String {
+        if !module.updateChecksEnabled { return IntegrationsText.string("script.settings.checkUpdates.off") }
+        if module.updateCheck.isRunning { return IntegrationsText.string("script.settings.checkUpdates.running") }
+        guard let checked = module.updateCheck.lastChecked else { return "" }
+        return IntegrationsText.format(
+            "script.settings.checkUpdates.done", checked, module.updateCheck.lastAvailable ?? 0)
+    }
+
+    private func confirmUpdate(_ review: ScriptUpdateReview) {
+        failure = nil
+        Task {
+            do throws(ScriptUpdateError) {
+                try await module.confirmUpdate()
+                notice = IntegrationsText.format("script.settings.updated", review.candidate.installed.fileName)
+            } catch {
+                failure = error.message
+                module.closeUpdate()
+            }
+        }
+    }
+
+    private func declineUpdate(_ review: ScriptUpdateReview) {
+        Task {
+            do {
+                try await module.declineUpdate()
+            } catch {
+                failure = IntegrationsText.format(
+                    "script.settings.saveFailed", review.candidate.installed.fileName, String(describing: error))
+                module.closeUpdate()
+            }
+        }
+    }
+
     private func expansion(_ id: String) -> Binding<Bool> {
         Binding(get: { expanded == id }, set: { expanded = $0 ? id : nil })
     }
@@ -103,6 +181,16 @@ struct ScriptsSettingsView: View {
         LabeledContent {
             HStack {
                 stateView(script, row: row)
+                if row.updateAvailable {
+                    Text(verbatim: ScriptUpdateBadge.text)
+                        .font(.caption.monospaced())
+                    Button {
+                        failure = nil
+                        Task { await module.openUpdate(for: script) }
+                    } label: {
+                        Text(verbatim: IntegrationsText.string("script.settings.reviewUpdate"))
+                    }
+                }
                 Button {
                     module.refresh(scriptID: row.id)
                 } label: {

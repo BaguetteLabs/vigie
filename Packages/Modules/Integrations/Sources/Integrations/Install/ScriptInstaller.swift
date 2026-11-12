@@ -16,8 +16,8 @@ public enum ScriptInstallError: Error, Equatable, Sendable {
     case network(String)
     /// The file is not a valid script (front matter, code block, schema), with the parse message.
     case invalidFile(String)
-    /// Another file of the scripts folder already declares the script's id (updates: Story 12.10).
-    case idInUse(id: String, fileName: String)
+    /// A same-id link whose file is byte-identical to the installed one (Story 12.10): nothing to update.
+    case alreadyInstalled(fileName: String)
     /// The host has no scripts folder.
     case noFolder
     /// Writing the file or its records failed.
@@ -27,7 +27,7 @@ public enum ScriptInstallError: Error, Equatable, Sendable {
     public var isDownloadFailure: Bool {
         switch self {
         case .notHTTPS, .insecureRedirect, .tooLarge, .httpStatus, .network: true
-        case .invalidFile, .idInUse, .noFolder, .writeFailed: false
+        case .invalidFile, .alreadyInstalled, .noFolder, .writeFailed: false
         }
     }
 
@@ -37,7 +37,7 @@ public enum ScriptInstallError: Error, Equatable, Sendable {
         case .notHTTPS, .insecureRedirect, .tooLarge, .httpStatus, .network:
             IntegrationsText.string("script.install.failed.download")
         case .invalidFile: IntegrationsText.string("script.install.failed.invalid")
-        case .idInUse: IntegrationsText.string("script.install.failed.idInUse")
+        case .alreadyInstalled: IntegrationsText.string("script.install.failed.alreadyInstalled")
         case .noFolder: IntegrationsText.string("script.install.failed.noFolder")
         case .writeFailed: IntegrationsText.string("script.install.failed.write")
         }
@@ -51,7 +51,8 @@ public enum ScriptInstallError: Error, Equatable, Sendable {
         case .tooLarge(let limit): IntegrationsText.format("script.install.detail.tooLarge", limit / 1024)
         case .httpStatus(let code): IntegrationsText.format("script.install.detail.httpStatus", code)
         case .network(let message), .invalidFile(let message), .writeFailed(let message): message
-        case .idInUse(let id, let fileName): IntegrationsText.format("script.install.detail.idInUse", id, fileName)
+        case .alreadyInstalled(let fileName):
+            IntegrationsText.format("script.install.detail.alreadyInstalled", fileName)
         case .noFolder: nil
         }
     }
@@ -71,6 +72,11 @@ public struct ScriptInstallCandidate: Equatable, Sendable {
     public let definition: ScriptModuleDefinition
     /// The temporary file holding ``data``.
     public let temporaryFile: URL
+    /// The file of the scripts folder that already declares the script's id (Story 12.10): the link continues as
+    /// an update of that file. Nil for a new script.
+    public var replacing: String? = nil
+    /// The fetched signature file's bytes, nil when unsigned (kept for an update's re-verification).
+    public var signature: Data? = nil
 
     public var contentHash: String { definition.contentHash }
 }
@@ -114,7 +120,8 @@ public struct ScriptInstaller: Sendable {
     /// Downloads, parses and verifies `request`'s file. Nothing is written to the scripts folder.
     /// - Parameters:
     ///   - folder: `<config folder>/modules/`.
-    ///   - existing: the folder's current files by script id, to refuse a second file with the same id.
+    ///   - existing: the folder's current files by script id: a link whose id one of them declares continues as
+    ///     an update of that file (``ScriptInstallCandidate/replacing``, Story 12.10).
     public func prepare(_ request: ScriptInstallRequest, folder: URL, existing: [ModuleID: String])
         async throws(ScriptInstallError) -> ScriptInstallCandidate
     {
@@ -131,15 +138,13 @@ public struct ScriptInstaller: Sendable {
         let definition = ScriptModuleDefinition(
             url: target, folderName: folder.lastPathComponent, data: file.data, enabled: { _ in nil })
         if let message = definition.errorMessage { throw .invalidFile(message) }
-        if let id = definition.moduleID, let other = existing[id] { throw .idInUse(id: id.rawValue, fileName: other) }
+        let replacing = definition.moduleID.flatMap { existing[$0] }
 
-        let (signature, signatureURL) = await fetchSignature(request, fileURL: file.url)
-        var verification = ScriptSignature.verify(file: file.data, signature: signature, trustedKeys: trustedKeys)
-        if verification == .verified, let source = definition.frontMatter?.source,
-            source.host()?.lowercased() != file.url.host()?.lowercased()
-        {
-            verification = .otherSite
-        }
+        let (signature, signatureURL) = await Self.fetchSignature(
+            downloader, explicit: request.signatureURL, fileURL: file.url)
+        let verification = Self.verification(
+            file: file.data, signature: signature, downloadURL: file.url, definition: definition,
+            trustedKeys: trustedKeys)
 
         let temporaryFile: URL
         do {
@@ -153,7 +158,21 @@ public struct ScriptInstaller: Sendable {
         }
         return ScriptInstallCandidate(
             data: file.data, fileURL: file.url, signatureURL: signatureURL, verification: verification,
-            definition: definition, temporaryFile: temporaryFile)
+            definition: definition, temporaryFile: temporaryFile, replacing: replacing, signature: signature)
+    }
+
+    /// The verification state of `file` (AD-18, SPEC §9.4): `.verified` only when a trusted key verifies the
+    /// signature AND the front matter's `source`, if any, is on the download's host (else `.otherSite`).
+    static func verification(
+        file: Data, signature: Data?, downloadURL: URL, definition: ScriptModuleDefinition, trustedKeys: [Data]
+    ) -> ScriptConfirmationContent.Verification {
+        let verification = ScriptSignature.verify(file: file, signature: signature, trustedKeys: trustedKeys)
+        if verification == .verified, let source = definition.frontMatter?.source,
+            source.host()?.lowercased() != downloadURL.host()?.lowercased()
+        {
+            return .otherSite
+        }
+        return verification
     }
 
     private func fetch(_ url: URL, maxBytes: Int) async throws(ScriptInstallError) -> ScriptDownload {
@@ -170,10 +189,13 @@ public struct ScriptInstaller: Sendable {
         }
     }
 
-    /// The link's `sig`, else `<file URL>.sig`. Any failure (404, other status, not HTTPS, network, too large)
-    /// counts as unsigned: the stronger warning shows and the file is still reviewable.
-    private func fetchSignature(_ request: ScriptInstallRequest, fileURL: URL) async -> (Data?, URL?) {
-        guard let url = request.signatureURL ?? Self.defaultSignatureURL(for: fileURL),
+    /// `explicit` (the link's `sig`, or the recorded one), else `<file URL>.sig`. Any failure (404, other status,
+    /// not HTTPS, network, too large) counts as unsigned: the stronger warning shows and the file is still
+    /// reviewable.
+    static func fetchSignature(_ downloader: any ScriptDownloading, explicit: URL?, fileURL: URL) async -> (
+        Data?, URL?
+    ) {
+        guard let url = explicit ?? Self.defaultSignatureURL(for: fileURL),
             url.scheme?.lowercased() == "https",
             let response = try? await downloader.download(url, maxBytes: Self.maxSignatureBytes),
             response.url.scheme?.lowercased() == "https",

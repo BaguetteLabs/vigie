@@ -35,13 +35,15 @@ public enum CoreSettings {
     /// script file's path relative to the config folder (`modules/github.md`).
     public static let scriptRecordKey = "sha256"
 
-    /// Which of a script's two records.
+    /// Which of a script's records. `declined_updates` (Story 12.10) holds the hash of the update content the user
+    /// declined (`[scripts.declined_updates."modules/<file>"] sha256`), never offered again.
     public enum ScriptRecordKind: String, CaseIterable, Sendable {
         case confirmations
         case declined
+        case declinedUpdates = "declined_updates"
     }
 
-    /// `scripts.<confirmations|declined>."<relative path>".sha256`.
+    /// `scripts.<confirmations|declined|declined_updates>."<relative path>".sha256`.
     public static func scriptRecordPath(_ kind: ScriptRecordKind, _ relativePath: String) -> ConfigKeyPath {
         ConfigKeyPath(["scripts", kind.rawValue, relativePath, scriptRecordKey])
     }

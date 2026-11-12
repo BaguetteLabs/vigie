@@ -985,14 +985,14 @@
         }
       }
     },
-    "script.install.failed.idInUse": {
-      "comment": "Script Confirmation of a link install whose id another file of the scripts folder declares (updates arrive with Story 12.10).",
+    "script.install.failed.alreadyInstalled": {
+      "comment": "Script Confirmation of a vigie://install link whose script is already installed with exactly the same content (Story 12.10): nothing to update, only Close.",
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "A script with the same id is already installed. Nothing was installed."
+            "value": "This script is already installed and up to date."
           }
         }
       }
@@ -1069,14 +1069,14 @@
         }
       }
     },
-    "script.install.detail.idInUse": {
-      "comment": "Link install refused. %1$@ = the script id, %2$@ = the existing file name.",
+    "script.install.detail.alreadyInstalled": {
+      "comment": "Same-id link with identical content (Story 12.10). %@ = the installed file name.",
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The id “%1$@” is already used by %2$@."
+            "value": "%@ already has exactly this content. Nothing changed."
           }
         }
       }
@@ -1089,6 +1089,138 @@
           "stringUnit": {
             "state": "translated",
             "value": "Installed %@. It runs now on this Mac."
+          }
+        }
+      }
+    },
+    "integrations.setting.updateChecks": {
+      "comment": "Settings › Scripts toggle for [modules.integrations] update_checks (Story 12.10).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check scripts for updates"
+          }
+        }
+      }
+    },
+    "integrations.setting.updateChecks.help": {
+      "comment": "Help under the update_checks toggle (SPEC §9.5, AD-16).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scripts installed from a link are checked at most once a day. When off, Vigie makes no network request for script updates."
+          }
+        }
+      }
+    },
+    "script.settings.checkUpdates": {
+      "comment": "Settings › Scripts button: fetch every script installed from a link now (Story 12.10).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check for updates"
+          }
+        }
+      }
+    },
+    "script.settings.checkUpdates.help": {
+      "comment": "Help of the Check for updates button.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fetch every script installed from a link now, whatever its last check."
+          }
+        }
+      }
+    },
+    "script.settings.checkUpdates.off": {
+      "comment": "Settings › Scripts, next to Check for updates, while update_checks is off.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Update checks are off."
+          }
+        }
+      }
+    },
+    "script.settings.checkUpdates.running": {
+      "comment": "Settings › Scripts, next to Check for updates, while a check runs.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Checking…"
+          }
+        }
+      }
+    },
+    "script.settings.checkUpdates.done": {
+      "comment": "Settings › Scripts, after a check. %1$lld = scripts fetched, %2$lld = updates waiting for review.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Checked %1$lld scripts · %2$lld updates available"
+          }
+        }
+      }
+    },
+    "script.settings.reviewUpdate": {
+      "comment": "Settings › Scripts row button: opens the update review with the diff (Story 12.10).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Review update…"
+          }
+        }
+      }
+    },
+    "script.settings.updated": {
+      "comment": "Settings › Scripts notice after an update was confirmed. %@ = file name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Updated %@. The new version runs now."
+          }
+        }
+      }
+    },
+    "script.update.failed.changed": {
+      "comment": "Confirm of a script update failed: the installed file changed since the update was found (Story 12.10).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The script file changed since the update was found. Nothing was replaced; check for updates again."
+          }
+        }
+      }
+    },
+    "script.update.failed.write": {
+      "comment": "Confirm of a script update failed while writing. %@ = the system's reason.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The update could not be applied, the old version keeps running: %@"
           }
         }
       }
