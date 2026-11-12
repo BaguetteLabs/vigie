@@ -52,7 +52,7 @@ extension AgentsUsageModule {
         UsageTabSnapshot(
             providers: tabProviders.flatMap { adapter in tabAccounts(adapter).map { providerCard(adapter, account: $0) }
             },
-            history: historyPanel, cost: costPanel)
+            history: historyPanel, cost: costPanel, prices: pricesLabel)
     }
 
     /// The sources as the settings stand now (an Account added since start included).

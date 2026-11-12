@@ -36,7 +36,7 @@ public struct UsageHistory: Sendable {
         var byProject: [String: UsageTotals] = [:]
         var byAccount: [UsageAccountKey: UsageTotals] = [:]
         for row in rows {
-            let cost = estimator.cost(of: row.tokens, model: row.model)
+            let cost = estimator.cost(of: row.tokens, model: row.model, provider: row.provider)
             let totals = UsageTotals(
                 tokens: row.tokens, estimatedCost: cost ?? 0, records: row.records,
                 unpricedRecords: cost == nil ? row.records : 0)

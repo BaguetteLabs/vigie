@@ -24,6 +24,7 @@ public struct CoreModuleContext: ModuleContext {
     public let integrations: any IntegrationInstaller
     public let dropZones: any DropZoneDirectory
     public let scriptFolder: any ScriptFolderService
+    public let updates: any UpdatesService
     public let log: Logger
 
     public init(
@@ -45,6 +46,7 @@ public struct CoreModuleContext: ModuleContext {
         integrations: any IntegrationInstaller,
         dropZones: any DropZoneDirectory = EmptyDropZoneDirectory(),
         scriptFolder: any ScriptFolderService = NoScriptFolder(),
+        updates: any UpdatesService = NoUpdatesService(),
         log: Logger
     ) {
         self.settings = settings
@@ -65,6 +67,7 @@ public struct CoreModuleContext: ModuleContext {
         self.integrations = integrations
         self.dropZones = dropZones
         self.scriptFolder = scriptFolder
+        self.updates = updates
         self.log = log
     }
 }
@@ -109,6 +112,8 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
     /// Ids a script module must not declare (AD-18): the modules registered with `configStore` when the factory
     /// is built (App assembly passes every built-in manifest to ConfigStore) plus ``ModuleID/specBuiltIns``.
     public let builtInModuleIDs: Set<ModuleID>
+    /// The signed price table's location (Story 6.5), for `context.updates`; nil = never fetched.
+    public let priceTable: PriceTableLocation?
 
     /// - Parameters:
     ///   - environment: injected by the App (`AppEnvironment.current`); VigieCore never reads `.current`.
@@ -134,6 +139,8 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
     ///   - away: the launch's Away service; defaults to one on the real idle reader and screen signals, its
     ///     threshold read from `[modules.time.breaks] away_after` (90 s without it), transitions recorded in
     ///     `activityStore`.
+    ///   - priceTable: where `agents.usage` fetches the signed price table; defaults to the location the app
+    ///     bundle's `SUFeedURL` and `SUPublicEDKey` give (nil in builds without them).
     public init(
         environment: AppEnvironment, eventBus: InProcessEventBus, configStore: ConfigStore? = nil,
         permissions: PermissionsCoordinator? = nil, hotkeyCenter: HotkeyCenter? = nil,
@@ -146,8 +153,11 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
         dropZones: (any DropZoneDirectory)? = nil,
         privacy: CorePrivacyService? = nil,
         away: CoreAwayService? = nil,
-        builtInModuleIDs: Set<ModuleID>? = nil
+        builtInModuleIDs: Set<ModuleID>? = nil,
+        priceTable: PriceTableLocation? = UpdaterConfiguration.priceTableLocation(
+            infoDictionary: Bundle.main.infoDictionary ?? [:])
     ) {
+        self.priceTable = priceTable
         self.environment = environment
         self.eventBus = eventBus
         self.configStore = configStore
@@ -214,6 +224,7 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
                 settings: configStore.map {
                     ConfigScriptSettings(store: $0, tracker: tracker) as any ScriptSettingsStore
                 } ?? NoScriptSettings()),
+            updates: CoreUpdatesService(shared: configStore?.shared, priceTable: priceTable),
             log: log
         )
     }

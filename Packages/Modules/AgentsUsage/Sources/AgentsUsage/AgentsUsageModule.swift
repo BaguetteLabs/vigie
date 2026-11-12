@@ -78,7 +78,7 @@ public final class AgentsUsageModule: NotchModule {
     @ObservationIgnored var log: Logger?
 
     /// The query API, available once started.
-    public private(set) var history: UsageHistory?
+    public internal(set) var history: UsageHistory?
     /// The last ingest pass.
     public internal(set) var lastIngest: IngestReport?
     /// The Usage tab's history and today's cost (Story 7.8), reloaded after each ingest.
@@ -96,6 +96,21 @@ public final class AgentsUsageModule: NotchModule {
     @ObservationIgnored var ingestTask: Task<Void, Never>?
     @ObservationIgnored var ingestToken: RegistrationToken?
 
+    /// The table the cost estimates use (Story 6.5): the footer's `BUNDLED` / `UPDATED`.
+    public internal(set) var priceSource: PriceTableSource = .bundled
+    /// The newest `updated` date of the table in use (`PRICES <date>`); nil before start.
+    public internal(set) var priceTableDate: String?
+    /// `Check now` in Settings › Usage: running, and the last result.
+    var priceCheck = PriceCheckStatus()
+    /// Fetches the signed table (`PriceTable.swift`, `PriceTableUpdater.swift`); its HTTP client.
+    @ObservationIgnored let priceHTTP: any HTTPClient
+    @ObservationIgnored var priceUpdater: PriceTableUpdater?
+    @ObservationIgnored var updates: (any UpdatesService)?
+    @ObservationIgnored var priceJob: RegistrationToken?
+    @ObservationIgnored var priceStartTask: Task<Void, Never>?
+    /// Setup problems already posted this launch, by reason.
+    @ObservationIgnored var postedPriceProblems: Set<String> = []
+
     /// - Parameters:
     ///   - contexts: per-adapter contexts (the same as `agents.sessions`'s); an adapter without one gets no plan
     ///     usage.
@@ -103,6 +118,7 @@ public final class AgentsUsageModule: NotchModule {
     ///   - adapterSettings: overrides how adapter settings are read; default: the store, else the context's
     ///     settings, else the declared defaults.
     ///   - openSettings: opens a Settings pane by id (the Usage tab's `NO USAGE PROVIDER` button).
+    ///   - priceHTTP: fetches the signed price table (Story 6.5); default: an ephemeral `URLSession`.
     public init(
         adapters: AgentAdapters,
         contexts: [AgentID: any AdapterContext] = [:],
@@ -111,8 +127,10 @@ public final class AgentsUsageModule: NotchModule {
         calendar: Calendar = .current,
         now: @escaping @Sendable () -> Date = { Date() },
         homeDirectory: URL = FileManager.default.homeDirectoryForCurrentUser,
-        openSettings: (@MainActor @Sendable (String) -> Void)? = nil
+        openSettings: (@MainActor @Sendable (String) -> Void)? = nil,
+        priceHTTP: any HTTPClient = URLSessionHTTPClient()
     ) {
+        self.priceHTTP = priceHTTP
         self.homeDirectory = homeDirectory
         self.adapters = adapters
         self.adapterContexts = contexts
@@ -138,7 +156,7 @@ public final class AgentsUsageModule: NotchModule {
         startRingSettings(context.settings, scheduler: context.scheduler)
         let store = try UsageStore(directory: context.storage.directory)
         self.store = store
-        let estimator = try CostEstimator.bundled()
+        let estimator = try await startPrices(context: context)
         let registry = UsageProviderRegistry(adapters: adapters, settings: adapterSettings)
         self.registry = registry
         history = UsageHistory(store: store, estimator: estimator, calendar: calendar)
@@ -159,6 +177,7 @@ public final class AgentsUsageModule: NotchModule {
             await self?.finished(report)
         }
         startPlanRefresh(scheduler: context.scheduler)
+        startPriceChecks(scheduler: context.scheduler)
     }
 
     public func settingsView() -> AnyView? {
@@ -170,6 +189,7 @@ public final class AgentsUsageModule: NotchModule {
         stopRingSettings()
         resolveAllQuotaWarnings()
         stopPlanRefresh()
+        stopPrices()
         ingestTask?.cancel()
         ingestTask = nil
         ingestToken?.cancel()

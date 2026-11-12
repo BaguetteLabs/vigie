@@ -422,3 +422,10 @@ extension AgentEvent {
         }
     }
 }
+
+/// Story 6.5: Claude Code's models are priced from the `claude` section of the price table.
+@Suite struct ClaudePriceProviderTests {
+    @Test func pricedFromTheClaudeSection() {
+        #expect(ClaudeAdapter().priceProviderID == "claude")
+    }
+}

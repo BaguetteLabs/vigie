@@ -244,3 +244,22 @@ func makeContext(settings: [SettingDescriptor] = []) -> AdapterContextBox {
         #expect(settings.value("missing", as: String.self) == nil)
     }
 }
+
+/// Story 6.5: an adapter's models are priced from the price table section named by `priceProviderID`.
+@Suite struct PriceProviderTests {
+    struct ResellerAdapter: AgentAdapter {
+        let id: AgentID = "reseller"
+        var name: LocalizedStringResource { "Reseller" }
+        let capabilities: Set<AgentCapability> = []
+        var priceProviderID: String { "claude" }
+        func normalize(_ hook: HookPayload, sentAt: Date) -> [AgentEvent] { [] }
+    }
+
+    @Test func defaultsToTheAdapterID() {
+        #expect(FakeAdapter().priceProviderID == "fake")
+    }
+
+    @Test func anAdapterCanNameAnotherProvidersSection() {
+        #expect(ResellerAdapter().priceProviderID == "claude")
+    }
+}

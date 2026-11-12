@@ -208,14 +208,17 @@ public struct UsageTabSnapshot: Hashable, Sendable {
     public var history: UsageHistoryPanel
     /// `COST · TODAY` under it (Story 7.8).
     public var cost: UsageCostPanel
+    /// The cost card's price line, `PRICES 2026-11-08 · BUNDLED` (Story 6.5), localized by the module; nil hides it.
+    public var prices: String?
 
     public init(
         providers: [UsageProviderCardModel], history: UsageHistoryPanel = .readingLogs,
-        cost: UsageCostPanel = .readingLogs
+        cost: UsageCostPanel = .readingLogs, prices: String? = nil
     ) {
         self.providers = providers
         self.history = history
         self.cost = cost
+        self.prices = prices
     }
 
     /// No usage provider at all: `NO USAGE PROVIDER`, its sentence and `Open settings ⌘,` (UX-DR44).

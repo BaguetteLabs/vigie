@@ -1,123 +1,141 @@
 {
-  "currency": "USD",
-  "models": {
-    "claude-fable-5": {
-      "cache_read": 1,
-      "cache_write": 12.5,
-      "input": 10,
-      "output": 50
+  "schema": 2,
+  "version": 2,
+  "note": "Vigie price table (Story 6.5). Edit prices/prices.json at the repository root, bump version by one, and copy it to Packages/Modules/AgentsUsage/Sources/AgentsUsage/Resources/prices.json (a test keeps them identical). Prices are per million tokens; ids match exactly or by the longest id followed by '-' (date suffixes). Tiers are listed for reference and not applied: usage is summed per 15-minute slot, so a request's prompt size is unknown.",
+  "providers": {
+    "claude": {
+      "currency": "USD",
+      "unit": "per_million_tokens",
+      "updated": "2026-11-08",
+      "note": "Anthropic first-party API list prices, checked against platform.claude.com/docs/en/about-claude/pricing on 2026-11-08. cache_write is the 5-minute TTL rate. Haiku 5.5's >100K-token prompt tier is not modeled.",
+      "models": {
+        "claude-fable-5": {
+          "input": 10,
+          "output": 50,
+          "cache_write": 12.5,
+          "cache_read": 1
+        },
+        "claude-fable-5-1": {
+          "input": 10,
+          "output": 50,
+          "cache_write": 12.5,
+          "cache_read": 0.25
+        },
+        "claude-haiku-4-5": {
+          "input": 1,
+          "output": 5,
+          "cache_write": 1.25,
+          "cache_read": 0.1
+        },
+        "claude-haiku-5-5": {
+          "input": 0.1,
+          "output": 0.5,
+          "cache_write": 0.125,
+          "cache_read": 0.01
+        },
+        "claude-mythos-5": {
+          "input": 10,
+          "output": 50,
+          "cache_write": 12.5,
+          "cache_read": 1
+        },
+        "claude-mythos-5-1": {
+          "input": 10,
+          "output": 50,
+          "cache_write": 12.5,
+          "cache_read": 0.25
+        },
+        "claude-opus-4": {
+          "input": 15,
+          "output": 75,
+          "cache_write": 18.75,
+          "cache_read": 1.5
+        },
+        "claude-opus-4-1": {
+          "input": 15,
+          "output": 75,
+          "cache_write": 18.75,
+          "cache_read": 1.5
+        },
+        "claude-opus-4-5": {
+          "input": 5,
+          "output": 25,
+          "cache_write": 6.25,
+          "cache_read": 0.5
+        },
+        "claude-opus-4-6": {
+          "input": 5,
+          "output": 25,
+          "cache_write": 6.25,
+          "cache_read": 0.5
+        },
+        "claude-opus-4-7": {
+          "input": 5,
+          "output": 25,
+          "cache_write": 6.25,
+          "cache_read": 0.5
+        },
+        "claude-opus-4-8": {
+          "input": 5,
+          "output": 25,
+          "cache_write": 6.25,
+          "cache_read": 0.5
+        },
+        "claude-opus-5": {
+          "input": 5,
+          "output": 25,
+          "cache_write": 6.25,
+          "cache_read": 0.5
+        },
+        "claude-opus-5-5": {
+          "input": 4,
+          "output": 20,
+          "cache_write": 5,
+          "cache_read": 0.2
+        },
+        "claude-sonnet-4": {
+          "input": 3,
+          "output": 15,
+          "cache_write": 3.75,
+          "cache_read": 0.3
+        },
+        "claude-sonnet-4-5": {
+          "input": 3,
+          "output": 15,
+          "cache_write": 3.75,
+          "cache_read": 0.3
+        },
+        "claude-sonnet-4-6": {
+          "input": 3,
+          "output": 15,
+          "cache_write": 3.75,
+          "cache_read": 0.3
+        },
+        "claude-sonnet-5": {
+          "input": 2,
+          "output": 10,
+          "cache_write": 2.5,
+          "cache_read": 0.2
+        },
+        "claude-sonnet-5-5": {
+          "input": 2,
+          "output": 10,
+          "cache_write": 2.5,
+          "cache_read": 0.1
+        }
+      }
     },
-    "claude-fable-5-1": {
-      "cache_read": 0.25,
-      "cache_write": 12.5,
-      "input": 10,
-      "output": 50
+    "codex": {
+      "currency": "USD",
+      "unit": "per_million_tokens",
+      "updated": "2026-11-08",
+      "models": {}
     },
-    "claude-haiku-4-5": {
-      "cache_read": 0.1,
-      "cache_write": 1.25,
-      "input": 1,
-      "output": 5
-    },
-    "claude-haiku-5-5": {
-      "cache_read": 0.01,
-      "cache_write": 0.125,
-      "input": 0.1,
-      "output": 0.5
-    },
-    "claude-mythos-5": {
-      "cache_read": 1,
-      "cache_write": 12.5,
-      "input": 10,
-      "output": 50
-    },
-    "claude-mythos-5-1": {
-      "cache_read": 0.25,
-      "cache_write": 12.5,
-      "input": 10,
-      "output": 50
-    },
-    "claude-opus-4": {
-      "cache_read": 1.5,
-      "cache_write": 18.75,
-      "input": 15,
-      "output": 75
-    },
-    "claude-opus-4-1": {
-      "cache_read": 1.5,
-      "cache_write": 18.75,
-      "input": 15,
-      "output": 75
-    },
-    "claude-opus-4-5": {
-      "cache_read": 0.5,
-      "cache_write": 6.25,
-      "input": 5,
-      "output": 25
-    },
-    "claude-opus-4-6": {
-      "cache_read": 0.5,
-      "cache_write": 6.25,
-      "input": 5,
-      "output": 25
-    },
-    "claude-opus-4-7": {
-      "cache_read": 0.5,
-      "cache_write": 6.25,
-      "input": 5,
-      "output": 25
-    },
-    "claude-opus-4-8": {
-      "cache_read": 0.5,
-      "cache_write": 6.25,
-      "input": 5,
-      "output": 25
-    },
-    "claude-opus-5": {
-      "cache_read": 0.5,
-      "cache_write": 6.25,
-      "input": 5,
-      "output": 25
-    },
-    "claude-opus-5-5": {
-      "cache_read": 0.2,
-      "cache_write": 5,
-      "input": 4,
-      "output": 20
-    },
-    "claude-sonnet-4": {
-      "cache_read": 0.3,
-      "cache_write": 3.75,
-      "input": 3,
-      "output": 15
-    },
-    "claude-sonnet-4-5": {
-      "cache_read": 0.3,
-      "cache_write": 3.75,
-      "input": 3,
-      "output": 15
-    },
-    "claude-sonnet-4-6": {
-      "cache_read": 0.3,
-      "cache_write": 3.75,
-      "input": 3,
-      "output": 15
-    },
-    "claude-sonnet-5": {
-      "cache_read": 0.2,
-      "cache_write": 2.5,
-      "input": 2,
-      "output": 10
-    },
-    "claude-sonnet-5-5": {
-      "cache_read": 0.1,
-      "cache_write": 2.5,
-      "input": 2,
-      "output": 10
+    "gemini": {
+      "currency": "USD",
+      "unit": "per_million_tokens",
+      "updated": "2026-11-08",
+      "models": {}
     }
-  },
-  "note": "Anthropic first-party API list prices (A56), checked against platform.claude.com/docs/en/about-claude/pricing on 2026-11-08. cache_write is the 5-minute TTL rate. Haiku 5.5's >100K-token prompt tier is not modeled. Ids match exactly or by prefix before a date suffix.",
-  "unit": "per_million_tokens",
-  "updated": "2026-11-08",
-  "version": 1
+  }
 }

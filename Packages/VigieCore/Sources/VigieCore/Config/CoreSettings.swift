@@ -120,6 +120,8 @@ public enum CoreSettings {
         make("updates", "check_interval", .duration(default: .seconds(24 * 3600))),
         make("updates", "auto_install", .bool(default: false)),
         make("updates", "channel", .enumeration(options: ["stable", "beta"], default: "stable")),
+        // The signed price table of `agents.usage` (Story 6.5): fetched at `check_interval`; off = no request.
+        make("updates", "prices", .bool(default: true), help: true),
         // [closed]
         make("closed", "max_side_width", .int(default: 120, min: 40, max: 600)),
         make("closed", "notch_overlap", .int(default: 2, min: 0, max: 12), .local),

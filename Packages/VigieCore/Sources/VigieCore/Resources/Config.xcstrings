@@ -793,6 +793,30 @@
         }
       }
     },
+    "config.updates.prices": {
+      "comment": "Settings label for the config key updates.prices (Story 6.5).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Update price table"
+          }
+        }
+      }
+    },
+    "config.updates.prices.help": {
+      "comment": "Settings description for updates.prices (Story 6.5).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vigie downloads the signed list of model prices used for cost estimates at the update check interval. Off: the prices bundled with this version are used and no request is made."
+          }
+        }
+      }
+    },
     "config.virtual_notch.idle": {
       "comment": "Settings label for the config key virtual_notch.idle.",
       "extractionState": "manual",

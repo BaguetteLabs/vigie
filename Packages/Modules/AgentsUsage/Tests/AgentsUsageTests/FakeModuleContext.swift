@@ -14,9 +14,15 @@ final class FakeModuleContext: ModuleContext, @unchecked Sendable {
     /// The module's own settings (`[modules."agents.usage"]`); none by default.
     let moduleSettings: any ModuleSettings
 
-    init(directory: URL, settings: any ModuleSettings = NoSettings()) {
+    /// `[updates]` and the price table location (Story 6.5); none by default.
+    let fakeUpdates: any UpdatesService
+
+    init(
+        directory: URL, settings: any ModuleSettings = NoSettings(), updates: any UpdatesService = NoUpdatesService()
+    ) {
         fakeStorage = FolderStorage(directory: directory)
         moduleSettings = settings
+        fakeUpdates = updates
     }
 
     var settings: any ModuleSettings { moduleSettings }
@@ -35,6 +41,7 @@ final class FakeModuleContext: ModuleContext, @unchecked Sendable {
     var away: any AwayService { NoAway() }
     var activity: any ActivityLog { NoActivity() }
     var integrations: any IntegrationInstaller { NoIntegrations() }
+    var updates: any UpdatesService { fakeUpdates }
     var log: Logger { Logger(subsystem: "test", category: "agents.usage") }
 }
 

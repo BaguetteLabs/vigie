@@ -14,18 +14,14 @@ struct ScriptModuleSource {
     var perform: @MainActor (ScriptAction, String) -> Void
     /// `NOT CONFIRMED` was clicked: open the Script Confirmation on the file.
     var review: @MainActor (ScriptModuleDefinition) -> Void
-    /// `REVEAL`: show the file in Finder (Story 12.11).
-    var reveal: @MainActor (ScriptModuleDefinition) -> Void = { _ in }
-    /// `OPEN SOURCE`: open the file in the default editor for its type (Story 12.11).
-    var openSource: @MainActor (ScriptModuleDefinition) -> Void = { _ in }
 }
 
 /// One script as its own module (SPEC §7.4, AD-18, Story 12.5): registered by ``IntegrationsModule`` through
 /// `context.host.registerDynamicModule` for every parsed script that is not declined on this Mac (awaiting
 /// confirmation included: its surfaces show `NOT CONFIRMED`; it never runs until confirmed). Its manifest comes
 /// from the front matter (id, name, icon); its surfaces from `surfaces`: `home` → the Home card, `side` → one
-/// left-wing item with the script's `priority`, `page` → a tab named after the script holding the script page
-/// (Story 12.11). It has no context of its own: the integrations module runs it and owns its registration.
+/// left-wing item with the script's `priority`, `page` → a tab named after the script (its content arrives with
+/// Story 12.11). It has no context of its own: the integrations module runs it and owns its registration.
 @MainActor @Observable
 public final class ScriptModule: NotchModule {
     /// The id of its one left-wing item.
@@ -86,7 +82,7 @@ public final class ScriptModule: NotchModule {
 
     public func expandedView() -> AnyView? {
         guard surfaces.contains(.page) else { return nil }
-        return AnyView(ScriptPageTab(module: self))
+        return AnyView(ScriptPagePlaceholder())
     }
 
     public func start(context: any ModuleContext) async throws {}
@@ -105,22 +101,6 @@ public final class ScriptModule: NotchModule {
     public func review() {
         source.review(definition)
     }
-
-    /// The script page's model now (Story 12.11). Reading it tracks the definition, the confirmation records
-    /// and the run state, so the tab re-renders as runs complete.
-    public var pageModel: ScriptPageModel {
-        ScriptSurfaces.page(snapshot, definition: definition)
-    }
-
-    /// `REVEAL` on the page: the file in Finder.
-    public func reveal() {
-        source.reveal(definition)
-    }
-
-    /// `OPEN SOURCE` on the page: the file in its default editor.
-    public func openSource() {
-        source.openSource(definition)
-    }
 }
 
 /// The Home card of a script module, re-rendered when its snapshot changes.
@@ -135,15 +115,11 @@ struct ScriptHomeCard: View {
     }
 }
 
-/// The tab of a script with `page` (Story 12.11): the script page, re-rendered when its model changes.
-struct ScriptPageTab: View {
-    let module: ScriptModule
-
+/// The tab of a script with `page` until Story 12.11 lays the page out.
+struct ScriptPagePlaceholder: View {
     var body: some View {
-        ScriptPage(
-            model: module.pageModel,
-            actions: ScriptPageActions(
-                activate: { module.activate() }, review: { module.review() }, reveal: { module.reveal() },
-                openSource: { module.openSource() }))
+        EmptyStateBlock(
+            label: IntegrationsText.resource("script.page.placeholder.label"),
+            sentence: IntegrationsText.resource("script.page.placeholder.sentence"))
     }
 }

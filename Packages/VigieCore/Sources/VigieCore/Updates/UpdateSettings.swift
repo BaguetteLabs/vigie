@@ -3,7 +3,8 @@ import Foundation
 /// The `[updates]` keys the updater follows (Story 6.3, SPEC §11 and §12.4, PRD FR-4 and FR-61).
 ///
 /// `channel` is not here: A63 (ruled 2026-11-06) keeps a single stable feed until the public release, so the key
-/// is read by nobody yet (Story 19.3). `prices` belongs to the price-table fetch of Story 6.5.
+/// is read by nobody yet (Story 19.3). `prices` belongs to the price-table fetch of Story 6.5 (``CoreUpdatesService``),
+/// not to Sparkle, so it is not in ``paths``.
 public struct UpdateSettings: Equatable, Sendable {
     /// `[updates] auto_check`: scheduled checks. Off = no update network call at all (FR-4); only an explicit
     /// "Check for Updates…" reaches the feed.
@@ -30,6 +31,8 @@ public struct UpdateSettings: Equatable, Sendable {
     public static let checkIntervalPath = CoreSettings.path("updates", "check_interval")
     public static let autoInstallPath = CoreSettings.path("updates", "auto_install")
     public static let paths: Set<ConfigKeyPath> = [autoCheckPath, checkIntervalPath, autoInstallPath]
+    /// `[updates] prices` (Story 6.5).
+    public static let pricesPath = CoreSettings.path("updates", "prices")
 
     /// The current values, defaults for missing or invalid keys.
     @MainActor

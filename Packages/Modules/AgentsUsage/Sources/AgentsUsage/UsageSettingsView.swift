@@ -40,5 +40,34 @@ struct UsageSettingsView: View {
         if !planAdapters.isEmpty {
             PlanSettingsView(module: module, adapters: planAdapters)
         }
+        PriceTableSettingsView(module: module)
+    }
+}
+
+/// The price table block (Story 6.5): which table the estimates use, `Check now` (off while the build has no
+/// release location, `[updates] prices` is off or a check runs) and the last check's result. The `prices` toggle
+/// itself is a generated row of Settings › Updates.
+struct PriceTableSettingsView: View {
+    let module: AgentsUsageModule
+
+    var body: some View {
+        Text(UsageText.resource("agentsUsage.prices.title")).font(.headline)
+        HStack {
+            if let label = module.pricesLabel {
+                Text(verbatim: label).foregroundStyle(.secondary)
+            }
+            Spacer()
+            if let result = module.priceCheckText {
+                Text(verbatim: result).foregroundStyle(.secondary)
+            }
+            Button {
+                Task { await module.checkPricesNow() }
+            } label: {
+                Text(UsageText.resource("agentsUsage.prices.check"))
+            }
+            .disabled(!module.canCheckPrices)
+        }
+        Text(verbatim: module.priceCheckUnavailableText ?? UsageText.string("agentsUsage.prices.help"))
+            .font(.caption).foregroundStyle(.secondary)
     }
 }

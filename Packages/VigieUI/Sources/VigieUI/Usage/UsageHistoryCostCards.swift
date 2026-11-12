@@ -98,11 +98,13 @@ struct UsageHistoryCard: View {
 }
 
 /// `COST · TODAY` (mockup `.cost`): the total in the big numeral with `API RATE`, one row per project (name,
-/// amount, a 2 px bar against the first), and `FROM LOCAL LOGS · OFFLINE`. No record today: `—` and
-/// `NO COST DATA`.
+/// amount, a 2 px bar against the first), and `FROM LOCAL LOGS · OFFLINE` with the price line under it
+/// (`PRICES <date> · BUNDLED` / `UPDATED`, Story 6.5). No record today: `—` and `NO COST DATA`.
 struct UsageCostCard: View {
     @Environment(\.vigieTheme) private var theme
     let panel: UsageCostPanel
+    /// The price table line; nil hides it.
+    var prices: String?
     /// `ACCOUNTS` selected in the split switch (only offered when the list has Account rows).
     @State var byAccount = false
 
@@ -190,11 +192,16 @@ struct UsageCostCard: View {
     }
 
     private var source: some View {
-        Text(L10n.resource("usage.cost.source"))
-            .font(theme.font(.readoutLabel))
-            .tracking(theme.tracking(.readoutLabel))
-            .foregroundStyle(theme.color(.ink3))
-            .lineLimit(1)
+        VStack(alignment: .leading, spacing: 0) {
+            Text(L10n.resource("usage.cost.source"))
+            if let prices {
+                Text(verbatim: prices)
+            }
+        }
+        .font(theme.font(.readoutLabel))
+        .tracking(theme.tracking(.readoutLabel))
+        .foregroundStyle(theme.color(.ink3))
+        .lineLimit(1)
     }
 }
 

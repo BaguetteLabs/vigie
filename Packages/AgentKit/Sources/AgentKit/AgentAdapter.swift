@@ -98,6 +98,9 @@ public protocol AgentAdapter: Sendable {
     var logReader: (any AgentLogReader)? { get }
     /// One provider per adapter, `id` = adapter id (AD-23). Default: nil.
     var usageProvider: (any UsageProvider)? { get }
+    /// The `providers` section of the price table (`prices.json`, Story 6.5) that prices this adapter's models.
+    /// Default: the adapter id. An adapter whose models are sold by another provider names that provider's section.
+    var priceProviderID: String { get }
 
     /// The Ask AI command for `files`, started in `cwd` (SPEC §7.1, §14.16). Default: nil (Ask AI unavailable).
     func launchCommand(files: [URL], cwd: URL?) -> LaunchCommand?
@@ -147,6 +150,7 @@ extension AgentAdapter {
     public var transcriptWatcher: (any TranscriptWatcher)? { nil }
     public var logReader: (any AgentLogReader)? { nil }
     public var usageProvider: (any UsageProvider)? { nil }
+    public var priceProviderID: String { id.rawValue }
     public func launchCommand(files: [URL], cwd: URL?) -> LaunchCommand? { nil }
     public func launchExecutable(for command: LaunchCommand, context: any AdapterContext) async -> URL? {
         await context.executables.resolve(command.executable)

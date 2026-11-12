@@ -157,13 +157,16 @@ jobs:
       # Story 6.3: EdDSA-sign the zip (Sparkle sign_update, pinned tools) and, for a stable tag only (A63), write the
       # signed appcast.xml into $DIST, keeping the items of the current feed; publish.sh uploads it with the rest.
       # The signature file stays outside $DIST (it is inside the appcast).
-      - name: Sparkle signature and appcast
+      # Story 6.5: prices/prices.json and its detached signature (prices.json.sig) go into $DIST too, so every
+      # release serves the current table at releases/latest/download/prices.json.
+      - name: Sparkle signature, appcast and price table
         env:
           SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
         run: |
           Scripts/release/sign-update.sh sign --file "$DIST/Vigie-$VERSION.zip" --out "$OUT/Vigie-$VERSION.zip.sparkle"
           Scripts/release/appcast.sh --tag "$TAG" --build "$GITHUB_RUN_NUMBER" --zip "$DIST/Vigie-$VERSION.zip" \
             --signature "$OUT/Vigie-$VERSION.zip.sparkle" --repo "$RELEASE_REPO" --dist "$DIST"
+          Scripts/release/prices.sh sign --dist "$DIST"
 
       - name: Checksums
         run: Scripts/release/package.sh checksums --dist "$DIST"
@@ -211,6 +214,7 @@ jobs:
           Scripts/release/sign-update.sh sign --file "$DIST/Vigie-$VERSION.zip" --out "$OUT/Vigie-$VERSION.zip.sparkle" --dry-run
           Scripts/release/appcast.sh --tag "$TAG" --build "$GITHUB_RUN_NUMBER" --zip "$DIST/Vigie-$VERSION.zip" \
             --signature "$OUT/Vigie-$VERSION.zip.sparkle" --repo "$RELEASE_REPO" --dist "$DIST" --dry-run
+          Scripts/release/prices.sh sign --dist "$DIST"
           Scripts/release/package.sh checksums --dist "$DIST"
           Scripts/release/publish.sh --tag "$TAG" --repo "$RELEASE_REPO" --dist "$DIST" --prerelease "$PRERELEASE"
           Scripts/release/import-signing.sh cleanup

@@ -87,3 +87,13 @@ final class MinimalModule: NotchModule {
         #expect(a != b)
     }
 }
+
+/// Story 6.5: a context without an updates service fetches nothing.
+@Suite struct NoUpdatesServiceTests {
+    @Test func pricesOffAndNoLocation() {
+        let updates = NoUpdatesService()
+        #expect(!updates.pricesEnabled)
+        #expect(updates.priceTable == nil)
+        #expect(updates.checkInterval == .seconds(24 * 3600))
+    }
+}

@@ -145,6 +145,222 @@
         }
       }
     },
+    "agentsUsage.prices.bundled" : {
+      "comment" : "Usage tab footer of today's cost: the date of the price table in use, bundled with the app. %@ is a date like 2026-11-08.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PRICES %@ · BUNDLED"
+          }
+        }
+      }
+    },
+    "agentsUsage.prices.check" : {
+      "comment" : "Settings › Usage: button that checks for a newer price table now.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check now"
+          }
+        }
+      }
+    },
+    "agentsUsage.prices.check.badSignature" : {
+      "comment" : "Settings › Usage: result of the last price table check.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rejected: bad signature"
+          }
+        }
+      }
+    },
+    "agentsUsage.prices.check.downgrade" : {
+      "comment" : "Settings › Usage: result of the last price table check.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rejected: older table"
+          }
+        }
+      }
+    },
+    "agentsUsage.prices.check.notSetUp" : {
+      "comment" : "Settings › Usage: why Check now is disabled in a build without a release location.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Price table updates are not set up in this build."
+          }
+        }
+      }
+    },
+    "agentsUsage.prices.check.off" : {
+      "comment" : "Settings › Usage: why Check now is disabled when [updates] prices is off.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Price table updates are off in Settings › Updates."
+          }
+        }
+      }
+    },
+    "agentsUsage.prices.check.running" : {
+      "comment" : "Settings › Usage: a price table check is running.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checking…"
+          }
+        }
+      }
+    },
+    "agentsUsage.prices.check.unavailable" : {
+      "comment" : "Settings › Usage: result of the last price table check (offline or nothing published).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Could not reach the price table"
+          }
+        }
+      }
+    },
+    "agentsUsage.prices.check.unreadable" : {
+      "comment" : "Settings › Usage: result of the last price table check (a format this version cannot read).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Needs a newer Vigie"
+          }
+        }
+      }
+    },
+    "agentsUsage.prices.check.upToDate" : {
+      "comment" : "Settings › Usage: result of the last price table check.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Up to date"
+          }
+        }
+      }
+    },
+    "agentsUsage.prices.check.updated" : {
+      "comment" : "Settings › Usage: result of the last price table check. %ld is the new table version.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Updated to version %ld"
+          }
+        }
+      }
+    },
+    "agentsUsage.prices.help" : {
+      "comment" : "Settings › Usage: help under the price table block.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cost estimates use list prices. Vigie checks for a newer signed price table at the update check interval (Settings › Updates)."
+          }
+        }
+      }
+    },
+    "agentsUsage.prices.problem.category" : {
+      "comment" : "Short uppercase category of the price table setup problem, shown as SETUP · PRICES.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PRICES"
+          }
+        }
+      }
+    },
+    "agentsUsage.prices.problem.downgrade" : {
+      "comment" : "Setup problem body: the downloaded price table is older. First %ld is its version, second %ld the version in use.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The downloaded price table (version %ld) is older than the one in use (version %ld). Cost estimates keep the current prices."
+          }
+        }
+      }
+    },
+    "agentsUsage.prices.problem.signature" : {
+      "comment" : "Setup problem body: the downloaded price table's signature does not verify.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The downloaded price table is not signed by Vigie. Cost estimates keep the current prices."
+          }
+        }
+      }
+    },
+    "agentsUsage.prices.problem.title" : {
+      "comment" : "Setup problem title when a downloaded price table is rejected.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Price table rejected"
+          }
+        }
+      }
+    },
+    "agentsUsage.prices.title" : {
+      "comment" : "Settings › Usage: heading of the price table block.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Price table"
+          }
+        }
+      }
+    },
+    "agentsUsage.prices.updated" : {
+      "comment" : "Usage tab footer of today's cost: the date of the price table in use, downloaded after the app was built. %@ is a date like 2026-11-08.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PRICES %@ · UPDATED"
+          }
+        }
+      }
+    },
     "agentsUsage.setting.warnThreshold" : {
       "comment" : "Settings › Usage: quota warning threshold, percent used.",
       "extractionState" : "manual",

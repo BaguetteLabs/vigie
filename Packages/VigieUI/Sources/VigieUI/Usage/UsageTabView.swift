@@ -48,7 +48,7 @@ public struct UsageTabView: View {
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                     VStack(spacing: theme.spacing(.gridGap)) {
                         UsageHistoryCard(panel: snapshot.history)
-                        UsageCostCard(panel: snapshot.cost)
+                        UsageCostCard(panel: snapshot.cost, prices: snapshot.prices)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }

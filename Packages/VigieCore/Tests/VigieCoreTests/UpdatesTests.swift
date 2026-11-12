@@ -131,6 +131,59 @@ final class FakeUpdater: UpdaterControlling {
         }
     }
 
+    // MARK: - Price table (Story 6.5)
+
+    @Test func priceTableSitsNextToTheAppcastAndUsesTheSparkleKey() throws {
+        let location = try #require(
+            UpdaterConfiguration.priceTableLocation(infoDictionary: ["SUPublicEDKey": Self.key, "SUFeedURL": Self.feed])
+        )
+        #expect(
+            location.tableURL.absoluteString
+                == "https://github.com/BaguetteLabs/vigie-releases/releases/latest/download/prices.json")
+        #expect(
+            location.signatureURL.absoluteString
+                == "https://github.com/BaguetteLabs/vigie-releases/releases/latest/download/prices.json.sig")
+        #expect(location.publicKey == Data(repeating: 7, count: 32))
+    }
+
+    @Test func placeholderRepositoryOrMissingKeyGivesNoPriceTable() {
+        let placeholder = "https://github.com/OWNER/vigie-releases/releases/latest/download/appcast.xml"
+        #expect(
+            UpdaterConfiguration.priceTableLocation(infoDictionary: [
+                "SUPublicEDKey": Self.key, "SUFeedURL": placeholder,
+            ])
+                == nil)
+        #expect(UpdaterConfiguration.priceTableLocation(infoDictionary: ["SUFeedURL": Self.feed]) == nil)
+        #expect(UpdaterConfiguration.priceTableLocation(infoDictionary: [:]) == nil)
+    }
+
+    @Test func pricesKeyDefaultsOnAndIsReadLive() async throws {
+        let entry = ConfigSchema().entries[UpdateSettings.pricesPath]
+        #expect(entry?.descriptor.kind == .bool(default: true))
+        #expect(entry?.descriptor.scope == .synced)
+        let (store, _) = try await fixture.makeStore()
+        let updates = CoreUpdatesService(shared: store.shared, priceTable: nil)
+        #expect(updates.pricesEnabled)
+        #expect(updates.checkInterval == .seconds(24 * 3600))
+        try await store.set(UpdateSettings.pricesPath, to: .bool(false))
+        try await store.set(UpdateSettings.checkIntervalPath, to: .duration(.seconds(60)))
+        #expect(!updates.pricesEnabled)
+        #expect(updates.checkInterval == UpdateSettings.minimumInterval)
+        store.stop()
+    }
+
+    @Test func factoryHandsModulesTheUpdatesService() {
+        let location = PriceTableLocation(
+            tableURL: URL(string: "https://example.invalid/prices.json")!,
+            signatureURL: URL(string: "https://example.invalid/prices.json.sig")!, publicKey: Data(count: 32))
+        let factory = CoreModuleContextFactory(
+            environment: fixture.environment, eventBus: InProcessEventBus(), priceTable: location)
+        let manifest = ModuleManifest(id: "test.updates", name: "Updates", icon: "circle")
+        let context = factory.makeContext(for: manifest, tracker: RegistrationTracker())
+        #expect(context.updates.priceTable == location)
+        #expect(context.updates.pricesEnabled)
+    }
+
     // MARK: - Bridge (live reload)
 
     @Test func bridgeAppliesAtStartAndOnEveryChange() async throws {
@@ -198,7 +251,7 @@ final class FakeUpdater: UpdaterControlling {
 
     // MARK: - Settings › Updates and the context menu
 
-    @Test func updatesPaneHasTheThreeRowsAndTheCheckAction() async throws {
+    @Test func updatesPaneHasItsRowsAndTheCheckAction() async throws {
         let h = try await SettingsHarness()
         let pane = try #require(h.controller.pane("updates"))
         guard case .core(let sections) = pane.content else {
@@ -208,6 +261,7 @@ final class FakeUpdater: UpdaterControlling {
         #expect(
             sections.flatMap(\.keys) == [
                 UpdateSettings.autoCheckPath, UpdateSettings.checkIntervalPath, UpdateSettings.autoInstallPath,
+                UpdateSettings.pricesPath,
             ])
         #expect(sections.flatMap(\.keys).allSatisfy { h.controller.rowModel(for: $0) != nil })
 

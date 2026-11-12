@@ -141,7 +141,7 @@ public enum SettingsPaneCatalog {
                 icon: "arrow.triangle.2.circlepath",
                 content: .core([
                     // `channel` has no row: A63 keeps a single stable feed until the public release (Story 19.3).
-                    SettingsSection(keys: keys("updates", ["auto_check", "check_interval", "auto_install"]))
+                    SettingsSection(keys: keys("updates", ["auto_check", "check_interval", "auto_install", "prices"]))
                 ])),
         ]
     }

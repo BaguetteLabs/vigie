@@ -1,0 +1,50 @@
+# Price table between releases (Story 6.5, AD-16). When prices/ changes on master, sign prices/prices.json with the
+# Sparkle key and replace prices.json and prices.json.sig on the latest release of the public releases-only
+# repository (RELEASE_REPO), the fixed location the app reads (releases/latest/download/prices.json). Tag releases
+# publish the table themselves (release.yml). Logic and dry run: Scripts/release/prices.sh; setup:
+# docs/release-setup.md "Price table".
+#
+# Pushes to master only: pull requests and forks never trigger it and never reach the `release` environment's
+# secrets (the environment must admit the master branch besides v*.*.* tags, docs/release-setup.md step 8).
+name: prices
+
+on:
+  push:
+    branches: [master]
+    paths: ['prices/**']
+  workflow_dispatch:
+
+concurrency:
+  group: prices
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: macos-26
+    timeout-minutes: 15
+    environment: release
+    env:
+      RELEASE_REPO: ${{ vars.RELEASE_REPO }}
+      DIST: ${{ github.workspace }}/build/prices
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Release host is set
+        run: |
+          if ! [[ "$RELEASE_REPO" =~ ^[A-Za-z0-9-]+/[A-Za-z0-9._-]+$ ]]; then
+            echo "::error::set the RELEASE_REPO variable (OWNER/NAME of the public releases-only repository, docs/release-setup.md)"
+            exit 1
+          fi
+
+      - name: Sign the price table
+        env:
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+        run: Scripts/release/prices.sh sign --dist "$DIST"
+
+      - name: Replace it on the latest release
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_REPO_TOKEN }}
+        run: Scripts/release/prices.sh publish-latest --repo "$RELEASE_REPO" --dist "$DIST"

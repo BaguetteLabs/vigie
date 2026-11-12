@@ -29,6 +29,9 @@ public protocol ModuleContext: Sendable {
     /// The script modules folder, the built-in ids scripts must not take, and scripts' `enabled` keys (AD-18).
     /// Used by `integrations` only. Default: no folder.
     var scriptFolder: any ScriptFolderService { get }
+    /// The app-level `[updates]` keys and the price table's location (Story 6.5). Used by `agents.usage` only.
+    /// Default: ``NoUpdatesService`` (nothing fetched).
+    var updates: any UpdatesService { get }
     /// `os.Logger`, subsystem = bundle id, category = module id. Never log secrets or note content.
     var log: Logger { get }
 }
@@ -36,6 +39,7 @@ public protocol ModuleContext: Sendable {
 extension ModuleContext {
     public var dropZones: any DropZoneDirectory { EmptyDropZoneDirectory() }
     public var scriptFolder: any ScriptFolderService { NoScriptFolder() }
+    public var updates: any UpdatesService { NoUpdatesService() }
 }
 
 /// Error thrown by a service that is declared but not available yet (or not in this build).

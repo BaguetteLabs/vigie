@@ -306,8 +306,10 @@ func goodRecord(_ output: ScriptOutput, at date: Date) -> ScriptRunRecord {
                 == ScriptSurfaces.defaultPriority)
     }
 
-    @Test func cadenceStringResolves() {
-        #expect(IntegrationsText.string("script.card.cadence") != "script.card.cadence")
+    @Test func pagePlaceholderStringsResolve() {
+        for key in ["script.page.placeholder.label", "script.page.placeholder.sentence", "script.card.cadence"] {
+            #expect(IntegrationsText.string(key) != key)
+        }
     }
 
     // MARK: Actions

@@ -179,16 +179,18 @@ private func totals(_ store: UsageStore) async throws -> UsageSeries {
 @Suite struct PriceTableTests {
     @Test func bundledTableLoads() throws {
         let estimator = try CostEstimator.bundled()
-        #expect(estimator.version == 1)
+        #expect(estimator.version == 2)
+        #expect(estimator.table.schema == PriceTable.currentSchema)
         for id in [
             "claude-opus-4", "claude-sonnet-4", "claude-opus-4-5", "claude-sonnet-4-5", "claude-haiku-4-5",
             "claude-opus-4-8", "claude-opus-5", "claude-opus-5-5", "claude-sonnet-5", "claude-sonnet-5-5",
             "claude-fable-5-1",
         ] {
-            #expect(estimator.prices[id] != nil, "no price for \(id)")
+            #expect(estimator.prices(for: "claude")[id] != nil, "no price for \(id)")
         }
         #expect(
-            estimator.price(for: "claude-opus-5-5") == ModelPrice(input: 4, output: 20, cacheWrite: 5, cacheRead: 0.2))
+            estimator.price(for: "claude-opus-5-5", provider: "claude")
+                == ModelPrice(input: 4, output: 20, cacheWrite: 5, cacheRead: 0.2))
     }
 
     @Test func everyFixtureModelHasAPrice() async throws {
@@ -201,15 +203,16 @@ private func totals(_ store: UsageStore) async throws -> UsageSeries {
             }
         }
         #expect(models.count == 4)
-        for model in models { #expect(estimator.price(for: model) != nil, "no price for \(model)") }
+        for model in models { #expect(estimator.price(for: model, provider: "claude") != nil, "no price for \(model)") }
     }
 
     @Test func dateSuffixedIdsMatchTheLongestPrefix() throws {
         let estimator = try CostEstimator.bundled()
-        #expect(estimator.price(for: "claude-haiku-4-5-20251001") == estimator.prices["claude-haiku-4-5"])
-        #expect(estimator.price(for: "claude-opus-4-20250514") == estimator.prices["claude-opus-4"])
-        #expect(estimator.price(for: "claude-opus-4-8") == estimator.prices["claude-opus-4-8"])
-        #expect(estimator.price(for: "claude-opus") == nil)
-        #expect(estimator.cost(of: TokenCounts(input: 1), model: "gpt-x") == nil)
+        let claude = estimator.prices(for: "claude")
+        #expect(estimator.price(for: "claude-haiku-4-5-20251001", provider: "claude") == claude["claude-haiku-4-5"])
+        #expect(estimator.price(for: "claude-opus-4-20250514", provider: "claude") == claude["claude-opus-4"])
+        #expect(estimator.price(for: "claude-opus-4-8", provider: "claude") == claude["claude-opus-4-8"])
+        #expect(estimator.price(for: "claude-opus", provider: "claude") == nil)
+        #expect(estimator.cost(of: TokenCounts(input: 1), model: "gpt-x", provider: "claude") == nil)
     }
 }
