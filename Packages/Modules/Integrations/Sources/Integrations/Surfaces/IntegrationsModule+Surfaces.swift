@@ -13,6 +13,10 @@ struct ScriptSurfaceRegistry {
     var entries: [String: Entry] = [:]
     /// Opens an `open` action's URL (tests record it).
     var openURL: @MainActor (URL) -> Void = { NSWorkspace.shared.open($0) }
+    /// `REVEAL` on the script page: shows the file in Finder (Story 12.11; tests record it).
+    var revealInFinder: @MainActor (URL) -> Void = { NSWorkspace.shared.activateFileViewerSelecting([$0]) }
+    /// `OPEN SOURCE` on the script page: opens the file with the default app for its type (tests record it).
+    var openFile: @MainActor (URL) -> Void = { NSWorkspace.shared.open($0) }
 }
 
 /// Story 12.5: one dynamic module per script (AD-18, SPEC §7.4).
@@ -68,7 +72,9 @@ extension IntegrationsModule {
             localState: { [weak self] definition in self?.localState(for: definition) ?? .awaitingConfirmation },
             runState: { [weak self] id in self?.runner?.states[id] },
             perform: { [weak self] action, id in self?.perform(action, scriptID: id) },
-            review: { [weak self] definition in self?.openConfirmation(for: definition) })
+            review: { [weak self] definition in self?.openConfirmation(for: definition) },
+            reveal: { [weak self] definition in self?.surfaces.revealInFinder(definition.url) },
+            openSource: { [weak self] definition in self?.surfaces.openFile(definition.url) })
     }
 
     /// A widget click (Story 12.5): `open` opens the URL, `run` runs argv through the runner (same rules as the

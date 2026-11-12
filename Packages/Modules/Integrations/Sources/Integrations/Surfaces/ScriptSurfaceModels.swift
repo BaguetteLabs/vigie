@@ -187,3 +187,54 @@ public enum ScriptSurfaces {
         }
     }
 }
+
+// MARK: Page (Story 12.11)
+
+extension ScriptSurfaces {
+    /// The script page (DESIGN "Script page", UX-DR86, UX-DR87): the hero is the Home card's model (same states:
+    /// `NOT CONFIRMED`, `WAITING · FIRST RUN`, the last good output with the WARN badge after a failure, the
+    /// failure alone with no good output); the documentation from the file; the runs card from the front matter
+    /// (runtime, interval, timeout `min(interval, 30 s)`) and the run state (the script's own runs, newest first;
+    /// widget `run` actions are not runs of the script and are left out).
+    public static func page(_ snapshot: ScriptSurfaceSnapshot, definition: ScriptModuleDefinition) -> ScriptPageModel {
+        let frontMatter = snapshot.frontMatter
+        let run = snapshot.local == .confirmed ? snapshot.run : nil
+        let rows = (run?.records ?? []).filter { $0.action == nil }.map(runRow)
+        let runs = ScriptRunsCardModel(
+            runtime: frontMatter.runtime, interval: frontMatter.interval,
+            timeout: ScriptRunner.timeout(for: frontMatter.interval), fileName: definition.fileName,
+            folder: folderText(definition.url), runs: rows, nextRunAt: run?.nextRunAt,
+            isRunning: run?.isRunning ?? false)
+        return ScriptPageModel(
+            hero: card(snapshot), kind: kind(frontMatter.widget), documentation: definition.documentation, runs: runs)
+    }
+
+    static func kind(_ type: ScriptWidgetType) -> ScriptWidgetKind {
+        switch type {
+        case .status: .status
+        case .number: .number
+        case .text: .text
+        }
+    }
+
+    /// One row of the runs list: `OK`, `EXIT 3`, `TIMED OUT · 30S`, or the failure's label.
+    static func runRow(_ record: ScriptRunRecord) -> ScriptRunRow {
+        let result: ScriptRunResult =
+            switch record.outcome {
+            case .succeeded: .ok
+            case .failed(let code), .actionExited(let code): .exit(code)
+            case .timedOut(let seconds): .timedOut(seconds: seconds)
+            case .invalidOutput, .runtimeNotFound, .launchFailed: .failure(ScriptRunLabel.outcome(record.outcome))
+            }
+        return ScriptRunRow(
+            startedAt: record.startedAt, duration: record.duration, result: result, exitCode: record.outcome.exitCode)
+    }
+
+    /// The file's folder as shown on the `SOURCE` sub-line: `~/Vigie/modules/`.
+    static func folderText(_ url: URL) -> String {
+        let folder = url.deletingLastPathComponent().path
+        let home = FileManager.default.homeDirectoryForCurrentUser.path
+        let shown = folder == home || folder.hasPrefix(home + "/") ? "~" + folder.dropFirst(home.count) : folder
+        return shown.hasSuffix("/") ? shown : shown + "/"
+    }
+}

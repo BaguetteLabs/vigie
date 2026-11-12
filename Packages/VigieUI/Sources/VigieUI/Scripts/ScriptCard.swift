@@ -37,21 +37,37 @@ public struct ScriptCard: View {
         let shown = model.privacy(privacyActive)
         let size = ScriptCardMetrics.size(theme)
         return WidgetCard(title: Text(verbatim: shown.title), meta: Text(verbatim: shown.cadence)) {
-            VStack(alignment: .leading, spacing: theme.spacing(.rowGap)) {
-                content(shown)
-                Spacer(minLength: 0)
-                metaLine(shown, now: now)
-            }
+            ScriptCardContent(shown: shown, now: now, onActivate: onActivate, onReview: onReview)
         }
         .frame(width: size.width, height: size.height)
         .accessibilityElement(children: .contain)
         .accessibilityLabel(Text(verbatim: shown.accessibilityLabel(now: now, timeZone: timeZone)))
     }
+}
 
-    @ViewBuilder private func content(_ shown: ScriptCardModel) -> some View {
+/// A script card's body and meta line, shared by the Home card and the page hero (Story 12.11). `interactive`
+/// false draws the body without its own buttons (the page hero is the one control).
+struct ScriptCardContent: View {
+    @Environment(\.vigieTheme) private var theme
+    @Environment(\.timeZone) private var timeZone
+    let shown: ScriptCardModel
+    let now: Date
+    var interactive = true
+    var onActivate: (@MainActor () -> Void)?
+    var onReview: @MainActor () -> Void = {}
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: theme.spacing(.rowGap)) {
+            content
+            Spacer(minLength: 0)
+            metaLine
+        }
+    }
+
+    @ViewBuilder private var content: some View {
         switch shown.body {
         case .output(let content):
-            if let onActivate, let action = shown.action {
+            if interactive, let onActivate, let action = shown.action {
                 Button(action: onActivate) {
                     ScriptWidgetBody(content).contentShape(Rectangle())
                 }
@@ -61,17 +77,25 @@ public struct ScriptCard: View {
                 ScriptWidgetBody(content)
             }
         case .notConfirmed:
-            ScriptStateLabel(action: onReview)
+            if interactive {
+                ScriptStateLabel(action: onReview)
+            } else {
+                stateText(ScriptStateLabel.notConfirmedText)
+            }
         case .state(let text):
-            Text(verbatim: text)
-                .font(theme.font(.rowStatus))
-                .tracking(theme.tracking(.rowStatus))
-                .foregroundStyle(theme.color(.ink3))
-                .lineLimit(1)
+            stateText(text)
         }
     }
 
-    @ViewBuilder private func metaLine(_ shown: ScriptCardModel, now: Date) -> some View {
+    private func stateText(_ text: String) -> some View {
+        Text(verbatim: text)
+            .font(theme.font(.rowStatus))
+            .tracking(theme.tracking(.rowStatus))
+            .foregroundStyle(theme.color(.ink3))
+            .lineLimit(1)
+    }
+
+    @ViewBuilder private var metaLine: some View {
         if shown.meta != nil || shown.warningBadge {
             HStack(spacing: theme.spacing(.glyphGap) / 2) {
                 if shown.warningBadge {
