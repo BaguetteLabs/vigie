@@ -534,7 +534,7 @@ protocol AgentAdapter {
 
 | Agent | Integration | Expected status coverage |
 |---|---|---|
-| Claude Code | Hooks in `~/.claude/settings.json`: `SessionStart`, `UserPromptSubmit`, `PreToolUse`, `PostToolUse`, `Notification`, `Stop`, `SubagentStop`, `SessionEnd` | Full |
+| Claude Code | Hooks in `~/.claude/settings.json`: `SessionStart`, `UserPromptSubmit`, `PreToolUse`, `PostToolUse`, `Notification`, `Stop`, `SubagentStop`, `SessionEnd`; with several Accounts (§11), also in each Account's `<location>/settings.json`, with the same command (the Account comes from the `CLAUDE_CONFIG_DIR` the hook CLI forwards) | Full |
 | Codex CLI | `notify` program in `~/.codex/config.toml` (called on turn completion; if another `notify` program is already set, Vigie offers to run both through its wrapper, applied only after diff confirmation, and Disconnect restores the original), plus transcript watching of `~/.codex/sessions/` for working/blocked; use native hooks if the installed version has them | Probably full (to be confirmed) |
 | Gemini CLI | Hooks if the installed version supports them, otherwise transcript watching | To be investigated |
 | Others (OpenCode, Aider, Cursor CLI, …) | Later; community adapters not before outside contributions are accepted (§2.1) | — |
