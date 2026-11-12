@@ -1,0 +1,197 @@
+# Tag-driven release (Story 6.2, SPEC section 12.2-12.3, AD-20 release hosting, A86).
+# Pushing a vX.Y.Z (or vX.Y.Z-suffix) tag on a master commit builds, signs (Developer ID), notarizes and staples
+# Vigie, packages Vigie-X.Y.Z.dmg + Vigie-X.Y.Z.zip + SHA256SUMS.txt, and publishes them as a GitHub Release of
+# the public releases-only repository (repository variable RELEASE_REPO). Nothing is published in this private
+# repository. The shell logic lives in Scripts/release/*.sh (testable locally, each with --dry-run); maintainer
+# setup and how to release: docs/release-setup.md.
+#
+# Secrets exist only in the `release` environment (required reviewer, tags v*.*.* only). Pull requests and forks
+# cannot trigger this workflow, and only the `release` job, on a tag ref, enters that environment.
+name: release
+
+on:
+  push:
+    tags: ['v*.*.*']
+  # Re-run or rehearse: Actions > release > Run workflow. For a real release pick the tag itself under
+  # "Use workflow from" (the environment only admits tag refs) and type the same tag below. dry_run runs every
+  # step with --dry-run on any ref, without the environment or its secrets.
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag (vX.Y.Z or vX.Y.Z-suffix)
+        required: true
+        type: string
+      dry_run:
+        description: Print the release commands without signing or publishing
+        required: false
+        type: boolean
+        default: false
+
+concurrency:
+  group: release-${{ inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  TAG: ${{ inputs.tag || github.ref_name }}
+
+jobs:
+  check:
+    runs-on: macos-26
+    timeout-minutes: 10
+    outputs:
+      version: ${{ steps.tag.outputs.version }}
+      marketing_version: ${{ steps.tag.outputs.marketing_version }}
+      prerelease: ${{ steps.tag.outputs.prerelease }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: refs/tags/${{ env.TAG }}
+
+      - name: Fetch the annotated tag and master
+        run: |
+          # checkout can leave an annotated tag as a lightweight one; refetch it, and make origin/master current.
+          git fetch --force --no-tags origin "+refs/tags/${TAG}:refs/tags/${TAG}" "+refs/heads/master:refs/remotes/origin/master"
+
+      - name: Dispatch ref
+        if: github.event_name == 'workflow_dispatch' && !inputs.dry_run
+        env:
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          if [ "$REF_TYPE" != tag ] || [ "$REF_NAME" != "$TAG" ]; then
+            echo "::error::run the workflow from the tag $TAG (Use workflow from > Tags), not from $REF_TYPE $REF_NAME: the release environment only admits tags"
+            exit 1
+          fi
+
+      - name: Tag on master and equal to the project version
+        id: tag
+        run: Scripts/release/check-tag.sh --tag "$TAG" --master origin/master
+
+  release:
+    needs: check
+    if: github.ref_type == 'tag' && startsWith(github.ref, 'refs/tags/v') && !inputs.dry_run
+    runs-on: macos-26
+    timeout-minutes: 120
+    environment: release
+    # Publishing goes to RELEASE_REPO with RELEASE_REPO_TOKEN, so this repository's token stays read-only.
+    permissions:
+      contents: read
+    env:
+      VERSION: ${{ needs.check.outputs.version }}
+      MARKETING_VERSION: ${{ needs.check.outputs.marketing_version }}
+      PRERELEASE: ${{ needs.check.outputs.prerelease }}
+      RELEASE_REPO: ${{ vars.RELEASE_REPO }}
+      OUT: ${{ github.workspace }}/build/release
+      DIST: ${{ github.workspace }}/build/dist
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: refs/tags/${{ env.TAG }}
+
+      - name: Fetch the annotated tag
+        run: git fetch --force --no-tags origin "+refs/tags/${TAG}:refs/tags/${TAG}"
+
+      - name: Release host is set
+        run: |
+          if ! [[ "$RELEASE_REPO" =~ ^[A-Za-z0-9-]+/[A-Za-z0-9._-]+$ ]]; then
+            echo "::error::set the RELEASE_REPO variable (OWNER/NAME of the public releases-only repository, docs/release-setup.md)"
+            exit 1
+          fi
+
+      - name: Select Xcode from .xcode-version
+        run: |
+          version="$(tr -d '[:space:]' < .xcode-version)"
+          app="/Applications/Xcode_${version}.app"
+          if [ ! -d "$app" ]; then
+            echo "::error::$app not found on this runner. Installed Xcode versions:"
+            ls -d /Applications/Xcode* || true
+            exit 1
+          fi
+          sudo xcode-select -s "$app"
+          xcodebuild -version
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Import signing identity and profile
+        env:
+          DEVELOPER_ID_P12: ${{ secrets.DEVELOPER_ID_P12 }}
+          DEVELOPER_ID_P12_PASSWORD: ${{ secrets.DEVELOPER_ID_P12_PASSWORD }}
+          DEVELOPER_ID_PROFILE: ${{ secrets.DEVELOPER_ID_PROFILE }}
+        run: Scripts/release/import-signing.sh import
+
+      - name: Archive and export (Developer ID)
+        run: Scripts/release/archive-export.sh --marketing-version "$MARKETING_VERSION" --build "$GITHUB_RUN_NUMBER" --out "$OUT"
+
+      - name: Notarize and staple the app
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+        run: Scripts/release/notarize.sh --file "$OUT/export/Vigie.app"
+
+      - name: Package zip and DMG
+        run: |
+          Scripts/release/package.sh zip --app "$OUT/export/Vigie.app" --version "$VERSION" --dist "$DIST"
+          Scripts/release/package.sh dmg --app "$OUT/export/Vigie.app" --version "$VERSION" --dist "$DIST"
+
+      - name: Notarize and staple the DMG
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+        run: Scripts/release/notarize.sh --file "$DIST/Vigie-$VERSION.dmg"
+
+      # Story 6.3 inserts here: sign the zip with SPARKLE_PRIVATE_KEY (sign_update) and, for stable releases only
+      # (PRERELEASE == false), write appcast.xml into $DIST with notes from Scripts/release/notes.sh.
+
+      - name: Checksums
+        run: Scripts/release/package.sh checksums --dist "$DIST"
+
+      - name: Publish on the public release host
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_REPO_TOKEN }}
+        run: Scripts/release/publish.sh --tag "$TAG" --repo "$RELEASE_REPO" --dist "$DIST" --prerelease "$PRERELEASE"
+
+      - name: Remove keychain, profile and key
+        if: always()
+        run: Scripts/release/import-signing.sh cleanup
+
+  # Rehearsal (workflow_dispatch with dry_run): no environment, no secrets; prints every release command.
+  dry-run:
+    needs: check
+    if: github.event_name == 'workflow_dispatch' && inputs.dry_run
+    runs-on: macos-26
+    timeout-minutes: 15
+    env:
+      DRY_RUN: '1'
+      VERSION: ${{ needs.check.outputs.version }}
+      MARKETING_VERSION: ${{ needs.check.outputs.marketing_version }}
+      PRERELEASE: ${{ needs.check.outputs.prerelease }}
+      RELEASE_REPO: ${{ vars.RELEASE_REPO || 'OWNER/vigie-releases' }}
+      OUT: ${{ github.workspace }}/build/release
+      DIST: ${{ github.workspace }}/build/dist
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch the annotated tag
+        run: git fetch --force --no-tags origin "+refs/tags/${TAG}:refs/tags/${TAG}"
+
+      - name: Release commands (dry run)
+        run: |
+          Scripts/release/import-signing.sh import
+          Scripts/release/archive-export.sh --marketing-version "$MARKETING_VERSION" --build "$GITHUB_RUN_NUMBER" --out "$OUT"
+          Scripts/release/notarize.sh --file "$OUT/export/Vigie.app"
+          Scripts/release/package.sh zip --app "$OUT/export/Vigie.app" --version "$VERSION" --dist "$DIST"
+          Scripts/release/package.sh dmg --app "$OUT/export/Vigie.app" --version "$VERSION" --dist "$DIST"
+          Scripts/release/notarize.sh --file "$DIST/Vigie-$VERSION.dmg"
+          Scripts/release/package.sh checksums --dist "$DIST"
+          Scripts/release/publish.sh --tag "$TAG" --repo "$RELEASE_REPO" --dist "$DIST" --prerelease "$PRERELEASE"
+          Scripts/release/import-signing.sh cleanup

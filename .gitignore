@@ -11,3 +11,4 @@ DerivedData/
 .build*/
 /App/Config/Version.xcconfig
 /App/Config/Signing.local.xcconfig
+/build/

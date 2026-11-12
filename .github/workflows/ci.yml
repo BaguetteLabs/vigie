@@ -8,7 +8,7 @@ on:
   pull_request:
   push:
     branches: [master]
-    # Release tags (Story 6.2) will be added here: tags: ['v*']
+    # Release tags run release.yml (Story 6.2), not this workflow.
   workflow_dispatch:
 
 concurrency:
@@ -70,6 +70,9 @@ jobs:
           Scripts/tests/version-test.sh
           Scripts/tests/dev-signing-test.sh
           Scripts/tests/signing-xcconfig-test.sh
+          Scripts/tests/release-check-tag-test.sh
+          Scripts/tests/release-package-test.sh
+          Scripts/tests/release-dry-run-test.sh
           Scripts/version.sh ${tag:+--tag "$tag"} --build "$GITHUB_RUN_NUMBER" --xcconfig App/Config/Version.xcconfig
           cat App/Config/Version.xcconfig
 

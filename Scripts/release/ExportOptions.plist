@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Developer ID export of Vigie.app (Story 6.2, SPEC §12.3 step 3). Mirrors the Release envelope of
+     App/Config/Signing.xcconfig (Story 6.1); Scripts/tests/release-scripts-test.sh keeps them in step.
+     destination=export: notarization is a separate step (Scripts/release/notarize.sh), not Xcode's upload. -->
+<plist version="1.0">
+<dict>
+	<key>method</key>
+	<string>developer-id</string>
+	<key>destination</key>
+	<string>export</string>
+	<key>signingStyle</key>
+	<string>manual</string>
+	<key>teamID</key>
+	<string>BWMPMACCYZ</string>
+	<key>signingCertificate</key>
+	<string>Developer ID Application</string>
+	<key>provisioningProfiles</key>
+	<dict>
+		<key>fr.baguettelabs.vigie</key>
+		<string>Vigie Developer ID</string>
+	</dict>
+</dict>
+</plist>
