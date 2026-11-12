@@ -16,6 +16,7 @@ extension TimeModule {
         TimeTabActions(
             startPreset: { [weak self] minutes in self?.startTimer(minutes: minutes) },
             startCustom: { [weak self] text in self?.startCustom(text) != nil },
+            startPomodoro: { [weak self] in self?.startPomodoro() },
             startCountdown: { [weak self] date, label in self?.startCountdown(to: date, label: label) != nil },
             select: { [weak self] id in self?.selectedID = id },
             perform: { [weak self] id, control in self?.perform(id, control) },
@@ -25,6 +26,7 @@ extension TimeModule {
     }
 
     func perform(_ id: UUID, _ control: TimeRowModel.Control) {
+        if let pomodoro, pomodoro.id == id { return performPomodoro(control) }
         switch control {
         case .pause, .resume: togglePause(id)
         case .reset: reset(id)
@@ -33,12 +35,14 @@ extension TimeModule {
         case .startBreak: startBreak()
         case .snooze: snoozeBreak()
         case .skip: skipBreak()
+        case .stop: break
         }
     }
 
     nonisolated static var placeholderSnapshot: TimeTabSnapshot {
         TimeTabSnapshot(
-            quickStart: TimeQuickStart(presets: defaultPresets, pomodoroLengths: pomodoroLengths), rows: [],
+            quickStart: TimeQuickStart(
+                presets: defaultPresets, pomodoroLengths: PomodoroLengths().summary, pomodoroAvailable: true), rows: [],
             runningCount: 0)
     }
 
@@ -46,10 +50,21 @@ extension TimeModule {
     public func tabSnapshot(now date: Date? = nil) -> TimeTabSnapshot {
         let date = date ?? displayNow
         let items = board.sorted(now: date)
+        var rows = items.map { TimeFormat.row($0, now: date, calendar: calendar) }
+        if let pomodoro, let row = pomodoroRow(now: date) {
+            // Sorted by end time with the rest: a due break goes after the ended items, like a due reminder.
+            let end = pomodoro.effectiveEnd(at: date)
+            let index =
+                items.firstIndex { item in
+                    !item.isEnded && (end.map { item.effectiveEnd(now: date) > $0 } ?? true)
+                } ?? items.count
+            rows.insert(row, at: index)
+        }
         return TimeTabSnapshot(
-            quickStart: TimeQuickStart(presets: presets, pomodoroLengths: Self.pomodoroLengths),
-            rows: breakRows(now: date) + items.map { TimeFormat.row($0, now: date, calendar: calendar) },
-            runningCount: items.filter { !$0.isEnded }.count,
+            quickStart: TimeQuickStart(
+                presets: presets, pomodoroLengths: pomodoroLengths.summary, pomodoroAvailable: pomodoro == nil),
+            rows: breakRows(now: date) + rows,
+            runningCount: items.filter { !$0.isEnded }.count + (pomodoro == nil ? 0 : 1),
             selectedID: selectedID,
             canUndo: undoSlot != nil,
             focusQuickStart: focusQuickStart,

@@ -588,6 +588,306 @@
           }
         }
       }
+    },
+    "time.pomodoro.label" : {
+      "comment" : "Time tab row name of the Pomodoro.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pomodoro"
+          }
+        }
+      }
+    },
+    "time.pomodoro.kind.work" : {
+      "comment" : "Pomodoro row kind during a work period: cycle and cycles per set (WORK · CYCLE 2/4).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WORK · CYCLE %1$lld/%2$lld"
+          }
+        }
+      }
+    },
+    "time.pomodoro.kind.break" : {
+      "comment" : "Pomodoro row kind during a short break (due or running): cycle and cycles per set.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "BREAK · %1$lld/%2$lld"
+          }
+        }
+      }
+    },
+    "time.pomodoro.kind.longBreak" : {
+      "comment" : "Pomodoro row kind during the long break (due or running).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LONG BREAK"
+          }
+        }
+      }
+    },
+    "time.pomodoro.kind.away" : {
+      "comment" : "Pomodoro row kind while Away paused the work period.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AWAY · PAUSED"
+          }
+        }
+      }
+    },
+    "time.subline.pausedAt" : {
+      "comment" : "Time tab end line of a paused Pomodoro: when it paused (PAUSED 14:31).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PAUSED %@"
+          }
+        }
+      }
+    },
+    "time.pomodoro.a11y.work" : {
+      "comment" : "VoiceOver: the Pomodoro phase pips during work.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Work, cycle %1$lld of %2$lld"
+          }
+        }
+      }
+    },
+    "time.pomodoro.a11y.break" : {
+      "comment" : "VoiceOver: the Pomodoro phase pips during a short break.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Break, cycle %1$lld of %2$lld"
+          }
+        }
+      }
+    },
+    "time.pomodoro.a11y.longBreak" : {
+      "comment" : "VoiceOver: the Pomodoro phase pips during the long break.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Long break, cycle %1$lld of %2$lld"
+          }
+        }
+      }
+    },
+    "time.pomodoro.a11y.awayPaused" : {
+      "comment" : "VoiceOver: the Pomodoro paused by Away, with the time it paused.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "away, paused since %@"
+          }
+        }
+      }
+    },
+    "time.pomodoro.a11y.pausedAt" : {
+      "comment" : "VoiceOver: the Pomodoro paused by the user, with the time it paused.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "paused since %@"
+          }
+        }
+      }
+    },
+    "time.pomodoro.kicker.break" : {
+      "comment" : "Break peek kicker when a Pomodoro work period ends (shown uppercase).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pomodoro · break"
+          }
+        }
+      }
+    },
+    "time.pomodoro.kicker.longBreak" : {
+      "comment" : "Break peek kicker when the last work period of a Pomodoro set ends (shown uppercase).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pomodoro · long break"
+          }
+        }
+      }
+    },
+    "time.pomodoro.kicker.breakEnded" : {
+      "comment" : "Timer-end peek kicker when a Pomodoro break ends (shown uppercase).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Break · ended"
+          }
+        }
+      }
+    },
+    "time.pomodoro.alert.backToWork" : {
+      "comment" : "Pomodoro break-end alert title, before the work length.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Back to work"
+          }
+        }
+      }
+    },
+    "time.pomodoro.alert.cyclesDone" : {
+      "comment" : "Pomodoro break alert title, before the break length: work periods done in the set.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld cycle done"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld cycles done"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "time.setting.pomodoro.work" : {
+      "comment" : "Settings › Time label.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pomodoro work"
+          }
+        }
+      }
+    },
+    "time.setting.pomodoro.work.help" : {
+      "comment" : "Settings › Time help text.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Length of a Pomodoro work period."
+          }
+        }
+      }
+    },
+    "time.setting.pomodoro.shortBreak" : {
+      "comment" : "Settings › Time label.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pomodoro short break"
+          }
+        }
+      }
+    },
+    "time.setting.pomodoro.shortBreak.help" : {
+      "comment" : "Settings › Time help text.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Length of the break after a work period."
+          }
+        }
+      }
+    },
+    "time.setting.pomodoro.longBreak" : {
+      "comment" : "Settings › Time label.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pomodoro long break"
+          }
+        }
+      }
+    },
+    "time.setting.pomodoro.longBreak.help" : {
+      "comment" : "Settings › Time help text.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Length of the break after the last work period of a set."
+          }
+        }
+      }
+    },
+    "time.setting.pomodoro.longEvery" : {
+      "comment" : "Settings › Time label.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Long break every"
+          }
+        }
+      }
+    },
+    "time.setting.pomodoro.longEvery.help" : {
+      "comment" : "Settings › Time help text.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Work periods before a long break."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

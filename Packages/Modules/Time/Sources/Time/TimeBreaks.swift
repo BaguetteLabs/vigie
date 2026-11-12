@@ -121,26 +121,39 @@ extension TimeModule {
         }
     }
 
-    /// Subscribes to `context.away` (which starts the host's presence polling, PRD FR-4) and starts a cycle.
+    /// Starts a cycle (held at once while a Pomodoro runs) and subscribes to `context.away`.
     private func startBreaks() {
         guard let context else { return }
         breaks = BreakTracker(
             workLength: breakSettings.work, breakLength: breakSettings.length, presence: context.away.presence,
             at: now())
-        let changes = context.away.changes
-        presenceTask = Task { @MainActor [weak self] in
-            for await presence in changes {
-                guard !Task.isCancelled else { return }
-                self?.presenceChanged(presence)
-            }
-        }
+        if pomodoro != nil { _ = breaks?.pause(while: true, at: now()) }
+        updatePresenceSubscription()
         rearmBreakJob()
     }
 
-    /// Ends the subscription (the host stops polling once nobody listens) and any due break.
+    /// Subscribes to `context.away` (which starts the host's presence polling, PRD FR-4) while break reminders
+    /// are on or a Pomodoro runs; ends the subscription otherwise (the host stops polling once nobody listens).
+    func updatePresenceSubscription() {
+        let needed = isRunning && (breaks != nil || pomodoro != nil)
+        if needed, presenceTask == nil, let context {
+            isAway = context.away.presence != .present
+            let changes = context.away.changes
+            presenceTask = Task { @MainActor [weak self] in
+                for await presence in changes {
+                    guard !Task.isCancelled else { return }
+                    self?.presenceChanged(presence)
+                }
+            }
+        } else if !needed, let task = presenceTask {
+            task.cancel()
+            presenceTask = nil
+        }
+    }
+
+    /// Ends any due break, then the subscription unless a Pomodoro still needs it.
     func stopBreaks() {
-        presenceTask?.cancel()
-        presenceTask = nil
+        defer { updatePresenceSubscription() }
         breakJob?.cancel()
         breakJob = nil
         breakHandle?.resolve()
@@ -151,6 +164,8 @@ extension TimeModule {
     // MARK: Inputs
 
     func presenceChanged(_ presence: Presence) {
+        isAway = presence != .present
+        pomodoroPresence(presence)
         guard var tracker = breaks else { return }
         let events = tracker.presence(presence, at: now())
         breaks = tracker
@@ -165,6 +180,7 @@ extension TimeModule {
         case .didWake:
             if let presence = context?.away.presence { presenceChanged(presence) }
             breakTick()
+            pomodoroTick()
             evaluate()
         }
     }
@@ -265,12 +281,19 @@ extension TimeModule {
 
     // MARK: Surfaces
 
-    /// `BREAK DUE` on the left wing while a break is due, whatever `[modules.time] closed_notch` says (20.6
-    /// adds the running-item readout).
+    /// `BREAK DUE` on the left wing while a break (a reminder's or a Pomodoro's) is due, whatever
+    /// `[modules.time] closed_notch` says (20.6 adds the running-item readout).
     public func leftWingItems() -> [LeftWingItem] {
-        guard breaks?.isDue == true else { return [] }
-        let value = TimeFormat.value(breakSettings.length)
-        let label = TimeFormat.breakDueAccessibility(length: breakSettings.length)
+        let length: TimeInterval
+        if let pomodoro, pomodoro.isDue {
+            length = pomodoro.breakLength
+        } else if breaks?.isDue == true {
+            length = breakSettings.length
+        } else {
+            return []
+        }
+        let value = TimeFormat.value(length)
+        let label = TimeFormat.breakDueAccessibility(length: length)
         let priority = context?.settings.value("priority", as: Int.self) ?? Self.defaultWingPriority
         return [
             LeftWingItem(id: "break-due", priority: priority, state: .alert) { size in

@@ -15,8 +15,42 @@ public struct TimeRowModel: Identifiable, Equatable, Sendable {
         case ended
         /// A due break (Story 20.4): a full dashed ring in the accent.
         case breakDue
-        /// A break running: the dashed arc is the share left.
-        case breakRing(fractionLeft: Double)
+        /// A break running: the dashed arc is the share left; paused draws it in `ink-3`.
+        case breakRing(fractionLeft: Double, paused: Bool = false)
+    }
+
+    /// A Pomodoro's phase indicator (DESIGN "Phase indicator", `components.phase-pips`, Story 20.5): one pip per
+    /// work period of the set; done filled, current ringed in the Time accent (hatched during a break),
+    /// upcoming a hollow hairline ring.
+    public struct Pips: Equatable, Sendable {
+        /// Work periods in a set (`long_every`).
+        public var count: Int
+        /// The current work period, 1-based.
+        public var current: Int
+        /// The current pip is hatched (a break, due or running).
+        public var onBreak: Bool
+        /// "Work, cycle 2 of 4".
+        public var accessibilityLabel: String
+
+        public init(count: Int, current: Int, onBreak: Bool, accessibilityLabel: String) {
+            self.count = max(1, count)
+            self.current = min(max(current, 1), max(1, count))
+            self.onBreak = onBreak
+            self.accessibilityLabel = accessibilityLabel
+        }
+
+        public enum Mark: Equatable, Sendable {
+            case done
+            case current(hatched: Bool)
+            case upcoming
+        }
+
+        /// The pips in order.
+        public var marks: [Mark] {
+            (1...count).map { index in
+                index < current ? .done : (index == current ? .current(hatched: onBreak) : .upcoming)
+            }
+        }
     }
 
     /// A row chip, in display order.
@@ -30,8 +64,10 @@ public struct TimeRowModel: Identifiable, Equatable, Sendable {
         case startBreak
         /// Break due: re-raise in 5 minutes.
         case snooze
-        /// Break due or running: no break, a new work cycle.
+        /// Break due or running: no break, a new work cycle. A Pomodoro: the next phase now.
         case skip
+        /// A Pomodoro (Story 20.5): ends it.
+        case stop
 
         /// Drawn as the primary chip (Time accent).
         public var isPrimary: Bool { self == .startBreak }
@@ -51,11 +87,21 @@ public struct TimeRowModel: Identifiable, Equatable, Sendable {
     public var isEnded: Bool
     /// "Tea, 5 minute timer, 3 minutes, 12 seconds left, ends 14:52, paused".
     public var accessibilityLabel: String
+    /// A Pomodoro's phase indicator, drawn after the kind.
+    public var pips: Pips?
+    /// Frozen by Away (Story 20.5): value in `ink-2` and a pause mark before the kind.
+    public var isAway: Bool
+    /// What `⌘⌫` does on the selected row; nil: Dismiss on an ended row, Remove otherwise.
+    public var removal: Control?
 
     public init(
         id: UUID, label: String, kind: String, value: String, subline: String, visual: Visual, controls: [Control],
-        isEnded: Bool = false, accessibilityLabel: String
+        isEnded: Bool = false, accessibilityLabel: String, pips: Pips? = nil, isAway: Bool = false,
+        removal: Control? = nil
     ) {
+        self.pips = pips
+        self.isAway = isAway
+        self.removal = removal
         self.id = id
         self.label = label
         self.kind = kind
@@ -71,6 +117,11 @@ public struct TimeRowModel: Identifiable, Equatable, Sendable {
     public var returnControl: Control? {
         if controls.contains(.startBreak) { return .startBreak }
         return isEnded ? .dismiss : nil
+    }
+
+    /// `⌘⌫` on the selected row: Dismiss an ended item, Stop a Pomodoro, Remove anything else.
+    public var deleteControl: Control {
+        removal ?? (isEnded ? .dismiss : .remove)
     }
 
     /// Space on the selected row: Pause or Resume, when the row has it.
@@ -95,7 +146,7 @@ public struct TimeQuickStart: Equatable, Sendable {
     public var presets: [Int]
     /// The Pomodoro lengths shown on its button (`25 · 5 · 15`).
     public var pomodoroLengths: String
-    /// False draws the Pomodoro button disabled (Pomodoro is Story 20.5).
+    /// False draws the Pomodoro button disabled: one is already running (A87).
     public var pomodoroAvailable: Bool
 
     public init(presets: [Int], pomodoroLengths: String, pomodoroAvailable: Bool = false) {
@@ -163,6 +214,8 @@ public struct TimeTabActions {
     public var startPreset: @MainActor (Int) -> Void
     /// The custom field's text (`45`, or `45 Tea` to name it); false when it is not a valid length.
     public var startCustom: @MainActor (String) -> Bool
+    /// The `POMODORO` button (Story 20.5): starts one when none runs.
+    public var startPomodoro: @MainActor () -> Void
     /// The `+ COUNTDOWN` form: target and optional name; false when the target is not in the future.
     public var startCountdown: @MainActor (Date, String) -> Bool
     public var select: @MainActor (UUID?) -> Void
@@ -178,6 +231,7 @@ public struct TimeTabActions {
     public init(
         startPreset: @escaping @MainActor (Int) -> Void = { _ in },
         startCustom: @escaping @MainActor (String) -> Bool = { _ in false },
+        startPomodoro: @escaping @MainActor () -> Void = {},
         startCountdown: @escaping @MainActor (Date, String) -> Bool = { _, _ in false },
         select: @escaping @MainActor (UUID?) -> Void = { _ in },
         perform: @escaping @MainActor (UUID, TimeRowModel.Control) -> Void = { _, _ in },
@@ -187,6 +241,7 @@ public struct TimeTabActions {
     ) {
         self.startPreset = startPreset
         self.startCustom = startCustom
+        self.startPomodoro = startPomodoro
         self.startCountdown = startCountdown
         self.select = select
         self.perform = perform

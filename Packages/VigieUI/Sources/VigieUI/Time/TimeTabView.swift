@@ -56,14 +56,15 @@ public struct TimeTabView: View {
 
     private func takeHotkeyFocus(_ pending: Bool) {
         guard pending else { return }
-        focus = .quick(0)
+        // The Pomodoro button is the first stop, unless one already runs (it is then disabled).
+        focus = .quick(snapshot().quickStart.pomodoroAvailable ? 0 : 1)
         actions.quickStartFocused()
     }
 
     // MARK: Quick start
 
-    /// Focusable buttons of the group: the presets, then `+ COUNTDOWN` (Pomodoro is disabled until 20.5).
-    private func quickCount(_ snapshot: TimeTabSnapshot) -> Int { snapshot.quickStart.presets.count + 1 }
+    /// Buttons of the group: Pomodoro (index 0), the presets, then `+ COUNTDOWN`.
+    private func quickCount(_ snapshot: TimeTabSnapshot) -> Int { snapshot.quickStart.presets.count + 2 }
 
     @ViewBuilder private func quickStart(_ snapshot: TimeTabSnapshot) -> some View {
         let quick = snapshot.quickStart
@@ -71,7 +72,13 @@ public struct TimeTabView: View {
             title: Text(L10n.resource("time.quickStart.title")), meta: Text(L10n.resource("time.quickStart.meta"))
         ) {
             HStack(spacing: TimeMetrics.quickGap) {
-                TimeQuickButton(isPomodoro: true, accessibility: L10n.string("time.quickStart.pomodoro.a11y")) {
+                TimeQuickButton(
+                    isPomodoro: true,
+                    accessibility: L10n.format(
+                        quick.pomodoroAvailable ? "time.quickStart.pomodoro.a11y" : "time.quickStart.pomodoro.running",
+                        quick.pomodoroLengths)
+                ) {
+                    actions.startPomodoro()
                 } label: {
                     Text(L10n.resource("time.quickStart.pomodoro"))
                     Text(verbatim: quick.pomodoroLengths).font(
@@ -80,8 +87,16 @@ public struct TimeTabView: View {
                     .foregroundStyle(theme.color(.ink3))
                 }
                 .disabled(!quick.pomodoroAvailable)
-                .help(Text(L10n.resource("time.quickStart.pomodoro.later")))
-                ForEach(Array(quick.presets.enumerated()), id: \.offset) { index, preset in
+                .help(
+                    Text(
+                        L10n.resource(
+                            quick.pomodoroAvailable ? "time.quickStart.pomodoro.help" : "time.quickStart.pomodoro.busy")
+                    )
+                )
+                .focused($focus, equals: .quick(0))
+                .onKeyPress(keys: [.leftArrow, .rightArrow]) { press in moveQuick(0, press.key, snapshot) }
+                ForEach(Array(quick.presets.enumerated()), id: \.offset) { offset, preset in
+                    let index = offset + 1
                     TimeQuickButton(accessibility: L10n.format("time.quickStart.preset.a11y", preset)) {
                         actions.startPreset(preset)
                     } label: {
@@ -92,7 +107,7 @@ public struct TimeTabView: View {
                     .focused($focus, equals: .quick(index))
                     .onKeyPress(keys: [.leftArrow, .rightArrow]) { press in moveQuick(index, press.key, snapshot) }
                 }
-                countdownButton(snapshot, index: quick.presets.count)
+                countdownButton(snapshot, index: quick.presets.count + 1)
                 Spacer(minLength: TimeMetrics.quickGap)
                 customField
             }
@@ -102,7 +117,8 @@ public struct TimeTabView: View {
 
     private func moveQuick(_ index: Int, _ key: KeyEquivalent, _ snapshot: TimeTabSnapshot) -> KeyPress.Result {
         let count = quickCount(snapshot)
-        let next = key == .leftArrow ? max(index - 1, 0) : min(index + 1, count - 1)
+        let first = snapshot.quickStart.pomodoroAvailable ? 0 : 1
+        let next = key == .leftArrow ? max(index - 1, first) : min(index + 1, count - 1)
         focus = .quick(next)
         return .handled
     }
@@ -260,7 +276,7 @@ public struct TimeTabView: View {
             switch press.key {
             case .space where press.modifiers.isEmpty: row.pauseToggle
             case .return where press.modifiers.isEmpty: row.returnControl
-            case .delete where command: row.isEnded ? .dismiss : .remove
+            case .delete where command: row.deleteControl
             case KeyEquivalent("r") where command: row.controls.contains(.reset) ? .reset : nil
             default: nil
             }
@@ -297,12 +313,16 @@ struct TimeRowView: View {
                     .font(theme.font(.rowPrimary))
                     .foregroundStyle(theme.color(.ink1))
                     .lineLimit(1)
-                Text(verbatim: row.kind)
-                    .font(TimeMetrics.font(theme, .readoutLabel, size: TimeMetrics.kindSize))
-                    .tracking(theme.tracking(.readoutLabel))
-                    .textCase(.uppercase)
-                    .foregroundStyle(theme.color(row.isEnded ? TimeMetrics.accentTextRole(theme) : .ink3))
-                    .lineLimit(1)
+                HStack(spacing: TimeMetrics.kindGap) {
+                    if row.isAway { TimePauseMark() }
+                    Text(verbatim: row.kind)
+                        .font(TimeMetrics.font(theme, .readoutLabel, size: TimeMetrics.kindSize))
+                        .tracking(theme.tracking(.readoutLabel))
+                        .textCase(.uppercase)
+                        .foregroundStyle(theme.color(row.isEnded ? TimeMetrics.accentTextRole(theme) : .ink3))
+                        .lineLimit(1)
+                    if let pips = row.pips { PhasePips(pips) }
+                }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             VStack(alignment: .trailing, spacing: TimeMetrics.valueGap) {
@@ -310,7 +330,7 @@ struct TimeRowView: View {
                     .font(theme.font(.timeValue))
                     .tracking(theme.tracking(.timeValue))
                     .monospacedDigit()
-                    .foregroundStyle(theme.color(row.isEnded ? .ink3 : .ink1))
+                    .foregroundStyle(theme.color(row.isEnded ? .ink3 : (row.isAway ? .ink2 : .ink1)))
                     .lineLimit(1)
                     .minimumScaleFactor(0.6)
                 Text(verbatim: row.subline)
@@ -326,7 +346,7 @@ struct TimeRowView: View {
                     TimeChip(
                         label: L10n.resource("time.action.\(control.rawValue)"),
                         shortcut: control.isPrimary && isSelected ? "↵" : nil,
-                        dim: control == .remove, primary: control.isPrimary
+                        dim: control == .remove || control == .stop, primary: control.isPrimary
                     ) { perform(control) }
                     .focused(focus, equals: .chip(row.id, control))
                 }
@@ -360,8 +380,8 @@ struct TimeRowView: View {
             TimeRing(fractionLeft: 1)
         case .breakDue:
             TimeRing(fractionLeft: 1, dashed: true)
-        case .breakRing(let fraction):
-            TimeRing(fractionLeft: fraction, dashed: true)
+        case .breakRing(let fraction, let paused):
+            TimeRing(fractionLeft: fraction, dashed: true, dimmed: paused)
         }
     }
 }

@@ -2342,25 +2342,13 @@
       }
     },
     "time.quickStart.pomodoro.a11y" : {
-      "comment" : "VoiceOver label of the disabled Pomodoro quick-start button.",
+      "comment" : "VoiceOver label of the Pomodoro quick-start button; the argument is its lengths (25 · 5 · 15).",
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pomodoro, not available yet"
-          }
-        }
-      }
-    },
-    "time.quickStart.pomodoro.later" : {
-      "comment" : "Tooltip of the disabled Pomodoro quick-start button.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pomodoro arrives in a later version."
+            "value" : "Start a Pomodoro, %@ minutes"
           }
         }
       }
@@ -2649,6 +2637,54 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "BREAK DUE"
+          }
+        }
+      }
+    },
+    "time.quickStart.pomodoro.running" : {
+      "comment" : "VoiceOver label of the disabled Pomodoro quick-start button while one runs; the argument is its lengths.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pomodoro, %@ minutes, already running"
+          }
+        }
+      }
+    },
+    "time.quickStart.pomodoro.help" : {
+      "comment" : "Tooltip of the Pomodoro quick-start button.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Work and break cycles: work, short break, long break (minutes)."
+          }
+        }
+      }
+    },
+    "time.quickStart.pomodoro.busy" : {
+      "comment" : "Tooltip of the disabled Pomodoro quick-start button (one Pomodoro at a time).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A Pomodoro is already running. Stop it to start another."
+          }
+        }
+      }
+    },
+    "time.action.stop" : {
+      "comment" : "Time tab chip: ends the Pomodoro.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "STOP"
           }
         }
       }

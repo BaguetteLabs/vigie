@@ -355,7 +355,7 @@ import Testing
         #expect(snapshot.rows.isEmpty)
         #expect(snapshot.runningCount == 0)
         #expect(snapshot.quickStart.pomodoroLengths == "25 · 5 · 15")
-        #expect(!snapshot.quickStart.pomodoroAvailable)
+        #expect(snapshot.quickStart.pomodoroAvailable, "Story 20.5: no Pomodoro runs yet")
         #expect(snapshot.countdownDefault == Fixture.start.addingTimeInterval(17 * 60))
     }
 

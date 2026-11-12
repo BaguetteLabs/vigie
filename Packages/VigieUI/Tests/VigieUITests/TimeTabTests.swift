@@ -63,7 +63,7 @@ import Testing
         #expect(L10n.format("time.running.title", 3) == "RUNNING · 3")
         #expect(
             TimeRowModel.Control.allCases.map { L10n.string("time.action.\($0.rawValue)") }
-                == ["PAUSE", "RESUME", "RESET", "REMOVE", "DISMISS", "START BREAK", "SNOOZE 5M", "SKIP"])
+                == ["PAUSE", "RESUME", "RESET", "REMOVE", "DISMISS", "START BREAK", "SNOOZE 5M", "SKIP", "STOP"])
         #expect(String(localized: VigieCopy.nothingRunning.label) == "NOTHING RUNNING")
         #expect(L10n.format("time.quickStart.preset.a11y", 5) == "Start a 5 minute timer")
     }
@@ -191,6 +191,72 @@ import Testing
         let image = try #require(renderer.cgImage)
         #expect(SessionGlyphTests.inkedPixels(image) > 200)
         try Self.write(image, "closed-break-due-\(variant)-\(look.rawValue).png")
+    }
+
+    // MARK: Pomodoro (Story 20.5)
+
+    static let pomodoroWork = TimeRowModel(
+        id: UUID(), label: "Pomodoro", kind: "WORK · CYCLE 2/4", value: "18:42", subline: "ENDS 15:07",
+        visual: .ring(fractionLeft: 0.75, paused: false), controls: [.pause, .skip, .stop],
+        accessibilityLabel: "Pomodoro, Work, cycle 2 of 4, 18 minutes, 42 seconds left, ends 15:07",
+        pips: .init(count: 4, current: 2, onBreak: false, accessibilityLabel: "Work, cycle 2 of 4"), removal: .stop)
+    static let pomodoroAway = TimeRowModel(
+        id: UUID(), label: "Pomodoro", kind: "AWAY · PAUSED", value: "18:42", subline: "PAUSED 14:31",
+        visual: .ring(fractionLeft: 0.75, paused: true), controls: [.resume, .skip, .stop],
+        accessibilityLabel: "Pomodoro, Work, cycle 2 of 4, away, paused since 14:31",
+        pips: .init(count: 4, current: 2, onBreak: false, accessibilityLabel: "Work, cycle 2 of 4"), isAway: true,
+        removal: .stop)
+    static let pomodoroBreak = TimeRowModel(
+        id: UUID(), label: "Pomodoro", kind: "LONG BREAK", value: "14:05", subline: "ENDS 15:20",
+        visual: .breakRing(fractionLeft: 0.94), controls: [.pause, .skip, .stop],
+        accessibilityLabel: "Pomodoro, Long break, cycle 4 of 4",
+        pips: .init(count: 4, current: 4, onBreak: true, accessibilityLabel: "Long break, cycle 4 of 4"),
+        removal: .stop)
+
+    @Test func pipsMarkDoneCurrentAndUpcoming() {
+        let work = TimeRowModel.Pips(count: 4, current: 2, onBreak: false, accessibilityLabel: "")
+        #expect(work.marks == [.done, .current(hatched: false), .upcoming, .upcoming])
+        let long = TimeRowModel.Pips(count: 4, current: 4, onBreak: true, accessibilityLabel: "")
+        #expect(long.marks == [.done, .done, .done, .current(hatched: true)])
+        let clamped = TimeRowModel.Pips(count: 3, current: 9, onBreak: false, accessibilityLabel: "")
+        #expect(clamped.current == 3)
+    }
+
+    @Test func pomodoroRowStopsOnCommandDelete() {
+        #expect(Self.pomodoroWork.deleteControl == .stop)
+        #expect(Self.pomodoroAway.pauseToggle == .resume)
+        #expect(Self.tea.deleteControl == .remove)
+        #expect(Self.ended.deleteControl == .dismiss)
+    }
+
+    /// The tab with a running, an Away-paused and a long-break Pomodoro row (pips, solid and dashed arcs).
+    @Test(arguments: looks)
+    func rendersThePomodoroRows(look: Look, variant: String) throws {
+        let theme = SessionsTabTests.theme(look, variant: variant)
+        let rows = [Self.tea, Self.pomodoroWork, Self.pomodoroAway, Self.pomodoroBreak]
+        var snapshot = Self.snapshot(rows, selected: Self.pomodoroWork.id)
+        snapshot.quickStart.pomodoroAvailable = false
+        let view = TimeTabView(snapshot: { snapshot }, actions: TimeTabActions()).rendering(minutes: "")
+        let name = "time-pomodoro-\(variant)-\(look.rawValue)"
+        #expect(SessionGlyphTests.inkedPixels(try SessionsTabTests.render(view, theme: theme, name: name)) > 4000)
+    }
+
+    @Test(arguments: looks)
+    func rendersThePhasePips(look: Look, variant: String) throws {
+        let theme = SessionsTabTests.theme(look, variant: variant)
+        let view = VStack(spacing: 8) {
+            PhasePips(.init(count: 4, current: 2, onBreak: false, accessibilityLabel: "Work, cycle 2 of 4"))
+            PhasePips(.init(count: 4, current: 2, onBreak: true, accessibilityLabel: "Break, cycle 2 of 4"))
+            TimePauseMark()
+        }
+        .padding(12)
+        .background(theme.color(.surfacePanel))
+        .vigieTheme(theme)
+        let renderer = ImageRenderer(content: view)
+        renderer.scale = 3
+        let image = try #require(renderer.cgImage)
+        #expect(SessionGlyphTests.inkedPixels(image) > 50)
+        try Self.write(image, "pips-\(variant)-\(look.rawValue).png")
     }
 
     /// The tab in break-due state: the break row first (selected, `START BREAK ↵`), then a Timer.

@@ -15,8 +15,11 @@ import os
 /// Break reminders (Story 20.4, `breaks.*`, off by default): see `TimeBreaks.swift`; ``BreakTracker`` does the
 /// accounting on `context.away`, which is subscribed only while they are on.
 ///
+/// Pomodoro (Story 20.5): see `TimePomodoro.swift`; it is saved with the items and holds break reminders while
+/// it runs. `context.away` is subscribed while break reminders are on or a Pomodoro runs.
+///
 /// Disabled (the default, SPEC §11): the Registry never starts it, so there is no hotkey, job or timer.
-/// Pomodoro (Story 20.5) and the closed-notch readout (20.6) are not here.
+/// The closed-notch readout (20.6) is not here.
 @MainActor @Observable
 public final class TimeModule: NotchModule, AlertActionHandler {
     nonisolated static let bundle = TimeText.bundle
@@ -25,17 +28,15 @@ public final class TimeModule: NotchModule, AlertActionHandler {
     public nonisolated static let timerEndKind = "time.timer_end"
     /// The alert action routed back to the module: open the Time tab.
     public nonisolated static let openTimeAction = "open-time"
-    /// State file (`items.json`) and its schema.
+    /// State file (`items.json`) and its schema (2: items and the Pomodoro, Story 20.5; 1 read as items).
     nonisolated static let stateFile = "items"
-    nonisolated static let stateSchema = 1
+    nonisolated static let stateSchema = 2
     /// SPEC §11 default presets.
     public nonisolated static let defaultPresets = [5, 10, 25]
     /// How long a removed item can be put back.
     public nonisolated static let undoWindow: Duration = .seconds(5)
     /// The tab's tick while it is visible.
     public nonisolated static let uiTick: Duration = .seconds(1)
-    /// The Pomodoro lengths the quick start shows until Story 20.5 makes them settings (SPEC §11).
-    nonisolated static let pomodoroLengths = "25 · 5 · 15"
 
     public nonisolated static let staticManifest = ModuleManifest(
         id: "time",
@@ -54,7 +55,7 @@ public final class TimeModule: NotchModule, AlertActionHandler {
                 kind: .list(of: .string, default: defaultPresets.map(String.init)),
                 scope: .synced,
                 help: LocalizedStringResource("time.setting.presets.help", bundle: bundle)),
-        ] + BreakSettings.descriptors(bundle: bundle),
+        ] + PomodoroLengths.descriptors(bundle: bundle) + BreakSettings.descriptors(bundle: bundle),
         alertKinds: [timerEndKind, breakReminderKind],
         defaultEnabled: false
     )
@@ -97,6 +98,19 @@ public final class TimeModule: NotchModule, AlertActionHandler {
     @ObservationIgnored var presenceTask: Task<Void, Never>?
     /// Raises this launch, for unique dedupe keys (a re-raise is a new alert).
     @ObservationIgnored var breakRaises = 0
+    /// The last presence `context.away` reported (Away pauses a Pomodoro work period).
+    @ObservationIgnored var isAway = false
+
+    // Pomodoro (Story 20.5).
+    /// The one Pomodoro (A87), nil when none runs.
+    public internal(set) var pomodoro: Pomodoro?
+    /// `[modules.time] pomodoro` lengths, applied to the next phase of a running Pomodoro.
+    public internal(set) var pomodoroLengths = PomodoroLengths()
+    @ObservationIgnored var pomodoroJob: RegistrationToken?
+    /// Its work-end break alert (`time.break_reminder`) and break-end alert (`time.timer_end`).
+    @ObservationIgnored var pomodoroBreakHandle: AlertHandle?
+    @ObservationIgnored var pomodoroEndHandle: AlertHandle?
+    @ObservationIgnored var pomodoroRaises = 0
 
     public init(now: @escaping @Sendable () -> Date = { Date() }, calendar: Calendar = .current) {
         self.now = now
@@ -110,9 +124,10 @@ public final class TimeModule: NotchModule, AlertActionHandler {
         self.context = context
         presets = Self.resolvedPresets(context.settings)
         do {
-            let items = try await context.storage.readJSON(
-                Self.stateFile, as: [TimeItem].self, schema: Self.stateSchema)
-            board = TimeBoard(items: items ?? [])
+            let state = try await context.storage.readJSON(
+                Self.stateFile, as: TimeState.self, schema: Self.stateSchema)
+            board = TimeBoard(items: state?.items ?? [])
+            pomodoro = state?.pomodoro
         } catch {
             context.log.error("Time items unreadable: \(String(describing: error), privacy: .public)")
         }
@@ -134,7 +149,9 @@ public final class TimeModule: NotchModule, AlertActionHandler {
                     self?.sleepWake(event)
                 }
             })
+        startPomodoroSettings(context.settings)
         startBreakSettings(context.settings)
+        restorePomodoro()
         let presetChanges = context.settings.observe("presets")
         tasks.append(
             Task { @MainActor [weak self] in
@@ -149,7 +166,10 @@ public final class TimeModule: NotchModule, AlertActionHandler {
         for task in tasks { task.cancel() }
         tasks = []
         stopBreaks()
-        for token in [endJob, tickJob, undoJob, hotkey] { token?.cancel() }
+        presenceTask?.cancel()
+        presenceTask = nil
+        for token in [endJob, tickJob, undoJob, hotkey, pomodoroJob] { token?.cancel() }
+        pomodoroJob = nil
         endJob = nil
         tickJob = nil
         undoJob = nil
@@ -172,8 +192,8 @@ public final class TimeModule: NotchModule, AlertActionHandler {
     func changed(save: Bool = true) {
         displayNow = now()
         state =
-            board.hasUnacknowledgedEnd || breaks?.isDue == true
-            ? .alert : (board.hasRunning || breaks?.breakEndsAt != nil ? .active : .hidden)
+            board.hasUnacknowledgedEnd || breaks?.isDue == true || pomodoro?.isDue == true
+            ? .alert : (board.hasRunning || breaks?.breakEndsAt != nil || pomodoro != nil ? .active : .hidden)
         armEndJob()
         if save { persist() }
     }
@@ -189,7 +209,7 @@ public final class TimeModule: NotchModule, AlertActionHandler {
 
     private func persist() {
         guard let storage = context?.storage else { return }
-        let items = board.items
+        let items = TimeState(items: board.items, pomodoro: pomodoro)
         let previous = saveTask
         let log = context?.log
         saveTask = Task {
@@ -220,9 +240,11 @@ public final class TimeModule: NotchModule, AlertActionHandler {
     }
 
     public func handleAlertAction(_ actionID: String, payload: Data, intent: UserIntent?) {
-        if handleBreakAction(actionID) { return }
+        if handlePomodoroBreakAction(actionID) || handleBreakAction(actionID) { return }
         guard actionID == Self.openTimeAction else { return }
-        if let id = UUID(uuidString: String(decoding: payload, as: UTF8.self)), board[id] != nil { selectedID = id }
+        if let id = UUID(uuidString: String(decoding: payload, as: UTF8.self)), board[id] != nil || pomodoro?.id == id {
+            selectedID = id
+        }
         context?.host.openOwnTab(focus: intent)
     }
 
@@ -327,6 +349,7 @@ public final class TimeModule: NotchModule, AlertActionHandler {
     /// The tab's 1 s refresh; also ends what is due a little early for the job.
     func tick() {
         if let deadline = breaks?.nextDeadline, deadline <= now() { breakTick() }
+        if let deadline = pomodoro?.nextDeadline, deadline <= now() { pomodoroTick() }
         if let next = board.nextEnd, next <= now() { evaluate() } else { displayNow = now() }
     }
 

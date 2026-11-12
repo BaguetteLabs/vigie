@@ -183,6 +183,93 @@ enum TimeFormat {
                 "time.break.a11y.running", spoken(remaining), clock(endsAt, calendar: calendar)))
     }
 
+    // MARK: Pomodoro (Story 20.5)
+
+    /// `2 cycles done / 5 min break` (DESIGN "Break": `4 cycles done / 15 min break`).
+    static func pomodoroBreakTitle(cycles: Int, length: TimeInterval) -> String {
+        TimeText.format(
+            "time.alert.title", TimeText.format("time.pomodoro.alert.cyclesDone", cycles),
+            TimeText.format("time.break.length", wholeMinutes(length)))
+    }
+
+    /// `Back to work / 25 min`.
+    static func pomodoroBreakEndTitle(_ pomodoro: Pomodoro) -> String {
+        TimeText.format(
+            "time.alert.title", TimeText.string("time.pomodoro.alert.backToWork"),
+            TimeText.format("time.alert.minutes", wholeMinutes(pomodoro.lengths.work)))
+    }
+
+    /// `Started 14:43 · ended 14:48` (the break's times).
+    static func pomodoroBreakEndBody(startedAt: Date, endedAt: Date, calendar: Calendar) -> String {
+        TimeText.format("time.alert.body", clock(startedAt, calendar: calendar), clock(endedAt, calendar: calendar))
+    }
+
+    /// `WORK · CYCLE 2/4`, `BREAK · 2/4`, `LONG BREAK`, `AWAY · PAUSED`.
+    static func pomodoroKind(_ pomodoro: Pomodoro) -> String {
+        let count = pomodoro.lengths.longEvery
+        if pomodoro.isAwayPaused { return TimeText.string("time.pomodoro.kind.away") }
+        if pomodoro.isWork { return TimeText.format("time.pomodoro.kind.work", pomodoro.cycle, count) }
+        if pomodoro.isLongBreak { return TimeText.string("time.pomodoro.kind.longBreak") }
+        return TimeText.format("time.pomodoro.kind.break", pomodoro.cycle, count)
+    }
+
+    /// "Work, cycle 2 of 4", "Break, cycle 2 of 4", "Long break, cycle 4 of 4".
+    static func pomodoroPhaseAccessibility(_ pomodoro: Pomodoro) -> String {
+        let key =
+            pomodoro.isWork
+            ? "time.pomodoro.a11y.work"
+            : (pomodoro.isLongBreak ? "time.pomodoro.a11y.longBreak" : "time.pomodoro.a11y.break")
+        return TimeText.format(key, pomodoro.cycle, pomodoro.lengths.longEvery)
+    }
+
+    static func pomodoroControls(_ pomodoro: Pomodoro) -> [TimeRowModel.Control] {
+        if pomodoro.isDue { return [.startBreak, .snooze, .skip] }
+        return [pomodoro.isPaused ? .resume : .pause, .skip, .stop]
+    }
+
+    static func pomodoroVisual(_ pomodoro: Pomodoro, now: Date) -> TimeRowModel.Visual {
+        if pomodoro.isDue { return .breakDue }
+        let fraction = pomodoro.fractionLeft(at: now)
+        if pomodoro.isWork { return .ring(fractionLeft: fraction, paused: pomodoro.isPaused) }
+        return .breakRing(fractionLeft: fraction, paused: pomodoro.isPaused)
+    }
+
+    /// `ENDS 14:52`, `PAUSED 14:31`, `BREAK DUE`.
+    static func pomodoroSubline(_ pomodoro: Pomodoro, now: Date, calendar: Calendar) -> String {
+        if pomodoro.isDue { return TimeText.string("time.break.subline.due") }
+        if let at = pomodoro.pausedAt { return TimeText.format("time.subline.pausedAt", clock(at, calendar: calendar)) }
+        return TimeText.format("time.subline.ends", clock(pomodoro.endsAt, calendar: calendar))
+    }
+
+    static func pomodoroRow(_ pomodoro: Pomodoro, now: Date, calendar: Calendar) -> TimeRowModel {
+        let label = TimeText.string("time.pomodoro.label")
+        let phase = pomodoroPhaseAccessibility(pomodoro)
+        var parts = [label, phase]
+        if pomodoro.isDue {
+            parts.append(breakDueAccessibility(length: pomodoro.breakLength))
+        } else {
+            let remaining = pomodoro.remaining(at: now)
+            parts.append(TimeText.format("time.a11y.left", spoken(remaining)))
+            if let at = pomodoro.pausedAt {
+                parts.append(
+                    TimeText.format(
+                        pomodoro.isAwayPaused ? "time.pomodoro.a11y.awayPaused" : "time.pomodoro.a11y.pausedAt",
+                        clock(at, calendar: calendar)))
+            } else {
+                parts.append(TimeText.format("time.a11y.ends", clock(pomodoro.endsAt, calendar: calendar)))
+            }
+        }
+        return TimeRowModel(
+            id: pomodoro.id, label: label, kind: pomodoroKind(pomodoro), value: value(pomodoro.remaining(at: now)),
+            subline: pomodoroSubline(pomodoro, now: now, calendar: calendar),
+            visual: pomodoroVisual(pomodoro, now: now), controls: pomodoroControls(pomodoro),
+            accessibilityLabel: parts.dropFirst().reduce(parts[0]) { TimeText.format("time.a11y.join", $0, $1) },
+            pips: TimeRowModel.Pips(
+                count: pomodoro.lengths.longEvery, current: pomodoro.cycle, onBreak: !pomodoro.isWork,
+                accessibilityLabel: phase),
+            isAway: pomodoro.isAwayPaused, removal: .stop)
+    }
+
     private static func formatter(_ format: String, calendar: Calendar) -> DateFormatter {
         let formatter = DateFormatter()
         formatter.locale = TimeText.catalogLocale

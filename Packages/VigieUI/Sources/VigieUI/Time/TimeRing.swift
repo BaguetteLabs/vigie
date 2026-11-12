@@ -125,6 +125,20 @@ enum TimeMetrics {
     static let wingRingStroke: CGFloat = 1.6
     /// The ring-only break-due triangle against the ring diameter.
     static let triangleShare: CGFloat = 0.3
+    /// Phase pips (`components.phase-pips`, mockup `.pips`): 4px done and upcoming dots, a 7px current ring
+    /// with a 1.3px stroke, 4px apart; the break hatch is 1px lines every 2.5px at 135°.
+    static let pipDot: CGFloat = 4
+    static let pipCurrent: CGFloat = 7
+    static let pipCurrentStroke: CGFloat = 1.3
+    static let pipGap: CGFloat = 4
+    static let pipHatchLine: CGFloat = 1
+    static let pipHatchPitch: CGFloat = 2.5
+    /// The Away pause mark (`ring-only-away`, mockup `.pz`): two 1px bars.
+    static let pauseBarWidth: CGFloat = 1
+    static let pauseBarHeight: CGFloat = 6
+    static let pauseBarGap: CGFloat = 2
+    /// Between the kind text, the pause mark and the pips.
+    static let kindGap: CGFloat = 5
     static let quickGlassTop = 0.07
     static let quickGlassBottom = 0.01
     static let fieldFill = 0.035
