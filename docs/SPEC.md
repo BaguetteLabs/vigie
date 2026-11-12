@@ -578,6 +578,8 @@ The PID and TTY are captured automatically, so liveness checks and terminal focu
 
 Every `*.md` file in `<config folder>/modules/` is a script module: a Markdown file with YAML front matter, **exactly one** fenced code block (the script), and free Markdown documentation around it. The file is not executable, so it can't be run directly; Vigie runs the code block with the declared `runtime`. Files stay readable (never encrypted) so they can be committed to git and shared; settings marked `secret` live in the Keychain.
 
+Layout (Story 12.2): the file starts with a `---` line and the front matter ends at the next `---` line; the code block is a CommonMark fenced block (```` ``` ```` or `~~~`, the first word of its info string is the language tag), and a fence that is never closed is an error; everything else is the documentation. Only files directly in `modules/` count (no subfolders, no hidden files). A file with zero or several code blocks, invalid front matter, a built-in or `agents.` id, or an id another file also declares is errored, with one setup-problem alert per file.
+
 ````markdown
 ---
 id: github.prs
