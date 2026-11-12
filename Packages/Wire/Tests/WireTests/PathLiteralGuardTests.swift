@@ -36,11 +36,14 @@ import Testing
             guard let walker = fm.enumerator(at: base, includingPropertiesForKeys: [.isDirectoryKey]) else { continue }
             for case let url as URL in walker {
                 let name = url.lastPathComponent
-                if name == ".build" || name == ".worktrees" {
+                // Build output (`.build`, `.build-dd`, `DerivedData`, `.swiftpm`) holds checkouts such as a
+                // `GRDB.swift` directory; skip it rather than try to read it as a source file.
+                if name.hasPrefix(".build") || name == ".worktrees" || name == "DerivedData" || name == ".swiftpm" {
                     walker.skipDescendants()
                     continue
                 }
-                guard url.pathExtension == "swift" else { continue }
+                let isDirectory = (try? url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) ?? false
+                guard !isDirectory, url.pathExtension == "swift" else { continue }
                 if url.standardizedFileURL.path.hasPrefix(wireSources) { continue }
                 let text = try String(contentsOf: url, encoding: .utf8)
                 scanned += 1
