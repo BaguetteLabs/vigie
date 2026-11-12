@@ -142,6 +142,11 @@ public final class NotchHost {
     @ObservationIgnored let clock: any Clock<Duration>
     @ObservationIgnored let closeOnLeave: @MainActor () -> Bool
     @ObservationIgnored let tabOrder: @MainActor () -> [String]
+    /// `[general] home_after` (Story 11.4).
+    @ObservationIgnored let homeAfter: @MainActor () -> HomeAfter
+    /// The tab the expanded view was closed on and the time since that close (Story 11.4); nil before the first
+    /// close.
+    @ObservationIgnored var lastClose: (tabID: String, elapsed: @MainActor () -> Duration)?
     @ObservationIgnored let pointerLocation: @MainActor () -> CGPoint
     @ObservationIgnored let makeExpandedPanel: @MainActor (NotchHost) -> any ExpandedPanelHosting
     /// Opens the Settings window from the gear; nil keeps the gear inert (until Story 2.14).
@@ -186,6 +191,7 @@ public final class NotchHost {
     ///   - hoverDelay: `[general] hover_delay` (default 150 ms).
     ///   - closeOnLeave: `[general] close_on_leave` (default false).
     ///   - tabOrder: `[general] tab_order`, module ids (default empty: registry order).
+    ///   - homeAfter: `[general] home_after` (default `"2m"`): a re-open sooner keeps the last tab (Story 11.4).
     ///   - openSettings: opens the Settings window from the gear; nil until Story 2.14.
     ///   - openSettingsPane: opens Settings on a pane id (`home` from the Home empty state); nil falls back to
     ///     `openSettings`.
@@ -220,6 +226,7 @@ public final class NotchHost {
         hoverDelay: @escaping @MainActor () -> Duration = { NotchHost.defaultHoverDelay },
         closeOnLeave: @escaping @MainActor () -> Bool = { false },
         tabOrder: @escaping @MainActor () -> [String] = { [] },
+        homeAfter: @escaping @MainActor () -> HomeAfter = { .default },
         openSettings: (@MainActor () -> Void)? = nil,
         openSettingsPane: (@MainActor (String) -> Void)? = nil,
         homeCardOrder: @escaping @MainActor () -> [String] = { [] },
@@ -258,6 +265,7 @@ public final class NotchHost {
         self.hoverDelay = hoverDelay
         self.closeOnLeave = closeOnLeave
         self.tabOrder = tabOrder
+        self.homeAfter = homeAfter
         self.openSettings = openSettings
         self.openSettingsPane = openSettingsPane
         self.homeCardOrder = homeCardOrder

@@ -38,9 +38,10 @@ extension NotchHost {
 
     // MARK: Open and close
 
-    /// Opens the expanded view on the display under the pointer (or the main Vigie display), on Home every time
-    /// (FR87), whichever tab it was left on. With `focus` it becomes the key surface; without, it shows without focus. When it is
-    /// already open, `focus` makes it key.
+    /// Opens the expanded view on the display under the pointer (or the main Vigie display), on ``landingTabID()``:
+    /// Home (FR87), or the tab it was closed on when it re-opens within `[general] home_after` (Story 11.4). With
+    /// `focus` it becomes the key surface; without, it shows without focus. When it is already open, `focus` makes
+    /// it key.
     public func expand(focus: UserIntent?) {
         if isExpanded {
             if focus != nil, !isExpandedKey { focusPolicy.present(expandedSurface, focus: focus) }
@@ -57,7 +58,7 @@ extension NotchHost {
         expansionGeneration += 1
         let frame = anchor.panelFrame(size: themeController.theme.expandedPanelSize)
         expansionOrigin = anchor.islandFrame.size
-        selectedTabID = ExpandedTab.homeID
+        selectedTabID = landingTabID()
         let panel = expandedPanel ?? makeExpandedPanel(self)
         expandedPanel = panel
         isExpanded = true
@@ -67,7 +68,19 @@ extension NotchHost {
         installExpandedMonitors()
     }
 
-    /// Opens the expanded view on a module's tab.
+    /// The tab an expand without an explicit request lands on (Story 11.4): the tab the view was closed on when
+    /// it is still there and `[general] home_after` has not run out since the close (`never` keeps it for good,
+    /// `0s` never does), else Home. Before the first close, Home.
+    func landingTabID() -> String {
+        guard let lastClose, lastClose.tabID != ExpandedTab.homeID,
+            !homeAfter().returnsHome(after: lastClose.elapsed()),
+            expandedTabs.contains(where: { $0.id == lastClose.tabID })
+        else { return ExpandedTab.homeID }
+        return lastClose.tabID
+    }
+
+    /// Opens the expanded view on a module's tab. An explicit request (a module hotkey, an alert's Open action)
+    /// wins over the `home_after` landing tab.
     public func openTab(_ tabID: String, focus: UserIntent?) {
         expand(focus: focus)
         if isExpanded, expandedTabs.contains(where: { $0.id == tabID }) { selectedTabID = tabID }
@@ -77,6 +90,9 @@ extension NotchHost {
     public func collapse() {
         guard isExpanded else { return }
         isExpanded = false
+        // A local copy: Swift opens a local existential for the generic call, not the stored property.
+        let clock: any Clock<Duration> = clock
+        lastClose = (selectedTabID ?? ExpandedTab.homeID, Self.stopwatch(clock))
         removeExpandedMonitors()
         hoverTask?.cancel()
         hoverTask = nil
@@ -92,6 +108,12 @@ extension NotchHost {
             self.expandedPanel?.hide()
             self.hideTask = nil
         }
+    }
+
+    /// Time elapsed on `clock` since this call.
+    private static func stopwatch<C: Clock>(_ clock: C) -> @MainActor () -> Duration where C.Duration == Duration {
+        let start = clock.now
+        return { start.duration(to: clock.now) }
     }
 
     /// The expand hotkey: opens with focus, or closes. When the view is open without focus (hover), the hotkey

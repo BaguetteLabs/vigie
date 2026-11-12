@@ -13,6 +13,7 @@ hover_delay = "150ms"
 expand_hotkey = "cmd+shift+space"
 prevent_idle_sleep = false    # while an agent is working
 tab_order = []                # module ids in tab order after Home; empty = default order
+home_after = "2m"             # re-open within this delay keeps the last tab; "never" | "0s"
 
 [appearance]
 theme = "chrome-hologram"     # chrome-hologram | twin-metal-tactical | <custom>

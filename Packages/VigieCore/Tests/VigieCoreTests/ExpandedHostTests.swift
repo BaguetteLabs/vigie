@@ -68,6 +68,8 @@ final class ExpandedFixture {
     var openOnHover = false
     var closeOnLeave = false
     var tabOrder: [String] = []
+    /// `[general] home_after` as the host reads it (Story 11.4).
+    var homeAfter: @MainActor () -> HomeAfter = { .default }
     var homeCards: [String] = []
     var openedPanes: [String] = []
     var pointer = CGPoint(x: 700, y: 980)
@@ -108,6 +110,7 @@ final class ExpandedFixture {
             hoverDelay: { .milliseconds(20) },
             closeOnLeave: { [unowned self] in self.closeOnLeave },
             tabOrder: { [unowned self] in self.tabOrder },
+            homeAfter: { [unowned self] in self.homeAfter() },
             openSettingsPane: { [unowned self] in self.openedPanes.append($0) },
             homeCardOrder: { [unowned self] in self.homeCards },
             pointerLocation: { [unowned self] in self.pointer },

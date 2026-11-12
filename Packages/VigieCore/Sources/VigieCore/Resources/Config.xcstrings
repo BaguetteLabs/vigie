@@ -229,6 +229,78 @@
         }
       }
     },
+    "config.general.home_after": {
+      "comment": "Settings label for the config key general.home_after (Story 11.4).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Return to Home after"
+          }
+        }
+      }
+    },
+    "config.general.home_after.option.0s": {
+      "comment": "Settings option label for value \"0s\" of config key general.home_after (Story 11.4).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Immediately"
+          }
+        }
+      }
+    },
+    "config.general.home_after.option.10m": {
+      "comment": "Settings option label for value \"10m\" of config key general.home_after (Story 11.4).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "10 min"
+          }
+        }
+      }
+    },
+    "config.general.home_after.option.2m": {
+      "comment": "Settings option label for value \"2m\" of config key general.home_after (Story 11.4).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "2 min"
+          }
+        }
+      }
+    },
+    "config.general.home_after.option.30s": {
+      "comment": "Settings option label for value \"30s\" of config key general.home_after (Story 11.4).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "30 s"
+          }
+        }
+      }
+    },
+    "config.general.home_after.option.never": {
+      "comment": "Settings option label for value \"never\" of config key general.home_after (Story 11.4).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Never"
+          }
+        }
+      }
+    },
     "config.general.hover_delay": {
       "comment": "Settings label for the config key general.hover_delay.",
       "extractionState": "manual",

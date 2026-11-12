@@ -83,8 +83,8 @@ public enum SettingsPaneCatalog {
                         keys: keys(
                             "general",
                             [
-                                "hide_in_fullscreen", "open_on_hover", "close_on_leave", "hover_delay", "expand_hotkey",
-                                "prevent_idle_sleep",
+                                "hide_in_fullscreen", "open_on_hover", "close_on_leave", "hover_delay", "home_after",
+                                "expand_hotkey", "prevent_idle_sleep",
                             ])),
                     SettingsSection(
                         title: SettingsText.resource("settings.section.privacy"),

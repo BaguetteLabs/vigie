@@ -348,6 +348,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             hoverDelay: { configStore.value(general("hover_delay"), as: Duration.self) ?? NotchHost.defaultHoverDelay },
             closeOnLeave: { configStore.value(general("close_on_leave"), as: Bool.self) ?? false },
             tabOrder: { configStore.value(general("tab_order"), as: [String].self) ?? [] },
+            homeAfter: { HomeAfter(configStore: configStore) },
             openSettings: { [weak self] in self?.openSettings(pane: nil) },
             openSettingsPane: { [weak self] pane in self?.openSettings(pane: pane) },
             homeCardOrder: { configStore.value(CoreSettings.path("home", "cards"), as: [String].self) ?? [] },

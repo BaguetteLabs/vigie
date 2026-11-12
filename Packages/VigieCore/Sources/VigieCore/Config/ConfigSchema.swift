@@ -93,6 +93,7 @@ public enum ConfigResolvedValue: Sendable, Equatable {
             return .failure(CoercionFailure(message: "secrets are stored in the Keychain, not in config"))
         case .enumeration(let options, _):
             guard case .string(let value) = raw else { return wrongType("string") }
+            if let option = durationOption(value, in: options) { return .success(.string(option)) }
             guard options.contains(value) else {
                 return .failure(
                     CoercionFailure(message: "\"\(value)\" is not one of \(options.joined(separator: ", "))"))
@@ -116,6 +117,16 @@ public enum ConfigResolvedValue: Sendable, Equatable {
             }
             return .success(.strings(strings))
         }
+    }
+
+    /// An enumeration whose options include durations (`[general] home_after`: `0s`, `30s`, `2m`, … and
+    /// `never`) also takes any other duration: the option spelling when it names the same duration (`"120s"` is
+    /// `"2m"`), else the value as written. Nil for a listed value, a non-duration or an enumeration of words.
+    private static func durationOption(_ value: String, in options: [String]) -> String? {
+        guard !options.contains(value), let duration = ConfigDuration.parse(value) else { return nil }
+        let durations = options.compactMap { option in ConfigDuration.parse(option).map { (option, $0) } }
+        guard !durations.isEmpty else { return nil }
+        return durations.first { $0.1 == duration }?.0 ?? value
     }
 
     struct CoercionFailure: Error {

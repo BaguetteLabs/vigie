@@ -29,8 +29,10 @@ import VigieUI
         #expect(f.host.expandedTabs.first?.title == "Home")
     }
 
+    /// With `[general] home_after = "0s"` (Story 11.4); the default keeps the tab on a quick re-open.
     @Test func expandLandsOnHomeEveryTime() async {
         let f = ExpandedFixture()
+        f.homeAfter = { .after(.zero) }
         await f.start()
         f.host.expand(focus: f.intent)
         #expect(f.host.selectedTabID == ExpandedTab.homeID)

@@ -59,6 +59,8 @@ public enum CoreSettings {
         make("general", "prevent_idle_sleep", .bool(default: false), help: true),
         make("general", "launch_at_login", .bool(default: false), .local),
         make("general", "tab_order", .list(of: .string, default: [])),
+        // A duration or "never" (Story 11.4); the options are the Settings choices, any other duration is accepted.
+        make("general", "home_after", .enumeration(options: HomeAfter.choices, default: "2m")),
         // [appearance]
         make("appearance", "theme", .string(default: "chrome-hologram")),
         make("appearance", "mode", .enumeration(options: ["system", "light", "dark"], default: "system")),
