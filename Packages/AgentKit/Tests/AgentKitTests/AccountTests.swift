@@ -13,6 +13,15 @@ private struct PlainAdapter: AgentAdapter {
     var name: LocalizedStringResource { "Plain" }
     var capabilities: Set<AgentCapability> { [] }
     func normalize(_ hook: HookPayload, sentAt: Date) -> [AgentEvent] { [] }
+
+    static let diff = ConfigDiff(
+        path: URL(fileURLWithPath: "/tmp/plain.json"), baseHash: nil, oldText: "", newText: "{}", summary: "s")
+    func integrationPlan(context: any AdapterContext, inputs: IntegrationInputs) async throws -> [ConfigDiff] {
+        [Self.diff]
+    }
+    func removalPlan(context: any AdapterContext, inputs: IntegrationInputs) async throws -> [ConfigDiff] {
+        [Self.diff]
+    }
 }
 
 @Suite struct AccountTests {
@@ -94,5 +103,31 @@ private struct PlainAdapter: AgentAdapter {
         #expect(adapter.defaultAccountLocation == nil)
         #expect(adapter.accountLocationHint(env: ["CLAUDE_CONFIG_DIR": "/x"]) == nil)
         #expect(adapter.accounts(settings: Values(values: [:])).map(\.id) == [.default])
+    }
+
+    /// Story 7.11: an adapter without per-Account plans installs for its default Account only.
+    @Test func accountPlansDefaultToTheDefaultAccountOnly() async throws {
+        let adapter = PlainAdapter()
+        let inputs = IntegrationInputs(cliPath: "/x/vigie", homeDirectory: home)
+        let other = AgentAccount(id: "work", label: "Work", location: .configDirectory("~/.work"))
+        let first = AgentAccount(id: .default, label: "", location: nil)
+        let context = makeContext()
+        let installs = try await adapter.integrationPlan(context: context, inputs: inputs, account: first)
+        #expect(installs == [PlainAdapter.diff])
+        #expect(try await adapter.removalPlan(context: context, inputs: inputs, account: first) == [PlainAdapter.diff])
+        #expect(try await adapter.integrationPlan(context: makeContext(), inputs: inputs, account: other).isEmpty)
+        #expect(try await adapter.removalPlan(context: makeContext(), inputs: inputs, account: other).isEmpty)
+    }
+
+    @Test func fileSystemReaderTellsFoldersFromFiles() throws {
+        let folder = FileManager.default.temporaryDirectory.appendingPathComponent("agentkit-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let file = folder.appendingPathComponent("settings.json")
+        try Data("{}".utf8).write(to: file)
+        let reader = FileSystemConfigFileReader()
+        #expect(reader.directoryExists(folder))
+        #expect(!reader.directoryExists(file))
+        #expect(!reader.directoryExists(folder.appendingPathComponent("missing")))
     }
 }

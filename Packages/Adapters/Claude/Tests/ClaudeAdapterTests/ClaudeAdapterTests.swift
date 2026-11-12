@@ -49,7 +49,12 @@ struct NoHTTP: HTTPClient {
 
 struct MemoryFiles: ConfigFileReader {
     let files: [String: String]
+    /// Folders that exist besides those holding a file.
+    var directories: Set<String> = []
     func read(_ url: URL) throws -> Data? { files[url.path].map { Data($0.utf8) } }
+    func directoryExists(_ url: URL) -> Bool {
+        directories.contains(url.path) || files.keys.contains { $0.hasPrefix(url.path + "/") }
+    }
 }
 
 func makeContext(settings: [String: any SettingValue] = [:], paths: [String: URL] = [:]) -> AdapterContextBox {

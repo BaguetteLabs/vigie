@@ -112,6 +112,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 // The SettingsController is created later in the sequence; resolve it when the button is used.
                 AgentsSessionsModule(
                     adapters: agentAdapters, terminals: terminalAdapters, contexts: adapterAssembly.contexts,
+                    adapterSettingsStores: adapterAssembly.settings,
                     openSettings: { [weak self] pane in self?.openSettings(pane: pane) })
             },
             // Same adapter instances and contexts as agents.sessions (AD-23); it also owns the plan-usage block.

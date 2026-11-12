@@ -218,6 +218,51 @@ import Wire
         #expect(activity.entries.map(\.kind) == ["integration.install", "integration.remove"])
     }
 
+    /// Story 7.11: one confirmation can carry several files (one per Account location); each is backed up and
+    /// written, and an edit of another Account's file alone keeps the default's record.
+    @Test func severalLocationsAreWrittenTogetherAndAccountEditsKeepTheRecord() async throws {
+        let fixture = ConfigFixture()
+        let (store, _) = try await fixture.makeStore()
+        defer { store.stop() }
+        let activity = RecordingActivityLog()
+        try write("{}\n")
+        let work = root.appendingPathComponent(".claude-work/settings.json")
+        try FileManager.default.createDirectory(
+            at: work.deletingLastPathComponent(), withIntermediateDirectories: true)
+        let installer = installer(store: store, activity: activity)
+        let both = try await installer.preview(
+            [
+                diff(old: "{}\n", new: "{\"hooks\":{}}\n"),
+                ConfigDiff(path: work, baseHash: nil, oldText: "", newText: "{\"hooks\":{}}\n", summary: "Add 8 hooks"),
+            ], adapterID: "claude", action: .install)
+        #expect(both.files.count == 2)
+        #expect(both.files[1].unifiedDiff.hasPrefix("--- /dev/null\n"))
+        let result = try await installer.apply(both)
+        #expect(result.appliedPaths == [target, work])
+        #expect(result.backupPaths.count == 1)
+        #expect(try String(contentsOf: work, encoding: .utf8) == "{\"hooks\":{}}\n")
+        #expect(store.value(CoreSettings.integrationPath("claude", "target"), as: String.self) == target.path)
+
+        // The Work Account is removed: its file loses the hooks, the default's record stays.
+        _ = try await installer.apply(
+            try await installer.preview(
+                [
+                    ConfigDiff(
+                        path: work, baseHash: Self.hash("{\"hooks\":{}}\n"), oldText: "{\"hooks\":{}}\n",
+                        newText: "{}\n", summary: "Remove 8 hooks")
+                ], adapterID: "claude", action: .remove))
+        #expect(try String(contentsOf: work, encoding: .utf8) == "{}\n")
+        #expect(try read() == "{\"hooks\":{}}\n")
+        #expect(store.value(CoreSettings.integrationPath("claude", "target"), as: String.self) == target.path)
+        #expect(activity.entries.map(\.kind) == ["integration.install", "integration.remove"])
+
+        // Disconnect of the default clears it.
+        _ = try await installer.apply(
+            try await installer.preview(
+                [diff(old: "{\"hooks\":{}}\n", new: "{}\n")], adapterID: "claude", action: .remove))
+        #expect((store.value(CoreSettings.integrationPath("claude", "target"), as: String.self) ?? "").isEmpty)
+    }
+
     @Test func integrationTableIsNotAnUnknownKeyBeforeRegistration() async throws {
         let fixture = ConfigFixture()
         let (store, _) = try await fixture.makeStore(local: "[integrations.claude]\ninstalled_at = \"x\"\n")

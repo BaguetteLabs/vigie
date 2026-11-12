@@ -68,10 +68,21 @@ public protocol AgentAdapter: Sendable {
     func support(for version: AgentVersion?) -> AdapterSupport
 
     /// Edits that install the integration (hooks, notify program), for the user to confirm (Story 4.7, AD-22).
-    /// An empty plan means the integration is already installed. Default: none.
+    /// An empty plan means the integration is already installed. The default Account's location (Story 7.11:
+    /// see ``integrationPlan(context:inputs:account:)`` for the others). Default: none.
     func integrationPlan(context: any AdapterContext, inputs: IntegrationInputs) async throws -> [ConfigDiff]
     /// Edits that remove the integration: only Vigie's managed entries (AD-22). Default: none.
     func removalPlan(context: any AdapterContext, inputs: IntegrationInputs) async throws -> [ConfigDiff]
+    /// The install edits for one Account's config location (Story 7.11): the default Account's are
+    /// ``integrationPlan(context:inputs:)``; another Account's target its own location and leave every other
+    /// location alone. Throws ``MissingAccountLocation`` when the Account's folder does not exist. Default: the
+    /// default Account's plan, none for any other Account.
+    func integrationPlan(context: any AdapterContext, inputs: IntegrationInputs, account: AgentAccount)
+        async throws -> [ConfigDiff]
+    /// The removal edits for one Account's config location (Story 7.11): only that location's managed entries.
+    /// A missing folder has nothing to remove. Default: the default Account's plan, none for any other Account.
+    func removalPlan(context: any AdapterContext, inputs: IntegrationInputs, account: AgentAccount)
+        async throws -> [ConfigDiff]
 
     /// Pure: the native event in `hook.raw` → normalized events (SPEC §7.1). `sentAt` is the envelope's
     /// `sent_at` and becomes each event's `context.at` (AD-5). Unknown or ignored native events → `[]`.
@@ -119,6 +130,16 @@ extension AgentAdapter {
     }
     public func removalPlan(context: any AdapterContext, inputs: IntegrationInputs) async throws -> [ConfigDiff] {
         []
+    }
+    public func integrationPlan(context: any AdapterContext, inputs: IntegrationInputs, account: AgentAccount)
+        async throws -> [ConfigDiff]
+    {
+        account.isDefault ? try await integrationPlan(context: context, inputs: inputs) : []
+    }
+    public func removalPlan(context: any AdapterContext, inputs: IntegrationInputs, account: AgentAccount)
+        async throws -> [ConfigDiff]
+    {
+        account.isDefault ? try await removalPlan(context: context, inputs: inputs) : []
     }
     public func agentProcess(in ancestors: [ProcessInfoEntry], environment: [String: String]) -> AgentProcessRef? {
         nil

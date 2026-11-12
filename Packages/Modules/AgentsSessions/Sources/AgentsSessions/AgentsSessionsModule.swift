@@ -87,6 +87,9 @@ public final class AgentsSessionsModule: NotchModule, AlertActionHandler {
     public let terminals: TerminalAdapters
     /// Per-adapter contexts built by App assembly (AD-19), for adapter calls that need services.
     public let adapterContexts: [AgentID: any AdapterContext]
+    /// Each adapter's writable settings (App assembly, the table `agents.usage` edits Accounts in): watched for
+    /// added and removed Accounts (Story 7.11).
+    public let adapterSettingsStores: [AgentID: any AdapterSettingsStore]
     /// Per-terminal-adapter contexts; a terminal without one gets a context built from this module's services.
     public let terminalContexts: [TerminalID: any AdapterContext]
     /// Opens a Settings pane by id (the `NO AGENT CONNECTED` button goes to Settings › Agents); nil hides it.
@@ -169,6 +172,7 @@ public final class AgentsSessionsModule: NotchModule, AlertActionHandler {
         terminals: TerminalAdapters,
         contexts: [AgentID: any AdapterContext] = [:],
         terminalContexts: [TerminalID: any AdapterContext] = [:],
+        adapterSettingsStores: [AgentID: any AdapterSettingsStore] = [:],
         liveness: any ProcessLiveness = SystemProcessLiveness(),
         homeDirectory: URL = FileManager.default.homeDirectoryForCurrentUser,
         openSettings: (@MainActor @Sendable (String) -> Void)? = nil
@@ -176,6 +180,7 @@ public final class AgentsSessionsModule: NotchModule, AlertActionHandler {
         self.adapters = adapters
         self.terminals = terminals
         self.adapterContexts = contexts
+        self.adapterSettingsStores = adapterSettingsStores
         self.terminalContexts = terminalContexts
         self.openSettings = openSettings
         self.liveness = liveness
@@ -199,7 +204,8 @@ public final class AgentsSessionsModule: NotchModule, AlertActionHandler {
             executables: context.executables, http: URLSessionHTTPClient(), log: log)
         integrations = AgentIntegrationsModel(
             adapters: adapters, contexts: adapterContexts, installer: context.integrations,
-            settings: context.settings, homeDirectory: homeDirectory, log: log)
+            settings: context.settings, homeDirectory: homeDirectory, log: log, notifier: context.notifier)
+        integrations?.observeAccounts(adapterSettingsStores)
         let persister = SessionPersister(storage: context.storage, log: log)
         self.persister = persister
 
@@ -296,6 +302,7 @@ public final class AgentsSessionsModule: NotchModule, AlertActionHandler {
         resolveAllPermissionAlerts()
         resolveSleepSummary()
         resolveAllSupportAlerts()
+        integrations?.stopObserving()
         integrations = nil
     }
 

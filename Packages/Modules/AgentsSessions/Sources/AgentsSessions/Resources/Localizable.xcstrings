@@ -733,6 +733,138 @@
         }
       }
     },
+    "agentsSessions.integration.install" : {
+      "comment" : "Button: install Vigie's hooks in every Account location that lacks them, after showing the diff.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Install…"
+          }
+        }
+      }
+    },
+    "agentsSessions.integration.location.line" : {
+      "comment" : "Settings › Agents status line for one Account's config location. %1$@ = Account label, %2$@ = folder path, %3$@ = state (installed, missing…).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ · %2$@: %3$@"
+          }
+        }
+      }
+    },
+    "agentsSessions.integration.location.default" : {
+      "comment" : "Label of the default Account when the user never named it.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Default"
+          }
+        }
+      }
+    },
+    "agentsSessions.integration.location.installed" : {
+      "comment" : "State of an Account location: every Vigie hook is in its settings.json.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "installed"
+          }
+        }
+      }
+    },
+    "agentsSessions.integration.location.missing" : {
+      "comment" : "State of an Account location: no Vigie hook in its settings.json.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "missing"
+          }
+        }
+      }
+    },
+    "agentsSessions.integration.location.modified" : {
+      "comment" : "State of an Account location: some Vigie hooks are present, some are missing.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "modified"
+          }
+        }
+      }
+    },
+    "agentsSessions.integration.location.folderMissing" : {
+      "comment" : "State of an Account location: the folder does not exist.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "folder not found"
+          }
+        }
+      }
+    },
+    "agentsSessions.integration.location.unknown" : {
+      "comment" : "State of an Account location before it is checked.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "checking…"
+          }
+        }
+      }
+    },
+    "agentsSessions.integration.location.error" : {
+      "comment" : "Error under an agent row: an Account's config folder does not exist. %@ = folder path.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The folder %@ doesn't exist. Start the agent once with this Account, or fix the location in Settings › Usage."
+          }
+        }
+      }
+    },
+    "agentsSessions.integration.location.problem.title" : {
+      "comment" : "Setup-problem alert title: an Account's config folder is missing. %1$@ = agent name, %2$@ = Account label.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ · %2$@: config folder not found"
+          }
+        }
+      }
+    },
+    "agentsSessions.integration.location.problem.body" : {
+      "comment" : "Setup-problem alert body. %@ = the missing folder path (hidden in Privacy mode).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vigie can't install its hooks in %@. Start the agent once with this Account, or fix the location in Settings › Usage."
+          }
+        }
+      }
+    },
     "agentsSessions.alert.hostSlept.category" : {
       "comment" : "Peek kicker category for a session failed because the Mac slept: the kicker reads 'FAILED · HOST SLEPT'.",
       "extractionState" : "manual",

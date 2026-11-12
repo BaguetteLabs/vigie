@@ -210,29 +210,75 @@ public struct ClaudeAdapter: AgentAdapter {
     // MARK: Integration (AD-22)
 
     public func integrationPlan(context: any AdapterContext, inputs: IntegrationInputs) async throws -> [ConfigDiff] {
-        try ClaudeHooksPlan(
-            settingsURL: try settingsURL(context: context, inputs: inputs), command: inputs.hookCommand(for: id),
-            reader: fileReader
-        ).install()
+        try hooksPlan(try settingsURL(context: context, inputs: inputs), inputs: inputs).install()
     }
 
     public func removalPlan(context: any AdapterContext, inputs: IntegrationInputs) async throws -> [ConfigDiff] {
-        try ClaudeHooksPlan(
-            settingsURL: try settingsURL(context: context, inputs: inputs), command: inputs.hookCommand(for: id),
-            reader: fileReader
-        ).remove()
+        try hooksPlan(try settingsURL(context: context, inputs: inputs), inputs: inputs).remove()
+    }
+
+    /// Story 7.11: the default Account's plan is the one above; another Account's targets
+    /// `<location>/settings.json` only (Claude Code reads that file when `CLAUDE_CONFIG_DIR` names the location).
+    ///
+    /// The hook command stays the exact managed command `<cli> hook claude` in every location (AD-22: a managed
+    /// entry is identified only by that command, so Disconnect and the other build's plans keep working). It
+    /// needs no Account argument: Claude Code runs its hooks with its own environment, so a session started with
+    /// `CLAUDE_CONFIG_DIR=<location>` (the only way that location's `settings.json` is read) hands the variable to
+    /// the hook CLI, which forwards it (Wire's whitelist, A82); `accountLocationHint(env:)` turns it into the
+    /// Account through `AgentAccounts.attribute`, which compares normalised paths (`~`, trailing and duplicate
+    /// slashes, symlinks).
+    public func integrationPlan(context: any AdapterContext, inputs: IntegrationInputs, account: AgentAccount)
+        async throws -> [ConfigDiff]
+    {
+        if account.isDefault { return try await integrationPlan(context: context, inputs: inputs) }
+        guard let url = try accountSettingsURL(context: context, inputs: inputs, account: account, forRemoval: false)
+        else { return [] }
+        return try hooksPlan(url, inputs: inputs).install()
+    }
+
+    public func removalPlan(context: any AdapterContext, inputs: IntegrationInputs, account: AgentAccount)
+        async throws -> [ConfigDiff]
+    {
+        if account.isDefault { return try await removalPlan(context: context, inputs: inputs) }
+        guard let url = try accountSettingsURL(context: context, inputs: inputs, account: account, forRemoval: true)
+        else { return [] }
+        return try hooksPlan(url, inputs: inputs).remove()
+    }
+
+    private func hooksPlan(_ url: URL, inputs: IntegrationInputs) -> ClaudeHooksPlan {
+        ClaudeHooksPlan(settingsURL: url, command: inputs.hookCommand(for: id), reader: fileReader)
     }
 
     /// `~/.claude/settings.json` for `user` scope, `<project>/.claude/settings.json` for `project` scope.
     func settingsURL(context: any AdapterContext, inputs: IntegrationInputs) throws -> URL {
-        let raw = context.settings.value(SettingKey.hooksScope, as: String.self) ?? HooksScope.user.rawValue
-        switch HooksScope(rawValue: raw) ?? .user {
+        switch hooksScope(context) {
         case .user:
             return inputs.homeDirectory.appendingPathComponent(".claude/settings.json")
         case .project:
             guard let project = inputs.projectDirectory else { throw ClaudeAdapterError.noProjectDirectory }
             return project.appendingPathComponent(".claude/settings.json")
         }
+    }
+
+    /// `<location>/settings.json` of a non-default Account; nil with `project` scope (the project's file serves
+    /// every Account) or without a location. A location folder that does not exist throws
+    /// `MissingAccountLocation` for install (Claude Code creates it on first use; Vigie does not guess) and has
+    /// nothing to remove. A folder without `settings.json` gets a new file holding only Vigie's hooks.
+    func accountSettingsURL(
+        context: any AdapterContext, inputs: IntegrationInputs, account: AgentAccount, forRemoval: Bool
+    ) throws -> URL? {
+        guard hooksScope(context) == .user, let location = account.location else { return nil }
+        let folder = location.url(home: inputs.homeDirectory)
+        guard fileReader.directoryExists(folder) else {
+            if forRemoval { return nil }
+            throw MissingAccountLocation(account: account.id, path: location.path)
+        }
+        return folder.appendingPathComponent("settings.json")
+    }
+
+    private func hooksScope(_ context: any AdapterContext) -> HooksScope {
+        let raw = context.settings.value(SettingKey.hooksScope, as: String.self) ?? HooksScope.user.rawValue
+        return HooksScope(rawValue: raw) ?? .user
     }
 }
 

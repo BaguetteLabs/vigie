@@ -12,7 +12,9 @@ import os
 /// `<target>.vigie-backup-<yyyyMMdd-HHmmss>` next to it (skipped when the file did not exist), writes the new
 /// text to a temp file in the same folder with the original permissions (0600 for a new file) and renames it
 /// over the target. A symlinked target is followed: the link stays, its destination is edited. The result is
-/// recorded in `local.toml` under `[integrations."<adapter id>"]` and in the activity log.
+/// recorded in `local.toml` under `[integrations."<adapter id>"]` and in the activity log. With several targets
+/// (one per Account location, Story 7.11) the record names the first; an apply that does not touch the recorded
+/// target is only logged.
 public actor CoreIntegrationInstaller: IntegrationInstaller {
     public nonisolated let cliPath: String
     private let configStore: ConfigStore?
@@ -120,6 +122,12 @@ public actor CoreIntegrationInstaller: IntegrationInstaller {
                 ]))
         guard let configStore else { return }
         await configStore.registerIntegration(id)
+        // One record per adapter, describing its first target (the default location, Story 7.11). An edit of
+        // another Account's location alone (its install, its removal) leaves that record as it is.
+        let recorded = await configStore.value(CoreSettings.integrationPath(id, "target"), as: String.self)
+        if let recorded, !recorded.isEmpty, !result.appliedPaths.contains(where: { $0.path == recorded }) {
+            return
+        }
         do {
             switch preview.action {
             case .install:

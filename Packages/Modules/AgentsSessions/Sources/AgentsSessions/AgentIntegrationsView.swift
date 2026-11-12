@@ -4,7 +4,8 @@ import SwiftUI
 
 /// The `agents.sessions` block of Settings › Agents (Story 4.7), below the generated rows. The Settings window
 /// is a regular macOS window: native controls, no island theme tokens (like the generated settings controls).
-/// Per adapter: name, detected version and support, connection status, Connect / Disconnect, and the pending
+/// Per adapter: name, detected version and support, connection status, Connect (Install when some Account
+/// location lacks hooks) / Disconnect, each Account location's state when there are several, and the pending
 /// diff with Apply / Cancel.
 struct AgentIntegrationsView: View {
     let model: AgentIntegrationsModel
@@ -59,7 +60,10 @@ struct AgentIntegrationRow: View {
                         Button {
                             Task { await model.connect(row.id) }
                         } label: {
-                            Text(verbatim: IntegrationText.string("agentsSessions.integration.connect"))
+                            Text(
+                                verbatim: IntegrationText.string(
+                                    row.isRepair
+                                        ? "agentsSessions.integration.install" : "agentsSessions.integration.connect"))
                         }
                         .disabled(isBusy)
                     }
@@ -71,6 +75,15 @@ struct AgentIntegrationRow: View {
             Text(verbatim: IntegrationText.support(row.support))
                 .font(.caption)
                 .foregroundStyle(isWarning ? .primary : .secondary)
+            // Story 7.11: with several Accounts, one line per Account's config location.
+            if row.locations.count > 1 {
+                ForEach(row.locations) { location in
+                    Text(verbatim: IntegrationText.location(location, home: model.homeDirectory))
+                        .font(.caption)
+                        .foregroundStyle(location.state == .installed ? .secondary : .primary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
             phaseView
         }
         .accessibilityElement(children: .contain)

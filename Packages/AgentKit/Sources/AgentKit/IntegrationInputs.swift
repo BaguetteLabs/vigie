@@ -36,6 +36,29 @@ public struct IntegrationInputs: Hashable, Sendable {
 public protocol ConfigFileReader: Sendable {
     /// The file's bytes, or nil when it does not exist. Throws on any other read error.
     func read(_ url: URL) throws -> Data?
+    /// True when `url` is an existing folder (an Account's config location, Story 7.11). Default: the file
+    /// system.
+    func directoryExists(_ url: URL) -> Bool
+}
+
+extension ConfigFileReader {
+    public func directoryExists(_ url: URL) -> Bool {
+        var isDirectory: ObjCBool = false
+        return FileManager.default.fileExists(atPath: url.path, isDirectory: &isDirectory) && isDirectory.boolValue
+    }
+}
+
+/// An Account's config location (Story 7.11) that does not exist: the integration cannot be installed there
+/// until the agent has created it (or the user fixes the path). `path` is the location as the user wrote it;
+/// it is user text, shown only in sensitive fields (Privacy mode, AD-24).
+public struct MissingAccountLocation: Error, Hashable, Sendable {
+    public let account: AccountID
+    public let path: String
+
+    public init(account: AccountID, path: String) {
+        self.account = account
+        self.path = path
+    }
 }
 
 /// `ConfigFileReader` over the file system.
