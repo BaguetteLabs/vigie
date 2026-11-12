@@ -31,7 +31,7 @@ public final class SoundsPaneModel {
         chooseFile = SoundsPaneModel.openPanel
     }
 
-    /// The events listed, in order (six today, timer end and break reminder included; calendar reminder joins with Story 13.4).
+    /// The events listed, in order: the seven sound events, calendar reminder last (Story 13.4).
     public var keys: [String] { SoundTable.settingsKeys }
 
     public var isEnabled: Bool { configStore.value(SoundSettings.path("enabled"), as: Bool.self) ?? false }

@@ -214,8 +214,9 @@ public struct NotifierEvent: Hashable, Sendable {
     public let metrics: [String: Double]
     /// Short uppercase category the peek shows in the kicker (`SETUP · <CATEGORY>`); used by `setup.problem`.
     public let category: String?
-    /// The peek's Skip action (`⌥⌘⌫`), performed after the Notifier cancels the reminder; break peek only
-    /// (`time.break_reminder`, Story 20.4). Other peeks' second button is Dismiss, with no module action.
+    /// Performed after the Notifier cancels the reminder when the user takes the peek's second button (`⌥⌘⌫`):
+    /// the break peek's Skip (`time.break_reminder`, Story 20.4), or the calendar reminder's Dismiss, which tells
+    /// the module to resolve the alert (`calendar.reminder`, Story 13.4). Without it Dismiss routes nothing.
     public let secondaryAction: AlertAction?
     /// The break peek's third action, Snooze (`⌥⌘Z`), performed after the Notifier cancels the reminder (Story
     /// 20.4). Only `time.break_reminder` peeks draw it (DESIGN: the one three-action peek).
@@ -226,6 +227,9 @@ public struct NotifierEvent: Hashable, Sendable {
     /// Delivered without peek and sound whatever the rule says (`breaks.style = "quiet"`, Story 20.4). The alert
     /// is still active (reminders, `after_focus` and the module's state see it) but never peeks or plays.
     public let quiet: Bool
+    /// Replaces the kind's primary action label, already localized by the module: the calendar reminder's
+    /// `Join call` when the event has a video link (Story 13.4). Not sensitive: it is action copy.
+    public let primaryLabel: String?
 
     public init(
         kind: String,
@@ -239,8 +243,10 @@ public struct NotifierEvent: Hashable, Sendable {
         secondaryAction: AlertAction? = nil,
         tertiaryAction: AlertAction? = nil,
         kicker: String? = nil,
-        quiet: Bool = false
+        quiet: Bool = false,
+        primaryLabel: String? = nil
     ) {
+        self.primaryLabel = primaryLabel
         self.secondaryAction = secondaryAction
         self.tertiaryAction = tertiaryAction
         self.kicker = kicker

@@ -121,6 +121,186 @@
         }
       }
     },
+    "calendar.reminder.allDay": {
+      "comment": "Calendar reminder peek detail for an all-day event.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All day"
+          }
+        }
+      }
+    },
+    "calendar.reminder.dayAndTime": {
+      "comment": "Calendar reminder peek detail: the day, then the times (Tue 10 Nov 14:00–14:30).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ %2$@"
+          }
+        }
+      }
+    },
+    "calendar.reminder.dayFormat": {
+      "comment": "Date format of the event day in the calendar reminder peek when it is not today (Tue 10 Nov).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EEE dd MMM"
+          }
+        }
+      }
+    },
+    "calendar.reminder.inDays": {
+      "comment": "Calendar reminder kicker category: days until the event starts (CALENDAR · IN 2 D); shown uppercase.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "in %lld d"
+          }
+        }
+      }
+    },
+    "calendar.reminder.inHours": {
+      "comment": "Calendar reminder kicker category: hours and minutes until the event starts (CALENDAR · IN 1H30); shown uppercase.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "in %1$lldh%2$02lld"
+          }
+        }
+      }
+    },
+    "calendar.reminder.inMinutes": {
+      "comment": "Calendar reminder kicker category: minutes until the event starts (CALENDAR · IN 10 MIN); shown uppercase.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "in %lld min"
+          }
+        }
+      }
+    },
+    "calendar.reminder.joinCall": {
+      "comment": "Calendar reminder peek primary action when the event has a video link.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Join call"
+          }
+        }
+      }
+    },
+    "calendar.reminder.now": {
+      "comment": "Calendar reminder kicker category at or after the event start (CALENDAR · NOW); shown uppercase.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "now"
+          }
+        }
+      }
+    },
+    "calendar.reminder.separator": {
+      "comment": "Separator between the parts of the calendar reminder peek detail (14:00–14:30 · Work · Zoom).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " · "
+          }
+        }
+      }
+    },
+    "calendar.reminder.service.meet": {
+      "comment": "Video tag in the calendar reminder peek detail: Google Meet.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Meet"
+          }
+        }
+      }
+    },
+    "calendar.reminder.service.teams": {
+      "comment": "Video tag in the calendar reminder peek detail: Microsoft Teams.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Teams"
+          }
+        }
+      }
+    },
+    "calendar.reminder.service.zoom": {
+      "comment": "Video tag in the calendar reminder peek detail: Zoom.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zoom"
+          }
+        }
+      }
+    },
+    "calendar.reminder.timeFormat": {
+      "comment": "Date format of the event times in the calendar reminder peek (14:00).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HH:mm"
+          }
+        }
+      }
+    },
+    "calendar.reminder.timeRange": {
+      "comment": "Calendar reminder peek detail: start and end times (14:00–14:30).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@–%2$@"
+          }
+        }
+      }
+    },
+    "calendar.reminder.untitled": {
+      "comment": "Calendar reminder peek title for an event without a title.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Untitled event"
+          }
+        }
+      }
+    },
     "calendar.setting.calendars": {
       "comment": "Heading of the calendars to include (checkboxes grouped by account).",
       "extractionState": "manual",

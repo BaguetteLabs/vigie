@@ -106,7 +106,10 @@ func wavDuration(_ url: URL) throws -> (seconds: Double, rate: Int, bits: Int, c
     @Test func pickerWritesValueForms() async throws {
         let h = try await SettingsHarness()
         let model = h.controller.sounds
-        #expect(model.keys == ["blocked", "failed", "done", "quota_warning", "timer_end", "break_reminder"])
+        #expect(
+            model.keys == [
+                "blocked", "failed", "done", "quota_warning", "timer_end", "break_reminder", "calendar_reminder",
+            ])
         #expect(model.isEnabled)
         #expect(model.value(for: "done") == .off)
         #expect(model.displayedValue(for: "done") == .builtIn("done"))

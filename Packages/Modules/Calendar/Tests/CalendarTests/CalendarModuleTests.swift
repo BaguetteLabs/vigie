@@ -61,7 +61,7 @@ func eventually(_ condition: @MainActor () -> Bool) async -> Bool {
         #expect(manifest.permissions == [.calendar])
         #expect(!manifest.defaultEnabled)
         #expect(manifest.startsWithoutPermissions)
-        #expect(manifest.alertKinds.isEmpty)  // calendar.reminder arrives with Story 13.4
+        #expect(manifest.alertKinds == ["calendar.reminder"])  // Story 13.4
         let settings = Dictionary(uniqueKeysWithValues: manifest.settings.map { ($0.key, $0) })
         #expect(settings["reminders"]?.kind == .bool(default: true))
         #expect(settings["hide_all_day"]?.kind == .bool(default: false))

@@ -24,7 +24,8 @@ import os
 /// next reload, never widening ``events``.
 ///
 /// No closed-notch glance (amended 2026-11-07): no left-wing item, no compact view, no Home card yet. The state
-/// stays `hidden` (Story 13.4 sets `alert` while a reminder is unresolved).
+/// stays `hidden`, reminders included: a `calendar.reminder` peek leaves nothing on the closed notch (Story 13.4,
+/// ``CalendarReminders``).
 @MainActor @Observable
 public final class CalendarModule: NotchModule {
     nonisolated static let bundle = CalendarText.bundle
@@ -62,6 +63,7 @@ public final class CalendarModule: NotchModule {
                 help: LocalizedStringResource("calendar.setting.calendars.help", bundle: bundle),
                 customControl: true),
         ],
+        alertKinds: [CalendarReminders.kind],
         defaultEnabled: false,
         startsWithoutPermissions: true
     )
@@ -86,6 +88,10 @@ public final class CalendarModule: NotchModule {
     private var monthOverride: Date?
     /// The day the user selected when it is not today; nil follows today.
     private var selectionOverride: Date?
+    /// The occurrence a reminder's `Open calendar` asked for (Story 13.4); Story 13.3 scrolls the upcoming list to it.
+    public internal(set) var focusedEventID: String?
+    /// Calendar reminder alerts (Story 13.4).
+    @ObservationIgnored let reminders: CalendarReminders
 
     @ObservationIgnored let source: any CalendarSource
     @ObservationIgnored let openSettings: (@MainActor @Sendable (String) -> Void)?
@@ -93,7 +99,7 @@ public final class CalendarModule: NotchModule {
     @ObservationIgnored private let activations: @Sendable () -> AsyncStream<Void>
     @ObservationIgnored let now: @Sendable () -> Date
     @ObservationIgnored let calendar: Calendar
-    @ObservationIgnored private var context: (any ModuleContext)?
+    @ObservationIgnored var context: (any ModuleContext)?
     @ObservationIgnored private var tasks: [Task<Void, Never>] = []
     @ObservationIgnored private var changeTask: Task<Void, Never>?
     @ObservationIgnored private var reloadJob: RegistrationToken?
@@ -113,8 +119,11 @@ public final class CalendarModule: NotchModule {
         openURL: @escaping @MainActor @Sendable (URL) -> Void = { NSWorkspace.shared.open($0) },
         activations: (@Sendable () -> AsyncStream<Void>)? = nil,
         now: @escaping @Sendable () -> Date = { Date() },
-        calendar: Calendar = .current
+        calendar: Calendar = .current,
+        clockChanges: (@Sendable () -> AsyncStream<Void>)? = nil
     ) {
+        reminders = CalendarReminders(
+            moduleID: Self.staticManifest.id, now: now, calendar: calendar, clockChanges: clockChanges)
         self.source = source
         self.openSettings = openSettings
         self.openURL = openURL
@@ -150,6 +159,8 @@ public final class CalendarModule: NotchModule {
         reloadJob = context.scheduler.every(Self.reloadInterval) { [weak self] in
             await self?.reload()
         }
+        reminders.start(context: context)
+        remindersDidChange()
         // Enabled: the one moment calendar access is asked (SPEC §4.3).
         await checkAccess(requesting: true)
     }
@@ -166,6 +177,7 @@ public final class CalendarModule: NotchModule {
         isRunning = false
         generation += 1
         gridGeneration += 1
+        reminders.stop()
     }
 
     // MARK: Access
@@ -200,6 +212,7 @@ public final class CalendarModule: NotchModule {
             gridCache = [:]
             gridEvents = []
             gridInterval = nil
+            remindersDidChange()
         }
     }
 
@@ -234,6 +247,7 @@ public final class CalendarModule: NotchModule {
         window = interval
         // The store or the settings changed: every cached month is stale.
         gridCache = [:]
+        remindersDidChange()
         await loadGrid()
     }
 
@@ -353,6 +367,7 @@ public final class CalendarModule: NotchModule {
     private func applyOptions(_ new: CalendarOptions) {
         guard new != options else { return }
         options = new
+        remindersDidChange()
         Task { @MainActor [weak self] in await self?.reload() }
     }
 

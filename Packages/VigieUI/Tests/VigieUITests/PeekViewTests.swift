@@ -145,6 +145,8 @@ import Testing
         (.setupProblem, .dark, ThemeLibrary.defaultVariantID),
         (.blocked, .dark, "twin-metal-tactical"),
         (.failed, .light, "twin-metal-tactical"),
+        (.calendarReminder, .dark, ThemeLibrary.defaultVariantID),
+        (.calendarReminder, .dark, "twin-metal-tactical"),
     ])
     func peekRenders(kind: PeekKind, look: Look, variant: String) throws {
         let theme = Self.theme(look, variant: variant)
@@ -161,6 +163,16 @@ import Testing
             let rep = NSBitmapImageRep(cgImage: image)
             try rep.representation(using: .png, properties: [:])?.write(to: url)
         }
+    }
+
+    @Test func calendarBeaconIsAnEventTrackWithItsEventTick() {
+        let rect = CGRect(x: 0, y: 0, width: 26, height: 26)
+        let bounds = EventTrackMark().path(in: rect).boundingRect
+        #expect(abs(bounds.minX - 26 * EventTrackMark.trackStart) < 0.01)
+        #expect(abs(bounds.maxX - 26 * EventTrackMark.trackEnd) < 0.01)
+        #expect(bounds.height > 0, "the event tick crosses the track")
+        #expect(EventTrackMark.markerOffset(in: 26) < 0, "the now marker sits left of center")
+        #expect(PeekKind.calendarReminder.showsBeacon)
     }
 
     @Test func retractedPeekRendersOnlyTheBand() throws {

@@ -267,8 +267,10 @@ struct PeekBeacon: View {
 }
 
 /// The large kind glyph: blocked diamond, done ring + check, failed ×, quota triangle, Time ring (dashed for a
-/// due break), and a plain ring otherwise. Static: the peek is short and Reduce motion needs no change.
+/// due break), the calendar reminder's event-track mark, and a plain ring otherwise. Static: the peek is short
+/// and Reduce motion needs no change.
 struct PeekGlyph: View {
+    @Environment(\.vigieTheme) private var theme
     let kind: PeekKind
 
     var body: some View {
@@ -294,10 +296,48 @@ struct PeekGlyph: View {
             case .breakDue:
                 Circle().inset(by: side * 0.12)
                     .stroke(style: StrokeStyle(lineWidth: stroke, dash: [stroke * 1.1, stroke]))
-            case .timerEnd, .calendarReminder, .generic, .setupProblem:
+            case .calendarReminder:
+                // DESIGN "Calendar reminder": a short track with the now marker (A dot, C diamond), in the hue.
+                ZStack {
+                    EventTrackMark().stroke(style: StrokeStyle(lineWidth: stroke, lineCap: .round))
+                    if theme.usesCornerMarks {
+                        Diamond().inset(by: side * EventTrackMark.markerInset).fill()
+                            .offset(x: EventTrackMark.markerOffset(in: side))
+                    } else {
+                        Circle().inset(by: side * EventTrackMark.markerInset).fill()
+                            .offset(x: EventTrackMark.markerOffset(in: side))
+                    }
+                }
+            case .timerEnd, .generic, .setupProblem:
                 Circle().inset(by: side * 0.12).stroke(lineWidth: stroke)
             }
         }
+    }
+}
+
+/// The event track of the calendar reminder beacon (DESIGN "Upcoming list and event track", drawn small): a
+/// horizontal track from now to the event, closed by the event's tick on the right. The now marker sits on its
+/// left end (``markerOffset(in:)``).
+struct EventTrackMark: Shape {
+    /// The marker's inset on each side, as a share of the glyph: a 6.5px marker in the 26px glyph.
+    static let markerInset: CGFloat = 0.375
+    /// The track's ends, as shares of the glyph width.
+    static let trackStart: CGFloat = 0.14
+    static let trackEnd: CGFloat = 0.86
+    /// The event tick's half height, as a share of the glyph.
+    static let tickHalfHeight: CGFloat = 0.2
+
+    /// The marker's horizontal offset from the glyph's center: on the track's left end.
+    static func markerOffset(in side: CGFloat) -> CGFloat { side * (trackStart + 0.08 - 0.5) }
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let y = rect.midY
+        path.move(to: CGPoint(x: rect.minX + rect.width * Self.trackStart, y: y))
+        path.addLine(to: CGPoint(x: rect.minX + rect.width * Self.trackEnd, y: y))
+        path.move(to: CGPoint(x: rect.minX + rect.width * Self.trackEnd, y: y - rect.height * Self.tickHalfHeight))
+        path.addLine(to: CGPoint(x: rect.minX + rect.width * Self.trackEnd, y: y + rect.height * Self.tickHalfHeight))
+        return path
     }
 }
 

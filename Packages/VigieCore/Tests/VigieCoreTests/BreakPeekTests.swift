@@ -176,7 +176,6 @@ import VigieUI
 
     @Test func soundsPaneListsTheBreakReminder() {
         #expect(SoundTable.settingsKeys.contains("break_reminder"))
-        #expect(!SoundTable.settingsKeys.contains("calendar_reminder"))
     }
 
     @Test func aDueBreakIsReplayedAfterFocus() async {

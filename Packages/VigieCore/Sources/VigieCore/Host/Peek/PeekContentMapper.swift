@@ -24,9 +24,12 @@ public enum PeekContentMapper {
     /// The panel content for `alert`. `theme` gives the variant's "now" accent for Time and calendar peeks.
     public static func content(for alert: ActiveAlert, theme: Theme) -> PeekContent {
         let kind = kind(for: alert.kind)
+        // A module may name its primary action (the calendar reminder's `Join call`, Story 13.4); the label comes
+        // already localized from its catalog.
+        let label = alert.event.primaryLabel.map { LocalizedStringResource(stringLiteral: $0) } ?? primaryLabel(kind)
         let primary =
             alert.event.action == nil
-            ? nil : PeekAction(label: primaryLabel(kind), shortcut: PeekAction.primaryShortcut)
+            ? nil : PeekAction(label: label, shortcut: PeekAction.primaryShortcut)
         let secondary = PeekAction(
             label: resource(kind == .breakDue ? "peek.action.skip" : "peek.action.dismiss"),
             shortcut: PeekAction.secondaryShortcut)
