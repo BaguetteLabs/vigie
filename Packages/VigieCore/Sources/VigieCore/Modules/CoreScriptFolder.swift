@@ -2,34 +2,33 @@ import Foundation
 import ModuleKit
 
 /// `context.scriptFolder` (AD-18, Story 12.2): `<config folder>/modules/` from `AppEnvironment` (AD-17), the
-/// built-in ids scripts must not take, scripts' `[modules."<id>"] enabled` from ConfigStore, a watch on the
-/// folder (AD-12) that ends when the module stops, and this Mac's confirmations (Story 12.3).
+/// built-in ids scripts must not take, a watch on the folder (AD-12) that ends when the module stops, this Mac's
+/// confirmations (Story 12.3), and this Mac's enabled flags plus the scripts' configured values (Story 12.6).
 public struct CoreScriptFolder: ScriptFolderService {
     public let url: URL?
     public let builtInModuleIDs: Set<ModuleID>
-    let enablement: (any ModuleEnablement)?
     let tracker: RegistrationTracker
     let makeWatcher: @MainActor @Sendable () -> any DirectoryWatching
     /// This Mac's confirmations (Story 12.3): ``ConfigScriptConfirmations`` when the host has a ConfigStore.
     public let confirmations: any ScriptConfirmationStore
+    /// Enabled flags and configured values (Story 12.6): ``ConfigScriptSettings`` when the host has a ConfigStore.
+    public let settings: any ScriptSettingsStore
 
     /// - Parameters:
     ///   - makeWatcher: one watcher per `changes()` stream; tests pass a `ManualDirectoryWatcher`.
     public init(
-        url: URL?, builtInModuleIDs: Set<ModuleID>, enablement: (any ModuleEnablement)?,
-        tracker: RegistrationTracker,
+        url: URL?, builtInModuleIDs: Set<ModuleID>, tracker: RegistrationTracker,
         confirmations: any ScriptConfirmationStore = NoScriptConfirmations(),
+        settings: any ScriptSettingsStore = NoScriptSettings(),
         makeWatcher: @escaping @MainActor @Sendable () -> any DirectoryWatching = { DispatchDirectoryWatcher() }
     ) {
         self.url = url
         self.builtInModuleIDs = builtInModuleIDs
-        self.enablement = enablement
         self.tracker = tracker
         self.confirmations = confirmations
+        self.settings = settings
         self.makeWatcher = makeWatcher
     }
-
-    public func isEnabled(_ id: ModuleID) -> Bool? { enablement?.isEnabled(id) }
 
     /// Watches the folder and, as hints, the `*.md` files in it at each event, so in-place writes (which do not
     /// touch the directory) are seen too. A missing folder is retried by the watcher and reported when it appears.

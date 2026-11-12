@@ -45,7 +45,7 @@ import Testing
         """
     }
 
-    func start(_ folder: Folder, enabled: [ModuleID: Bool] = [:]) async throws
+    func start(_ folder: Folder, enabled: [String: Bool] = [:]) async throws
         -> (IntegrationsModule, FakeModuleContext)
     {
         let context = FakeModuleContext(scriptFolder: FakeScriptFolder(url: folder.url, enabled: enabled))
@@ -342,18 +342,20 @@ import Testing
 
     // MARK: - Enabled
 
-    @Test func enabledComesFromModulesConfigDefaultingToTrue() async throws {
+    /// Story 12.6 (AD-8): enabled is this Mac's flag by file, default true; a flag change applies without a rescan.
+    @Test func enabledComesFromThisMacsFlagsDefaultingToTrue() async throws {
         let folder = try Folder()
         defer { folder.cleanUp() }
         try folder.write("a.md", Self.script(id: "test.a"))
         try folder.write("b.md", Self.script(id: "test.b"))
-        let (module, context) = try await start(folder, enabled: ["test.b": false])
+        let (module, context) = try await start(folder, enabled: ["modules/b.md": false])
         #expect(try script(module, "a.md").enabled)
         #expect(try !script(module, "b.md").enabled)
 
-        context.fakeScriptFolder.setEnabled(nil, for: "test.b")
-        try await change(module, context)
-        #expect(try script(module, "b.md").enabled)
+        let scans = module.completedScans
+        context.fakeScriptFolder.fakeSettings.edit(enabled: nil, for: "modules/b.md")
+        #expect(await eventually { (try? script(module, "b.md").enabled) == true })
+        #expect(module.completedScans == scans)
         await module.stop()
     }
 

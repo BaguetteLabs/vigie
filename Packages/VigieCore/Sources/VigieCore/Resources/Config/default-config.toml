@@ -125,11 +125,11 @@ reminders = true              # peek at each event's own Calendar alarm times; n
 [modules.integrations]
 update_checks = true          # scripts installed from a link, at most once a day
 
-# Script modules use their id, for example:
+# Script modules use their id for their settings (secrets stay in the Keychain), for example:
 # [modules."github.prs"]
-# enabled = true
 # priority = 5
 # repo = "me/project"
+# Turning a script off is per Mac: Settings › Scripts writes [scripts.enabled] in local.toml.
 
 # == local.toml ==
 # Machine-specific settings. Set them in local.toml (never synced), not here: Vigie ignores them in this

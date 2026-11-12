@@ -80,9 +80,8 @@ public final class ScriptRunner {
                 launcher: ScriptProcessLauncher(),
                 scratchDirectory: context.storage.directory.appendingPathComponent("runs", isDirectory: true),
                 workingDirectory: context.scriptFolder.url,
-                // Wiring point: scripts' own config keys arrive with their dynamic modules (Stories 12.5, 12.6);
-                // until then every setting uses its front-matter default.
-                configuredValue: { _, _ in nil },
+                // `[modules."<script id>"] <key>` read at each run (Story 12.6), so a change applies at the next run.
+                configuredValue: { [settings = context.scriptFolder.settings] id, key in settings.value(id, key: key) },
                 home: environment["HOME"] ?? NSHomeDirectory(), language: environment["LANG"], now: { Date() },
                 log: { message in log.notice("\(message, privacy: .private)") }),
             isEligible: isEligible)

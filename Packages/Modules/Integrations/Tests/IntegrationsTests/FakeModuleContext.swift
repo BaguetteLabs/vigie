@@ -17,18 +17,26 @@ final class FakeModuleContext: ModuleContext, @unchecked Sendable {
     let fakeAway = FakeAway()
     let fakeScriptFolder: FakeScriptFolder
 
+    /// `context.secrets` (the integrations module's own store); a `FakeSecretStore` in Settings › Scripts tests.
+    let fakeSecrets: any SecretStore
+    /// `context.executables`; `NoExecutables` unless a test resolves runtimes.
+    let fakeExecutables: any ExecutableResolver
+
     init(
         settings: [String: any SettingValue] = [:], storage: FakeStorage = FakeStorage(),
-        scriptFolder: FakeScriptFolder = FakeScriptFolder(url: nil)
+        scriptFolder: FakeScriptFolder = FakeScriptFolder(url: nil), secrets: any SecretStore = NoSecrets(),
+        executables: any ExecutableResolver = NoExecutables()
     ) {
         fakeSettings = FakeSettings(values: settings)
         fakeStorage = storage
         fakeScriptFolder = scriptFolder
+        fakeSecrets = secrets
+        fakeExecutables = executables
     }
 
     var settings: any ModuleSettings { fakeSettings }
     var storage: any ModuleStorage { fakeStorage }
-    var secrets: any SecretStore { NoSecrets() }
+    var secrets: any SecretStore { fakeSecrets }
     var scheduler: any Scheduler { fakeScheduler }
     var hotkeys: any HotkeyRegistry { fakeHotkeys }
     var notifier: any Notifier { fakeNotifier }
@@ -37,7 +45,7 @@ final class FakeModuleContext: ModuleContext, @unchecked Sendable {
     var permissions: any PermissionsService { NoPermissions() }
     var power: any PowerService { fakePower }
     var clipboard: any ClipboardService { NoClipboard() }
-    var executables: any ExecutableResolver { NoExecutables() }
+    var executables: any ExecutableResolver { fakeExecutables }
     var privacy: any PrivacyService { NoPrivacy() }
     var away: any AwayService { fakeAway }
     var activity: any ActivityLog { NoActivity() }
@@ -313,25 +321,24 @@ struct NoIntegrations: IntegrationInstaller {
 final class FakeScriptFolder: ScriptFolderService, @unchecked Sendable {
     private let lock = NSLock()
     private var continuations: [AsyncStream<Void>.Continuation] = []
-    private var enabledValues: [ModuleID: Bool]
     let url: URL?
     let builtInModuleIDs: Set<ModuleID>
     /// This Mac's confirmation records (Story 12.3), in memory.
     let fakeConfirmations = MemoryScriptConfirmations()
     var confirmations: any ScriptConfirmationStore { fakeConfirmations }
+    /// This Mac's enabled flags and the scripts' configured values (Story 12.6), in memory.
+    let fakeSettings: MemoryScriptSettings
+    var settings: any ScriptSettingsStore { fakeSettings }
 
+    /// - Parameter enabled: this Mac's enabled flags by relative path (`modules/<file>`).
     init(
         url: URL?, builtIns: Set<ModuleID> = ["agents.sessions", "agents.usage", "shelf", "time", "integrations"],
-        enabled: [ModuleID: Bool] = [:]
+        enabled: [String: Bool] = [:]
     ) {
         self.url = url
         builtInModuleIDs = builtIns
-        enabledValues = enabled
+        fakeSettings = MemoryScriptSettings(enabled: enabled)
     }
-
-    func isEnabled(_ id: ModuleID) -> Bool? { lock.withLock { enabledValues[id] } }
-
-    func setEnabled(_ value: Bool?, for id: ModuleID) { lock.withLock { enabledValues[id] = value } }
 
     @MainActor func changes() -> AsyncStream<Void> {
         let (stream, continuation) = AsyncStream<Void>.makeStream()

@@ -996,6 +996,18 @@
           }
         }
       }
+    },
+    "config.scripts.enabled": {
+      "comment": "Label for the local.toml key scripts.enabled.<script file>: false disables the script on this Mac only (Story 12.6).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enabled on this Mac"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

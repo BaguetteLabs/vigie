@@ -114,6 +114,25 @@ public final class ConfigStore {
         if added { recompute() }
     }
 
+    /// Makes one script file's per-Mac `[scripts.enabled]` key known (Story 12.6). Idempotent.
+    public func registerScriptEnabled(_ relativePath: String) {
+        let added = shared.update { $0.schema.registerScriptEnabled(relativePath) }
+        if added { recompute() }
+    }
+
+    /// Makes a script module's declared settings known under `[modules."<id>"]` (Story 12.6), replacing its
+    /// previous registration. Idempotent.
+    public func registerScriptSettings(_ id: ModuleID, settings: [SettingDescriptor]) {
+        let changed = shared.update { $0.schema.registerScriptSettings(id, settings: settings) }
+        if changed { recompute() }
+    }
+
+    /// Forgets a script module's settings (its file was removed or errored). Values stay in the file.
+    public func unregisterScriptSettings(_ id: ModuleID) {
+        let changed = shared.update { $0.schema.unregisterScriptSettings(id) }
+        if changed { recompute() }
+    }
+
     // MARK: - Lifecycle
 
     /// Creates missing files (`config.toml` with the commented SPEC §11 defaults, an empty `local.toml`),

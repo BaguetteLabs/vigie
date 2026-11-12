@@ -17,7 +17,7 @@ import VigieUI
         SHA256.hash(data: Data(text.utf8)).map { String(format: "%02x", $0) }.joined()
     }
 
-    func start(_ folder: Folder, enabled: [ModuleID: Bool] = [:]) async throws
+    func start(_ folder: Folder, enabled: [String: Bool] = [:]) async throws
         -> (IntegrationsModule, FakeModuleContext)
     {
         try await ScriptDiscoveryTests().start(folder, enabled: enabled)
@@ -183,7 +183,7 @@ import VigieUI
         try folder.write("prs.md", Self.text)
         try folder.write("off.md", ScriptDiscoveryTests.script(id: "test.off"))
         try folder.write("broken.md", "---\nid: test.broken\n---\nno code")
-        let (module, _) = try await start(folder, enabled: ["test.off": false])
+        let (module, _) = try await start(folder, enabled: ["modules/off.md": false])
         for name in ["prs.md", "off.md", "broken.md"] { try await module.confirm(try script(module, name)) }
         #expect(module.isEligible(try script(module, "prs.md")))
         #expect(module.localState(for: try script(module, "off.md")) == .confirmed)
@@ -297,7 +297,7 @@ import VigieUI
             locales.formUnion((entry["localizations"] as? [String: Any])?.keys ?? [:].keys)
         }
         let keys = strings.keys.filter { $0.hasPrefix("script.settings.") }
-        #expect(keys.count == 7)
+        #expect(keys.count == 18)  // 7 from Story 12.3, 11 from Settings › Scripts (12.6)
         for key in keys {
             let entry = try #require(strings[key] as? [String: Any])
             let localized = Set((entry["localizations"] as? [String: Any])?.keys ?? [:].keys)

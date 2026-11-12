@@ -24,7 +24,8 @@ public struct ScriptModuleDefinition: Equatable, Sendable, Identifiable {
     /// The Markdown after the front matter without the code block, trimmed.
     public let documentation: String
     public internal(set) var status: ScriptParseStatus
-    /// `[modules."<id>"] enabled` (default true). Read only; Story 12.6 writes it.
+    /// Enabled on this Mac (AD-8, Story 12.6): `[scripts.enabled]` in `local.toml`, by ``relativePath``; default
+    /// true. Settings › Scripts writes it through `context.scriptFolder.settings`.
     public internal(set) var enabled: Bool
 
     /// The file name: unique in the folder, so the identity of the definition (and of its alert).
@@ -35,7 +36,8 @@ public struct ScriptModuleDefinition: Equatable, Sendable, Identifiable {
     /// ``ScriptParseError/message(fileName:)`` of an errored file.
     public var errorMessage: String? { status.error?.message(fileName: fileName) }
 
-    init(url: URL, folderName: String, data: Data, enabled: (ModuleID) -> Bool?) {
+    /// - Parameter enabled: this Mac's enabled flag by relative path (`modules/<file>`), nil for the default (true).
+    init(url: URL, folderName: String, data: Data, enabled: (String) -> Bool?) {
         let parsed = ScriptMarkdown.parse(data)
         self.url = url
         relativePath = folderName + "/" + url.lastPathComponent
@@ -47,7 +49,7 @@ public struct ScriptModuleDefinition: Equatable, Sendable, Identifiable {
         language = parsed.language
         documentation = parsed.documentation
         status = parsed.error.map(ScriptParseStatus.errored) ?? .ok
-        self.enabled = parsed.frontMatter.flatMap { enabled($0.id) } ?? true
+        self.enabled = enabled(relativePath) ?? true
     }
 
     static func sha256(_ data: Data) -> String {
@@ -60,11 +62,11 @@ enum ScriptCatalog {
     /// - Parameters:
     ///   - files: each file's URL and bytes.
     ///   - builtIns: ids no script may declare.
-    ///   - enabled: `[modules."<id>"] enabled`, nil when absent.
+    ///   - enabled: this Mac's enabled flag by relative path, nil when absent.
     /// - Returns: one definition per file, sorted by file name.
     static func build(
         files: [(url: URL, data: Data)], folderName: String, builtIns: Set<ModuleID>,
-        enabled: (ModuleID) -> Bool?
+        enabled: (String) -> Bool?
     ) -> [ScriptModuleDefinition] {
         let definitions = files.map {
             ScriptModuleDefinition(url: $0.url, folderName: folderName, data: $0.data, enabled: enabled)

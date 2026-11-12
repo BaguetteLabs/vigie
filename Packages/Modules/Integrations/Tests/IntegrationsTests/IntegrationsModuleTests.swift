@@ -10,7 +10,7 @@ import Testing
     @Test func manifest() {
         let manifest = IntegrationsModule.staticManifest
         #expect(manifest.id == "integrations")
-        #expect(String(localized: manifest.name) == "Integrations")
+        #expect(String(localized: manifest.name) == "Scripts")  // the Settings › Scripts pane title (UX-DR74)
         #expect(manifest.settings.isEmpty)
         #expect(manifest.alertKinds == ["setup.problem"])
         #expect(manifest.permissions.isEmpty)

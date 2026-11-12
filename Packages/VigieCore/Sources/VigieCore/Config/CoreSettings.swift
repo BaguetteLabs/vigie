@@ -18,7 +18,8 @@ public enum CoreSettings {
     /// `[consents]` (local.toml) holds one table per external credential the user allowed (Story 7.3, AD-9); its
     /// keys become known when the secret store first touches the descriptor (`ConfigSchema.registerConsent`).
     /// `[scripts]` (local.toml) holds the per-Mac script confirmations and declines (Story 12.3, AD-18); its keys
-    /// become known when a script's record is first touched (`ConfigSchema.registerScriptRecord`).
+    /// become known when a script's record is first touched (`ConfigSchema.registerScriptRecord`), and the per-Mac
+    /// `[scripts.enabled]` flags (Story 12.6, `ConfigSchema.registerScriptEnabled`).
     public static let openTables: [ConfigKeyPath] = ["appearance.colors", "integrations", "consents", "scripts"]
 
     /// `[consents."<descriptor id>"] granted_at` in `local.toml`, written only by the secret store (AD-9).
@@ -43,6 +44,12 @@ public enum CoreSettings {
     /// `scripts.<confirmations|declined>."<relative path>".sha256`.
     public static func scriptRecordPath(_ kind: ScriptRecordKind, _ relativePath: String) -> ConfigKeyPath {
         ConfigKeyPath(["scripts", kind.rawValue, relativePath, scriptRecordKey])
+    }
+
+    /// `[scripts.enabled] "<relative path>" = false` in `local.toml` (Story 12.6, AD-8): a script file disabled on
+    /// this Mac. Absent means enabled; enabling removes the key. Written only by `ConfigScriptSettings`.
+    public static func scriptEnabledPath(_ relativePath: String) -> ConfigKeyPath {
+        ConfigKeyPath(["scripts", "enabled", relativePath])
     }
 
     /// The table segment under `[modules."<module id>"]` that holds one table per agent adapter (Story 7.3).

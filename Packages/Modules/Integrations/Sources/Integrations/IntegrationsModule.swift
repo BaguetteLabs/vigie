@@ -13,7 +13,7 @@ import Observation
 public final class IntegrationsModule: NotchModule {
     /// The core setup-problem kind (AD-13). Declared in the manifest: AlertCenter drops undeclared kinds.
     public nonisolated static let setupProblemKind = "setup.problem"
-    /// Settings pane of the module (Settings › Scripts arrives with Story 12.6).
+    /// Settings pane of the module: Settings › Scripts (Story 12.6).
     public nonisolated static let settingsPane = "integrations"
 
     public nonisolated static let staticManifest = ModuleManifest(
@@ -26,7 +26,7 @@ public final class IntegrationsModule: NotchModule {
     public let manifest = IntegrationsModule.staticManifest
     public private(set) var state: ModuleState = .hidden
     /// Every script file of the folder, usable or errored, sorted by file name.
-    public private(set) var scripts: [ScriptModuleDefinition] = []
+    public internal(set) var scripts: [ScriptModuleDefinition] = []
     /// Each script's state on this Mac by file name (Story 12.3), recomputed on every scan and record change.
     public internal(set) var localStates: [String: ScriptLocalState] = [:]
     /// The file under review in the Script Confirmation (Story 12.3), nil when none is open.
@@ -48,6 +48,12 @@ public final class IntegrationsModule: NotchModule {
     /// `context.scriptFolder.confirmations` while started (Story 12.3).
     @ObservationIgnored var confirmations: any ScriptConfirmationStore = NoScriptConfirmations()
     @ObservationIgnored var confirmationTask: Task<Void, Never>?
+    /// `context.scriptFolder.settings` and `context.secrets` while started (Story 12.6, Settings › Scripts).
+    @ObservationIgnored var scriptSettings: any ScriptSettingsStore = NoScriptSettings()
+    @ObservationIgnored var secrets: (any SecretStore)?
+    @ObservationIgnored var settingsTask: Task<Void, Never>?
+    /// The settings each script id has registered with the host (Story 12.6).
+    @ObservationIgnored var registeredSettings: [ModuleID: [ScriptSetting]] = [:]
     /// Scans applied so far (a test seam).
     @ObservationIgnored private(set) var completedScans = 0
 
@@ -56,6 +62,7 @@ public final class IntegrationsModule: NotchModule {
     public func start(context: any ModuleContext) async throws {
         self.context = context
         startConfirmations(context)
+        startSettings(context)
         guard context.scriptFolder.url != nil else { return }
         // Subscribe before the first scan so a change made during it is not lost.
         let changes = context.scriptFolder.changes()
@@ -80,6 +87,7 @@ public final class IntegrationsModule: NotchModule {
         for problem in problems.values { problem.handle.resolve() }
         problems = [:]
         stopConfirmations()
+        stopSettings()
         context = nil
     }
 
@@ -112,6 +120,7 @@ public final class IntegrationsModule: NotchModule {
             files: files, folderName: folder.lastPathComponent, builtIns: service.builtInModuleIDs,
             enabled: { service.isEnabled($0) })
         if next != scripts { scripts = next }
+        registerScriptSettings()
         refreshLocalStates()
         reconcileProblems(context.notifier)
         updateRunner()

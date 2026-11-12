@@ -2,13 +2,13 @@
   "sourceLanguage": "en",
   "strings": {
     "integrations.module.name": {
-      "comment": "Module name of the script modules runtime (Settings, module list).",
+      "comment": "Module name of the script modules runtime: the Settings › Scripts pane title (UX-DR74) and the module list.",
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Integrations"
+            "value": "Scripts"
           }
         }
       }
@@ -637,6 +637,102 @@
         }
       }
     },
+    "script.settings.enabled": {
+      "comment": "Accessibility label of the per-script switch in Settings › Scripts.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enabled on this Mac"
+          }
+        }
+      }
+    },
+    "script.settings.enabled.help": {
+      "comment": "Tooltip of the per-script switch in Settings › Scripts (the flag is kept in local.toml, never synced).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turns this script on or off on this Mac only."
+          }
+        }
+      }
+    },
+    "script.settings.lastRun": {
+      "comment": "Settings › Scripts, under a script's file: when it last ran. %@ is a relative time such as “5 minutes ago”.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last run %@"
+          }
+        }
+      }
+    },
+    "script.settings.lastRun.never": {
+      "comment": "Settings › Scripts, under a script's file: the script has not run since Vigie started.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not run yet"
+          }
+        }
+      }
+    },
+    "script.settings.noSettings": {
+      "comment": "Settings › Scripts, a script's expanded detail when its front matter declares no settings.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This script has no settings."
+          }
+        }
+      }
+    },
+    "script.settings.refresh": {
+      "comment": "Settings › Scripts button: runs the script now (enabled only for a confirmed, enabled script that is not running).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Refresh"
+          }
+        }
+      }
+    },
+    "script.settings.repository": {
+      "comment": "Settings › Scripts footer link to the public Script repository (SPEC §9.6).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "More examples in the Script repository"
+          }
+        }
+      }
+    },
+    "script.settings.repository.unpublished": {
+      "comment": "Tooltip of the Settings › Scripts repository link while its address is not set.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The Script repository is not published yet."
+          }
+        }
+      }
+    },
     "script.settings.review": {
       "comment": "Settings › Integrations: button that opens the Script Confirmation for a script.",
       "extractionState": "manual",
@@ -685,6 +781,18 @@
         }
       }
     },
+    "script.settings.state.disabled": {
+      "comment": "Settings › Scripts state label: the script is turned off on this Mac only.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DISABLED"
+          }
+        }
+      }
+    },
     "script.settings.state.errored": {
       "comment": "Settings › Integrations: script state, the file cannot be loaded (a setup problem). Uppercase.",
       "extractionState": "manual",
@@ -693,6 +801,30 @@
           "stringUnit": {
             "state": "translated",
             "value": "CAN’T LOAD"
+          }
+        }
+      }
+    },
+    "script.settings.state.ok": {
+      "comment": "Settings › Scripts state label: the latest run succeeded.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OK"
+          }
+        }
+      }
+    },
+    "script.settings.state.running": {
+      "comment": "Settings › Scripts state label: a run of the script is in progress.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RUNNING"
           }
         }
       }

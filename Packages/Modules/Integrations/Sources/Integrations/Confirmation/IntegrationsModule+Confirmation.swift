@@ -7,8 +7,8 @@ import VigieUI
 /// its exact bytes on this Mac; records live in `local.toml` through `context.scriptFolder.confirmations`, never
 /// in the synced config.
 ///
-/// Entry points: ``openConfirmation(for:)`` sets ``reviewing``; the module's Settings pane (Settings ›
-/// Integrations, ``settingsView()``) lists the scripts with their state and presents the Script Confirmation as
+/// Entry points: ``openConfirmation(for:)`` sets ``reviewing``; the module's Settings pane (Settings › Scripts,
+/// ``settingsView()``, Story 12.6) lists the scripts with their state and presents the Script Confirmation as
 /// a sheet while ``reviewing`` is set. The island surfaces of Stories 12.5 and 12.11 show `NOT CONFIRMED`
 /// (`VigieUI.ScriptStateLabel`) and call ``openConfirmation(for:)`` then open Settings on this pane.
 extension IntegrationsModule {
@@ -52,8 +52,8 @@ extension IntegrationsModule {
         return computedState(definition)
     }
 
-    /// Whether the runner may run `definition` on this Mac (Story 12.4): parsed without error, enabled
-    /// (`[modules."<id>"] enabled`), and its current bytes confirmed here.
+    /// Whether the runner may run `definition` on this Mac (Story 12.4): parsed without error, enabled on this Mac
+    /// (`[scripts.enabled]` in `local.toml`, Story 12.6), and its current bytes confirmed here.
     public func isEligible(_ definition: ScriptModuleDefinition) -> Bool {
         definition.status == .ok && definition.enabled && localState(for: definition) == .confirmed
     }
@@ -92,6 +92,6 @@ extension IntegrationsModule {
     }
 
     public func settingsView() -> AnyView? {
-        AnyView(ScriptConfirmationsSettingsView(module: self))
+        AnyView(ScriptsSettingsView(module: self))
     }
 }

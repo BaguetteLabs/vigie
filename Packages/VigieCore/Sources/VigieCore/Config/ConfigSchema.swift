@@ -154,6 +154,9 @@ public struct ConfigSchema: Sendable {
     public private(set) var templates: [ConfigKeyPath: ConfigSchemaEntry] = [:]
     public private(set) var registeredModules: Set<ModuleID> = []
     public private(set) var openTables: [ConfigKeyPath]
+    /// The `modules."<script id>".<key>` entries each script module registered (Story 12.6), so a later
+    /// registration replaces them and ``unregisterScriptSettings(_:)`` removes exactly them.
+    public private(set) var scriptSettingPaths: [ModuleID: Set<ConfigKeyPath>] = [:]
 
     /// Per-module tables reserved for core services (`[modules."<id>".notify]`, Notifier, Epic 3).
     public static let reservedModuleTables: Set<String> = ["notify"]
@@ -312,6 +315,53 @@ public struct ConfigSchema: Sendable {
             added = true
         }
         return added
+    }
+
+    /// Adds `scripts.enabled."<relative path>"` (a local bool, default true; Story 12.6). Returns whether it was
+    /// added.
+    @discardableResult
+    public mutating func registerScriptEnabled(_ relativePath: String) -> Bool {
+        let path = CoreSettings.scriptEnabledPath(relativePath)
+        guard entries[path] == nil else { return false }
+        let descriptor = SettingDescriptor(
+            key: relativePath, label: CoreSettings.label("config.scripts.enabled"), kind: .bool(default: true),
+            scope: .local)
+        entries[path] = ConfigSchemaEntry(path: path, descriptor: descriptor, moduleID: nil)
+        return true
+    }
+
+    /// Makes a script module's declared settings known at `modules."<id>".<key>` in `config.toml` (synced, Story
+    /// 12.6), replacing what the script registered before. `secret` settings are skipped (Keychain only, AD-9), and
+    /// so is a key another registration (a manifest) already owns. Returns whether the schema changed.
+    @discardableResult
+    public mutating func registerScriptSettings(_ id: ModuleID, settings: [SettingDescriptor]) -> Bool {
+        let previous = scriptSettingPaths[id] ?? []
+        var next: [ConfigKeyPath: ConfigSchemaEntry] = [:]
+        for descriptor in settings {
+            if case .secret = descriptor.kind { continue }
+            let path = ConfigKeyPath.module(id, descriptor.key, scope: .synced)
+            if entries[path] != nil, !previous.contains(path) { continue }
+            let synced = SettingDescriptor(
+                key: descriptor.key, label: descriptor.label, kind: descriptor.kind, scope: .synced,
+                help: descriptor.help)
+            next[path] = ConfigSchemaEntry(path: path, descriptor: synced, moduleID: id)
+        }
+        let unchanged =
+            Set(next.keys) == previous
+            && next.allSatisfy { path, entry in entries[path]?.descriptor.kind == entry.descriptor.kind }
+        guard !unchanged else { return false }
+        for path in previous { entries[path] = nil }
+        for (path, entry) in next { entries[path] = entry }
+        scriptSettingPaths[id] = next.isEmpty ? nil : Set(next.keys)
+        return true
+    }
+
+    /// Removes what ``registerScriptSettings(_:settings:)`` added for `id`. Returns whether anything was removed.
+    @discardableResult
+    public mutating func unregisterScriptSettings(_ id: ModuleID) -> Bool {
+        guard let paths = scriptSettingPaths.removeValue(forKey: id) else { return false }
+        for path in paths { entries[path] = nil }
+        return true
     }
 
     /// The path of a module's setting `key`, routed by its declared scope; nil when undeclared.

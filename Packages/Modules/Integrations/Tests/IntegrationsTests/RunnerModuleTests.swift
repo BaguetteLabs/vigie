@@ -15,7 +15,7 @@ import Testing
         try runnerScript(id: "one.script").write(to: folder.appendingPathComponent("one.md"))
         try runnerScript(id: "two.script").write(to: folder.appendingPathComponent("two.md"))
 
-        let scriptFolder = FakeScriptFolder(url: folder, enabled: ["two.script": false])
+        let scriptFolder = FakeScriptFolder(url: folder, enabled: ["modules/two.md": false])
         let context = FakeModuleContext(scriptFolder: scriptFolder)
         let module = IntegrationsModule()
         try await module.start(context: context)

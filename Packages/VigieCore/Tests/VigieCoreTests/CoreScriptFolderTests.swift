@@ -22,9 +22,8 @@ import Wire
         #expect(folder.url == fixture.environment.scriptModulesFolderURL)
         // The modules App assembly gave ConfigStore, plus the SPEC ids not shipped yet.
         #expect(folder.builtInModuleIDs.isSuperset(of: ["agents.sessions", "dev.sample", "calendar", "notes"]))
-        // `[modules."<id>"] enabled` for an id no manifest declares.
-        #expect(folder.isEnabled("github.prs") == false)
-        #expect(folder.isEnabled("other.script") == nil)
+        // Enabled is per Mac (Story 12.6, AD-8): the synced `[modules."<id>"] enabled` no longer disables a script.
+        #expect(folder.isEnabled("modules/github.md"))
         // Registered later (a dynamic script module, Story 12.5) does not become built-in.
         store.register(manifest: ModuleManifest(id: "github.prs", name: "PRs", icon: "star"))
         #expect(!factory.builtInModuleIDs.contains("github.prs"))
@@ -41,7 +40,7 @@ import Wire
         let watcher = ManualDirectoryWatcher()
         let tracker = RegistrationTracker()
         let service = CoreScriptFolder(
-            url: folderURL, builtInModuleIDs: [], enablement: nil, tracker: tracker, makeWatcher: { watcher })
+            url: folderURL, builtInModuleIDs: [], tracker: tracker, makeWatcher: { watcher })
 
         let counter = StreamCounter(service.changes())
         #expect(watcher.watchedDirectories == [folderURL.standardizedFileURL])
@@ -61,7 +60,7 @@ import Wire
 
     @Test func noFolderMeansAFinishedStream() async {
         let service = CoreScriptFolder(
-            url: nil, builtInModuleIDs: [], enablement: nil, tracker: RegistrationTracker(),
+            url: nil, builtInModuleIDs: [], tracker: RegistrationTracker(),
             makeWatcher: { ManualDirectoryWatcher() })
         for await _ in service.changes() { Issue.record("no change expected") }
     }
