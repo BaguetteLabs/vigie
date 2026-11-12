@@ -17,7 +17,7 @@
 - **Settings** (`[modules.calendar]`): `reminders` (default true, used by Story 13.4), `hide_all_day` (default
   false), `calendars` (included calendar ids, empty = all; drawn by the module's own pane view as checkboxes
   grouped by account with the calendar color, `customControl`). The last checked calendar cannot be unchecked.
-- **No closed-notch glance**: no left-wing item, no compact view, no Home card (Story 13.3 adds the card).
+- **No closed-notch glance**: no left-wing item, no compact view. The Home card is Story 13.3's (below).
   The state stays `hidden`, reminders included.
 
 ## Reminders (Story 13.4)
@@ -51,8 +51,7 @@ alarm of `events` (so `calendars` and `hide_all_day` apply; location alarms neve
 ## Month grid
 
 Story 13.2, DESIGN "Month grid" (`components.month-grid`), mockup `key-calendar-tab.html`. The tab shows the 300px
-grid card left and the list area right (Story 13.3's upcoming list; until then `NO EVENTS TODAY` or
-`N EVENTS TODAY`). The setup card replaces both while access is missing.
+grid card left and the upcoming list right (Story 13.3). The setup card replaces both while access is missing.
 
 - **Model.** `MonthGrid.build(month:today:selected:events:calendars:calendar:locale:maxDots:)` is pure: always six
   rows of seven days (the card height never changes), Monday first with ISO 8601 week numbers (an `.iso8601`
@@ -79,3 +78,47 @@ grid card left and the list area right (Story 13.3's upcoming list; until then `
   month shortcut, so `‹ ›` are pointer and VoiceOver controls only.
 - **Accessibility.** Each cell reads `Wednesday 4 November, 2 calendars with events, today, selected`; the
   buttons read `Previous month`, `Back to today`, `Next month`.
+
+## Upcoming list and Home card
+
+Story 13.3, DESIGN "Upcoming list and event track" (UX-DR35), mockup `key-calendar-tab.html`.
+
+- **Model.** `UpcomingList.build(events:calendars:selectedDay:now:calendar:locale:limit:)` is pure. It starts at
+  `selectedDay`; when that is today it starts at *now*, so events that ended today are dropped (a running one
+  stays as `NOW`). Sections by day: the start day always, then each day with a shown row or the first day of an
+  all-day event. Headers `TODAY · WED 04 NOV`, `THU 05 NOV · TOMORROW`, then `FRI 06 NOV` (date from the locale,
+  template `EEEddMMM`, uppercased: `MER. 04 NOV.` in French; `TODAY` / `TOMORROW` from the catalog). All-day
+  events are chips on the first listed day they cover and never count as rows. At most 5 timed rows; then
+  `+N LATER THIS WEEK` counts the remaining timed events that start before the end of the start day's ISO 8601
+  week (no line at 0). An empty start day reads `NO EVENTS TODAY` (`NO EVENTS` for another day) and the
+  following days follow.
+- **Source.** The module merges `events` (today → +14 days) with the grid month's `gridEvents`, so any day picked
+  in the grid has its events.
+- **Hero.** Only when the list starts today: today's running or next timed event (no hero when today has none
+  left; tomorrow's first event is a normal row). Big time (`numeral-big`), title, countdown in the now color
+  (A `iris-1`, C `gold-text`), `15:30–16:15 ● WORK`, `JOIN CALL ↵` when it has a video link, and the event track.
+  Countdown: `IN 42 MIN` under an hour, `IN 2 H 05` from an hour (minutes round up, so `IN 1 MIN` until the
+  start), `NOW` from the start to the end. Only the hero (and the Home card) tick each second (`TimelineView`);
+  the list rebuilds each minute.
+- **Event track.** A 1px line from the window start (left) to the event start (right tick), with the now marker
+  (A cyan dot, C gold diamond) at `(now − windowStart) / (start − windowStart)`, clamped to 0…1 (1 once running).
+  `windowStart` = the latest end of a timed event that ends by the hero's start, or 2 h before the start,
+  whichever is later (`UpcomingList.trackWindowStart(for:events:)`).
+- **Rows.** time · calendar dot · title (+ `MEET` / `ZOOM` / `TEAMS` tag) · calendar · relative time (the
+  countdown today, `IN 3 D` on later days). The selected row with a link shows `JOIN CALL ↵` in place of its
+  relative time; rows without a link never show a Join button.
+- **Keyboard.** With the list focused, ↑↓ move the selection through the rows (hero included; from nothing, ↓
+  takes the first and ↑ the last); ↵ opens the selected row's link, or the hero's when nothing is selected. The
+  selection is the module's `selectedEventID` (theme selection ring). `focusEvent(_:)` (occurrence id or EventKit
+  id) selects the event's day in the grid and its row; `joinCall(_:)` opens the link through the module's
+  `openURL` seam (`NSWorkspace.open` in the app).
+- **Home card** (`homeCard()`, 222 × 138): `UPCOMING` with today's date, today's next event (time, `JOIN CALL ↵`
+  when linked, title with the calendar dot, countdown, the same event track), whatever day the grid has
+  selected. `NO EVENTS TODAY` when today has nothing left; without access the card stays (so Settings › Home can
+  list it) and shows `CALENDAR ACCESS` / "Vigie can't read your calendars". The Home grid's button around the
+  card opens the Calendar tab.
+- **Privacy** (AD-24). Event titles and calendar names (rows, chips, hero, Home card) are `.sensitive()` and
+  scrubbed from the VoiceOver labels; times, countdowns, headers, the track and `JOIN CALL` stay and work.
+- **Accessibility.** A row reads "10:30 to 11:00, Design review, Work calendar, in 42 minutes, Join call
+  available"; a chip "v0.3 release week, Work calendar, all day". The track is decorative.
+
