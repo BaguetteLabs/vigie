@@ -732,39 +732,7 @@ Romain has a buildable, CI-checked SwiftPM workspace and hard answers to the two
 Users see a themed Vigie island in the hardware notch or a virtual notch on plain displays, on the right display(s), with sessions in the right wing and every other module in a shared left-wing lane ordered by priority (overflow → `+X`); they can open an expanded view, and configure everything in `config.toml` or a native Settings window.
 **FRs covered:** FR1, FR2, FR3, FR4, FR5, FR6, FR9, FR10, FR11, FR18, FR19, FR20, FR21, FR22, FR23, FR24, FR25, FR26, FR27, FR41, FR87, FR88, FR89, FR91, FR92, FR93, FR94, FR95, FR99, FR100, FR111 · PRD FR-63 (v0.1 floor, Story 2.15)
 
-#### Story 2.16: Virtual notch height follows the menu bar
-
-As a user with an external monitor,
-I want the virtual notch to be exactly as tall as that display's menu bar,
-So that Vigie does not overhang the menu bar on plain displays.
-
-**Requirements:** FR11 (virtual), FR24, FR25, UX-DR14, SPEC §5.5 · **Depends on:** Story 2.6, Story 2.7 · **Ruled by Romain 2026-11-12:** match the menu bar exactly, no legibility floor
-
-**Context:** on a MacBook with a notch the menu bar is as tall as the notch, so the island (height = max(band, notch)) hugs it. On a plain display the virtual notch uses the theme's fixed `spacing.band-height` (34px) and overhangs the 24 pt menu bar by about 10 px (seen live on 2026-11-12, MacBook Air on an external monitor). The host already measures the menu bar height per screen (`MenuBarProbing.menuBar(on:)`), but `NotchGeometry.virtual` uses it only for `placement = below`.
-
-**Acceptance Criteria:**
-
-**Given** a plain display selected for Vigie
-**When** the virtual notch is placed
-**Then** its height is that display's measured menu bar height (24 pt on a default external display, more on scaled ones), plus `[closed] notch_overlap` below it like the physical island; the theme band height is no longer used for virtual height
-
-**Given** the measured height changes (display scaling, display hot-plug, menu bar probe fallback)
-**When** the host re-places its islands
-**Then** the virtual notch follows the new height without a relaunch
-
-**Given** a band shorter than the designed 34px
-**When** closed-notch content is drawn (wing lane items: session chips, quota rings, Time readout, `BREAK DUE`, drop display, idle pill)
-**Then** it fits the band: the theme exposes the band height to views (`Theme.withBandHeight` already raises it; it must also lower it) and the closed-notch components scale their rings, glyphs and labels from the band height instead of fixed values, with no clipping at 24 pt; the expanded view, peeks and the physical-notch band are unchanged
-
-**Given** a plain display whose menu bar is hidden (auto-hide) or unmeasurable
-**When** the probe falls back
-**Then** the fallback height is the standard menu bar height of that screen (`SystemMenuBarProbe.fallbackHeight`), never the theme band
-
-**Given** the `notch geometry` debug log
-**When** a virtual island is placed
-**Then** the line records the measured menu bar height next to the island frame
-
-## Epic 3: Alerts that never steal focus
+### Epic 3: Alerts that never steal focus
 Users get one-time peek alerts with two keyboard actions that never take focus, governed by per-kind rules, Do Not Disturb, reminders and optional macOS notifications; setup problems (e.g. a bad config key) are reported in a neutral alert that opens the right Settings pane.
 **FRs covered:** FR2, FR12, FR13, FR14, FR15, FR16, FR17, FR23, FR28, FR29, FR30, FR41, FR99 · PRD FR-13 (activity log, Story 3.8) · peek concurrency (Story 3.9, added 2026-11-07)
 
@@ -1625,6 +1593,38 @@ So that Vigie is usable for me long before the v0.4 theme work.
 **When** this story is done
 **Then** it lists the floor checks (label with state via the 2.11 helper, non-color cue, 4.5:1 text, keyboard reachability, peek actions by global shortcut), and every later story that adds a surface is done only when that surface passes them
 **And** Story 18.3 only adds "Reduce motion forces calm presence" once presence levels exist (A15, A79)
+
+### Story 2.16: Virtual notch height follows the menu bar
+
+As a user with an external monitor,
+I want the virtual notch to be exactly as tall as that display's menu bar,
+So that Vigie does not overhang the menu bar on plain displays.
+
+**Requirements:** FR11 (virtual), FR24, FR25, UX-DR14, SPEC §5.5 · **Depends on:** Story 2.6, Story 2.7 · **Ruled by Romain 2026-11-12:** match the menu bar exactly, no legibility floor
+
+**Context:** on a MacBook with a notch the menu bar is as tall as the notch, so the island (height = max(band, notch)) hugs it. On a plain display the virtual notch uses the theme's fixed `spacing.band-height` (34px) and overhangs the 24 pt menu bar by about 10 px (seen live on 2026-11-12, MacBook Air on an external monitor). The host already measures the menu bar height per screen (`MenuBarProbing.menuBar(on:)`), but `NotchGeometry.virtual` uses it only for `placement = below`.
+
+**Acceptance Criteria:**
+
+**Given** a plain display selected for Vigie
+**When** the virtual notch is placed
+**Then** its height is that display's measured menu bar height (24 pt on a default external display, more on scaled ones), plus `[closed] notch_overlap` below it like the physical island; the theme band height is no longer used for virtual height
+
+**Given** the measured height changes (display scaling, display hot-plug, menu bar probe fallback)
+**When** the host re-places its islands
+**Then** the virtual notch follows the new height without a relaunch
+
+**Given** a band shorter than the designed 34px
+**When** closed-notch content is drawn (wing lane items: session chips, quota rings, Time readout, `BREAK DUE`, drop display, idle pill)
+**Then** it fits the band: the theme exposes the band height to views (`Theme.withBandHeight` already raises it; it must also lower it) and the closed-notch components scale their rings, glyphs and labels from the band height instead of fixed values, with no clipping at 24 pt; the expanded view, peeks and the physical-notch band are unchanged
+
+**Given** a plain display whose menu bar is hidden (auto-hide) or unmeasurable
+**When** the probe falls back
+**Then** the fallback height is the standard menu bar height of that screen (`SystemMenuBarProbe.fallbackHeight`), never the theme band
+
+**Given** the `notch geometry` debug log
+**When** a virtual island is placed
+**Then** the line records the measured menu bar height next to the island frame
 
 ## Epic 3: Alerts that never steal focus
 
