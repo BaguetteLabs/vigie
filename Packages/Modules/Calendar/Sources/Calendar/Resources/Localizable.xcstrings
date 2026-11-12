@@ -301,6 +301,42 @@
         }
       }
     },
+    "calendar.service.meet": {
+      "comment": "Video service tag after an event title (Google Meet).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Meet"
+          }
+        }
+      }
+    },
+    "calendar.service.teams": {
+      "comment": "Video service tag after an event title (Microsoft Teams).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Teams"
+          }
+        }
+      }
+    },
+    "calendar.service.zoom": {
+      "comment": "Video service tag after an event title.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zoom"
+          }
+        }
+      }
+    },
     "calendar.setting.calendars": {
       "comment": "Heading of the calendars to include (checkboxes grouped by account).",
       "extractionState": "manual",
@@ -405,6 +441,342 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "calendar.upcoming.a11y.allDay": {
+      "comment": "All-day chip accessibility label part.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "all day"
+          }
+        }
+      }
+    },
+    "calendar.upcoming.a11y.calendar": {
+      "comment": "Upcoming row accessibility label part: the calendar title.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ calendar"
+          }
+        }
+      }
+    },
+    "calendar.upcoming.a11y.hours": {
+      "comment": "Spoken countdown part: hours.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld hour"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld hours"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "calendar.upcoming.a11y.in": {
+      "comment": "Spoken countdown; %@ is a duration (2 hours 5 minutes).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "in %@"
+          }
+        }
+      }
+    },
+    "calendar.upcoming.a11y.in.days": {
+      "comment": "Spoken relative time of a row on a later day.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "in %lld day"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "in %lld days"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "calendar.upcoming.a11y.join": {
+      "comment": "Upcoming row accessibility label part: the event has a video link.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Join call available"
+          }
+        }
+      }
+    },
+    "calendar.upcoming.a11y.joinButton": {
+      "comment": "Accessibility label of the Join call button.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Join call"
+          }
+        }
+      }
+    },
+    "calendar.upcoming.a11y.minutes": {
+      "comment": "Spoken countdown part: minutes.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld minute"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld minutes"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "calendar.upcoming.a11y.now": {
+      "comment": "Spoken countdown while the event runs.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "now"
+          }
+        }
+      }
+    },
+    "calendar.upcoming.a11y.range": {
+      "comment": "Upcoming row accessibility label part: start and end times.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ to %2$@"
+          }
+        }
+      }
+    },
+    "calendar.upcoming.allDay": {
+      "comment": "All-day chip on an upcoming list day header; drawn uppercase.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All day"
+          }
+        }
+      }
+    },
+    "calendar.upcoming.from": {
+      "comment": "Upcoming list card meta when another day is selected; %@ is the day (THU 12 NOV).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "FROM %@"
+          }
+        }
+      }
+    },
+    "calendar.upcoming.from.today": {
+      "comment": "Upcoming list card meta when the list starts today.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "FROM TODAY"
+          }
+        }
+      }
+    },
+    "calendar.upcoming.header.today": {
+      "comment": "Upcoming list day header for today; %@ is the date (WED 04 NOV).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "TODAY · %@"
+          }
+        }
+      }
+    },
+    "calendar.upcoming.header.tomorrow": {
+      "comment": "Upcoming list day header for tomorrow; %@ is the date (THU 05 NOV).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · TOMORROW"
+          }
+        }
+      }
+    },
+    "calendar.upcoming.in.days": {
+      "comment": "Relative time of an upcoming row on a later day (IN 3 D).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "IN %lld D"
+          }
+        }
+      }
+    },
+    "calendar.upcoming.in.hours": {
+      "comment": "Countdown from an hour: hours, then two-digit minutes (IN 2 H 05).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "IN %1$lld H %2$02lld"
+          }
+        }
+      }
+    },
+    "calendar.upcoming.in.minutes": {
+      "comment": "Countdown under an hour (IN 42 MIN).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "IN %lld MIN"
+          }
+        }
+      }
+    },
+    "calendar.upcoming.join": {
+      "comment": "Join call inline chip (opens the event's video link); drawn uppercase.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Join call ↵"
+          }
+        }
+      }
+    },
+    "calendar.upcoming.noEvents": {
+      "comment": "Upcoming list: the selected day (not today) has no event.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "NO EVENTS"
+          }
+        }
+      }
+    },
+    "calendar.upcoming.now": {
+      "comment": "Countdown while the event runs (or at its start).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "NOW"
+          }
+        }
+      }
+    },
+    "calendar.upcoming.overflow": {
+      "comment": "Upcoming list: timed events after the five shown that start this ISO week.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "+%lld LATER THIS WEEK"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "+%lld LATER THIS WEEK"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "calendar.upcoming.range": {
+      "comment": "Hero row time range: start and end times (15:30–16:15).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@–%2$@"
+          }
+        }
+      }
+    },
+    "calendar.upcoming.title": {
+      "comment": "Upcoming list card title (tab) and Home calendar card title; drawn uppercase.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Upcoming"
           }
         }
       }

@@ -76,7 +76,7 @@ func eventually(_ condition: @MainActor () -> Bool) async -> Bool {
         try await h.start()
         #expect(h.module.leftWingItems().isEmpty)
         for size in CompactSize.allCases { #expect(h.module.compactView(size: size) == nil) }
-        #expect(h.module.homeCard() == nil)
+        #expect(h.module.homeCard() != nil)  // Story 13.3
         #expect(h.module.dropZones.isEmpty)
         #expect(h.module.expandedView() != nil)
         #expect(h.module.settingsView() != nil)

@@ -32,11 +32,4 @@ extension CalendarModule: AlertActionHandler {
         reminders.resolve(id)
     }
 
-    /// Opens the Calendar tab's upcoming list at the occurrence `id`: selects its day in the month grid
-    /// (``select(_:)``) and stores the id (Story 13.3 scrolls the list to ``focusedEventID``).
-    public func focusEvent(_ id: String) {
-        guard let event = events.first(where: { $0.id == id }) else { return }
-        focusedEventID = id
-        select(event.start)
-    }
 }

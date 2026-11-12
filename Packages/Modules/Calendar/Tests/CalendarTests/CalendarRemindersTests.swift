@@ -262,7 +262,7 @@ func event(
         await h.run(until: Sample.at(day: 6, hour: 16))
         #expect(h.posted.count == 1)
         h.module.handleAlertAction("reminder.open", payload: Data(soon.id.utf8), intent: nil)
-        #expect(h.module.focusedEventID == soon.id)
+        #expect(h.module.selectedEventID == soon.id)
         #expect(h.module.selectedDay == Sample.at(day: 7, hour: 0))
         #expect(h.context.fakeHost.openedOwnTab.count == 1)
         #expect(h.unresolved.isEmpty)

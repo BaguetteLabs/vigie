@@ -2,15 +2,14 @@ import ModuleKit
 import SwiftUI
 import VigieUI
 
-/// What the Calendar tab shows (Story 13.1, 13.2). Story 13.3 replaces the list placeholder with the upcoming
-/// list.
+/// What the Calendar tab shows (Stories 13.1–13.3).
 public enum CalendarTabContent: Hashable, Sendable {
     /// Before the first access check.
     case checking
     /// Access missing: the setup card (mockup `key-calendar-tab.html` 03).
     case setup
-    /// Access granted: the month grid, and the list placeholder with today's event count (`NO EVENTS TODAY`
-    /// when there is none) until Story 13.3's upcoming list.
+    /// Access granted: the month grid and the upcoming list (Story 13.3). `todayCount` counts the events that
+    /// start or run today.
     case grid(todayCount: Int)
 }
 
@@ -51,6 +50,8 @@ struct CalendarTabView: View {
     @Environment(\.vigieTheme) private var theme
     @Environment(\.locale) private var locale
     let module: CalendarModule
+    /// Fixed instant for tests; nil follows the clock (the list each minute, the hero each second).
+    var now: Date?
 
     var body: some View {
         Group {
@@ -62,7 +63,7 @@ struct CalendarTabView: View {
                     VigieCopy.calendarAccess,
                     primaryAction: { module.openSystemSettings() },
                     secondaryAction: { module.openCalendarSettings() })
-            case .grid(let count):
+            case .grid:
                 // Mockup `key-calendar-tab.html`: the 300px grid card left, the upcoming list right
                 // (EXPERIENCE "Calendar": "Month grid left, upcoming list right").
                 HStack(alignment: .top, spacing: theme.spacing(.gridGap)) {
@@ -78,7 +79,7 @@ struct CalendarTabView: View {
                             today: { module.returnToToday() },
                             select: { module.select($0) },
                             move: { module.moveSelection(byDays: $0) }))
-                    listPlaceholder(count)
+                    upcoming
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             }
@@ -87,13 +88,23 @@ struct CalendarTabView: View {
         .task { await module.recheckAccess() }
     }
 
-    @ViewBuilder private func listPlaceholder(_ count: Int) -> some View {
-        if count == 0 {
-            EmptyStateBlock(VigieCopy.noEventsToday)
+    /// The upcoming list (Story 13.3), rebuilt each minute so ended events drop off and relative times move.
+    @ViewBuilder private var upcoming: some View {
+        if let now {
+            upcomingList(at: now, fixed: now)
         } else {
-            EmptyStateBlock(
-                label: LocalizedStringResource(
-                    "calendar.tab.today", defaultValue: "\(count) EVENTS TODAY", bundle: CalendarModule.bundle))
+            TimelineView(.everyMinute) { context in upcomingList(at: context.date, fixed: nil) }
         }
+    }
+
+    private func upcomingList(at date: Date, fixed: Date?) -> some View {
+        let list = module.upcomingList(locale: locale, now: date)
+        return UpcomingListView(
+            list: list, selectedID: module.selectedEventID, now: fixed, builtAt: date,
+            meta: CalendarModule.upcomingMeta(list, calendar: module.calendar, locale: locale),
+            actions: UpcomingActions(
+                select: { module.selectUpcoming($0) },
+                join: { module.joinCall($0) },
+                key: { module.handleUpcomingKey($0, list: module.upcomingList(locale: locale)) }))
     }
 }

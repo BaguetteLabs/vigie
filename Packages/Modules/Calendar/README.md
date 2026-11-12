@@ -39,7 +39,7 @@ alarm of `events` (so `calendars` and `hide_all_day` apply; location alarms neve
   `16:00–17:00 · Work`, the day first when not today, `All day` for all-day events, the video service last
   (`· Zoom`). Both are `Sensitive` (dots in Privacy mode; macOS notifications carry only `CALENDAR`). Primary:
   `Join call` (`reminder.join`, opens the link) when the event has a video link, else `Open calendar`
-  (`reminder.open`: `focusEvent(id)` selects the event's day in the grid and sets `focusedEventID`, then the
+  (`reminder.open`: `focusEvent(id)` selects the event's day in the grid and its row in the upcoming list (`selectedEventID`), then the
   tab opens). Dismiss is the event's `secondaryAction` (`reminder.dismiss`). Every action resolves the alert.
 - **Resolution.** The alert stays unresolved until its event ends (so `[notify] after_focus = "replay"` replays
   it after a Focus, and `drop` drops it), until an action is taken, until the occurrence disappears from the

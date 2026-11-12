@@ -23,8 +23,9 @@ import os
 /// 13.3's list starts there) and ``gridEvents``, the visible month's 42 cells loaded per month, cached until the
 /// next reload, never widening ``events``.
 ///
-/// No closed-notch glance (amended 2026-11-07): no left-wing item, no compact view, no Home card yet. The state
-/// stays `hidden`, reminders included: a `calendar.reminder` peek leaves nothing on the closed notch (Story 13.4,
+/// No closed-notch glance (amended 2026-11-07): no left-wing item, no compact view. The Home card and the
+/// upcoming list are Story 13.3's (`CalendarHomeCard.swift`, `Upcoming*.swift`). The state stays `hidden`
+/// reminders included: a `calendar.reminder` peek leaves nothing on the closed notch (Story 13.4,
 /// ``CalendarReminders``).
 @MainActor @Observable
 public final class CalendarModule: NotchModule {
@@ -88,8 +89,8 @@ public final class CalendarModule: NotchModule {
     private var monthOverride: Date?
     /// The day the user selected when it is not today; nil follows today.
     private var selectionOverride: Date?
-    /// The occurrence a reminder's `Open calendar` asked for (Story 13.4); Story 13.3 scrolls the upcoming list to it.
-    public internal(set) var focusedEventID: String?
+    /// The upcoming list's selected row (Story 13.3): an occurrence id, set by a click, ↑↓ or `focusEvent(_:)`.
+    public internal(set) var selectedEventID: String?
     /// Calendar reminder alerts (Story 13.4).
     @ObservationIgnored let reminders: CalendarReminders
 
