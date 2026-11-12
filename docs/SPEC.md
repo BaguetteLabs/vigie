@@ -625,7 +625,7 @@ v1 widget types: **status** (e.g. a website health check), **number** (stats), *
 - `widget`: rendered by core templates on every surface the script enables (Home widget, closed-notch side slot, full page). `type` matches the front matter `widget`. `status` widgets carry a level (`ok | warn | error`) instead of a number; it maps to the shared status vocabulary as `ok` → `OK`, `warn` → `WARN`, `error` → `DOWN`.
 - `action`: `{ "open": url }`, `{ "run": [argv] }`, `{ "copy": text }`.
 - **Script-raised alerts** (`notify`) are wanted but deferred after v1; v1 ignores the field.
-- A JSON Schema is published at `schemas/script-module.schema.json`. Exact field names are fixed with the schema.
+- A JSON Schema is published at [`schemas/script-module.schema.json`](../schemas/script-module.schema.json) (Story 12.1): `#/$defs/frontMatter` for the front matter, `#/$defs/output` for stdout. Both documents may carry `schema: 1` (the schema version, default 1; bumped on breaking changes, see [`schemas/README.md`](../schemas/README.md)). Front matter is strict (an unknown key is an error; there is no per-script `side` key, `side` is a `surfaces` value); output is tolerant (unknown keys are ignored). Defaults: `icon` `terminal`, `surfaces` `[home]`, `state` `ambient`. A `status` widget requires `level`, `number` and `text` widgets require `value` (a string or a number). Setting types are those of §4.4 without `hotkey`; a `secret` has no default.
 
 ### 9.4 Install from link
 
