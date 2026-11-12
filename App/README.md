@@ -10,11 +10,21 @@ xcodegen generate
 xcodebuild -project Vigie.xcodeproj -scheme Vigie -configuration Debug build
 ```
 
-Debug builds are `Vigie Dev.app` (`fr.baguettelabs.vigie.dev`); Release builds are `Vigie.app` (`fr.baguettelabs.vigie`). Both are ad-hoc signed for now.
+Debug builds are `Vigie Dev.app` (`fr.baguettelabs.vigie.dev`); Release builds are `Vigie.app` (`fr.baguettelabs.vigie`).
+
+## Signing
+
+`Config/Signing.xcconfig` (the `configFiles` of `project.yml`) signs ad-hoc by default. An ad-hoc signature has no stable designated requirement, so macOS forgets a Keychain "Always Allow" at every rebuild and asks again (for example when `plan_auth = "claude_code"` reads Claude Code's login). Run this once per Mac:
+
+```sh
+Scripts/dev-signing.sh          # --print shows what it would write
+```
+
+It writes the gitignored `Config/Signing.local.xcconfig` with the SHA-1 of this Mac's first `Apple Development:` identity, so Debug builds (and their `vigie-dev` helper) keep the same designated requirement across rebuilds and "Always Allow" sticks. Without one it prints the steps to create a self-signed code-signing certificate named `Vigie Dev Signing` in Keychain Access; run it again afterwards. Check with `codesign -dr - "Vigie Dev.app"` (`anchor apple generic` for an Apple Development identity). CI (`CODE_SIGN_IDENTITY=- CODE_SIGNING_ALLOWED=NO` on the command line) and Release builds stay ad-hoc until Developer ID signing (Story 6.1).
 
 ## Bundled CLI
 
-The "Embed vigie CLI" build phase (`project.yml`) builds `Packages/VigieCLI` with SwiftPM in the app's configuration and copies it to `Contents/Helpers/$(VIGIE_CLI_NAME)`: `vigie-dev` in `Vigie Dev.app` (Debug, so it talks to the dev socket and spool), `vigie` in `Vigie.app` (Release, universal). Its String Catalog bundle goes to `Contents/Resources/VigieCLI_VigieCLI.bundle`. Ad-hoc builds sign the helper in the phase. At launch `CLIInstaller` links `~/.local/bin/<cli name>` to the helper (AD-22).
+The "Embed vigie CLI" build phase (`project.yml`) builds `Packages/VigieCLI` with SwiftPM in the app's configuration and copies it to `Contents/Helpers/$(VIGIE_CLI_NAME)`: `vigie-dev` in `Vigie Dev.app` (Debug, so it talks to the dev socket and spool), `vigie` in `Vigie.app` (Release, universal). Its String Catalog bundle goes to `Contents/Resources/VigieCLI_VigieCLI.bundle`. The phase signs the helper with the app's identity (ad-hoc when there is none; skipped when `CODE_SIGNING_ALLOWED=NO`). At launch `CLIInstaller` links `~/.local/bin/<cli name>` to the helper (AD-22).
 
 ```sh
 "Vigie Dev.app/Contents/Helpers/vigie-dev" version               # vigie-dev fr.baguettelabs.vigie.dev

@@ -10,3 +10,4 @@ DerivedData/
 .build-dd/
 .build*/
 /App/Config/Version.xcconfig
+/App/Config/Signing.local.xcconfig

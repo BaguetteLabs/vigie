@@ -14,7 +14,7 @@ Story 6.4 (FR107). Vigie takes no outside contributions, so there is no CONTRIBU
 Scripts/version.sh --tag v1.4.0 --build "$GITHUB_RUN_NUMBER" --xcconfig App/Config/Version.xcconfig
 ```
 
-It writes `App/Config/Version.xcconfig` (generated, gitignored), which `App/project.yml` attaches to both configurations, and `App/Info.plist` reads `$(MARKETING_VERSION)` and `$(CURRENT_PROJECT_VERSION)`. Run it before `xcodegen generate`; `Scripts/ci-local.sh` and the CI `version` step do. The release workflow and the Sparkle appcast step call it with the tag and run number and read the same values.
+It writes `App/Config/Version.xcconfig` (generated, gitignored), which the committed `App/Config/Signing.xcconfig` includes (that file is what `App/project.yml` attaches to both configurations), and `App/Info.plist` reads `$(MARKETING_VERSION)` and `$(CURRENT_PROJECT_VERSION)`. Run it before `xcodegen generate`; `Scripts/ci-local.sh` and the CI `version` step do. The release workflow and the Sparkle appcast step call it with the tag and run number and read the same values.
 
 ## Protocol and schema numbers
 

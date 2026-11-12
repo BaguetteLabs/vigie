@@ -61,6 +61,9 @@ Scripts/spool-floor-test.sh
 echo "==> version script test"
 Scripts/tests/version-test.sh
 
+echo "==> dev signing script test"
+Scripts/tests/dev-signing-test.sh
+
 echo "==> xcodegen generate"
 Scripts/version.sh --xcconfig App/Config/Version.xcconfig
 (cd App && xcodegen generate)
