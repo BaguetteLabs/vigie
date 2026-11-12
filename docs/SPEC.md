@@ -250,6 +250,8 @@ When a module moves to `alert`, the host may **peek**: a short partial expansion
 - **Settings per alert kind:** blocked, finished (done) and failed sessions each have their own on/off and reminder settings; quota warning chooses alert or visual-only (§7.2); timer end (Timer, Countdown or Pomodoro break end) and break reminder (break reminders and Pomodoro work-phase ends, §7.7) each have their own on/off, sound and reminder settings; calendar reminder (§7.5) has its own on/off and sound settings.
 - **Setup-problem alert:** unsupported adapter/CLI version, invalid config, missing permission. Same frame and dwell, neutral styling, never an agent state. Actions: Open settings (on the relevant pane) and Dismiss.
 - **Do Not Disturb / macOS Focus mode:** peeks and sounds are suppressed; the closed notch still updates. No bypass option. When the macOS Focus mode ends, missed alerts are dropped by default; the user can choose instead to see the latest still-unresolved alert per module (`[notify] after_focus`).
+  - **Detection (Story 3.10, `docs/decisions/spike-focus-detection.md`):** Vigie ships a Focus filter, "Silence Vigie" (App Intents `SetFocusFilterIntent`, no permission or entitlement). The user adds it to each Focus that should silence Vigie (System Settings › Focus › *mode* › Focus Filters); macOS tells Vigie when that Focus turns on and off, whatever turned it on, and Vigie reads the current filter at launch. Vigie never reads the private Do Not Disturb files (they need Full Disk Access and miss scheduled Focus). Until the filter has run once (`[notify] focus_filter_ran`, local), Settings › Alerts shows a Focus row in a needs-setup state with "Open Focus settings" and a three-step how-to; nothing is shown at launch.
+  - **Shortcuts fallback:** `vigie event app.focus '{"active":true}'` / `'{"active":false}'` from two Shortcuts automations per Focus ("When Turning On" / "When Turning Off", Run Immediately, Allow Running Scripts on) feeds the same state; an "on" with no later message for 12 h counts as off. Settings › Alerts shows the recipe.
 
 Behavior details: EXPERIENCE.md (Component Patterns, Interaction Primitives).
 
@@ -720,6 +722,7 @@ quiet_hours = ""              # e.g. "22:00-08:00"; empty = none
 after_focus = "drop"          # drop | replay (latest unresolved alert per module when the macOS Focus mode ends)
 min_severity = "info"         # info | warn | critical; also per kind in [modules."<id>".notify] with cooldown, outputs, reminder (§6, A74)
 cooldown = "0s"               # per dedupe_key
+# focus_filter_ran = false    # local (local.toml), written by Vigie once its Focus filter has run (§5.2, Story 3.10)
 
 [privacy]                     # local (§10.3)
 auto = false                  # detect screen sharing/recording; manual toggle where impossible. Default true only if the detection method needs no new permission; false if it needs Screen Recording (A88, method from spike 21.1)

@@ -1759,6 +1759,8 @@ So that I fix problems instead of seeing wrong information.
 
 ### Story 3.5: Do Not Disturb and Focus modes
 
+*Status 2026-11-12: the shipped `Assertions.json` detection did not work (Full Disk Access, misses scheduled Focus); detection is replaced by Story 3.10 (Focus filter), the suppression rules below are unchanged.*
+
 As a user in a meeting or Focus mode,
 I want Vigie to stay silent while still updating the notch,
 So that it respects macOS focus without hiding state from me.

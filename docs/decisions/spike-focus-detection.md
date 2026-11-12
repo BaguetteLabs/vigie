@@ -278,3 +278,31 @@ is shown at launch and no modal appears; the state clears once `perform()` has r
 found, Shortcuts topic, 12 h cap) and the 3.5 Focus tests pass unchanged
 **And** the spike's checklist items 1 to 3 are run by hand on the first build and their results recorded in
 the spike file
+
+## Live check (to run on the first build)
+
+Story 3.10 landed the filter ("Silence Vigie", `App/Sources/SilenceVigieFilter.swift`). The build's
+`Metadata.appintents/extract.actionsdata` lists `SilenceVigieFilter` with system protocol
+`com.apple.link.systemProtocol.FocusConfiguration`, parameter `silence` (default false), so checklist item 4 is
+answered: the intent sits in the App target. Items 1 to 3 need a person at the Mac. Watch the log with
+`log stream --predicate 'subsystem BEGINSWITH "fr.baguettelabs.vigie" AND category == "notifier"'` ("Focus filter
+ran: silence …", "Focus filter at launch: …", "Focus mode on/off") next to
+`log stream --predicate 'process == "donotdisturbd"'` ("State was updated").
+
+1. **Filter end to end.** Add "Silence Vigie" to Do Not Disturb (System Settings › Focus › Do Not Disturb ›
+   Focus Filters › Add Filter › Vigie), toggle DND from Control Center: `perform()` runs on and off, Settings ›
+   Alerts › Focus switches to "Filter set up", a peek is suppressed while on. Repeat with the nightly schedule, a
+   smart Focus and DND turned on from the iPhone ("Share across devices").
+   - Manual on / off (latency vs `donotdisturbd`): _
+   - Scheduled: _
+   - Smart activation: _
+   - From the iPhone: _
+   - Settings row cleared after the first run: _
+2. **`current` at launch.** Quit Vigie, turn DND on, launch: "Focus filter at launch: silence true" and peeks
+   suppressed. Quit, turn DND off, launch: "No Focus filter for the current Focus at launch" (`notFound`?).
+   - Focus on at launch: _
+   - No Focus at launch: _
+3. **Launch by the system.** Quit Vigie, toggle DND: does macOS launch Vigie to run `perform()`? Single instance
+   holds (AD-21: one process, no second-instance quit loop).
+   - Launched by the system: _
+   - Single instance: _
