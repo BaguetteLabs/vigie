@@ -896,7 +896,7 @@ A release is published when **a `vX.Y.Z` tag is pushed on a commit that is on `m
 ### 12.4 Auto-update (in the app)
 
 - Uses **Sparkle 2**, the standard update framework for Mac apps distributed outside the App Store. It handles checking, downloading, verifying the EdDSA signature, installing and relaunching.
-- **Appcast URL:** `https://github.com/<org>/<releases repo>/releases/latest/download/appcast.xml`, on the public releases-only repository (§12.1), never the private code repository. GitHub always redirects this URL to the newest stable release.
+- **Appcast URL:** `https://github.com/<org>/<releases repo>/releases/latest/download/appcast.xml`, on the public releases-only repository (§12.1), never the private code repository. GitHub always redirects this URL to the newest stable release. The appcast is an asset of each stable release, written by `Scripts/release/appcast.sh` with every earlier stable item and signed as a whole (Story 6.3); the app reads it from `SUFeedURL`, set by `App/Config/Updates.xcconfig`.
 - **Beta channel** (from the public release, not in v0.1–v0.4 previews): pre-release tags publish a separate `appcast-beta.xml` that includes both betas and stable releases. Turning on "beta updates" in settings switches the feed URL. A GitHub Pages copy of the feed can replace this later if the redirect approach turns out to be limiting.
 - **Settings** (in `[updates]`): `auto_check = true`, `check_interval = "24h"`, `auto_install = false` (ask first by default), `channel = "stable" | "beta"`.
 - Updates are verified twice: the EdDSA signature (Sparkle) and the Developer ID signature plus notarization (macOS Gatekeeper). The public EdDSA key is built into the app's `Info.plist`.

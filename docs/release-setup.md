@@ -1,6 +1,6 @@
 # Release setup: what the maintainer does by hand
 
-Stories 6.1 and 6.2 (AD-17, AD-20, SPEC §12, A49, A86). The build settings for signing are committed in
+Stories 6.1, 6.2 and 6.3 (AD-17, AD-20, SPEC §12, A49, A86). The build settings for signing are committed in
 `App/Config/Signing.xcconfig`; everything below lives in Apple's portals, the maintainer's keychain or GitHub and
 cannot be committed. Romain owns every step. Do them in order: later steps use what earlier ones create.
 
@@ -108,12 +108,30 @@ Access **Developer** (the least role `notarytool` accepts) › Generate.
 
 ## 6. Sparkle EdDSA keys (To do)
 
-1. Download the Sparkle 2 release archive from github.com/sparkle-project/Sparkle/releases and unpack it.
-2. `./bin/generate_keys`: creates the key pair in the login keychain and prints the public key
-   (`SUPublicEDKey`, goes into Info.plist in Story 6.3; it is not a secret).
-3. `./bin/generate_keys -x sparkle_private_key.txt`: exports the private key; its contents are
-   `SPARKLE_PRIVATE_KEY`. Keep a copy in your password manager, then delete the file. Losing it means existing
-   installs can no longer verify updates.
+One Ed25519 key pair signs every update zip and appcast (Story 6.3) and, later, the price table (Story 6.5). The
+public key is built into the app; the private key exists only in your password manager and the `release`
+environment.
+
+1. Get the pinned Sparkle tools (the same 2.10.1 release the app links, checked by SHA-256):
+   `BIN="$(Scripts/release/sign-update.sh tools)"` prints their folder.
+2. `"$BIN/generate_keys"`: creates the key pair in your **login keychain** (item "Private key for signing Sparkle
+   updates", account `ed25519`) and prints the public key. If a key already exists there it is reused, not
+   replaced: never run it on a Mac whose keychain holds another project's Sparkle key unless you add
+   `--account vigie` (then pass the same `--account` to `-x` below).
+3. `"$BIN/generate_keys" -x sparkle_private_key.txt`: exports the private key (base64 of the 32-byte seed). Its
+   contents are the `SPARKLE_PRIVATE_KEY` secret (step 8). Keep a copy in your password manager, then delete the
+   file. Losing it means installed copies can no longer accept updates; leaking it means anyone can sign one.
+4. Public key into the app: in `App/Config/Updates.xcconfig` set `VIGIE_SPARKLE_PUBLIC_KEY = <public key>` (the
+   base64 string `generate_keys` printed; `"$BIN/generate_keys" -p` prints it again) and commit. It is not a secret.
+   Release builds then carry it as `SUPublicEDKey`. Debug (`Vigie Dev`) never gets it: dev builds do not update.
+   Cross-check: `SPARKLE_PRIVATE_KEY="$(cat sparkle_private_key.txt)" Scripts/release/sign-update.sh public-key`
+   prints the same string (needs Homebrew `openssl`, OpenSSL 3).
+5. Optional: remove the keychain item once the private key is in the password manager and GitHub; signing never
+   needs the keychain (`sign-update.sh` passes the secret to `sign_update --ed-key-file -` on stdin).
+
+With an empty `VIGIE_SPARKLE_PUBLIC_KEY` the app logs "updater off in this build" once, never starts Sparkle and
+makes no update request; Settings › Updates shows "Updates are not set up in this build." `release.yml` refuses to
+build a release in that state (step "Updater configured for this release host").
 
 ## 7. GitHub organization, public releases repository and its token (To do, A49, A86)
 
@@ -126,6 +144,10 @@ holds releases. GitHub Releases of the private code repository are not an option
 code cannot see them, so Sparkle and Homebrew could not download anything. `release.yml` publishes there with a
 token, and the private repository's own `GITHUB_TOKEN` stays read-only.
 
+0. In `App/Config/Updates.xcconfig` replace the placeholder `VIGIE_RELEASE_REPO = OWNER/vigie-releases` with
+   `<org>/vigie-releases` and commit (the same value as the `RELEASE_REPO` variable, step 8). The app's feed is
+   `https://github.com/<org>/vigie-releases/releases/latest/download/appcast.xml` (`SUFeedURL`). While it reads
+   `OWNER/…` the app treats the feed as unconfigured and never checks, and `release.yml` stops.
 1. github.com › New repository › Owner `<org>`, name `vigie-releases` (any name works: it is the `RELEASE_REPO`
    variable, step 8), **Public**, *Add a README* ticked (a release needs one commit for its tag to point at; the
    README says "Releases of Vigie. The source code is not public."). No code ever goes in it. Settings › General:
@@ -159,7 +181,7 @@ Private code repository › Settings › Environments › New environment `relea
 | `ASC_KEY_ID` | App Store Connect API Key ID (step 5) |
 | `ASC_ISSUER_ID` | Issuer ID (step 5) |
 | `ASC_KEY_P8` | contents of `AuthKey_<KEYID>.p8` (step 5) |
-| `SPARKLE_PRIVATE_KEY` | exported EdDSA private key (step 6; read by Story 6.3) |
+| `SPARKLE_PRIVATE_KEY` | exported EdDSA private key, base64 seed from `generate_keys -x` (step 6; Story 6.3) |
 | `RELEASE_REPO_TOKEN` | fine-grained token with Contents read/write on `<org>/vigie-releases` only (step 7) |
 
 Only the release (Developer ID) profile is a secret. The `.dev` Development profile is Xcode-managed per Mac and
@@ -179,11 +201,14 @@ lists only registered Macs; CI never signs Debug builds, so it is never stored i
 3. Job `release` waits for approval: Actions › the run › **Review deployments** › `release` › Approve. It then
    imports the certificate into a temporary keychain, installs the profile, archives and exports (Developer ID),
    checks the signature, Hardened Runtime and versions of the app, notarizes and staples the app, packages the
-   zip and the DMG, signs, notarizes and staples the DMG, writes checksums and publishes. The keychain, profile and
+   zip and the DMG, signs, notarizes and staples the DMG, signs the zip with the Sparkle key and (stable tags only)
+   writes the signed `appcast.xml`, writes checksums and publishes. The keychain, profile and
    API key file are deleted at the end, also when a step fails.
 4. Result, on `https://github.com/<RELEASE_REPO>/releases/tag/vX.Y.Z`:
    - `Vigie-X.Y.Z.dmg`: signed, notarized and stapled, the app and an Applications link, for manual download;
-   - `Vigie-X.Y.Z.zip`: the stapled app, for Sparkle (signed with EdDSA and listed in `appcast.xml` by Story 6.3);
+   - `Vigie-X.Y.Z.zip`: the stapled app, for Sparkle (its EdDSA signature is in `appcast.xml`);
+   - `appcast.xml` (stable tags only): the feed the app reads at `releases/latest/download/appcast.xml`, one item
+     per stable release (earlier items copied from the current feed), signed as a whole;
    - `SHA256SUMS.txt`: `shasum -a 256` of both, check with `shasum -a 256 -c SHA256SUMS.txt`.
    Notes: the `## X.Y.Z` section of `CHANGELOG.md` at the tag if there is one, otherwise the tag message. A suffixed
    tag is published as a pre-release and never as "latest", so the stable appcast never offers it.
@@ -224,3 +249,37 @@ codesign -dv --verbose=2 "$APP/Contents/Helpers/vigie" # same authority, runtime
 codesign -d --entitlements - "$APP/Contents/Helpers/vigie" # none
 codesign --verify --deep --strict --verbose=2 "$APP"
 ```
+
+## Auto-update (Story 6.3)
+
+- **Feed:** `appcast.xml` of the newest stable release on `<RELEASE_REPO>` (GitHub redirects
+  `releases/latest/download/` to it). `Scripts/release/appcast.sh` writes it: `sparkle:version` = build number,
+  `sparkle:shortVersionString` = `X.Y.Z`, `sparkle:minimumSystemVersion` = 15.0, the notes of `notes.sh` as
+  Markdown, the zip's `sparkle:edSignature` and `length`. Pre-release tags get no item (A63; the beta feed is Story
+  19.3). The whole feed is signed too (`SURequireSignedFeed`).
+- **Signing:** `Scripts/release/sign-update.sh` runs Sparkle's `sign_update` from the pinned release zip
+  (version and SHA-256 in the script, same version as `App/project.yml`), the key on stdin only. Its `sign`,
+  `verify --public-key` and `public-key` commands are what Story 6.5 reuses for the price table.
+- **Rejected updates:** Sparkle checks the zip's EdDSA signature against `SUPublicEDKey` before extracting
+  (`SUVerifyUpdateBeforeExtraction`), the feed's signature, and that the new app's code signature matches the
+  installed one (same Developer ID team); Gatekeeper checks notarization when the new version opens. Any failure
+  shows Sparkle's error and keeps the installed version. Tested here: a tampered zip and an edited feed fail
+  verification (`Scripts/tests/release-sparkle-test.sh`).
+- **In the app** (`App/Sources/SparkleUpdater.swift`): `[updates] auto_check` (default on) schedules checks every
+  `check_interval` (default 24 h, at least 1 h); off = Sparkle is not started and no update request is made, except
+  when the user picks "Check for Updates…" (Settings › Updates or the notch context menu). `auto_install` (default
+  off) lets Sparkle download in the background and install when Vigie quits; off = Sparkle asks first. Ticking
+  "Automatically download and install updates" in Sparkle's alert writes `auto_install = true` to `config.toml`.
+- **Relaunch (AD-21):** "Install and Relaunch" quits Vigie through the normal path: `applicationShouldTerminate`
+  stops the modules, the Event Server (socket closed; unlinked only if it is still the inode it bound) and the
+  config store, `applicationWillTerminate` releases the instance lock. Sparkle's installer waits for the process to
+  exit, replaces the bundle and opens the new version, which takes the lock, binds the socket and replays the spool
+  (events the CLI spooled meanwhile) before `host.ready` (`RelaunchHandoverTests`).
+- **No installer launcher service:** Vigie is not sandboxed, so `SUEnableInstallerLauncherService` and
+  `SUEnableDownloaderService` stay unset and the XPC services inside `Sparkle.framework` are never launched; no
+  entitlement is added. Sparkle's `Autoupdate` / `Updater.app` run only while an update installs.
+
+What only a real release can verify: a Developer ID export re-signing Sparkle's nested helpers with Hardened
+Runtime and passing notarization; the redirect of `releases/latest/download/appcast.xml`; an actual update from
+one published version to the next (download, signature check, install, relaunch, spool replay); the "ask first"
+alert. Test it with two stable tags in a row (for example `v0.1.0` then `v0.1.1`) once steps 2 to 8 are done.

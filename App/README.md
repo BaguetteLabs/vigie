@@ -39,6 +39,17 @@ Without a team: with exactly one `Apple Development:` identity, or a self-signed
 
 Releases are built only by `.github/workflows/release.yml` on a pushed `vX.Y.Z` tag on `master` (Story 6.2): archive and Developer ID export with `../Scripts/release/ExportOptions.plist`, notarization, DMG + zip + checksums published on the public releases-only repository. Scripts in `../Scripts/release/` (each with `--dry-run`); how to release: [`docs/release-setup.md`](../docs/release-setup.md#releasing-story-62).
 
+## Auto-update (Sparkle)
+
+Sparkle 2.10.1 (SwiftPM, `exactVersion` in `project.yml`, AD-16) is linked by the App target only (AD-2);
+`Sources/SparkleUpdater.swift` implements VigieCore's `UpdaterControlling`, and `UpdatesConfigBridge` (VigieCore)
+drives it from `[updates]` live. `Config/Updates.xcconfig` (a target `configFiles` entry, so `Signing.xcconfig`
+is untouched) sets `VIGIE_RELEASE_REPO`, the feed URL built from it and `VIGIE_SPARKLE_PUBLIC_KEY`, which Info.plist
+reads as `SUFeedURL` and `SUPublicEDKey`. An empty key or the `OWNER/…` placeholder turns the updater off (one log
+line, no Sparkle start, no network); Debug never gets a key. Info.plist also sets `SUEnableAutomaticChecks = NO`
+(config decides, Sparkle never asks), `SUVerifyUpdateBeforeExtraction` and `SURequireSignedFeed`. Keys and the
+release side: [`docs/release-setup.md`](../docs/release-setup.md#auto-update-story-63).
+
 ## Bundled CLI
 
 The "Embed vigie CLI" build phase (`project.yml`) builds `Packages/VigieCLI` with SwiftPM in the app's configuration and copies it to `Contents/Helpers/$(VIGIE_CLI_NAME)`: `vigie-dev` in `Vigie Dev.app` (Debug, so it talks to the dev socket and spool), `vigie` in `Vigie.app` (Release, universal). Its String Catalog bundle goes to `Contents/Resources/VigieCLI_VigieCLI.bundle`. The phase signs the helper with the app's identity (ad-hoc when there is none; skipped when `CODE_SIGNING_ALLOWED=NO`). At launch `CLIInstaller` links `~/.local/bin/<cli name>` to the helper (AD-22).
