@@ -18,6 +18,13 @@ import Testing
         providerName: "Claude", primary: .init(kind: .fiveHour, fraction: 0.38),
         secondary: .init(kind: .weekly, fraction: 0.52), accountLabel: "Work")
 
+    /// A closed Time readout (Story 20.6).
+    static func timeReadout(_ variant: TimeClosedVariant, frozen: Bool = false) -> TimeClosedReadoutModel {
+        TimeClosedReadoutModel(
+            variant: variant, value: "18:42", label: frozen ? "AWAY · PAUSED" : "WORK · 2/4", fractionLeft: 0.75,
+            frozen: frozen, accessibilityLabel: "Pomodoro")
+    }
+
     /// Every closed-notch item a lane can show, by name.
     static var closedItems: [(String, AnyView)] {
         var items: [(String, AnyView)] = [
@@ -27,6 +34,11 @@ import Testing
             ("bare dial", AnyView(QuotaDialView(model: nested, size: .wing, showsName: false))),
             ("break due", AnyView(TimeBreakDueReadout(value: "15:00", accessibilityLabel: "Break due"))),
             ("break due ring", AnyView(TimeBreakDueReadout(value: "5:00", ringOnly: true, accessibilityLabel: "Due"))),
+            ("time readout", AnyView(TimeClosedReadout(model: timeReadout(.time)))),
+            ("time readout ring", AnyView(TimeClosedReadout(model: timeReadout(.ring)))),
+            ("time readout both", AnyView(TimeClosedReadout(model: timeReadout(.both)))),
+            ("time readout away ring", AnyView(TimeClosedReadout(model: timeReadout(.ring, frozen: true)))),
+            ("time readout away both", AnyView(TimeClosedReadout(model: timeReadout(.both, frozen: true)))),
             ("wing readout", AnyView(WingReadout(value: "38 %", label: "CLAUDE · 5H"))),
             ("empty readout", AnyView(WingEmptyReadout(VigieCopy.noActiveSessions))),
             ("transient readout", AnyView(TransientReadoutView(.copied(lines: 3)))),

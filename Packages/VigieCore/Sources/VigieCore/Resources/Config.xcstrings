@@ -433,6 +433,54 @@
         }
       }
     },
+    "config.modules.time.closed_notch.option.both": {
+      "comment": "Settings option label for value \"both\" of config key modules.time.closed_notch.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ring + time"
+          }
+        }
+      }
+    },
+    "config.modules.time.closed_notch.option.off": {
+      "comment": "Settings option label for value \"off\" of config key modules.time.closed_notch.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Off"
+          }
+        }
+      }
+    },
+    "config.modules.time.closed_notch.option.ring": {
+      "comment": "Settings option label for value \"ring\" of config key modules.time.closed_notch.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ring"
+          }
+        }
+      }
+    },
+    "config.modules.time.closed_notch.option.time": {
+      "comment": "Settings option label for value \"time\" of config key modules.time.closed_notch.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remaining time"
+          }
+        }
+      }
+    },
     "config.notify.after_focus": {
       "comment": "Settings label for the config key notify.after_focus.",
       "extractionState": "manual",

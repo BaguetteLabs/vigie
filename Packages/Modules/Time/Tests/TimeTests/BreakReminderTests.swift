@@ -45,9 +45,9 @@ import Testing
         let keys = manifest.settings.map(\.key)
         #expect(
             keys == [
-                "hotkey", "presets", "pomodoro.work", "pomodoro.short_break", "pomodoro.long_break",
-                "pomodoro.long_every", "breaks.enabled", "breaks.work", "breaks.length", "breaks.away_after",
-                "breaks.style",
+                "hotkey", "presets", "closed_notch", "priority", "pomodoro.work", "pomodoro.short_break",
+                "pomodoro.long_break", "pomodoro.long_every", "breaks.enabled", "breaks.work", "breaks.length",
+                "breaks.away_after", "breaks.style",
             ])
         let byKey = Dictionary(uniqueKeysWithValues: manifest.settings.map { ($0.key, $0.kind) })
         #expect(byKey["breaks.enabled"] == .bool(default: false), "A87: off by default")

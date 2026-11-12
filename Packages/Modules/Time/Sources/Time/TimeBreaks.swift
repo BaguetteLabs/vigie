@@ -281,25 +281,10 @@ extension TimeModule {
 
     // MARK: Surfaces
 
-    /// `BREAK DUE` on the left wing while a break (a reminder's or a Pomodoro's) is due, whatever
-    /// `[modules.time] closed_notch` says (20.6 adds the running-item readout).
-    public func leftWingItems() -> [LeftWingItem] {
-        let length: TimeInterval
-        if let pomodoro, pomodoro.isDue {
-            length = pomodoro.breakLength
-        } else if breaks?.isDue == true {
-            length = breakSettings.length
-        } else {
-            return []
-        }
-        let value = TimeFormat.value(length)
-        let label = TimeFormat.breakDueAccessibility(length: length)
-        let priority = context?.settings.value("priority", as: Int.self) ?? Self.defaultWingPriority
-        return [
-            LeftWingItem(id: "break-due", priority: priority, state: .alert) { size in
-                AnyView(TimeBreakDueReadout(value: value, ringOnly: size == .icon, accessibilityLabel: label))
-            }
-        ]
+    /// The due break's length (a Pomodoro's or a reminder's); nil when no break is due.
+    var dueBreakLength: TimeInterval? {
+        if let pomodoro, pomodoro.isDue { return pomodoro.breakLength }
+        return breaks?.isDue == true ? breakSettings.length : nil
     }
 
     /// The break row on top of the tab: due (Start break / Snooze 5m / Skip) or running (Skip).

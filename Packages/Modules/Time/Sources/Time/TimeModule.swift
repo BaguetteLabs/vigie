@@ -2,6 +2,7 @@ import Foundation
 import ModuleKit
 import Observation
 import SwiftUI
+import VigieUI
 import os
 
 /// `time` (SPEC §7.7, Story 20.2): Timers and Countdowns, the Time tab and the Timer-end alert.
@@ -19,7 +20,8 @@ import os
 /// it runs. `context.away` is subscribed while break reminders are on or a Pomodoro runs.
 ///
 /// Disabled (the default, SPEC §11): the Registry never starts it, so there is no hotkey, job or timer.
-/// The closed-notch readout (20.6) is not here.
+/// The closed-notch readout (Story 20.6, `closed_notch`, `priority`): see `TimeClosedNotch.swift`; it shares the
+/// 1 s tick, which runs only while the tab or the readout shows.
 @MainActor @Observable
 public final class TimeModule: NotchModule, AlertActionHandler {
     nonisolated static let bundle = TimeText.bundle
@@ -55,7 +57,8 @@ public final class TimeModule: NotchModule, AlertActionHandler {
                 kind: .list(of: .string, default: defaultPresets.map(String.init)),
                 scope: .synced,
                 help: LocalizedStringResource("time.setting.presets.help", bundle: bundle)),
-        ] + PomodoroLengths.descriptors(bundle: bundle) + BreakSettings.descriptors(bundle: bundle),
+        ] + closedNotchDescriptors(bundle: bundle) + PomodoroLengths.descriptors(bundle: bundle)
+            + BreakSettings.descriptors(bundle: bundle),
         alertKinds: [timerEndKind, breakReminderKind],
         defaultEnabled: false
     )
@@ -112,6 +115,14 @@ public final class TimeModule: NotchModule, AlertActionHandler {
     @ObservationIgnored var pomodoroEndHandle: AlertHandle?
     @ObservationIgnored var pomodoroRaises = 0
 
+    // Closed-notch readout (Story 20.6).
+    /// `[modules.time] closed_notch`.
+    public internal(set) var closedVariant: TimeClosedVariant = .off
+    /// `[modules.time] priority`: the left-wing priority of the Time item (readout or `BREAK DUE`).
+    public internal(set) var wingPriority = TimeModule.defaultWingPriority
+    /// Closed readouts on screen (one per display); the 1 s tick runs while one shows.
+    @ObservationIgnored var visibleReadouts = 0
+
     public init(now: @escaping @Sendable () -> Date = { Date() }, calendar: Calendar = .current) {
         self.now = now
         self.calendar = calendar
@@ -151,6 +162,7 @@ public final class TimeModule: NotchModule, AlertActionHandler {
             })
         startPomodoroSettings(context.settings)
         startBreakSettings(context.settings)
+        startClosedNotchSettings(context.settings)
         restorePomodoro()
         let presetChanges = context.settings.observe("presets")
         tasks.append(
@@ -175,6 +187,7 @@ public final class TimeModule: NotchModule, AlertActionHandler {
         undoJob = nil
         hotkey = nil
         visibleTabs = 0
+        visibleReadouts = 0
         isRunning = false
         await saveTask?.value
     }
@@ -195,6 +208,7 @@ public final class TimeModule: NotchModule, AlertActionHandler {
             board.hasUnacknowledgedEnd || breaks?.isDue == true || pomodoro?.isDue == true
             ? .alert : (board.hasRunning || breaks?.breakEndsAt != nil || pomodoro != nil ? .active : .hidden)
         armEndJob()
+        updateTick()
         if save { persist() }
     }
 
@@ -335,13 +349,19 @@ public final class TimeModule: NotchModule, AlertActionHandler {
     /// The tab appeared or went away: the 1 s tick runs only while at least one shows.
     func tabVisibility(_ visible: Bool) {
         visibleTabs = max(0, visibleTabs + (visible ? 1 : -1))
-        if visibleTabs > 0, tickJob == nil, isRunning, let context {
+        updateTick()
+    }
+
+    /// The 1 s tick runs while a tab shows, or a closed readout shows something (Story 20.6); never otherwise.
+    func updateTick() {
+        let wanted = isRunning && (visibleTabs > 0 || (visibleReadouts > 0 && offersClosedReadout))
+        if wanted, tickJob == nil, let context {
             tickJob = context.scheduler.every(Self.uiTick) { [weak self] in
                 await MainActor.run { self?.tick() }
             }
             displayNow = now()
-        } else if visibleTabs == 0 {
-            tickJob?.cancel()
+        } else if !wanted, let job = tickJob {
+            job.cancel()
             tickJob = nil
         }
     }

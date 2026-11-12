@@ -888,6 +888,78 @@
           }
         }
       }
+    },
+    "time.setting.closedNotch" : {
+      "comment" : "Settings › Time: the closed-notch Time readout (off, time, ring or both).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Closed notch"
+          }
+        }
+      }
+    },
+    "time.setting.closedNotch.help" : {
+      "comment" : "Settings help for the closed-notch Time readout.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shows the running item nearest its end on the left wing: off, time (remaining time), ring, or both (ring + time). BREAK DUE always shows."
+          }
+        }
+      }
+    },
+    "time.setting.priority" : {
+      "comment" : "Settings › Time: left-wing priority of the Time readout.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Readout priority"
+          }
+        }
+      }
+    },
+    "time.setting.priority.help" : {
+      "comment" : "Settings help for the Time readout priority.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Position of the Time readout among left-wing items; a lower number shows first."
+          }
+        }
+      }
+    },
+    "time.closed.pomodoro.work" : {
+      "comment" : "Closed-notch Time readout label of a Pomodoro work phase: cycle, then cycles in the set (WORK · 2/4).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WORK · %1$lld/%2$lld"
+          }
+        }
+      }
+    },
+    "time.closed.break" : {
+      "comment" : "Closed-notch Time readout label of a break reminder's running break.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "BREAK"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"
