@@ -66,8 +66,10 @@ unavailable" (dedupe `plan:claude`), and resolves it on the next success.
     "subscriptionType"}}`. Only `accessToken` and `expiresAt` are read.
   - `expiresAt` at or before now → `.credentialExpired`. Vigie **never** uses the refresh token, never writes
     or renews the item: the user signs in to Claude Code again (Claude Code renews it itself when it runs).
-  - No consent → `.consentRequired`; item missing or unreadable (or the Keychain prompt denied) →
-    `.credentialMissing`.
+  - No consent → `.consentRequired`; item missing or unreadable → `.credentialMissing`; Keychain prompt refused
+    (`errSecUserCanceled`, `errSecAuthFailed`, `errSecInteractionNotAllowed`) → `.credentialDenied`, and the
+    Keychain is not asked again for `ClaudePlanUsageProvider.denialBackoff` (1 hour): fetches throw
+    `.credentialDenied` without reading it. Granting or revoking consent in Settings, or relaunching, clears it.
 
 The pasted token is read from SecretStore at each fetch. Claude Code's login is read once per launch: the
 provider keeps its `accessToken` and `expiresAt` (not the refresh token) in process memory

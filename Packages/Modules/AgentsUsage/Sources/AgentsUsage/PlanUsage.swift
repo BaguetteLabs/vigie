@@ -201,6 +201,7 @@ extension AgentsUsageModule {
         switch error {
         case .formatChanged: body = UsageText.string("agentsUsage.plan.problem.formatChanged")
         case .unavailable: body = UsageText.string("agentsUsage.plan.problem.network")
+        case .credentialDenied: body = UsageText.string("agentsUsage.plan.error.denied")
         case .unauthorized, .credentialExpired, .credentialMissing, .consentRequired:
             body =
                 credential.map {
@@ -248,19 +249,30 @@ extension AgentsUsageModule {
         return (context, descriptor)
     }
 
-    /// The user clicked Allow: records the consent (local.toml), then refreshes (macOS may prompt now). One
-    /// consent per Account: its own consent record (`claude.claude_code_login.<account>` past the default).
+    /// The user clicked Allow: records the consent (local.toml), clears what the provider held (a held login,
+    /// a refused-prompt back-off), then refreshes (macOS may prompt now). One consent per Account: its own consent
+    /// record (`claude.claude_code_login.<account>` past the default).
     public func grantPlanConsent(for key: UsageAccountKey) async throws {
         guard let (context, descriptor) = planCredential(key) else { throw ModuleServiceError.notAvailable }
         try await context.secrets.grantConsent(for: descriptor)
+        await resetPlanCredential(key)
         await refreshPlan(key)
     }
 
-    /// `Stop using …'s login`: revokes the Account's consent at once and drops its in-memory plan state.
+    /// `Stop using …'s login`: revokes the Account's consent at once, drops its in-memory plan state and what
+    /// the provider held for it.
     public func revokePlanConsent(for key: UsageAccountKey) async throws {
         guard let (context, descriptor) = planCredential(key) else { throw ModuleServiceError.notAvailable }
         dropPlan(key)
         try await context.secrets.revokeConsent(for: descriptor)
+        await resetPlanCredential(key)
+    }
+
+    private func resetPlanCredential(_ key: UsageAccountKey) async {
+        guard let account = account(key), let provider = adapters.adapter(for: key.provider)?.usageProvider else {
+            return
+        }
+        await provider.resetExternalCredential(for: account)
     }
 
     /// Whether the user allowed reading the Account's external credential on this Mac.

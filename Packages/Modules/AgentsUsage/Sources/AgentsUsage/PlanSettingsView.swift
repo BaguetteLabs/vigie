@@ -203,6 +203,7 @@ enum PlanSettingsText {
         case .credentialExpired: UsageText.string("agentsUsage.plan.error.expired")
         case .credentialMissing: UsageText.string("agentsUsage.plan.error.missing")
         case .consentRequired: UsageText.string("agentsUsage.plan.error.consent")
+        case .credentialDenied: UsageText.string("agentsUsage.plan.error.denied")
         }
     }
 }

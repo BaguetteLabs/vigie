@@ -505,6 +505,18 @@
         }
       }
     },
+    "agentsUsage.plan.error.denied" : {
+      "comment" : "Settings status and setup problem body: the user refused the macOS Keychain prompt for Claude Code's login.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vigie was not allowed to read the Claude Code login. Allow it in the Keychain prompt or paste a token."
+          }
+        }
+      }
+    },
     "agentsUsage.plan.error.expired" : {
       "comment" : "Settings status: the other app's stored login has expired.",
       "extractionState" : "manual",

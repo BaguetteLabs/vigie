@@ -1,5 +1,6 @@
 import AgentKit
 import Foundation
+import Security
 
 /// The remote half of the single `claude` usage provider (Story 7.3, AD-23): plan windows from the endpoint in
 /// ``ClaudePlanUsageClient``, through `AdapterContext.http` only (AD-16). `agents.usage` calls it only while the
@@ -9,9 +10,16 @@ import Foundation
 /// SecretStore at each fetch; `claude_code` reads Claude Code's login through `readExternal` (consent required)
 /// once and holds its access token in ``ExternalCredentialCache`` for the session (SPEC §7.2): the Keychain is
 /// read again only when the held token has expired, or on the fetch after the endpoint rejected it (401/403).
-/// Nothing is logged, written to disk or renewed.
+/// A refused Keychain prompt throws `.credentialDenied` and the Keychain is not asked again for
+/// ``denialBackoff`` (or until consent is granted again, or the next launch). Nothing is logged, written to disk
+/// or renewed.
 public struct ClaudePlanUsageProvider: UsageProvider {
     public static let refreshInterval: Duration = .seconds(300)
+    /// How long a refused Keychain prompt keeps the provider from asking again.
+    public static let denialBackoff: Duration = .seconds(3600)
+    /// `readExternal` failures that mean the user (or macOS) refused the read: user cancel, authorization
+    /// failed, no UI allowed.
+    static let denialStatuses: Set<Int32> = [errSecUserCanceled, errSecAuthFailed, errSecInteractionNotAllowed]
 
     let now: @Sendable () -> Date
     /// Expands `~` in Account locations (the credential of a non-default Account).
@@ -38,6 +46,12 @@ public struct ClaudePlanUsageProvider: UsageProvider {
     /// The default Account's login item, or the one Claude Code keeps for the Account's `CLAUDE_CONFIG_DIR`.
     public func externalCredential(for account: AgentAccount) -> ExternalCredentialDescriptor? {
         ClaudeCodeCredential.descriptor(for: account, home: homeDirectory)
+    }
+
+    /// Consent granted or revoked in Settings: forget the held login and the back-off.
+    public func resetExternalCredential(for account: AgentAccount) async {
+        guard let descriptor = externalCredential(for: account) else { return }
+        await credentials.reset(descriptor.id)
     }
 
     public func fetch(context: any AdapterContext) async throws -> UsageSnapshot {
@@ -99,16 +113,25 @@ public struct ClaudePlanUsageProvider: UsageProvider {
             // Expired, or consent revoked: never reuse it.
             await credentials.drop(descriptor.id)
         }
+        let current = now()
+        if let until = await credentials.deniedUntil(descriptor.id) {
+            guard current >= until else { throw .credentialDenied }
+            await credentials.clearDenial(descriptor.id)
+        }
         let text: String
         do {
             text = try await context.secrets.readExternal(descriptor)
         } catch SecretStoreError.consentRequired {
             throw .consentRequired
+        } catch SecretStoreError.failed(let status) where Self.denialStatuses.contains(status) {
+            let backoff = Double(Self.denialBackoff.components.seconds)
+            await credentials.deny(descriptor.id, until: current.addingTimeInterval(backoff))
+            throw .credentialDenied
         } catch {
             throw .credentialMissing
         }
         let login = try ClaudeCodeCredential.login(fromJSON: text)
-        let token = try ClaudeCodeCredential.accessToken(of: login, now: now())
+        let token = try ClaudeCodeCredential.accessToken(of: login, now: current)
         await credentials.hold(login, for: descriptor.id)
         return token
     }

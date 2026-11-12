@@ -33,6 +33,8 @@ final class PlanSecrets: SecretStore, @unchecked Sendable {
     var token: String?
     var external: String?
     var consent: Bool
+    /// When set, `readExternal` throws `SecretStoreError.failed(status:)` with it.
+    var failure: Int32?
     private var _externalReads: [ExternalCredentialDescriptor] = []
     private var _writes = 0
 
@@ -50,6 +52,7 @@ final class PlanSecrets: SecretStore, @unchecked Sendable {
     func readExternal(_ descriptor: ExternalCredentialDescriptor) async throws -> String {
         lock.withLock { _externalReads.append(descriptor) }
         guard consent else { throw SecretStoreError.consentRequired }
+        if let failure { throw SecretStoreError.failed(status: failure) }
         guard let external else { throw SecretStoreError.notFound }
         return external
     }
@@ -355,6 +358,96 @@ func credentialJSON(token: String, expiresAt: Date) -> String {
         #expect(http.authorizations == ["Bearer one", "Bearer two"])
         #expect(secrets.externalReads.isEmpty && secrets.writes == 0)
         #expect(await cache.login(for: ClaudeCodeCredential.descriptor.id) == nil)
+    }
+}
+
+// MARK: - Refused Keychain prompt (keychain prompt loop fix)
+
+@Suite struct PlanDenialTests {
+    let clock = PlanClock()
+    let cache = ExternalCredentialCache()
+    var provider: ClaudePlanUsageProvider {
+        let clock = clock
+        return ClaudePlanUsageProvider(credentialCache: cache, now: { clock.now })
+    }
+
+    func fetch(_ secrets: PlanSecrets, _ http: any HTTPClient) async throws -> UsageSnapshot {
+        try await provider.fetch(context: planContext(auth: "claude_code", secrets: secrets, http: http))
+    }
+
+    func denied(_ status: Int32) -> PlanSecrets {
+        let secrets = PlanSecrets(external: credentialJSON(token: "t", expiresAt: planNow + 86400), consent: true)
+        secrets.failure = status
+        return secrets
+    }
+
+    @Test(arguments: [-128, -25293, -25308] as [Int32])
+    func refusedPromptsAreDenied(_ status: Int32) async {
+        let http = ScriptedHTTP([200])
+        await #expect(throws: PlanUsageError.credentialDenied) { try await fetch(denied(status), http) }
+        #expect(http.authorizations.isEmpty)
+        #expect(PlanUsageError.credentialDenied.needsSignIn)
+    }
+
+    @Test func otherKeychainFailuresStayMissing() async {
+        await #expect(throws: PlanUsageError.credentialMissing) { try await fetch(denied(-25300), ScriptedHTTP([200])) }
+    }
+
+    @Test func aDenialBacksOffForAnHourWithoutTheKeychain() async throws {
+        let http = ScriptedHTTP([200])
+        let secrets = denied(-128)
+        await #expect(throws: PlanUsageError.credentialDenied) { try await fetch(secrets, http) }
+        #expect(secrets.externalReads.count == 1)
+        // Every refresh within the hour: denied, Keychain untouched.
+        for _ in 0..<11 {
+            clock.advance(300)
+            await #expect(throws: PlanUsageError.credentialDenied) { try await fetch(secrets, http) }
+        }
+        #expect(secrets.externalReads.count == 1)
+        // An hour after the denial: one more read, which the user now allows.
+        clock.advance(300)
+        secrets.failure = nil
+        _ = try await fetch(secrets, http)
+        #expect(secrets.externalReads.count == 2 && http.authorizations == ["Bearer t"])
+    }
+
+    @Test func aSecondRefusalAfterTheHourBacksOffAgain() async {
+        let secrets = denied(-128)
+        await #expect(throws: PlanUsageError.credentialDenied) { try await fetch(secrets, ScriptedHTTP([200])) }
+        clock.advance(3600)
+        await #expect(throws: PlanUsageError.credentialDenied) { try await fetch(secrets, ScriptedHTTP([200])) }
+        clock.advance(60)
+        await #expect(throws: PlanUsageError.credentialDenied) { try await fetch(secrets, ScriptedHTTP([200])) }
+        #expect(secrets.externalReads.count == 2)
+    }
+
+    @Test func grantingConsentAgainClearsTheBackOff() async throws {
+        let secrets = denied(-25293)
+        let http = ScriptedHTTP([200])
+        await #expect(throws: PlanUsageError.credentialDenied) { try await fetch(secrets, http) }
+        secrets.failure = nil
+        await provider.resetExternalCredential(for: AgentAccount(id: .default, label: "", location: nil))
+        _ = try await fetch(secrets, http)
+        #expect(secrets.externalReads.count == 2)
+        // Through the adapter (the module calls it on a fresh provider): the shared cache is reset.
+        #expect(await cache.login(for: ClaudeCodeCredential.descriptor.id) != nil)
+        let adapter = ClaudeAdapter(credentialCache: cache)
+        let fresh = try #require(adapter.usageProvider)
+        await fresh.resetExternalCredential(for: AgentAccount(id: .default, label: "", location: nil))
+        #expect(await cache.login(for: ClaudeCodeCredential.descriptor.id) == nil)
+    }
+
+    @Test func theDenialIsPerAccount() async throws {
+        let home = URL(fileURLWithPath: "/Users/me", isDirectory: true)
+        let clock = clock
+        let provider = ClaudePlanUsageProvider(homeDirectory: home, credentialCache: cache, now: { clock.now })
+        let work = AgentAccount(id: "work", label: "Work", location: .configDirectory("~/.claude-work"))
+        let secrets = denied(-128)
+        let context = planContext(auth: "claude_code", secrets: secrets, http: ScriptedHTTP([200]))
+        await #expect(throws: PlanUsageError.credentialDenied) { try await provider.fetch(context: context) }
+        #expect(await cache.deniedUntil(ClaudeCodeCredential.descriptor.id) == planNow + 3600)
+        let workID = try #require(provider.externalCredential(for: work)?.id)
+        #expect(await cache.deniedUntil(workID) == nil)
     }
 }
 

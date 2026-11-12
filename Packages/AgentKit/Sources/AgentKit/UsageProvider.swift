@@ -52,6 +52,11 @@ public protocol UsageProvider: Sendable {
     /// The external credential of one Account (its consent is recorded per Account, AD-9). Default:
     /// ``externalCredential`` for the default Account, nil for the others.
     func externalCredential(for account: AgentAccount) -> ExternalCredentialDescriptor?
+
+    /// The user granted or revoked consent for the Account's external credential in Settings: forget anything
+    /// the provider holds for it in memory (a held login, a refused-prompt back-off), so the next fetch reads
+    /// the credential again. Default: nothing.
+    func resetExternalCredential(for account: AgentAccount) async
 }
 
 extension UsageProvider {
@@ -65,6 +70,8 @@ extension UsageProvider {
     public func externalCredential(for account: AgentAccount) -> ExternalCredentialDescriptor? {
         account.isDefault ? externalCredential : nil
     }
+
+    public func resetExternalCredential(for account: AgentAccount) async {}
 }
 
 /// Why a remote plan-limit fetch failed (Story 7.3, SPEC §14.2). `agents.usage` keeps the last good windows,
@@ -82,13 +89,16 @@ public enum PlanUsageError: Error, Hashable, Sendable {
     case credentialMissing
     /// The user has not allowed Vigie to read the other app's login on this Mac.
     case consentRequired
+    /// The user refused the Keychain prompt for the other app's login (or macOS could not show it). The provider
+    /// waits before asking again; signing in or pasting a token is the fix.
+    case credentialDenied
 }
 
 extension PlanUsageError {
     /// True when signing in again (or pasting a token) is the fix.
     public var needsSignIn: Bool {
         switch self {
-        case .unauthorized, .credentialExpired, .credentialMissing, .consentRequired: true
+        case .unauthorized, .credentialExpired, .credentialMissing, .consentRequired, .credentialDenied: true
         case .unavailable, .formatChanged: false
         }
     }

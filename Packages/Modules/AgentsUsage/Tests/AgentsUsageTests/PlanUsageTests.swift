@@ -44,6 +44,10 @@ final class ScriptedProvider: UsageProvider, @unchecked Sendable {
 
     func push(_ result: Result<[UsageWindow], PlanUsageError>) { lock.withLock { script.append(result) } }
 
+    private var _resets: [AccountID] = []
+    var resets: [AccountID] { lock.withLock { _resets } }
+    func resetExternalCredential(for account: AgentAccount) async { lock.withLock { _resets.append(account.id) } }
+
     var id: AgentID { "claude" }
     var name: LocalizedStringResource { "Claude" }
     var refreshInterval: Duration { .seconds(300) }
@@ -247,6 +251,7 @@ func settle() async {
         }
         #expect(body(.credentialExpired) == "Sign in to Claude Code again, or paste a token.")
         #expect(body(.unauthorized) == body(.credentialExpired))
+        #expect(body(.credentialDenied)?.contains("Keychain prompt") == true)
         #expect(body(.formatChanged)?.contains("changed") == true)
         #expect(body(.unavailable(status: nil))?.contains("could not reach") == true)
         let tokenOnly = ScriptedProvider([], clock: FakeClock(Date()), credential: nil)
@@ -271,6 +276,38 @@ func settle() async {
         try await expired.start()
         #expect(expired.notifier.posted.map(\.body) == ["Sign in to Claude Code again, or paste a token."])
         await expired.module.stop()
+    }
+
+    @Test func aRefusedKeychainPromptRaisesOneSetupProblem() async throws {
+        let harness = try PlanHarness(
+            plan: true, auth: "claude_code", script: Array(repeating: .failure(.credentialDenied), count: 4))
+        try await harness.start()
+        for _ in 0..<3 {
+            harness.clock.advance(300)
+            await harness.context.fakeScheduler.fire()
+        }
+        let denied =
+            "Vigie was not allowed to read the Claude Code login. Allow it in the Keychain prompt or paste a token."
+        #expect(harness.notifier.posted.map(\.body) == [denied])
+        #expect(harness.notifier.posted.first?.dedupeKey == "plan:claude")
+        let state = try #require(harness.module.planState(for: "claude"))
+        #expect(state.lastError == .credentialDenied)
+        #expect(PlanSettingsText.status(state) == denied)
+        #expect(PlanSettingsText.errorText(.credentialDenied) == denied)
+        await harness.module.stop()
+    }
+
+    @Test func grantingAndRevokingConsentResetTheProvidersHeldCredential() async throws {
+        let harness = try PlanHarness(
+            plan: true, auth: "claude_code", script: [.failure(.credentialDenied), .success([fiveHour])])
+        try await harness.start()
+        #expect(harness.provider.resets.isEmpty)
+        try await harness.module.grantPlanConsent(for: "claude")
+        #expect(harness.provider.resets == [.default])
+        #expect(harness.module.planState(for: "claude")?.windows == [fiveHour])
+        try await harness.module.revokePlanConsent(for: "claude")
+        #expect(harness.provider.resets == [.default, .default])
+        await harness.module.stop()
     }
 
     @Test func refreshCadenceWithAFakeClock() async throws {
@@ -340,7 +377,7 @@ func settle() async {
         for key in [
             "agentsUsage.plan.problem.title", "agentsUsage.plan.settings.title", "agentsUsage.plan.stale",
             "agentsUsage.plan.settings.allow", "agentsUsage.plan.settings.stop",
-            "agentsUsage.plan.settings.keychainItem",
+            "agentsUsage.plan.settings.keychainItem", "agentsUsage.plan.error.denied",
         ] {
             #expect(UsageText.string(key) != key)
         }
