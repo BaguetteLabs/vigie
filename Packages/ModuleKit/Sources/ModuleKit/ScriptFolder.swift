@@ -18,6 +18,13 @@ public protocol ScriptFolderService: Sendable {
     /// and when the folder itself appears or disappears (AD-12: the directory is watched, never one inode). It
     /// does not say what changed; the caller rescans. The stream ends when the module stops.
     @MainActor func changes() -> AsyncStream<Void>
+    /// This Mac's confirmations and declines of script files (AD-18, Story 12.3), kept in `local.toml`, never
+    /// synced. Default: ``NoScriptConfirmations`` (nothing recorded, writes refused).
+    var confirmations: any ScriptConfirmationStore { get }
+}
+
+extension ScriptFolderService {
+    public var confirmations: any ScriptConfirmationStore { NoScriptConfirmations() }
 }
 
 /// The default `context.scriptFolder`: no folder, nothing reserved beyond the SPEC ids, no changes.

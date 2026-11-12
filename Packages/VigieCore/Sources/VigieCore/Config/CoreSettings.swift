@@ -17,7 +17,9 @@ public enum CoreSettings {
     /// become known when `IntegrationInstaller` registers the adapter (`ConfigSchema.registerIntegration`).
     /// `[consents]` (local.toml) holds one table per external credential the user allowed (Story 7.3, AD-9); its
     /// keys become known when the secret store first touches the descriptor (`ConfigSchema.registerConsent`).
-    public static let openTables: [ConfigKeyPath] = ["appearance.colors", "integrations", "consents"]
+    /// `[scripts]` (local.toml) holds the per-Mac script confirmations and declines (Story 12.3, AD-18); its keys
+    /// become known when a script's record is first touched (`ConfigSchema.registerScriptRecord`).
+    public static let openTables: [ConfigKeyPath] = ["appearance.colors", "integrations", "consents", "scripts"]
 
     /// `[consents."<descriptor id>"] granted_at` in `local.toml`, written only by the secret store (AD-9).
     public static let consentGrantedAtKey = "granted_at"
@@ -25,6 +27,22 @@ public enum CoreSettings {
     /// `consents."<descriptor id>".granted_at`.
     public static func consentPath(_ descriptorID: String) -> ConfigKeyPath {
         ConfigKeyPath(["consents", descriptorID, consentGrantedAtKey])
+    }
+
+    /// `[scripts.confirmations."<relative path>"] sha256` and `[scripts.declined."<relative path>"] sha256` in
+    /// `local.toml` (Story 12.3, AD-18), written only by `ConfigScriptConfirmations`. The relative path is the
+    /// script file's path relative to the config folder (`modules/github.md`).
+    public static let scriptRecordKey = "sha256"
+
+    /// Which of a script's two records.
+    public enum ScriptRecordKind: String, CaseIterable, Sendable {
+        case confirmations
+        case declined
+    }
+
+    /// `scripts.<confirmations|declined>."<relative path>".sha256`.
+    public static func scriptRecordPath(_ kind: ScriptRecordKind, _ relativePath: String) -> ConfigKeyPath {
+        ConfigKeyPath(["scripts", kind.rawValue, relativePath, scriptRecordKey])
     }
 
     /// The table segment under `[modules."<module id>"]` that holds one table per agent adapter (Story 7.3).

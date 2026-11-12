@@ -2,26 +2,30 @@ import Foundation
 import ModuleKit
 
 /// `context.scriptFolder` (AD-18, Story 12.2): `<config folder>/modules/` from `AppEnvironment` (AD-17), the
-/// built-in ids scripts must not take, scripts' `[modules."<id>"] enabled` from ConfigStore, and a watch on the
-/// folder (AD-12) that ends when the module stops.
+/// built-in ids scripts must not take, scripts' `[modules."<id>"] enabled` from ConfigStore, a watch on the
+/// folder (AD-12) that ends when the module stops, and this Mac's confirmations (Story 12.3).
 public struct CoreScriptFolder: ScriptFolderService {
     public let url: URL?
     public let builtInModuleIDs: Set<ModuleID>
     let enablement: (any ModuleEnablement)?
     let tracker: RegistrationTracker
     let makeWatcher: @MainActor @Sendable () -> any DirectoryWatching
+    /// This Mac's confirmations (Story 12.3): ``ConfigScriptConfirmations`` when the host has a ConfigStore.
+    public let confirmations: any ScriptConfirmationStore
 
     /// - Parameters:
     ///   - makeWatcher: one watcher per `changes()` stream; tests pass a `ManualDirectoryWatcher`.
     public init(
         url: URL?, builtInModuleIDs: Set<ModuleID>, enablement: (any ModuleEnablement)?,
         tracker: RegistrationTracker,
+        confirmations: any ScriptConfirmationStore = NoScriptConfirmations(),
         makeWatcher: @escaping @MainActor @Sendable () -> any DirectoryWatching = { DispatchDirectoryWatcher() }
     ) {
         self.url = url
         self.builtInModuleIDs = builtInModuleIDs
         self.enablement = enablement
         self.tracker = tracker
+        self.confirmations = confirmations
         self.makeWatcher = makeWatcher
     }
 

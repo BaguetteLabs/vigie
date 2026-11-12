@@ -2688,6 +2688,210 @@
           }
         }
       }
+    },
+    "script.confirmation.title" : {
+      "comment" : "Script Confirmation window title.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Review script"
+          }
+        }
+      }
+    },
+    "script.confirmation.warning" : {
+      "comment" : "Script Confirmation warning, SPEC §9.2 verbatim: scripts run as the user without a sandbox.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scripts run as the user, with no sandbox. Only install scripts you trust."
+          }
+        }
+      }
+    },
+    "script.confirmation.explanation" : {
+      "comment" : "Script Confirmation: what Confirm and Decline do.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirm lets this file run on this Mac. Decline disables it on this Mac only; other Macs are not affected. Any change to the file asks again."
+          }
+        }
+      }
+    },
+    "script.confirmation.documentation" : {
+      "comment" : "Script Confirmation section heading: the file's Markdown documentation.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Documentation"
+          }
+        }
+      }
+    },
+    "script.confirmation.noDocumentation" : {
+      "comment" : "Script Confirmation: the file has no documentation.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No documentation."
+          }
+        }
+      }
+    },
+    "script.confirmation.frontMatter" : {
+      "comment" : "Script Confirmation section heading: the file's YAML front matter.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Front matter"
+          }
+        }
+      }
+    },
+    "script.confirmation.noFrontMatter" : {
+      "comment" : "Script Confirmation: the file has no front matter.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No front matter."
+          }
+        }
+      }
+    },
+    "script.confirmation.code" : {
+      "comment" : "Script Confirmation section heading: the script's code, without a language tag.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Code"
+          }
+        }
+      }
+    },
+    "script.confirmation.code.language" : {
+      "comment" : "Script Confirmation section heading: the script's code. %@ = language tag of the code block (python).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Code · %@"
+          }
+        }
+      }
+    },
+    "script.confirmation.noCode" : {
+      "comment" : "Script Confirmation: the file has no single code block.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No code block."
+          }
+        }
+      }
+    },
+    "script.confirmation.fileText" : {
+      "comment" : "Script Confirmation disclosure: shows the whole file exactly as written.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Whole file as text"
+          }
+        }
+      }
+    },
+    "script.confirmation.privacy" : {
+      "comment" : "Script Confirmation footer while Privacy mode hides the file: Confirm is disabled.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Privacy mode hides the file. Turn it off to review and confirm."
+          }
+        }
+      }
+    },
+    "script.confirmation.confirm" : {
+      "comment" : "Script Confirmation button: lets the script run on this Mac.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirm"
+          }
+        }
+      }
+    },
+    "script.confirmation.decline" : {
+      "comment" : "Script Confirmation button: disables the script on this Mac.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Decline"
+          }
+        }
+      }
+    },
+    "script.confirmation.cancel" : {
+      "comment" : "Script Confirmation button: closes without recording anything.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel"
+          }
+        }
+      }
+    },
+    "script.state.notConfirmed" : {
+      "comment" : "Script state on the widget, side slot, page and Settings › Scripts: not confirmed on this Mac yet (UX-DR87). Uppercase.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NOT CONFIRMED"
+          }
+        }
+      }
+    },
+    "script.state.notConfirmed.hint" : {
+      "comment" : "VoiceOver hint of the NOT CONFIRMED script state.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens the Script Confirmation"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

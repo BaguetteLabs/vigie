@@ -504,6 +504,90 @@
           }
         }
       }
+    },
+    "script.settings.empty" : {
+      "comment" : "Settings › Integrations: no script file in the scripts folder.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No scripts in the modules folder."
+          }
+        }
+      }
+    },
+    "script.settings.review" : {
+      "comment" : "Settings › Integrations: button that opens the Script Confirmation for a script.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Review…"
+          }
+        }
+      }
+    },
+    "script.settings.saveFailed" : {
+      "comment" : "Settings › Integrations: confirming or declining could not be saved. %1$@ = file name, %2$@ = error.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Could not save your choice for %1$@: %2$@"
+          }
+        }
+      }
+    },
+    "script.settings.state.confirmed" : {
+      "comment" : "Settings › Integrations: script state, confirmed on this Mac. Uppercase like the other script states.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CONFIRMED"
+          }
+        }
+      }
+    },
+    "script.settings.state.declined" : {
+      "comment" : "Settings › Integrations: script state, declined on this Mac (disabled here only). Uppercase.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DECLINED"
+          }
+        }
+      }
+    },
+    "script.settings.state.errored" : {
+      "comment" : "Settings › Integrations: script state, the file cannot be loaded (a setup problem). Uppercase.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CAN’T LOAD"
+          }
+        }
+      }
+    },
+    "script.settings.title" : {
+      "comment" : "Settings › Integrations: heading of the script list with their confirmation state on this Mac.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scripts on this Mac"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

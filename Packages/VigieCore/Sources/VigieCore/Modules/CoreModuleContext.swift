@@ -208,7 +208,10 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
             dropZones: dropZones ?? EmptyDropZoneDirectory(),
             scriptFolder: CoreScriptFolder(
                 url: environment.scriptModulesFolderURL, builtInModuleIDs: builtInModuleIDs,
-                enablement: configStore.map { ConfigModuleEnablement(store: $0) }, tracker: tracker),
+                enablement: configStore.map { ConfigModuleEnablement(store: $0) }, tracker: tracker,
+                confirmations: configStore.map {
+                    ConfigScriptConfirmations(store: $0, tracker: tracker) as any ScriptConfirmationStore
+                } ?? NoScriptConfirmations()),
             log: log
         )
     }

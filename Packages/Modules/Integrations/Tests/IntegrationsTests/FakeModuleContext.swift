@@ -316,6 +316,9 @@ final class FakeScriptFolder: ScriptFolderService, @unchecked Sendable {
     private var enabledValues: [ModuleID: Bool]
     let url: URL?
     let builtInModuleIDs: Set<ModuleID>
+    /// This Mac's confirmation records (Story 12.3), in memory.
+    let fakeConfirmations = MemoryScriptConfirmations()
+    var confirmations: any ScriptConfirmationStore { fakeConfirmations }
 
     init(
         url: URL?, builtIns: Set<ModuleID> = ["agents.sessions", "agents.usage", "shelf", "time", "integrations"],

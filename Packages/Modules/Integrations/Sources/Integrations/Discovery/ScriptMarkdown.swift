@@ -11,6 +11,8 @@ import Yams
 /// the file; for a script that is almost always a typo). Indented code blocks are documentation.
 struct ScriptMarkdown: Equatable, Sendable {
     var frontMatter: ScriptFrontMatter?
+    /// The front matter as written (the lines between the `---` fences), nil when it is missing or unclosed.
+    var frontMatterText: String?
     var code: String?
     var language: String?
     var documentation: String
@@ -43,6 +45,7 @@ struct ScriptMarkdown: Equatable, Sendable {
         let blocks = fencedBlocks(in: body)
 
         var result = ScriptMarkdown(documentation: "")
+        result.frontMatterText = lines[1..<close].joined(separator: "\n")
         if blocks.count == 1, let block = blocks.first, let end = block.end {
             result.code = block.content.joined(separator: "\n")
             result.language = block.language

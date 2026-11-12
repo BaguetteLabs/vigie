@@ -27,6 +27,10 @@ public final class IntegrationsModule: NotchModule {
     public private(set) var state: ModuleState = .hidden
     /// Every script file of the folder, usable or errored, sorted by file name.
     public private(set) var scripts: [ScriptModuleDefinition] = []
+    /// Each script's state on this Mac by file name (Story 12.3), recomputed on every scan and record change.
+    public internal(set) var localStates: [String: ScriptLocalState] = [:]
+    /// The file under review in the Script Confirmation (Story 12.3), nil when none is open.
+    public internal(set) var reviewing: ScriptModuleDefinition?
 
     @ObservationIgnored private var context: (any ModuleContext)?
     @ObservationIgnored private var watchTask: Task<Void, Never>?
@@ -35,6 +39,9 @@ public final class IntegrationsModule: NotchModule {
     /// Open setup problems by dedupe key, with the body they were posted with.
     @ObservationIgnored private var problems: [String: (body: String, handle: AlertHandle)] = [:]
     @ObservationIgnored private var scanGeneration = 0
+    /// `context.scriptFolder.confirmations` while started (Story 12.3).
+    @ObservationIgnored var confirmations: any ScriptConfirmationStore = NoScriptConfirmations()
+    @ObservationIgnored var confirmationTask: Task<Void, Never>?
     /// Scans applied so far (a test seam).
     @ObservationIgnored private(set) var completedScans = 0
 
@@ -42,6 +49,7 @@ public final class IntegrationsModule: NotchModule {
 
     public func start(context: any ModuleContext) async throws {
         self.context = context
+        startConfirmations(context)
         guard context.scriptFolder.url != nil else { return }
         // Subscribe before the first scan so a change made during it is not lost.
         let changes = context.scriptFolder.changes()
@@ -59,6 +67,7 @@ public final class IntegrationsModule: NotchModule {
         watchTask = nil
         for problem in problems.values { problem.handle.resolve() }
         problems = [:]
+        stopConfirmations()
         context = nil
     }
 
@@ -91,6 +100,7 @@ public final class IntegrationsModule: NotchModule {
             files: files, folderName: folder.lastPathComponent, builtIns: service.builtInModuleIDs,
             enabled: { service.isEnabled($0) })
         if next != scripts { scripts = next }
+        refreshLocalStates()
         reconcileProblems(context.notifier)
         completedScans += 1
     }

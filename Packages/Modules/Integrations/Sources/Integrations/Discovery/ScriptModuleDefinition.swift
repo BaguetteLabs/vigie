@@ -13,6 +13,10 @@ public struct ScriptModuleDefinition: Equatable, Sendable, Identifiable {
     public let contentHash: String
     /// Nil when the front matter is missing or invalid.
     public let frontMatter: ScriptFrontMatter?
+    /// The front matter as written in the file (YAML), nil when missing or unclosed. Shown for review (Story 12.3).
+    public let frontMatterText: String?
+    /// The whole file as UTF-8 text, nil when it is not text. Shown for review (Story 12.3).
+    public let source: String?
     /// The fenced code block's content, without its fences; nil unless the file has exactly one closed block.
     public let code: String?
     /// The first word of the opening fence's info string (`python`), if any.
@@ -37,6 +41,8 @@ public struct ScriptModuleDefinition: Equatable, Sendable, Identifiable {
         relativePath = folderName + "/" + url.lastPathComponent
         contentHash = Self.sha256(data)
         frontMatter = parsed.frontMatter
+        frontMatterText = parsed.frontMatterText
+        source = String(data: data, encoding: .utf8)
         code = parsed.code
         language = parsed.language
         documentation = parsed.documentation

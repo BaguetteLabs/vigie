@@ -297,6 +297,23 @@ public struct ConfigSchema: Sendable {
         return true
     }
 
+    /// Adds `scripts.confirmations."<relative path>".sha256` and `scripts.declined."<relative path>".sha256` (local
+    /// strings, Story 12.3). Returns whether they were added.
+    @discardableResult
+    public mutating func registerScriptRecord(_ relativePath: String) -> Bool {
+        var added = false
+        for kind in CoreSettings.ScriptRecordKind.allCases {
+            let path = CoreSettings.scriptRecordPath(kind, relativePath)
+            guard entries[path] == nil else { continue }
+            let descriptor = SettingDescriptor(
+                key: CoreSettings.scriptRecordKey, label: CoreSettings.label("config.scripts.\(kind.rawValue).sha256"),
+                kind: .string(default: ""), scope: .local)
+            entries[path] = ConfigSchemaEntry(path: path, descriptor: descriptor, moduleID: nil)
+            added = true
+        }
+        return added
+    }
+
     /// The path of a module's setting `key`, routed by its declared scope; nil when undeclared.
     public func path(module id: ModuleID, key: String) -> ConfigKeyPath? {
         if key == "enabled" { return .moduleEnabled(id) }

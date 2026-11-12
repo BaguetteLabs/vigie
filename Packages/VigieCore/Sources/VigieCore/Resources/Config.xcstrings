@@ -972,6 +972,30 @@
           }
         }
       }
+    },
+    "config.scripts.confirmations.sha256": {
+      "comment": "Label for the local.toml key scripts.confirmations.<script file>.sha256: the SHA-256 of the script file the user confirmed on this Mac.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirmed file (SHA-256)"
+          }
+        }
+      }
+    },
+    "config.scripts.declined.sha256": {
+      "comment": "Label for the local.toml key scripts.declined.<script file>.sha256: the SHA-256 of the script file the user declined on this Mac.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Declined file (SHA-256)"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
