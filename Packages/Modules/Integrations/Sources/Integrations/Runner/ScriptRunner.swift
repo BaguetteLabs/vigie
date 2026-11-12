@@ -57,6 +57,8 @@ public final class ScriptRunner {
         let generation: Int
         var runTask: Task<Void, Never>?
         var nextRun: RegistrationToken?
+        /// A widget `run` action in progress (Story 12.5); at most one per script.
+        var actionTask: Task<Void, Never>?
     }
 
     @ObservationIgnored private let dependencies: Dependencies
@@ -144,15 +146,117 @@ public final class ScriptRunner {
         for task in tasks { await task.value }
     }
 
-    /// Waits until no run is in progress (a test seam).
+    /// Waits until no run or action is in progress (a test seam).
     func waitForIdle() async {
-        while let task = entries.values.compactMap(\.runTask).first { await task.value }
+        while let task = entries.values.flatMap({ [$0.runTask, $0.actionTask].compactMap { $0 } }).first {
+            await task.value
+        }
     }
 
     private func discard(_ id: String) {
         guard let entry = entries.removeValue(forKey: id) else { return }
         entry.nextRun?.cancel()
         entry.runTask?.cancel()
+        entry.actionTask?.cancel()
+    }
+
+    // MARK: - Widget actions (Story 12.5)
+
+    /// A click on a widget whose output's action is `run`: starts `argv` for the eligible script `id`, with the
+    /// same environment, working directory, timeout and process-group rules as the script's own runs, and
+    /// records it in the script's runs (``ScriptRunRecord/action``). `argv[0]` is resolved through
+    /// `context.executables` (an absolute path is taken as is). The widget's state does not change. Nothing
+    /// happens for a script that may not run (awaiting confirmation, declined, disabled) or while one of its
+    /// actions runs.
+    public func run(argv: [String], for id: String) {
+        guard !stopped, var entry = entries[id], entry.actionTask == nil, let first = argv.first, !first.isEmpty
+        else { return }
+        let definition = entry.definition
+        let generation = entry.generation
+        entry.actionTask = Task { [weak self] in
+            guard let record = await self?.performAction(argv, of: definition) else { return }
+            self?.finishAction(id, generation: generation, record: record)
+        }
+        entries[id] = entry
+    }
+
+    private func finishAction(_ id: String, generation: Int, record: ScriptRunRecord) {
+        guard !stopped, entries[id]?.generation == generation else { return }
+        entries[id]?.actionTask = nil
+        guard var state = states[id] else { return }
+        state.records.insert(record, at: 0)
+        if state.records.count > Self.recordLimit { state.records.removeLast(state.records.count - Self.recordLimit) }
+        states[id] = state
+    }
+
+    private func performAction(_ argv: [String], of definition: ScriptModuleDefinition) async -> ScriptRunRecord {
+        let startedAt = dependencies.now()
+        func failed(_ outcome: ScriptRunOutcome) -> ScriptRunRecord {
+            ScriptRunRecord(startedAt: startedAt, duration: .zero, outcome: outcome, stderrExcerpt: "", action: argv)
+        }
+        guard let frontMatter = definition.frontMatter else { return failed(.launchFailed("not runnable")) }
+        let name = frontMatter.id.rawValue
+        let timeout = Self.timeout(for: frontMatter.interval)
+        let executable: URL? =
+            argv[0].hasPrefix("/")
+            ? URL(fileURLWithPath: argv[0]) : await dependencies.executables.resolve(argv[0])
+        guard let executable else {
+            dependencies.log("script \(name): action executable \(argv[0]) not found")
+            return failed(.runtimeNotFound(argv[0]))
+        }
+        let (environment, secrets) = await environment(frontMatter, runtime: executable)
+        guard let scratch = dependencies.scratchDirectory else { return failed(.launchFailed("no scratch folder")) }
+        let request = ScriptLaunchRequest(
+            executable: executable, arguments: Array(argv.dropFirst()), environment: environment,
+            workingDirectory: dependencies.workingDirectory, timeout: timeout, scratchDirectory: scratch)
+        switch await Self.launchAction(request, launcher: dependencies.launcher) {
+        case .failure(let error):
+            dependencies.log("script \(name): action launch failed: \(error.description)")
+            return failed(.launchFailed(error.description))
+        case .success(let result):
+            let stderr = Self.excerpt(result.stderr, masking: Array(secrets.values))
+            if !stderr.isEmpty { dependencies.log("script \(name) action stderr:\n\(stderr)") }
+            let outcome: ScriptRunOutcome =
+                switch result.termination {
+                case .timedOut: .timedOut(seconds: Self.timeoutSeconds(timeout))
+                case .signaled(let signal): .failed(exitCode: 128 + signal)
+                case .exited(let code): .actionExited(code)
+                }
+            return ScriptRunRecord(
+                startedAt: startedAt, duration: result.duration, outcome: outcome, stderrExcerpt: stderr,
+                action: argv)
+        }
+    }
+
+    /// Launches an action off the main actor, the scratch folder created first.
+    @concurrent
+    nonisolated static func launchAction(_ request: ScriptLaunchRequest, launcher: any ScriptProcessLaunching) async
+        -> Result<ScriptLaunchResult, ScriptLaunchError>
+    {
+        do {
+            try FileManager.default.createDirectory(
+                at: request.scratchDirectory, withIntermediateDirectories: true,
+                attributes: [.posixPermissions: 0o700])
+            return .success(try await launcher.launch(request))
+        } catch let error as ScriptLaunchError {
+            return .failure(error)
+        } catch {
+            return .failure(ScriptLaunchError(description: String(describing: error)))
+        }
+    }
+
+    /// The child environment of a run of `frontMatter`'s script (settings, secrets read now, PATH, HOME, LANG)
+    /// and the secrets it holds (to mask them in stderr).
+    private func environment(_ frontMatter: ScriptFrontMatter, runtime: URL) async
+        -> (environment: [String: String], secrets: [String: String])
+    {
+        let searchPath = await dependencies.executables.searchPath
+        let secrets = await readSecrets(frontMatter)
+        let configured = dependencies.configuredValue
+        let environment = ScriptEnvironment.build(
+            settings: frontMatter.settings, configured: { configured(frontMatter.id, $0) }, secrets: secrets,
+            searchPath: searchPath, runtime: runtime, home: dependencies.home, language: dependencies.language)
+        return (environment, secrets)
     }
 
     // MARK: - Running
@@ -221,12 +325,7 @@ public final class ScriptRunner {
                 startedAt: startedAt, duration: .zero, outcome: .runtimeNotFound(frontMatter.runtime),
                 stderrExcerpt: "")
         }
-        let searchPath = await dependencies.executables.searchPath
-        let secrets = await readSecrets(frontMatter)
-        let configured = dependencies.configuredValue
-        let environment = ScriptEnvironment.build(
-            settings: frontMatter.settings, configured: { configured(frontMatter.id, $0) }, secrets: secrets,
-            searchPath: searchPath, runtime: runtime, home: dependencies.home, language: dependencies.language)
+        let (environment, secrets) = await environment(frontMatter, runtime: runtime)
 
         guard let scratch = dependencies.scratchDirectory else {
             return ScriptRunRecord(

@@ -38,7 +38,7 @@ public final class IntegrationsModule: NotchModule {
     /// Tests may override it; ``updateRunner()`` is called after every scan and record change.
     @ObservationIgnored public var isScriptEligible: (@MainActor (ScriptModuleDefinition) -> Bool)?
 
-    @ObservationIgnored private var context: (any ModuleContext)?
+    @ObservationIgnored var context: (any ModuleContext)?
     @ObservationIgnored private var watchTask: Task<Void, Never>?
     /// Last bytes read per file, kept while an iCloud file is pending (AD-12: last good value stays).
     @ObservationIgnored private var lastData: [URL: Data] = [:]
@@ -56,6 +56,8 @@ public final class IntegrationsModule: NotchModule {
     @ObservationIgnored var registeredSettings: [ModuleID: [ScriptSetting]] = [:]
     /// Scans applied so far (a test seam).
     @ObservationIgnored private(set) var completedScans = 0
+    /// The script modules registered with the host and the widget-action seams (Story 12.5).
+    @ObservationIgnored var surfaces = ScriptSurfaceRegistry()
 
     public init() {}
 
@@ -84,6 +86,7 @@ public final class IntegrationsModule: NotchModule {
         watchTask = nil
         await runner?.stop()
         runner = nil
+        unregisterScriptModules()
         for problem in problems.values { problem.handle.resolve() }
         problems = [:]
         stopConfirmations()
@@ -129,7 +132,10 @@ public final class IntegrationsModule: NotchModule {
 
     /// Matches the runs to ``scripts`` and ``isScriptEligible`` (after each scan; Story 12.3 calls it after a
     /// confirmation or a decline).
-    public func updateRunner() { runner?.update(scripts) }
+    public func updateRunner() {
+        runner?.update(scripts)
+        reconcileScriptModules()
+    }
 
     /// The host's Refresh for one script (SPEC §9.2), by ``ScriptModuleDefinition/id`` (its file name): runs it
     /// now unless it is running.

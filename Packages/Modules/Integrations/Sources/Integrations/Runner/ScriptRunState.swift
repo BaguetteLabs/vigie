@@ -16,6 +16,9 @@ public enum ScriptRunOutcome: Equatable, Sendable {
     case runtimeNotFound(String)
     /// The process could not be started (temporary file or `posix_spawn` error); `message` is for the log.
     case launchFailed(String)
+    /// A widget `run` action's process exited on its own with this code (Story 12.5). Its output is not a
+    /// widget output: the widget keeps its state.
+    case actionExited(Int32)
 
     public var isSuccess: Bool {
         if case .succeeded = self { return true }
@@ -26,7 +29,7 @@ public enum ScriptRunOutcome: Equatable, Sendable {
     public var exitCode: Int32? {
         switch self {
         case .succeeded, .invalidOutput: 0
-        case .failed(let code): code
+        case .failed(let code), .actionExited(let code): code
         default: nil
         }
     }
@@ -39,12 +42,18 @@ public struct ScriptRunRecord: Equatable, Sendable {
     public let outcome: ScriptRunOutcome
     /// The end of the run's stderr (at most ``ScriptRunner/stderrLimit`` bytes, secrets masked); empty if none.
     public let stderrExcerpt: String
+    /// The argv of a widget `run` action (Story 12.5); nil for a run of the script's code block.
+    public let action: [String]?
 
-    public init(startedAt: Date, duration: Duration, outcome: ScriptRunOutcome, stderrExcerpt: String) {
+    public init(
+        startedAt: Date, duration: Duration, outcome: ScriptRunOutcome, stderrExcerpt: String,
+        action: [String]? = nil
+    ) {
         self.startedAt = startedAt
         self.duration = duration
         self.outcome = outcome
         self.stderrExcerpt = stderrExcerpt
+        self.action = action
     }
 }
 

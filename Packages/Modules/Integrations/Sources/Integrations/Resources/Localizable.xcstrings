@@ -13,6 +13,18 @@
         }
       }
     },
+    "script.card.cadence": {
+      "comment": "Script card header, right: the script's interval, e.g. EVERY 1M (DESIGN Script widget). %@ = interval, uppercase.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EVERY %@"
+          }
+        }
+      }
+    },
     "script.error.action_count": {
       "comment": "Script schema error. %@ = key path of the action.",
       "extractionState": "manual",
@@ -321,6 +333,30 @@
           "stringUnit": {
             "state": "translated",
             "value": "a string or a number"
+          }
+        }
+      }
+    },
+    "script.page.placeholder.label": {
+      "comment": "Tab of a script that declares a page, until the page layout ships (Story 12.11). Uppercase.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SCRIPT PAGE"
+          }
+        }
+      }
+    },
+    "script.page.placeholder.sentence": {
+      "comment": "Tab of a script that declares a page, until the page layout ships (Story 12.11).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This script's page arrives in a later version. Its widget shows on Home."
           }
         }
       }

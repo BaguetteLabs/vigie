@@ -110,6 +110,34 @@ public struct StatusMark: View {
     }
 }
 
+/// The status vocabulary's shape alone, in its level's hue (UX-DR82): for layouts that place the label
+/// themselves (the script status widget's `26px | 1fr` grid, the side-slot item's level over target) and for
+/// the WARN badge of an errored script's meta line. Hidden from VoiceOver: the label beside it is read.
+public struct StatusMarkGlyph: View {
+    @Environment(\.vigieTheme) private var theme
+    private let level: StatusLevel
+    private let size: StatusMarkSize
+    private let length: CGFloat?
+
+    /// - Parameters:
+    ///   - size: large (26), medium (16) or small (10), from the theme.
+    ///   - length: overrides the size's length (a closed-notch glyph capped to a short band).
+    public init(level: StatusLevel, size: StatusMarkSize = .large, length: CGFloat? = nil) {
+        self.level = level
+        self.size = size
+        self.length = length
+    }
+
+    public var body: some View {
+        let style = StatusMarkStyle(level: level, look: theme.look)
+        let side = length ?? size.length(in: theme)
+        StatusMarkShape(shape: style.shape, length: side)
+            .foregroundStyle(theme.color(style.shapeRole))
+            .frame(width: side, height: side)
+            .accessibilityHidden(true)
+    }
+}
+
 /// Ring 2px, cross 3px round-capped at 26px, scaled down for smaller sizes (never under 1px).
 private struct StatusMarkShape: View {
     let shape: StatusMarkStyle.Shape

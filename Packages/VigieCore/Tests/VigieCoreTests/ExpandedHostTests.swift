@@ -371,9 +371,11 @@ final class ExpandedFixture {
         control.openOwnTab(focus: f.intent)
         #expect(f.host.isExpanded)
         #expect(f.host.selectedTabID == "shelf")
-        #expect(throws: ModuleServiceError.self) { try control.registerDynamicModule(TabModule("x")) }
-        // Unbound link: nothing happens.
+        // Unbound link: nothing happens, and no dynamic module can register (Story 12.5).
         CoreHostControl(moduleID: "shelf", link: NotchHostLink()).expand(focus: f.intent)
+        #expect(throws: ModuleServiceError.self) {
+            try CoreHostControl(moduleID: "shelf", link: NotchHostLink()).registerDynamicModule(TabModule("x"))
+        }
     }
 
     @Test func contextFactoryUsesTheInjectedHostControl() {

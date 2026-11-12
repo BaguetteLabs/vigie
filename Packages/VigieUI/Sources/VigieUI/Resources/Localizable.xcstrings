@@ -2892,6 +2892,90 @@
           }
         }
       }
+    },
+    "script.widget.text" : {
+      "comment" : "Label of a short-text script widget whose output has no label (DESIGN Script widget). Uppercase.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TEXT"
+          }
+        }
+      }
+    },
+    "script.meta.updatedUnderMinute" : {
+      "comment" : "Script widget meta line: the output is less than a minute old.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "UPDATED <1 MIN AGO"
+          }
+        }
+      }
+    },
+    "script.meta.updatedMinutesAgo" : {
+      "comment" : "Script widget meta line: minutes since the output arrived, e.g. UPDATED 4 MIN AGO.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "UPDATED %lld MIN AGO"
+          }
+        }
+      }
+    },
+    "script.meta.updatedAgo" : {
+      "comment" : "Script widget meta line: compact time since the output arrived, e.g. UPDATED 1H52 AGO.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "UPDATED %@ AGO"
+          }
+        }
+      }
+    },
+    "script.action.open.hint" : {
+      "comment" : "VoiceOver hint of a script widget whose click opens a link.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens the script's link"
+          }
+        }
+      }
+    },
+    "script.action.run.hint" : {
+      "comment" : "VoiceOver hint of a script widget whose click runs a command.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Runs the script's command"
+          }
+        }
+      }
+    },
+    "script.action.copy.hint" : {
+      "comment" : "VoiceOver hint of a script widget whose click copies text.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copies the script's text"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

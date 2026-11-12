@@ -11,7 +11,7 @@ public enum ScriptRunLabel {
         switch outcome {
         case .succeeded: IntegrationsText.format("script.run.exit", 0)
         case .timedOut(let seconds): IntegrationsText.format("script.run.timed_out", seconds)
-        case .failed(let code): IntegrationsText.format("script.run.exit", Int(code))
+        case .failed(let code), .actionExited(let code): IntegrationsText.format("script.run.exit", Int(code))
         case .invalidOutput: IntegrationsText.string("script.run.invalid_output")
         case .runtimeNotFound: IntegrationsText.string("script.run.runtime_not_found")
         case .launchFailed: IntegrationsText.string("script.run.launch_failed")

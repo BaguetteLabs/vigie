@@ -15,6 +15,7 @@ final class FakeModuleContext: ModuleContext, @unchecked Sendable {
     let fakeHost = RecordingHost()
     let fakePower = FakePower()
     let fakeAway = FakeAway()
+    let fakeClipboard = RecordingClipboard()
     let fakeScriptFolder: FakeScriptFolder
 
     /// `context.secrets` (the integrations module's own store); a `FakeSecretStore` in Settings › Scripts tests.
@@ -44,7 +45,7 @@ final class FakeModuleContext: ModuleContext, @unchecked Sendable {
     var host: any HostControl { fakeHost }
     var permissions: any PermissionsService { NoPermissions() }
     var power: any PowerService { fakePower }
-    var clipboard: any ClipboardService { NoClipboard() }
+    var clipboard: any ClipboardService { fakeClipboard }
     var executables: any ExecutableResolver { fakeExecutables }
     var privacy: any PrivacyService { NoPrivacy() }
     var away: any AwayService { fakeAway }
@@ -222,7 +223,37 @@ final class RecordingHost: HostControl, @unchecked Sendable {
     func requestPeek() {}
     func expand(focus: UserIntent?) {}
     func openOwnTab(focus: UserIntent?) { lock.withLock { opens.append(focus) } }
-    func registerDynamicModule(_ module: any NotchModule) throws -> RegistrationToken { RegistrationToken {} }
+    /// Dynamic modules registered and not cancelled yet, in registration order (Story 12.5).
+    private var registered: [(id: UUID, module: any NotchModule)] = []
+    private var registrationCount = 0
+    var registeredModules: [any NotchModule] { lock.withLock { registered.map(\.module) } }
+    var registeredIDs: [ModuleID] { MainActor.assumeIsolated { registeredModules.map(\.manifest.id) } }
+    /// Every registration so far, cancelled or not.
+    var registrations: Int { lock.withLock { registrationCount } }
+    /// When set, registrations throw it.
+    var registrationError: (any Error)?
+
+    func registerDynamicModule(_ module: any NotchModule) throws -> RegistrationToken {
+        if let registrationError { throw registrationError }
+        let id = UUID()
+        lock.withLock {
+            registered.append((id, module))
+            registrationCount += 1
+        }
+        return RegistrationToken(id: id) { [weak self] in
+            guard let self else { return }
+            self.lock.withLock { self.registered.removeAll { $0.id == id } }
+        }
+    }
+}
+
+/// Records each copy (Story 12.5).
+final class RecordingClipboard: ClipboardService, @unchecked Sendable {
+    private let lock = NSLock()
+    private var texts: [String] = []
+    var copied: [String] { lock.withLock { texts } }
+
+    func copy(_ text: String, clearAfter: Duration?) { lock.withLock { texts.append(text) } }
 }
 
 /// One sleep/wake stream; `send` yields to it.

@@ -40,8 +40,11 @@ public struct CoreHostControl: HostControl {
         link.host?.openTab(moduleID.rawValue, focus: focus)
     }
 
+    /// Registers a script module with the host's ``ModuleRegistry`` on behalf of this module (AD-18, Story
+    /// 12.5): it then takes part in arbitration, Home, the tabs and Settings like a built-in. Throws
+    /// ``ModuleServiceError/notAvailable`` while the link is unbound, ``DynamicModuleError`` when the id is taken.
     @MainActor public func registerDynamicModule(_ module: any NotchModule) throws -> RegistrationToken {
-        // Epic 15 (dynamic script modules).
-        throw ModuleServiceError.notAvailable
+        guard let registry = link.host?.registry else { throw ModuleServiceError.notAvailable }
+        return try registry.registerDynamic(module, owner: moduleID)
     }
 }
