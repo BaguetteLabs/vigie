@@ -29,6 +29,10 @@ public struct ScriptSchemaError: Error, Equatable, Sendable, CustomStringConvert
         case runtime
         /// URL with a scheme.
         case url
+        /// `https://` URL with a host (front matter `source`, schema 2).
+        case httpsURL
+        /// A script version: `1.2.0`, `2.0.0-beta.1` (front matter `version`, schema 2).
+        case version
     }
 
     public enum Reason: Equatable, Sendable {
@@ -43,6 +47,8 @@ public struct ScriptSchemaError: Error, Equatable, Sendable, CustomStringConvert
         case reservedKey(String)
         /// A `schema` version this Vigie does not read.
         case unsupportedSchema(Int, supported: Int)
+        /// A key that needs a newer `schema` than the file declares (`author` in a schema 1 file).
+        case requiresSchema(Int)
         /// An empty string or list where one is required.
         case empty
         case duplicate(String)
@@ -99,6 +105,8 @@ public struct ScriptSchemaError: Error, Equatable, Sendable, CustomStringConvert
             return IntegrationsText.format("script.error.reserved_key", key, value)
         case .unsupportedSchema(let version, let supported):
             return IntegrationsText.format("script.error.unsupported_schema", key, version, supported)
+        case .requiresSchema(let version):
+            return IntegrationsText.format("script.error.requires_schema", key, version)
         case .empty:
             return IntegrationsText.format("script.error.empty", key)
         case .duplicate(let value):

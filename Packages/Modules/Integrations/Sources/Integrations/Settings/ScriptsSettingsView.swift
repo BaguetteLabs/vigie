@@ -58,6 +58,34 @@ struct ScriptsSettingsView: View {
                 Spacer()
                 repositoryFooter
             }
+            // A `vigie://install` link (Story 12.9): the module opened Settings on this pane; one sheet per row, so
+            // it hangs on this row (the heading carries the local review).
+            .sheet(item: installBinding) { review in
+                ScriptConfirmationView(
+                    content: module.installContent(for: review),
+                    onConfirm: { confirmInstall() },
+                    onDecline: { Task { await module.cancelInstall() } },
+                    onCancel: { Task { await module.cancelInstall() } })
+            }
+        }
+    }
+
+    private var installBinding: Binding<ScriptInstallReview?> {
+        Binding(
+            get: { module.installReview },
+            set: { if $0 == nil, module.installReview != nil { Task { await module.cancelInstall() } } })
+    }
+
+    private func confirmInstall() {
+        failure = nil
+        notice = nil
+        Task {
+            do {
+                let url = try await module.confirmInstall()
+                notice = IntegrationsText.format("script.install.installed", url.lastPathComponent)
+            } catch {
+                // The sheet now shows why (nothing to confirm); nothing stays in the folder.
+            }
         }
     }
 

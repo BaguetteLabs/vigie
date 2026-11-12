@@ -1,887 +1,155 @@
 {
-  "sourceLanguage" : "en",
-  "strings" : {
-    "shelf.menu.title" : {
-      "comment" : "Shelf row menu title (right-click or Return on the selected row).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Send to"
+  "sourceLanguage": "en",
+  "strings": {
+    "a11y.grip": {
+      "comment": "Accessibility label of the 6-dot reorder grip.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drag to reorder"
           }
         }
       }
     },
-    "shelf.menu.quickLook" : {
-      "comment" : "Shelf row Send to menu and VoiceOver action: Quick Look the item.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Quick Look"
+    "a11y.join": {
+      "comment": "Accessibility: joins parts of a label, e.g. vigie / api-refactor, blocked.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@, %2$@"
           }
         }
       }
     },
-    "shelf.menu.reveal" : {
-      "comment" : "Shelf row Send to menu and VoiceOver action: show the item in Finder.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reveal"
+    "a11y.path": {
+      "comment": "Accessibility: project / session, e.g. vigie / api-refactor.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ / %2$@"
           }
         }
       }
     },
-    "shelf.menu.pin" : {
-      "comment" : "Shelf row Send to menu and VoiceOver action: pin the item (it never expires).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pin"
+    "a11y.status.blocked": {
+      "comment": "Spoken session status (blocked), lowercase, inside an accessibility label.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "blocked"
           }
         }
       }
     },
-    "shelf.menu.unpin" : {
-      "comment" : "Shelf row Send to menu and VoiceOver action: unpin the item.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unpin"
+    "a11y.status.done": {
+      "comment": "Spoken session status (done), lowercase, inside an accessibility label.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "done"
           }
         }
       }
     },
-    "shelf.sendTo.releaseTarget" : {
-      "comment" : "Shelf tab SEND TO card, Ask AI zone while a stash item hovers it, under RELEASE TO ASK: agent, then folder (\"Claude Code in ~/Code\").",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@ in %2$@"
+    "a11y.status.failed": {
+      "comment": "Spoken session status (failed), lowercase, inside an accessibility label.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "failed"
           }
         }
       }
     },
-    "shelf.sendTo.noTargets" : {
-      "comment" : "Shelf tab SEND TO card when every zone is off (Ask AI module off, AirDrop and Image to Text off). Uppercase.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "NO TARGETS"
+    "a11y.status.idle": {
+      "comment": "Spoken session status (idle), lowercase, inside an accessibility label.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "idle"
           }
         }
       }
     },
-    "usage.history.meta" : {
-      "comment" : "Usage tab: meta of the 7-day history card.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "TOKENS"
+    "a11y.status.stale": {
+      "comment": "Spoken session status (stale), lowercase, inside an accessibility label.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "stale"
           }
         }
       }
     },
-    "usage.history.allAgents" : {
-      "comment" : "Usage tab: label next to the 7-day token total.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ALL AGENTS"
+    "a11y.status.working": {
+      "comment": "Spoken session status (working), lowercase, inside an accessibility label.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "working"
           }
         }
       }
     },
-    "usage.history.a11y.total" : {
-      "comment" : "VoiceOver: the 7-day token total.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tokens, last 7 days: %@"
+    "action.openSettings": {
+      "comment": "Button opening the relevant Settings pane (empty states, setup problems).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open settings"
           }
         }
       }
     },
-    "usage.history.a11y.day" : {
-      "comment" : "VoiceOver: one day of the token history, weekday then tokens.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@ %2$@"
+    "action.openSystemSettings": {
+      "comment": "Button opening macOS System Settings (setup cards).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open System Settings"
           }
         }
       }
     },
-    "usage.cost.meta" : {
-      "comment" : "Usage tab: meta of today's cost card (an estimate, never a bill).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ESTIMATE"
-          }
-        }
-      }
-    },
-    "usage.cost.apiRate" : {
-      "comment" : "Usage tab: label next to today's estimated cost (priced at API rates).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "API RATE"
-          }
-        }
-      }
-    },
-    "usage.cost.apiRate.partial" : {
-      "comment" : "Usage tab: label next to today's cost when some records have no price and are left out.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "API RATE · SOME MODELS UNPRICED"
-          }
-        }
-      }
-    },
-    "usage.cost.approximate" : {
-      "comment" : "Usage tab: today's cost when some records are unpriced, e.g. ≈ $4.12.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "≈ %@"
-          }
-        }
-      }
-    },
-    "usage.cost.none" : {
-      "comment" : "Usage tab: today's cost when there is no record today.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "—"
-          }
-        }
-      }
-    },
-    "usage.cost.source" : {
-      "comment" : "Usage tab: source line of today's cost.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "FROM LOCAL LOGS · OFFLINE"
-          }
-        }
-      }
-    },
-    "usage.tab.title" : {
-      "comment" : "Usage tab: title of the card that holds the no-provider empty state.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "USAGE"
-          }
-        }
-      }
-    },
-    "usage.home.title" : {
-      "comment" : "Home usage card title (Story 11.2).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Usage"
-          }
-        }
-      }
-    },
-    "usage.tab.noProviders" : {
-      "comment" : "Usage tab: meta of the no-provider card.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "0 PROVIDERS"
-          }
-        }
-      }
-    },
-    "usage.tab.settingsShortcut" : {
-      "comment" : "Usage tab: shortcut shown on the Open settings button.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "⌘,"
-          }
-        }
-      }
-    },
-    "usage.history.title" : {
-      "comment" : "Usage tab: title of the 7-day token history card.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "HISTORY · 7D"
-          }
-        }
-      }
-    },
-    "usage.cost.title" : {
-      "comment" : "Usage tab: title of today's estimated cost card.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "COST · TODAY"
-          }
-        }
-      }
-    },
-    "usage.card.moveUp" : {
-      "comment" : "VoiceOver action on a Usage provider card moving it one place up.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Move up"
-          }
-        }
-      }
-    },
-    "usage.card.moveDown" : {
-      "comment" : "VoiceOver action on a Usage provider card moving it one place down.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Move down"
-          }
-        }
-      }
-    },
-    "usage.card.noPlanWindows" : {
-      "comment" : "Usage provider card of a provider without plan limits (tokens and cost from local logs only).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "NO PLAN WINDOWS"
-          }
-        }
-      }
-    },
-    "usage.card.meta.warn" : {
-      "comment" : "Usage provider card meta before the warning threshold, e.g. WARN 80%.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "WARN"
-          }
-        }
-      }
-    },
-    "usage.card.meta.percent" : {
-      "comment" : "Usage provider card meta: the warning threshold value, e.g. 80%.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld%%"
-          }
-        }
-      }
-    },
-    "usage.card.meta.weeklyOnly" : {
-      "comment" : "Usage provider card meta: the plan has a weekly window and no 5-hour window.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "WEEKLY ONLY"
-          }
-        }
-      }
-    },
-    "usage.card.meta.dailyOnly" : {
-      "comment" : "Usage provider card meta: the plan has a daily quota only.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "DAILY QUOTA ONLY"
-          }
-        }
-      }
-    },
-    "usage.card.meta.localOnly" : {
-      "comment" : "Usage provider card meta: no plan limits, only local logs.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "LOCAL LOGS ONLY"
-          }
-        }
-      }
-    },
-    "usage.bar.value" : {
-      "comment" : "Usage bar: share of the window used, e.g. 62%.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld%%"
-          }
-        }
-      }
-    },
-    "usage.bar.reset" : {
-      "comment" : "Usage bar: before the reset time, e.g. RESET 16:40 · IN 1H52.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RESET"
-          }
-        }
-      }
-    },
-    "usage.bar.in" : {
-      "comment" : "Usage bar: time left before the reset, e.g. IN 1H52.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "IN %@"
-          }
-        }
-      }
-    },
-    "usage.bar.elapsed" : {
-      "comment" : "Usage bar pace line: share of the window's time elapsed.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ELAPSED %lld%%"
-          }
-        }
-      }
-    },
-    "usage.bar.pace.within" : {
-      "comment" : "Usage bar pace label: usage at or under the elapsed time plus the tolerance.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "WITHIN PACE"
-          }
-        }
-      }
-    },
-    "usage.bar.pace.withinLead" : {
-      "comment" : "Usage bar pace label: usage ahead of the elapsed time by this many points, inside the tolerance.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "WITHIN PACE · +%lld"
-          }
-        }
-      }
-    },
-    "usage.bar.pace.aheadLead" : {
-      "comment" : "Usage bar pace label: usage ahead of the elapsed time by more than the tolerance.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AHEAD OF PACE · +%lld"
-          }
-        }
-      }
-    },
-    "usage.bar.pace.warning" : {
-      "comment" : "Usage bar label: the window is at or over the warning threshold.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "WARN · ≥ %lld%%"
-          }
-        }
-      }
-    },
-    "usage.bar.a11y.reset" : {
-      "comment" : "VoiceOver: the reset time and the time left of a usage window.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "reset %1$@ in %2$@"
-          }
-        }
-      }
-    },
-    "usage.bar.a11y.elapsed" : {
-      "comment" : "VoiceOver: share of a usage window's time elapsed.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "elapsed %lld percent"
-          }
-        }
-      }
-    },
-    "usage.footer.reorder" : {
-      "comment" : "Usage tab footer under a scrolling provider list, before SETTINGS.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "DRAG TO REORDER · ALSO IN"
-          }
-        }
-      }
-    },
-    "usage.footer.settings" : {
-      "comment" : "Usage tab footer: the end of DRAG TO REORDER · ALSO IN SETTINGS.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SETTINGS"
-          }
-        }
-      }
-    },
-    "usage.dial.a11y.warning" : {
-      "comment" : "VoiceOver: prefix of a quota dial with a window at or over the warning threshold.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Quota warning, %@"
-          }
-        }
-      }
-    },
-    "usage.dial.a11y.ahead" : {
-      "comment" : "VoiceOver: one plan window that is ahead of pace (used more than the elapsed time plus the tolerance).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@, ahead of pace"
-          }
-        }
-      }
-    },
-    "usage.dial.a11y.join" : {
-      "comment" : "VoiceOver: joins the quota dial label so far and the next window.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@, %2$@"
-          }
-        }
-      }
-    },
-    "usage.dial.a11y.stale" : {
-      "comment" : "VoiceOver: quota dial whose last refresh failed; the values are the last known ones.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@, stale"
-          }
-        }
-      }
-    },
-    "usage.dial.a11y.window" : {
-      "comment" : "VoiceOver part for one plan window: window name, percent used (5 hour window 38 percent).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@ %2$lld percent"
-          }
-        }
-      }
-    },
-    "usage.readout.label" : {
-      "comment" : "Closed notch single-provider readout label: provider name and window, uppercase (CLAUDE · 5H).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@ · %2$@"
-          }
-        }
-      }
-    },
-    "usage.readout.percent" : {
-      "comment" : "Closed notch single-provider readout value: percent of the window used (38 %).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld %%"
-          }
-        }
-      }
-    },
-    "usage.window.5h.short" : {
-      "comment" : "Quota readout label: the 5-hour plan window, after the provider name (CLAUDE · 5H).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "5H"
-          }
-        }
-      }
-    },
-    "usage.window.5h.spoken" : {
-      "comment" : "VoiceOver: name of the 5-hour plan window, before its percent.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "5 hour window"
-          }
-        }
-      }
-    },
-    "usage.window.daily.short" : {
-      "comment" : "Quota readout label: the daily plan window (CLAUDE · DAY).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "DAY"
-          }
-        }
-      }
-    },
-    "usage.window.daily.spoken" : {
-      "comment" : "VoiceOver: name of the daily plan window, before its percent.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "daily"
-          }
-        }
-      }
-    },
-    "usage.window.weekly.short" : {
-      "comment" : "Quota readout label: the weekly plan window (CLAUDE · WEEK).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "WEEK"
-          }
-        }
-      }
-    },
-    "usage.window.weekly.spoken" : {
-      "comment" : "VoiceOver: name of the weekly plan window, before its percent.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "weekly"
-          }
-        }
-      }
-    },
-    "settings.secret.set" : {
-      "comment" : "Button on a secret setting: stores the typed value in the Keychain.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Set"
-          }
-        }
-      }
-    },
-    "settings.secret.clear" : {
-      "comment" : "Button on a secret setting: deletes the stored value.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Clear"
-          }
-        }
-      }
-    },
-    "settings.secret.stored" : {
-      "comment" : "Status under a secret field: a value is stored (never shown).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Saved"
-          }
-        }
-      }
-    },
-    "settings.secret.empty" : {
-      "comment" : "Status under a secret field: no value is stored.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Not set"
-          }
-        }
-      }
-    },
-    "settings.secret.unavailable" : {
-      "comment" : "Footnote under a disabled secret field when no secret store is available.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Stored in the Keychain. Not available here."
-          }
-        }
-      }
-    },
-    "a11y.grip" : {
-      "comment" : "Accessibility label of the 6-dot reorder grip.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Drag to reorder"
-          }
-        }
-      }
-    },
-    "a11y.join" : {
-      "comment" : "Accessibility: joins parts of a label, e.g. vigie / api-refactor, blocked.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@, %2$@"
-          }
-        }
-      }
-    },
-    "a11y.path" : {
-      "comment" : "Accessibility: project / session, e.g. vigie / api-refactor.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@ / %2$@"
-          }
-        }
-      }
-    },
-    "a11y.status.blocked" : {
-      "comment" : "Spoken session status (blocked), lowercase, inside an accessibility label.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "blocked"
-          }
-        }
-      }
-    },
-    "a11y.status.done" : {
-      "comment" : "Spoken session status (done), lowercase, inside an accessibility label.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "done"
-          }
-        }
-      }
-    },
-    "a11y.status.failed" : {
-      "comment" : "Spoken session status (failed), lowercase, inside an accessibility label.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "failed"
-          }
-        }
-      }
-    },
-    "a11y.status.idle" : {
-      "comment" : "Spoken session status (idle), lowercase, inside an accessibility label.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "idle"
-          }
-        }
-      }
-    },
-    "a11y.status.stale" : {
-      "comment" : "Spoken session status (stale), lowercase, inside an accessibility label.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "stale"
-          }
-        }
-      }
-    },
-    "a11y.status.working" : {
-      "comment" : "Spoken session status (working), lowercase, inside an accessibility label.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "working"
-          }
-        }
-      }
-    },
-    "action.openSettings" : {
-      "comment" : "Button opening the relevant Settings pane (empty states, setup problems).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Open settings"
-          }
-        }
-      }
-    },
-    "action.openSystemSettings" : {
-      "comment" : "Button opening macOS System Settings (setup cards).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Open System Settings"
-          }
-        }
-      }
-    },
-    "closed.copied.lines" : {
-      "comment" : "Closed notch: transient Image to Text readout after copying recognized text; %lld is the line count.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "COPIED · %lld LINE"
+    "closed.copied.announcement": {
+      "comment": "VoiceOver announcement after Image to Text copied recognized text; %lld is the line count.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Copied %lld line"
                 }
               },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "COPIED · %lld LINES"
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Copied %lld lines"
                 }
               }
             }
@@ -889,227 +157,23 @@
         }
       }
     },
-    "closed.noTextFound" : {
-      "comment" : "Closed notch: transient Image to Text readout when recognition found no text.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "NO TEXT FOUND"
-          }
-        }
-      }
-    },
-    "closed.overflow" : {
-      "comment" : "Closed notch: count of lane items that did not fit, after the last visible one (+X).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "+%lld"
-          }
-        }
-      }
-    },
-    "empty.agents.noAgent.label" : {
-      "comment" : "Empty state label (uppercase).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "NO AGENT CONNECTED"
-          }
-        }
-      }
-    },
-    "empty.agents.noAgent.sentence" : {
-      "comment" : "Empty state sentence: one factual sentence, no exclamation mark.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Connect Claude Code, Codex or Gemini in Settings."
-          }
-        }
-      }
-    },
-    "empty.agents.noSessions.label" : {
-      "comment" : "Empty state label (uppercase).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "NO ACTIVE SESSIONS"
-          }
-        }
-      }
-    },
-    "empty.agents.noSessions.sentence" : {
-      "comment" : "Empty state sentence: one factual sentence, no exclamation mark.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Agent sessions appear here when they start."
-          }
-        }
-      }
-    },
-    "empty.calendar.label" : {
-      "comment" : "Empty state label (uppercase).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "NO EVENTS TODAY"
-          }
-        }
-      }
-    },
-    "empty.expanded.label" : {
-      "comment" : "Empty state label (uppercase): the expanded view has no tab.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "NO TABS"
-          }
-        }
-      }
-    },
-    "empty.expanded.sentence" : {
-      "comment" : "Empty state sentence: one factual sentence, no exclamation mark.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Turn on a module in Settings to add a tab."
-          }
-        }
-      }
-    },
-    "empty.home.label" : {
-      "comment" : "Empty state label (uppercase).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "NO WIDGETS"
-          }
-        }
-      }
-    },
-    "empty.home.sentence" : {
-      "comment" : "Empty state sentence: one factual sentence, no exclamation mark.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pick Home widgets in Settings."
-          }
-        }
-      }
-    },
-    "empty.notes.label" : {
-      "comment" : "Empty state label (uppercase).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "NO NOTES"
-          }
-        }
-      }
-    },
-    "empty.notes.locked.label" : {
-      "comment" : "Empty state label (uppercase).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "NOTES LOCKED"
-          }
-        }
-      }
-    },
-    "empty.notes.locked.sentence" : {
-      "comment" : "Empty state sentence: one factual sentence, no exclamation mark.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Waiting for iCloud Keychain, or enter your recovery key."
-          }
-        }
-      }
-    },
-    "empty.notes.noMatch.label" : {
-      "comment" : "Empty state label (uppercase).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "NO MATCH"
-          }
-        }
-      }
-    },
-    "empty.notes.sentence" : {
-      "comment" : "Empty state sentence: one factual sentence, no exclamation mark.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Press ⌥⌘N to write one."
-          }
-        }
-      }
-    },
-    "empty.shelf.label" : {
-      "comment" : "Empty state label (uppercase).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "STASH EMPTY"
-          }
-        }
-      }
-    },
-    "empty.shelf.sentence" : {
-      "comment" : "Stash empty sentence; %lld is the stash time-to-live in days.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Drag a file, text or image onto the notch, or press ⌘V, to keep it here for %lld day."
+    "closed.copied.lines": {
+      "comment": "Closed notch: transient Image to Text readout after copying recognized text; %lld is the line count.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "COPIED · %lld LINE"
                 }
               },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Drag a file, text or image onto the notch, or press ⌘V, to keep it here for %lld days."
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "COPIED · %lld LINES"
                 }
               }
             }
@@ -1117,863 +181,71 @@
         }
       }
     },
-    "empty.time.label" : {
-      "comment" : "Empty state label (uppercase).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "NOTHING RUNNING"
+    "closed.noTextFound": {
+      "comment": "Closed notch: transient Image to Text readout when recognition found no text.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "NO TEXT FOUND"
           }
         }
       }
     },
-    "empty.usage.label" : {
-      "comment" : "Empty state label (uppercase).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "NO USAGE PROVIDER"
+    "closed.noTextFound.announcement": {
+      "comment": "VoiceOver announcement when Image to Text found no text.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No text found"
           }
         }
       }
     },
-    "empty.usage.noCost.label" : {
-      "comment" : "Empty state label (uppercase).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "NO COST DATA"
+    "closed.overflow": {
+      "comment": "Closed notch: count of lane items that did not fit, after the last visible one (+X).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "+%lld"
           }
         }
       }
     },
-    "empty.usage.noHistory.label" : {
-      "comment" : "Empty state label (uppercase).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "NO HISTORY YET"
+    "drop.band.cancel": {
+      "comment": "Drop display band, right: Esc cancels the drop.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ESC · CANCEL"
           }
         }
       }
     },
-    "empty.usage.readingLogs.label" : {
-      "comment" : "Empty state label (uppercase).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "READING LOGS…"
-          }
-        }
-      }
-    },
-    "empty.usage.sentence" : {
-      "comment" : "Empty state sentence: one factual sentence, no exclamation mark.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Turn on a usage provider for Claude Code, Codex or Gemini CLI in Settings."
-          }
-        }
-      }
-    },
-    "expanded.settings" : {
-      "comment" : "Accessibility label of the settings gear in the expanded view.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Settings"
-          }
-        }
-      }
-    },
-    "expanded.settings.tooltip" : {
-      "comment" : "Tooltip of the settings gear in the expanded view, with its shortcut.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Settings (⌘,)"
-          }
-        }
-      }
-    },
-    "expanded.status" : {
-      "comment" : "Expanded view band status after the green dot: %1$@ is the time (e.g. 14:48), %2$@ the date (e.g. Wed 04 Nov).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Online · %1$@ · %2$@"
-          }
-        }
-      }
-    },
-    "expanded.tab.needsAttention" : {
-      "comment" : "Spoken after a tab name when the tab carries the attention marker, lowercase: Agents, needs attention.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "needs attention"
-          }
-        }
-      }
-    },
-    "expanded.wordmark" : {
-      "comment" : "Brand wordmark on the expanded view band. Not translated.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "VIGIE"
-          }
-        }
-      }
-    },
-    "scroll.hint" : {
-      "comment" : "Footer hint while a list has more rows below.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SCROLL ↓"
-          }
-        }
-      }
-    },
-    "setup.calendar.secondary" : {
-      "comment" : "Setup card button opening Settings › Calendar.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Calendar settings"
-          }
-        }
-      }
-    },
-    "setup.calendar.sentence" : {
-      "comment" : "Setup card sentence for missing calendar access.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Allow access in System Settings › Privacy & Security › Calendars; Vigie only reads events."
-          }
-        }
-      }
-    },
-    "setup.calendar.title" : {
-      "comment" : "Setup card title for missing calendar access.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Vigie can't read your calendars"
-          }
-        }
-      }
-    },
-    "setup.calendar.topic" : {
-      "comment" : "Setup card topic (uppercase) for missing calendar access.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "CALENDAR ACCESS"
-          }
-        }
-      }
-    },
-    "setup.kicker" : {
-      "comment" : "Setup card kicker; %@ is the uppercase topic.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SETUP · %@"
-          }
-        }
-      }
-    },
-    "status.blocked" : {
-      "comment" : "Status label word (blocked). Uppercase, compact UI (UX-DR43).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "BLOCKED"
-          }
-        }
-      }
-    },
-    "status.done" : {
-      "comment" : "Status label word (done). Uppercase, compact UI (UX-DR43).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "DONE"
-          }
-        }
-      }
-    },
-    "status.down" : {
-      "comment" : "Status label word (down). Uppercase, compact UI (UX-DR43).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "DOWN"
-          }
-        }
-      }
-    },
-    "status.down.since" : {
-      "comment" : "Down level with the clock time it went down, e.g. DOWN SINCE 14:44.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "DOWN SINCE %@"
-          }
-        }
-      }
-    },
-    "status.elapsed.days" : {
-      "comment" : "Compact elapsed whole days, e.g. 2D.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lldD"
-          }
-        }
-      }
-    },
-    "status.elapsed.daysHours" : {
-      "comment" : "Compact elapsed days and hours, e.g. 1D 18H.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$lldD %2$lldH"
-          }
-        }
-      }
-    },
-    "status.elapsed.hours" : {
-      "comment" : "Compact elapsed whole hours, e.g. 2H.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lldH"
-          }
-        }
-      }
-    },
-    "status.elapsed.hoursMinutes" : {
-      "comment" : "Compact elapsed hours and two-digit minutes, e.g. 1H52.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$lldH%2$02lld"
-          }
-        }
-      }
-    },
-    "status.elapsed.minutes" : {
-      "comment" : "Compact elapsed minutes, e.g. 14M.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lldM"
-          }
-        }
-      }
-    },
-    "status.failed" : {
-      "comment" : "Status label word (failed). Uppercase, compact UI (UX-DR43).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "FAILED"
-          }
-        }
-      }
-    },
-    "status.failedExit" : {
-      "comment" : "Run exited non-zero; %lld is the exit code.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "FAILED · EXIT %lld"
-          }
-        }
-      }
-    },
-    "status.idle" : {
-      "comment" : "Status label word (idle). Uppercase, compact UI (UX-DR43).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "IDLE"
-          }
-        }
-      }
-    },
-    "status.ok" : {
-      "comment" : "Status label word (ok). Uppercase, compact UI (UX-DR43).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "OK"
-          }
-        }
-      }
-    },
-    "status.qualifier.checkedAgo" : {
-      "comment" : "Qualifier: compact time since the last check, e.g. CHECKED 1H52 AGO.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "CHECKED %@ AGO"
-          }
-        }
-      }
-    },
-    "status.qualifier.checkedMinutesAgo" : {
-      "comment" : "Qualifier: minutes since the last check.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "CHECKED %lld MIN AGO"
-          }
-        }
-      }
-    },
-    "status.qualifier.checkedUnderMinute" : {
-      "comment" : "Qualifier: checked less than a minute ago.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "CHECKED <1 MIN AGO"
-          }
-        }
-      }
-    },
-    "status.qualifier.since" : {
-      "comment" : "Qualifier: since a clock time (24-hour).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SINCE %@"
-          }
-        }
-      }
-    },
-    "status.running" : {
-      "comment" : "Status label word (running). Uppercase, compact UI (UX-DR43).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RUNNING"
-          }
-        }
-      }
-    },
-    "status.stale" : {
-      "comment" : "Status label word (stale). Uppercase, compact UI (UX-DR43).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "STALE"
-          }
-        }
-      }
-    },
-    "status.warn" : {
-      "comment" : "Status label word (warn). Uppercase, compact UI (UX-DR43).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "WARN"
-          }
-        }
-      }
-    },
-    "status.withDetail" : {
-      "comment" : "Status word followed by its qualifier or elapsed time, e.g. WORKING · 14M.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@ · %2$@"
-          }
-        }
-      }
-    },
-    "status.working" : {
-      "comment" : "Status label word (working). Uppercase, compact UI (UX-DR43).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "WORKING"
-          }
-        }
-      }
-    },
-    "usage.pace.ahead" : {
-      "comment" : "Label next to a usage window that is ahead of pace (non-color cue).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AHEAD OF PACE"
-          }
-        }
-      }
-    },
-    "vigieui.sample.appName" : {
-      "comment" : "Sample string proving the VigieUI String Catalog is bundled.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Vigie"
-          }
-        }
-      }
-    },
-    "settings.reset" : {
-      "comment" : "Context menu action on a Settings row: removes the key so its default applies.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reset to Default"
-          }
-        }
-      }
-    },
-    "settings.secret.footnote" : {
-      "comment" : "Footnote under a secret field in Settings.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Stored in the Keychain."
-          }
-        }
-      }
-    },
-    "settings.error.duration" : {
-      "comment" : "Inline Settings error for duration text that does not parse.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enter a duration such as 90s, 15m or 1h30m."
-          }
-        }
-      }
-    },
-    "settings.error.integer" : {
-      "comment" : "Inline Settings error for number text that is not an integer.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enter a whole number."
-          }
-        }
-      }
-    },
-    "settings.error.number" : {
-      "comment" : "Inline Settings error for number text that does not parse.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enter a number."
-          }
-        }
-      }
-    },
-    "settings.error.generic" : {
-      "comment" : "Inline Settings error when a write fails for an unknown reason.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "This change couldn't be saved."
-          }
-        }
-      }
-    },
-    "settings.hotkey.unavailable" : {
-      "comment" : "Shown in place of a shortcut recorder when none is injected.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Shortcut recording is unavailable."
-          }
-        }
-      }
-    },
-    "settings.path.choose" : {
-      "comment" : "Button next to a path field in Settings: opens a file chooser.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Choose…"
-          }
-        }
-      }
-    },
-    "settings.path.choose.prompt" : {
-      "comment" : "Default button of the file chooser opened from Settings.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Choose"
-          }
-        }
-      }
-    },
-    "settings.list.add" : {
-      "comment" : "Button under an editable list in Settings: adds an empty row.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Add"
-          }
-        }
-      }
-    },
-    "settings.list.remove" : {
-      "comment" : "Accessibility label of the button that removes a row from a list in Settings.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Remove"
-          }
-        }
-      }
-    },
-    "sessions.home.meta" : {
-      "comment" : "Home sessions card meta: the session count (Story 11.2).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld active"
-          }
-        }
-      }
-    },
-    "sessions.home.title" : {
-      "comment" : "Home sessions card title (Story 11.2).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Agents"
-          }
-        }
-      }
-    },
-    "sessions.header" : {
-      "comment" : "Agents tab card title with the session count, no alert (FR39).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SESSIONS · %lld"
-          }
-        }
-      }
-    },
-    "sessions.header.oneAlert" : {
-      "comment" : "Agents tab card title with the session count and one alert.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SESSIONS · %lld · 1 ALERT"
-          }
-        }
-      }
-    },
-    "sessions.header.alerts" : {
-      "comment" : "Agents tab card title: session count, then the number of blocked and failed sessions.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SESSIONS · %1$lld · %2$lld ALERTS"
-          }
-        }
-      }
-    },
-    "sessions.hints" : {
-      "comment" : "Agents tab keyboard hints in the card header.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "↑↓ SELECT · ↵ FOCUS · ⌘1–9 TABS · ESC"
-          }
-        }
-      }
-    },
-    "sessions.sorted" : {
-      "comment" : "Agents tab card meta: the rows are sorted by urgency.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SORTED BY URGENCY"
-          }
-        }
-      }
-    },
-    "sessions.column.agent" : {
-      "comment" : "Agents tab column header.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AGENT"
-          }
-        }
-      }
-    },
-    "sessions.column.project" : {
-      "comment" : "Agents tab column header: project with the last action below.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PROJECT · LAST ACTION"
-          }
-        }
-      }
-    },
-    "sessions.column.terminal" : {
-      "comment" : "Agents tab column header: terminal app (shown only with several terminal apps).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "TERMINAL"
-          }
-        }
-      }
-    },
-    "sessions.column.status" : {
-      "comment" : "Agents tab column header: status and time in status.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "STATUS · T+"
-          }
-        }
-      }
-    },
-    "sessions.action.focus" : {
-      "comment" : "Row chip: brings the session's terminal forward.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "FOCUS"
-          }
-        }
-      }
-    },
-    "sessions.action.dismiss" : {
-      "comment" : "Row chip on a failed session whose process ended: removes it from the list.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "DISMISS"
-          }
-        }
-      }
-    },
-    "expanded.tab.home" : {
-      "comment" : "Title of the Home tab, always first in the expanded view.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Home"
-          }
-        }
-      }
-    },
-    "home.card.open" : {
-      "comment" : "Accessibility label of a Home card button; the argument is the module name. Clicking it opens that tab.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Open %@"
-          }
-        }
-      }
-    },
-    "usage.cost.split.accounts" : {
-      "comment" : "Usage tab COST · TODAY: show the cost per provider Account (Story 7.10).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ACCOUNTS"
-          }
-        }
-      }
-    },
-    "usage.cost.split.projects" : {
-      "comment" : "Usage tab COST · TODAY: show the cost per project (Story 7.10).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PROJECTS"
-          }
-        }
-      }
-    },
-    "drop.band.prefix" : {
-      "comment" : "Drop display band, left: the word before the item count (uppercase readout).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "DROP ·"
-          }
-        }
-      }
-    },
-    "drop.band.items" : {
-      "comment" : "Drop display band, left: the dragged item count; %lld is the count.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld ITEM"
+    "drop.band.items": {
+      "comment": "Drop display band, left: the dragged item count; %lld is the count.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld ITEM"
                 }
               },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld ITEMS"
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld ITEMS"
                 }
               }
             }
@@ -1981,275 +253,227 @@
         }
       }
     },
-    "drop.band.cancel" : {
-      "comment" : "Drop display band, right: Esc cancels the drop.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ESC · CANCEL"
+    "drop.band.prefix": {
+      "comment": "Drop display band, left: the word before the item count (uppercase readout).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DROP ·"
           }
         }
       }
     },
-    "shelf.empty.label" : {
-      "comment" : "Shelf tab: empty-state label of the Stash card.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "STASH EMPTY"
+    "drop.mini.disabled": {
+      "comment": "VoiceOver hint on a SEND TO mini zone that cannot take the dragged item.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not available for this item"
           }
         }
       }
     },
-    "shelf.column.item" : {
-      "comment" : "Shelf tab: column header.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ITEM"
+    "empty.agents.noAgent.label": {
+      "comment": "Empty state label (uppercase).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "NO AGENT CONNECTED"
           }
         }
       }
     },
-    "shelf.column.source" : {
-      "comment" : "Shelf tab: column header (the app an item came from).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SOURCE"
+    "empty.agents.noAgent.sentence": {
+      "comment": "Empty state sentence: one factual sentence, no exclamation mark.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connect Claude Code, Codex or Gemini in Settings."
           }
         }
       }
     },
-    "shelf.column.added" : {
-      "comment" : "Shelf tab: column header.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ADDED"
+    "empty.agents.noSessions.label": {
+      "comment": "Empty state label (uppercase).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "NO ACTIVE SESSIONS"
           }
         }
       }
     },
-    "shelf.column.expires" : {
-      "comment" : "Shelf tab: column header.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "EXPIRES"
+    "empty.agents.noSessions.sentence": {
+      "comment": "Empty state sentence: one factual sentence, no exclamation mark.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Agent sessions appear here when they start."
           }
         }
       }
     },
-    "shelf.footer.dragOut" : {
-      "comment" : "Shelf tab footer: before the verb MOVE.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "DRAG OUT"
+    "empty.calendar.label": {
+      "comment": "Empty state label (uppercase).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "NO EVENTS TODAY"
           }
         }
       }
     },
-    "shelf.footer.move" : {
-      "comment" : "Shelf tab footer: what a drag out does.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "MOVE"
+    "empty.expanded.label": {
+      "comment": "Empty state label (uppercase): the expanded view has no tab.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "NO TABS"
           }
         }
       }
     },
-    "shelf.footer.optionDrag" : {
-      "comment" : "Shelf tab footer: drag with the Option key, before COPY.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "⌥ DRAG"
+    "empty.expanded.sentence": {
+      "comment": "Empty state sentence: one factual sentence, no exclamation mark.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn on a module in Settings to add a tab."
           }
         }
       }
     },
-    "shelf.footer.copy" : {
-      "comment" : "Shelf tab footer: what an Option-drag out does.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "COPY"
+    "empty.home.label": {
+      "comment": "Empty state label (uppercase).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "NO WIDGETS"
           }
         }
       }
     },
-    "shelf.footer.quickLook" : {
-      "comment" : "Shelf tab footer: Space opens Quick Look.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "␣ QUICK LOOK"
+    "empty.home.sentence": {
+      "comment": "Empty state sentence: one factual sentence, no exclamation mark.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pick Home widgets in Settings."
           }
         }
       }
     },
-    "shelf.footer.rule" : {
-      "comment" : "Shelf tab footer: the expiry rule.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "On expiry: references leave the shelf, file untouched. Copies and saved items go to the Trash."
+    "empty.notes.label": {
+      "comment": "Empty state label (uppercase).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "NO NOTES"
           }
         }
       }
     },
-    "shelf.sendTo.title" : {
-      "comment" : "Shelf tab: title of the right card (Send to zones).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SEND TO"
+    "empty.notes.locked.label": {
+      "comment": "Empty state label (uppercase).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "NOTES LOCKED"
           }
         }
       }
     },
-    "shelf.sendTo.askAI" : {
-      "comment" : "Shelf tab: Ask AI zone label.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ASK AI"
+    "empty.notes.locked.sentence": {
+      "comment": "Empty state sentence: one factual sentence, no exclamation mark.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waiting for iCloud Keychain, or enter your recovery key."
           }
         }
       }
     },
-    "shelf.sendTo.askAI.sentence" : {
-      "comment" : "Shelf tab: Ask AI zone sentence.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Drop a file to start a session"
+    "empty.notes.noMatch.label": {
+      "comment": "Empty state label (uppercase).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "NO MATCH"
           }
         }
       }
     },
-    "shelf.action.quickLook" : {
-      "comment" : "Shelf row: hover chip and VoiceOver action.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "QUICK LOOK"
+    "empty.notes.sentence": {
+      "comment": "Empty state sentence: one factual sentence, no exclamation mark.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Press ⌥⌘N to write one."
           }
         }
       }
     },
-    "shelf.action.reveal" : {
-      "comment" : "Shelf row: hover chip and VoiceOver action, shows the file in Finder.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "REVEAL"
+    "empty.shelf.label": {
+      "comment": "Empty state label (uppercase).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "STASH EMPTY"
           }
         }
       }
     },
-    "shelf.action.pin" : {
-      "comment" : "Shelf row: hover chip and VoiceOver action, keeps the item past its ttl.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PIN"
-          }
-        }
-      }
-    },
-    "shelf.action.unpin" : {
-      "comment" : "Shelf row: hover chip and VoiceOver action on a pinned item.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "UNPIN"
-          }
-        }
-      }
-    },
-    "shelf.row.pinned" : {
-      "comment" : "Shelf row: expires column of a pinned item.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PINNED"
-          }
-        }
-      }
-    },
-    "shelf.tip.drag" : {
-      "comment" : "Shelf row: tip under the grip of the hovered row.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "DRAG · MOVE  ⌥ DRAG · COPY"
-          }
-        }
-      }
-    },
-    "closed.copied.announcement" : {
-      "comment" : "VoiceOver announcement after Image to Text copied recognized text; %lld is the line count.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Copied %lld line"
+    "empty.shelf.sentence": {
+      "comment": "Stash empty sentence; %lld is the stash time-to-live in days.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Drag a file, text or image onto the notch, or press ⌘V, to keep it here for %lld day."
                 }
               },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Copied %lld lines"
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Drag a file, text or image onto the notch, or press ⌘V, to keep it here for %lld days."
                 }
               }
             }
@@ -2257,722 +481,2654 @@
         }
       }
     },
-    "closed.noTextFound.announcement" : {
-      "comment" : "VoiceOver announcement when Image to Text found no text.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No text found"
+    "empty.time.label": {
+      "comment": "Empty state label (uppercase).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "NOTHING RUNNING"
           }
         }
       }
     },
-    "drop.mini.disabled" : {
-      "comment" : "VoiceOver hint on a SEND TO mini zone that cannot take the dragged item.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Not available for this item"
+    "empty.usage.label": {
+      "comment": "Empty state label (uppercase).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "NO USAGE PROVIDER"
           }
         }
       }
     },
-    "privacy.indicator" : {
-      "comment" : "Privacy mode indicator (eye-slash) in the expanded tab row and the peek band: VoiceOver label and tooltip.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Privacy mode on"
+    "empty.usage.noCost.label": {
+      "comment": "Empty state label (uppercase).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "NO COST DATA"
           }
         }
       }
     },
-    "privacy.hidden" : {
-      "comment" : "VoiceOver label of a field hidden by Privacy mode (shown as dots).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hidden"
+    "empty.usage.noHistory.label": {
+      "comment": "Empty state label (uppercase).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "NO HISTORY YET"
           }
         }
       }
     },
-    "time.quickStart.title" : {
-      "comment" : "Time tab: quick-start card title. Uppercase.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "QUICK START"
+    "empty.usage.readingLogs.label": {
+      "comment": "Empty state label (uppercase).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "READING LOGS…"
           }
         }
       }
     },
-    "time.quickStart.meta" : {
-      "comment" : "Time tab: quick-start card meta (Return starts). Uppercase.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "↵ START"
+    "empty.usage.sentence": {
+      "comment": "Empty state sentence: one factual sentence, no exclamation mark.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn on a usage provider for Claude Code, Codex or Gemini CLI in Settings."
           }
         }
       }
     },
-    "time.quickStart.pomodoro" : {
-      "comment" : "Time tab quick start: Pomodoro button label. Uppercase.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "POMODORO"
+    "expanded.settings": {
+      "comment": "Accessibility label of the settings gear in the expanded view.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settings"
           }
         }
       }
     },
-    "time.quickStart.pomodoro.a11y" : {
-      "comment" : "VoiceOver label of the Pomodoro quick-start button; the argument is its lengths (25 · 5 · 15).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Start a Pomodoro, %@ minutes"
+    "expanded.settings.tooltip": {
+      "comment": "Tooltip of the settings gear in the expanded view, with its shortcut.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settings (⌘,)"
           }
         }
       }
     },
-    "time.quickStart.min" : {
-      "comment" : "Time tab quick start: unit after a preset or the custom field. Uppercase.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "MIN"
+    "expanded.status": {
+      "comment": "Expanded view band status after the green dot: %1$@ is the time (e.g. 14:48), %2$@ the date (e.g. Wed 04 Nov).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Online · %1$@ · %2$@"
           }
         }
       }
     },
-    "time.quickStart.preset.a11y" : {
-      "comment" : "VoiceOver label of a quick-start preset. Arg = minutes.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Start a %lld minute timer"
+    "expanded.tab.home": {
+      "comment": "Title of the Home tab, always first in the expanded view.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Home"
           }
         }
       }
     },
-    "time.quickStart.countdown" : {
-      "comment" : "Time tab quick start: opens the Countdown form (to a clock time). Uppercase.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "+ COUNTDOWN"
+    "expanded.tab.needsAttention": {
+      "comment": "Spoken after a tab name when the tab carries the attention marker, lowercase: Agents, needs attention.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "needs attention"
           }
         }
       }
     },
-    "time.quickStart.countdown.a11y" : {
-      "comment" : "VoiceOver label of the + COUNTDOWN button.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "New countdown to a clock time"
+    "expanded.wordmark": {
+      "comment": "Brand wordmark on the expanded view band. Not translated.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VIGIE"
           }
         }
       }
     },
-    "time.quickStart.field.prompt" : {
-      "comment" : "Placeholder of the custom minutes field (an example length).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "45"
+    "home.card.open": {
+      "comment": "Accessibility label of a Home card button; the argument is the module name. Clicking it opens that tab.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open %@"
           }
         }
       }
     },
-    "time.quickStart.field.a11y" : {
-      "comment" : "VoiceOver label of the custom minutes field.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Minutes, optionally followed by a name"
+    "privacy.hidden": {
+      "comment": "VoiceOver label of a field hidden by Privacy mode (shown as dots).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hidden"
           }
         }
       }
     },
-    "time.quickStart.start" : {
-      "comment" : "Time tab: start the custom timer or the countdown. Uppercase.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "START"
+    "privacy.indicator": {
+      "comment": "Privacy mode indicator (eye-slash) in the expanded tab row and the peek band: VoiceOver label and tooltip.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Privacy mode on"
           }
         }
       }
     },
-    "time.running.title" : {
-      "comment" : "Time tab running card title. Arg = running and paused items. Uppercase.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RUNNING · %lld"
+    "script.action.copy.hint": {
+      "comment": "VoiceOver hint of a script widget whose click copies text.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copies the script's text"
           }
         }
       }
     },
-    "time.running.meta" : {
-      "comment" : "Time tab running card meta. Uppercase.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SORTED BY END TIME"
+    "script.action.open.hint": {
+      "comment": "VoiceOver hint of a script widget whose click opens a link.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opens the script's link"
           }
         }
       }
     },
-    "time.action.pause" : {
-      "comment" : "Time tab row chip. Uppercase.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PAUSE"
+    "script.action.run.hint": {
+      "comment": "VoiceOver hint of a script widget whose click runs a command.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Runs the script's command"
           }
         }
       }
     },
-    "time.action.resume" : {
-      "comment" : "Time tab row chip. Uppercase.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RESUME"
+    "script.confirmation.author": {
+      "comment": "Script Confirmation, verified link install. %@ = the file's author.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Author: %@"
           }
         }
       }
     },
-    "time.action.reset" : {
-      "comment" : "Time tab row chip. Uppercase.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "RESET"
+    "script.confirmation.author.claimed": {
+      "comment": "Script Confirmation, unverified link install (SPEC §9.4). %@ = the author the file names.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Author: %@ (claimed by the file)"
           }
         }
       }
     },
-    "time.action.remove" : {
-      "comment" : "Time tab row chip. Uppercase.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "REMOVE"
+    "script.confirmation.author.none": {
+      "comment": "Script Confirmation, link install whose file names no author.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Author: not given"
           }
         }
       }
     },
-    "time.action.dismiss" : {
-      "comment" : "Time tab row chip on an ended item: acknowledges it. Uppercase.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "DISMISS"
+    "script.confirmation.cancel": {
+      "comment": "Script Confirmation button: closes without recording anything.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel"
           }
         }
       }
     },
-    "time.action.undo" : {
-      "comment" : "Time tab: put back the item just removed. Uppercase.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "UNDO"
+    "script.confirmation.close": {
+      "comment": "Script Confirmation: the only button when there is nothing to confirm (download failed, invalid file; UX-DR100).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Close"
           }
         }
       }
     },
-    "time.undo.removed" : {
-      "comment" : "Time tab: shown for 5 s after a Remove, beside UNDO. Uppercase.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "REMOVED"
+    "script.confirmation.code": {
+      "comment": "Script Confirmation section heading: the script's code, without a language tag.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Code"
           }
         }
       }
     },
-    "time.countdown.title" : {
-      "comment" : "Countdown form title. Uppercase.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "COUNTDOWN TO"
+    "script.confirmation.code.language": {
+      "comment": "Script Confirmation section heading: the script's code. %@ = language tag of the code block (python).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Code · %@"
           }
         }
       }
     },
-    "time.countdown.date" : {
-      "comment" : "Countdown form: the date and clock time picker label.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "End time"
+    "script.confirmation.confirm": {
+      "comment": "Script Confirmation button: lets the script run on this Mac.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirm"
           }
         }
       }
     },
-    "time.countdown.name" : {
-      "comment" : "Countdown form: name field label.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Name"
+    "script.confirmation.decline": {
+      "comment": "Script Confirmation button: disables the script on this Mac.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Decline"
           }
         }
       }
     },
-    "time.countdown.name.prompt" : {
-      "comment" : "Countdown form: name field placeholder.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Name (optional)"
+    "script.confirmation.documentation": {
+      "comment": "Script Confirmation section heading: the file's Markdown documentation.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Documentation"
           }
         }
       }
     },
-    "time.action.startBreak" : {
-      "comment" : "Time tab chip on a due break (Story 20.4): starts the break. Uppercase.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "START BREAK"
+    "script.confirmation.downloading": {
+      "comment": "Script Confirmation while the link's file downloads.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Downloading the script…"
           }
         }
       }
     },
-    "time.action.snooze" : {
-      "comment" : "Time tab chip on a due break: re-raises the break reminder in 5 minutes. Uppercase.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SNOOZE 5M"
+    "script.confirmation.explanation": {
+      "comment": "Script Confirmation: what Confirm and Decline do.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirm lets this file run on this Mac. Decline disables it on this Mac only; other Macs are not affected. Any change to the file asks again."
           }
         }
       }
     },
-    "time.action.skip" : {
-      "comment" : "Time tab chip on a due or running break: no break, a new work cycle. Uppercase.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SKIP"
+    "script.confirmation.fileText": {
+      "comment": "Script Confirmation disclosure: shows the whole file exactly as written.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Whole file as text"
           }
         }
       }
     },
-    "time.closed.breakDue" : {
-      "comment" : "Closed-notch Time readout label under the break length while a break is due (Story 20.4). Shown uppercase.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "BREAK DUE"
+    "script.confirmation.frontMatter": {
+      "comment": "Script Confirmation section heading: the file's YAML front matter.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Front matter"
           }
         }
       }
     },
-    "time.quickStart.pomodoro.running" : {
-      "comment" : "VoiceOver label of the disabled Pomodoro quick-start button while one runs; the argument is its lengths.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pomodoro, %@ minutes, already running"
+    "script.confirmation.installNote": {
+      "comment": "Script Confirmation, link install: what Confirm and Decline do (Story 12.9).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirm saves this file in your scripts folder on this Mac and runs it. Decline or Cancel leaves nothing behind."
           }
         }
       }
     },
-    "time.quickStart.pomodoro.help" : {
-      "comment" : "Tooltip of the Pomodoro quick-start button.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Work and break cycles: work, short break, long break (minutes)."
+    "script.confirmation.noCode": {
+      "comment": "Script Confirmation: the file has no single code block.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No code block."
           }
         }
       }
     },
-    "time.quickStart.pomodoro.busy" : {
-      "comment" : "Tooltip of the disabled Pomodoro quick-start button (one Pomodoro at a time).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "A Pomodoro is already running. Stop it to start another."
+    "script.confirmation.noDocumentation": {
+      "comment": "Script Confirmation: the file has no documentation.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No documentation."
           }
         }
       }
     },
-    "time.action.stop" : {
-      "comment" : "Time tab chip: ends the Pomodoro.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "STOP"
+    "script.confirmation.noFrontMatter": {
+      "comment": "Script Confirmation: the file has no front matter.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No front matter."
           }
         }
       }
     },
-    "script.confirmation.title" : {
-      "comment" : "Script Confirmation window title.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Review script"
+    "script.confirmation.privacy": {
+      "comment": "Script Confirmation footer while Privacy mode hides the file: Confirm is disabled.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Privacy mode hides the file. Turn it off to review and confirm."
           }
         }
       }
     },
-    "script.confirmation.warning" : {
-      "comment" : "Script Confirmation warning, SPEC §9.2 verbatim: scripts run as the user without a sandbox.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Scripts run as the user, with no sandbox. Only install scripts you trust."
+    "script.confirmation.source": {
+      "comment": "Script Confirmation, link install. %@ = the HTTPS URL the file was downloaded from.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Source: %@"
           }
         }
       }
     },
-    "script.confirmation.explanation" : {
-      "comment" : "Script Confirmation: what Confirm and Decline do.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Confirm lets this file run on this Mac. Decline disables it on this Mac only; other Macs are not affected. Any change to the file asks again."
+    "script.confirmation.title": {
+      "comment": "Script Confirmation window title.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Review script"
           }
         }
       }
     },
-    "script.confirmation.documentation" : {
-      "comment" : "Script Confirmation section heading: the file's Markdown documentation.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Documentation"
+    "script.confirmation.unverified.badSignature": {
+      "comment": "Script Confirmation stronger warning: invalid signature, tampered file or unknown key (SPEC §9.4).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not verified: its signature does not match any key this Vigie trusts."
           }
         }
       }
     },
-    "script.confirmation.noDocumentation" : {
-      "comment" : "Script Confirmation: the file has no documentation.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No documentation."
+    "script.confirmation.unverified.explanation": {
+      "comment": "Script Confirmation stronger warning, second line.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anyone could have written or changed this file. Read all of it before you confirm."
           }
         }
       }
     },
-    "script.confirmation.frontMatter" : {
-      "comment" : "Script Confirmation section heading: the file's YAML front matter.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Front matter"
+    "script.confirmation.unverified.otherSite": {
+      "comment": "Script Confirmation stronger warning: the file's source names another host than the download (SPEC §9.4).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not verified: the file says it comes from another site."
           }
         }
       }
     },
-    "script.confirmation.noFrontMatter" : {
-      "comment" : "Script Confirmation: the file has no front matter.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No front matter."
+    "script.confirmation.unverified.unsigned": {
+      "comment": "Script Confirmation stronger warning, link install without a signature (SPEC §9.4).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not verified: this file is not signed."
           }
         }
       }
     },
-    "script.confirmation.code" : {
-      "comment" : "Script Confirmation section heading: the script's code, without a language tag.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Code"
+    "script.confirmation.verified": {
+      "comment": "Script Confirmation, link install with a valid Script repository signature (SPEC §9.4, verbatim).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verified: Vigie Script repository"
           }
         }
       }
     },
-    "script.confirmation.code.language" : {
-      "comment" : "Script Confirmation section heading: the script's code. %@ = language tag of the code block (python).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Code · %@"
+    "script.confirmation.warning": {
+      "comment": "Script Confirmation warning, SPEC §9.2 verbatim: scripts run as the user without a sandbox.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scripts run as the user, with no sandbox. Only install scripts you trust."
           }
         }
       }
     },
-    "script.confirmation.noCode" : {
-      "comment" : "Script Confirmation: the file has no single code block.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No code block."
+    "script.meta.checkedJustNow": {
+      "comment": "Status script widget meta line under a minute after the check (Flow 7, UX-DR106).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CHECKED JUST NOW"
           }
         }
       }
     },
-    "script.confirmation.fileText" : {
-      "comment" : "Script Confirmation disclosure: shows the whole file exactly as written.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Whole file as text"
+    "script.meta.updatedAgo": {
+      "comment": "Script widget meta line: compact time since the output arrived, e.g. UPDATED 1H52 AGO.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "UPDATED %@ AGO"
           }
         }
       }
     },
-    "script.confirmation.privacy" : {
-      "comment" : "Script Confirmation footer while Privacy mode hides the file: Confirm is disabled.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Privacy mode hides the file. Turn it off to review and confirm."
+    "script.meta.updatedMinutesAgo": {
+      "comment": "Script widget meta line: minutes since the output arrived, e.g. UPDATED 4 MIN AGO.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "UPDATED %lld MIN AGO"
           }
         }
       }
     },
-    "script.confirmation.confirm" : {
-      "comment" : "Script Confirmation button: lets the script run on this Mac.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Confirm"
+    "script.meta.updatedUnderMinute": {
+      "comment": "Script widget meta line: the output is less than a minute old.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "UPDATED <1 MIN AGO"
           }
         }
       }
     },
-    "script.confirmation.decline" : {
-      "comment" : "Script Confirmation button: disables the script on this Mac.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Decline"
+    "script.state.notConfirmed": {
+      "comment": "Script state on the widget, side slot, page and Settings › Scripts: not confirmed on this Mac yet (UX-DR87). Uppercase.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "NOT CONFIRMED"
           }
         }
       }
     },
-    "script.confirmation.cancel" : {
-      "comment" : "Script Confirmation button: closes without recording anything.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cancel"
+    "script.state.notConfirmed.hint": {
+      "comment": "VoiceOver hint of the NOT CONFIRMED script state.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opens the Script Confirmation"
           }
         }
       }
     },
-    "script.state.notConfirmed" : {
-      "comment" : "Script state on the widget, side slot, page and Settings › Scripts: not confirmed on this Mac yet (UX-DR87). Uppercase.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "NOT CONFIRMED"
+    "script.widget.text": {
+      "comment": "Label of a short-text script widget whose output has no label (DESIGN Script widget). Uppercase.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "TEXT"
           }
         }
       }
     },
-    "script.state.notConfirmed.hint" : {
-      "comment" : "VoiceOver hint of the NOT CONFIRMED script state.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Opens the Script Confirmation"
+    "scroll.hint": {
+      "comment": "Footer hint while a list has more rows below.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SCROLL ↓"
           }
         }
       }
     },
-    "script.widget.text" : {
-      "comment" : "Label of a short-text script widget whose output has no label (DESIGN Script widget). Uppercase.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "TEXT"
+    "sessions.action.dismiss": {
+      "comment": "Row chip on a failed session whose process ended: removes it from the list.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DISMISS"
           }
         }
       }
     },
-    "script.meta.updatedUnderMinute" : {
-      "comment" : "Script widget meta line: the output is less than a minute old.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "UPDATED <1 MIN AGO"
+    "sessions.action.focus": {
+      "comment": "Row chip: brings the session's terminal forward.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "FOCUS"
           }
         }
       }
     },
-    "script.meta.updatedMinutesAgo" : {
-      "comment" : "Script widget meta line: minutes since the output arrived, e.g. UPDATED 4 MIN AGO.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "UPDATED %lld MIN AGO"
+    "sessions.column.agent": {
+      "comment": "Agents tab column header.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AGENT"
           }
         }
       }
     },
-    "script.meta.updatedAgo" : {
-      "comment" : "Script widget meta line: compact time since the output arrived, e.g. UPDATED 1H52 AGO.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "UPDATED %@ AGO"
+    "sessions.column.project": {
+      "comment": "Agents tab column header: project with the last action below.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PROJECT · LAST ACTION"
           }
         }
       }
     },
-    "script.action.open.hint" : {
-      "comment" : "VoiceOver hint of a script widget whose click opens a link.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Opens the script's link"
+    "sessions.column.status": {
+      "comment": "Agents tab column header: status and time in status.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "STATUS · T+"
           }
         }
       }
     },
-    "script.action.run.hint" : {
-      "comment" : "VoiceOver hint of a script widget whose click runs a command.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Runs the script's command"
+    "sessions.column.terminal": {
+      "comment": "Agents tab column header: terminal app (shown only with several terminal apps).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "TERMINAL"
           }
         }
       }
     },
-    "script.action.copy.hint" : {
-      "comment" : "VoiceOver hint of a script widget whose click copies text.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Copies the script's text"
+    "sessions.header": {
+      "comment": "Agents tab card title with the session count, no alert (FR39).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SESSIONS · %lld"
+          }
+        }
+      }
+    },
+    "sessions.header.alerts": {
+      "comment": "Agents tab card title: session count, then the number of blocked and failed sessions.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SESSIONS · %1$lld · %2$lld ALERTS"
+          }
+        }
+      }
+    },
+    "sessions.header.oneAlert": {
+      "comment": "Agents tab card title with the session count and one alert.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SESSIONS · %lld · 1 ALERT"
+          }
+        }
+      }
+    },
+    "sessions.hints": {
+      "comment": "Agents tab keyboard hints in the card header.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "↑↓ SELECT · ↵ FOCUS · ⌘1–9 TABS · ESC"
+          }
+        }
+      }
+    },
+    "sessions.home.meta": {
+      "comment": "Home sessions card meta: the session count (Story 11.2).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld active"
+          }
+        }
+      }
+    },
+    "sessions.home.title": {
+      "comment": "Home sessions card title (Story 11.2).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Agents"
+          }
+        }
+      }
+    },
+    "sessions.sorted": {
+      "comment": "Agents tab card meta: the rows are sorted by urgency.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SORTED BY URGENCY"
+          }
+        }
+      }
+    },
+    "settings.error.duration": {
+      "comment": "Inline Settings error for duration text that does not parse.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter a duration such as 90s, 15m or 1h30m."
+          }
+        }
+      }
+    },
+    "settings.error.generic": {
+      "comment": "Inline Settings error when a write fails for an unknown reason.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This change couldn't be saved."
+          }
+        }
+      }
+    },
+    "settings.error.integer": {
+      "comment": "Inline Settings error for number text that is not an integer.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter a whole number."
+          }
+        }
+      }
+    },
+    "settings.error.number": {
+      "comment": "Inline Settings error for number text that does not parse.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter a number."
+          }
+        }
+      }
+    },
+    "settings.hotkey.unavailable": {
+      "comment": "Shown in place of a shortcut recorder when none is injected.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shortcut recording is unavailable."
+          }
+        }
+      }
+    },
+    "settings.list.add": {
+      "comment": "Button under an editable list in Settings: adds an empty row.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add"
+          }
+        }
+      }
+    },
+    "settings.list.remove": {
+      "comment": "Accessibility label of the button that removes a row from a list in Settings.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove"
+          }
+        }
+      }
+    },
+    "settings.path.choose": {
+      "comment": "Button next to a path field in Settings: opens a file chooser.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose…"
+          }
+        }
+      }
+    },
+    "settings.path.choose.prompt": {
+      "comment": "Default button of the file chooser opened from Settings.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose"
+          }
+        }
+      }
+    },
+    "settings.reset": {
+      "comment": "Context menu action on a Settings row: removes the key so its default applies.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset to Default"
+          }
+        }
+      }
+    },
+    "settings.secret.clear": {
+      "comment": "Button on a secret setting: deletes the stored value.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clear"
+          }
+        }
+      }
+    },
+    "settings.secret.empty": {
+      "comment": "Status under a secret field: no value is stored.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not set"
+          }
+        }
+      }
+    },
+    "settings.secret.footnote": {
+      "comment": "Footnote under a secret field in Settings.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stored in the Keychain."
+          }
+        }
+      }
+    },
+    "settings.secret.set": {
+      "comment": "Button on a secret setting: stores the typed value in the Keychain.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set"
+          }
+        }
+      }
+    },
+    "settings.secret.stored": {
+      "comment": "Status under a secret field: a value is stored (never shown).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saved"
+          }
+        }
+      }
+    },
+    "settings.secret.unavailable": {
+      "comment": "Footnote under a disabled secret field when no secret store is available.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stored in the Keychain. Not available here."
+          }
+        }
+      }
+    },
+    "setup.calendar.secondary": {
+      "comment": "Setup card button opening Settings › Calendar.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calendar settings"
+          }
+        }
+      }
+    },
+    "setup.calendar.sentence": {
+      "comment": "Setup card sentence for missing calendar access.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allow access in System Settings › Privacy & Security › Calendars; Vigie only reads events."
+          }
+        }
+      }
+    },
+    "setup.calendar.title": {
+      "comment": "Setup card title for missing calendar access.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vigie can't read your calendars"
+          }
+        }
+      }
+    },
+    "setup.calendar.topic": {
+      "comment": "Setup card topic (uppercase) for missing calendar access.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CALENDAR ACCESS"
+          }
+        }
+      }
+    },
+    "setup.kicker": {
+      "comment": "Setup card kicker; %@ is the uppercase topic.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SETUP · %@"
+          }
+        }
+      }
+    },
+    "shelf.action.pin": {
+      "comment": "Shelf row: hover chip and VoiceOver action, keeps the item past its ttl.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PIN"
+          }
+        }
+      }
+    },
+    "shelf.action.quickLook": {
+      "comment": "Shelf row: hover chip and VoiceOver action.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "QUICK LOOK"
+          }
+        }
+      }
+    },
+    "shelf.action.reveal": {
+      "comment": "Shelf row: hover chip and VoiceOver action, shows the file in Finder.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "REVEAL"
+          }
+        }
+      }
+    },
+    "shelf.action.unpin": {
+      "comment": "Shelf row: hover chip and VoiceOver action on a pinned item.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "UNPIN"
+          }
+        }
+      }
+    },
+    "shelf.column.added": {
+      "comment": "Shelf tab: column header.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ADDED"
+          }
+        }
+      }
+    },
+    "shelf.column.expires": {
+      "comment": "Shelf tab: column header.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EXPIRES"
+          }
+        }
+      }
+    },
+    "shelf.column.item": {
+      "comment": "Shelf tab: column header.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ITEM"
+          }
+        }
+      }
+    },
+    "shelf.column.source": {
+      "comment": "Shelf tab: column header (the app an item came from).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SOURCE"
+          }
+        }
+      }
+    },
+    "shelf.empty.label": {
+      "comment": "Shelf tab: empty-state label of the Stash card.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "STASH EMPTY"
+          }
+        }
+      }
+    },
+    "shelf.footer.copy": {
+      "comment": "Shelf tab footer: what an Option-drag out does.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "COPY"
+          }
+        }
+      }
+    },
+    "shelf.footer.dragOut": {
+      "comment": "Shelf tab footer: before the verb MOVE.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DRAG OUT"
+          }
+        }
+      }
+    },
+    "shelf.footer.move": {
+      "comment": "Shelf tab footer: what a drag out does.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MOVE"
+          }
+        }
+      }
+    },
+    "shelf.footer.optionDrag": {
+      "comment": "Shelf tab footer: drag with the Option key, before COPY.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "⌥ DRAG"
+          }
+        }
+      }
+    },
+    "shelf.footer.quickLook": {
+      "comment": "Shelf tab footer: Space opens Quick Look.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "␣ QUICK LOOK"
+          }
+        }
+      }
+    },
+    "shelf.footer.rule": {
+      "comment": "Shelf tab footer: the expiry rule.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "On expiry: references leave the shelf, file untouched. Copies and saved items go to the Trash."
+          }
+        }
+      }
+    },
+    "shelf.menu.pin": {
+      "comment": "Shelf row Send to menu and VoiceOver action: pin the item (it never expires).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pin"
+          }
+        }
+      }
+    },
+    "shelf.menu.quickLook": {
+      "comment": "Shelf row Send to menu and VoiceOver action: Quick Look the item.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quick Look"
+          }
+        }
+      }
+    },
+    "shelf.menu.reveal": {
+      "comment": "Shelf row Send to menu and VoiceOver action: show the item in Finder.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reveal"
+          }
+        }
+      }
+    },
+    "shelf.menu.title": {
+      "comment": "Shelf row menu title (right-click or Return on the selected row).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Send to"
+          }
+        }
+      }
+    },
+    "shelf.menu.unpin": {
+      "comment": "Shelf row Send to menu and VoiceOver action: unpin the item.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unpin"
+          }
+        }
+      }
+    },
+    "shelf.row.pinned": {
+      "comment": "Shelf row: expires column of a pinned item.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PINNED"
+          }
+        }
+      }
+    },
+    "shelf.sendTo.askAI": {
+      "comment": "Shelf tab: Ask AI zone label.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ASK AI"
+          }
+        }
+      }
+    },
+    "shelf.sendTo.askAI.sentence": {
+      "comment": "Shelf tab: Ask AI zone sentence.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drop a file to start a session"
+          }
+        }
+      }
+    },
+    "shelf.sendTo.noTargets": {
+      "comment": "Shelf tab SEND TO card when every zone is off (Ask AI module off, AirDrop and Image to Text off). Uppercase.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "NO TARGETS"
+          }
+        }
+      }
+    },
+    "shelf.sendTo.releaseTarget": {
+      "comment": "Shelf tab SEND TO card, Ask AI zone while a stash item hovers it, under RELEASE TO ASK: agent, then folder (\"Claude Code in ~/Code\").",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ in %2$@"
+          }
+        }
+      }
+    },
+    "shelf.sendTo.title": {
+      "comment": "Shelf tab: title of the right card (Send to zones).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SEND TO"
+          }
+        }
+      }
+    },
+    "shelf.tip.drag": {
+      "comment": "Shelf row: tip under the grip of the hovered row.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DRAG · MOVE  ⌥ DRAG · COPY"
+          }
+        }
+      }
+    },
+    "status.blocked": {
+      "comment": "Status label word (blocked). Uppercase, compact UI (UX-DR43).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "BLOCKED"
+          }
+        }
+      }
+    },
+    "status.done": {
+      "comment": "Status label word (done). Uppercase, compact UI (UX-DR43).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DONE"
+          }
+        }
+      }
+    },
+    "status.down": {
+      "comment": "Status label word (down). Uppercase, compact UI (UX-DR43).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DOWN"
+          }
+        }
+      }
+    },
+    "status.down.since": {
+      "comment": "Down level with the clock time it went down, e.g. DOWN SINCE 14:44.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DOWN SINCE %@"
+          }
+        }
+      }
+    },
+    "status.elapsed.days": {
+      "comment": "Compact elapsed whole days, e.g. 2D.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lldD"
+          }
+        }
+      }
+    },
+    "status.elapsed.daysHours": {
+      "comment": "Compact elapsed days and hours, e.g. 1D 18H.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lldD %2$lldH"
+          }
+        }
+      }
+    },
+    "status.elapsed.hours": {
+      "comment": "Compact elapsed whole hours, e.g. 2H.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lldH"
+          }
+        }
+      }
+    },
+    "status.elapsed.hoursMinutes": {
+      "comment": "Compact elapsed hours and two-digit minutes, e.g. 1H52.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lldH%2$02lld"
+          }
+        }
+      }
+    },
+    "status.elapsed.minutes": {
+      "comment": "Compact elapsed minutes, e.g. 14M.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lldM"
+          }
+        }
+      }
+    },
+    "status.failed": {
+      "comment": "Status label word (failed). Uppercase, compact UI (UX-DR43).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "FAILED"
+          }
+        }
+      }
+    },
+    "status.failedExit": {
+      "comment": "Run exited non-zero; %lld is the exit code.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "FAILED · EXIT %lld"
+          }
+        }
+      }
+    },
+    "status.idle": {
+      "comment": "Status label word (idle). Uppercase, compact UI (UX-DR43).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "IDLE"
+          }
+        }
+      }
+    },
+    "status.ok": {
+      "comment": "Status label word (ok). Uppercase, compact UI (UX-DR43).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OK"
+          }
+        }
+      }
+    },
+    "status.qualifier.checkedAgo": {
+      "comment": "Qualifier: compact time since the last check, e.g. CHECKED 1H52 AGO.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CHECKED %@ AGO"
+          }
+        }
+      }
+    },
+    "status.qualifier.checkedMinutesAgo": {
+      "comment": "Qualifier: minutes since the last check.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CHECKED %lld MIN AGO"
+          }
+        }
+      }
+    },
+    "status.qualifier.checkedUnderMinute": {
+      "comment": "Qualifier: checked less than a minute ago.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CHECKED <1 MIN AGO"
+          }
+        }
+      }
+    },
+    "status.qualifier.since": {
+      "comment": "Qualifier: since a clock time (24-hour).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SINCE %@"
+          }
+        }
+      }
+    },
+    "status.running": {
+      "comment": "Status label word (running). Uppercase, compact UI (UX-DR43).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RUNNING"
+          }
+        }
+      }
+    },
+    "status.stale": {
+      "comment": "Status label word (stale). Uppercase, compact UI (UX-DR43).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "STALE"
+          }
+        }
+      }
+    },
+    "status.warn": {
+      "comment": "Status label word (warn). Uppercase, compact UI (UX-DR43).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "WARN"
+          }
+        }
+      }
+    },
+    "status.withDetail": {
+      "comment": "Status word followed by its qualifier or elapsed time, e.g. WORKING · 14M.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ · %2$@"
+          }
+        }
+      }
+    },
+    "status.working": {
+      "comment": "Status label word (working). Uppercase, compact UI (UX-DR43).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "WORKING"
+          }
+        }
+      }
+    },
+    "time.action.dismiss": {
+      "comment": "Time tab row chip on an ended item: acknowledges it. Uppercase.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DISMISS"
+          }
+        }
+      }
+    },
+    "time.action.pause": {
+      "comment": "Time tab row chip. Uppercase.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PAUSE"
+          }
+        }
+      }
+    },
+    "time.action.remove": {
+      "comment": "Time tab row chip. Uppercase.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "REMOVE"
+          }
+        }
+      }
+    },
+    "time.action.reset": {
+      "comment": "Time tab row chip. Uppercase.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RESET"
+          }
+        }
+      }
+    },
+    "time.action.resume": {
+      "comment": "Time tab row chip. Uppercase.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RESUME"
+          }
+        }
+      }
+    },
+    "time.action.skip": {
+      "comment": "Time tab chip on a due or running break: no break, a new work cycle. Uppercase.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SKIP"
+          }
+        }
+      }
+    },
+    "time.action.snooze": {
+      "comment": "Time tab chip on a due break: re-raises the break reminder in 5 minutes. Uppercase.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SNOOZE 5M"
+          }
+        }
+      }
+    },
+    "time.action.startBreak": {
+      "comment": "Time tab chip on a due break (Story 20.4): starts the break. Uppercase.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "START BREAK"
+          }
+        }
+      }
+    },
+    "time.action.stop": {
+      "comment": "Time tab chip: ends the Pomodoro.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "STOP"
+          }
+        }
+      }
+    },
+    "time.action.undo": {
+      "comment": "Time tab: put back the item just removed. Uppercase.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "UNDO"
+          }
+        }
+      }
+    },
+    "time.closed.breakDue": {
+      "comment": "Closed-notch Time readout label under the break length while a break is due (Story 20.4). Shown uppercase.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "BREAK DUE"
+          }
+        }
+      }
+    },
+    "time.countdown.date": {
+      "comment": "Countdown form: the date and clock time picker label.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "End time"
+          }
+        }
+      }
+    },
+    "time.countdown.name": {
+      "comment": "Countdown form: name field label.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Name"
+          }
+        }
+      }
+    },
+    "time.countdown.name.prompt": {
+      "comment": "Countdown form: name field placeholder.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Name (optional)"
+          }
+        }
+      }
+    },
+    "time.countdown.title": {
+      "comment": "Countdown form title. Uppercase.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "COUNTDOWN TO"
+          }
+        }
+      }
+    },
+    "time.quickStart.countdown": {
+      "comment": "Time tab quick start: opens the Countdown form (to a clock time). Uppercase.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "+ COUNTDOWN"
+          }
+        }
+      }
+    },
+    "time.quickStart.countdown.a11y": {
+      "comment": "VoiceOver label of the + COUNTDOWN button.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New countdown to a clock time"
+          }
+        }
+      }
+    },
+    "time.quickStart.field.a11y": {
+      "comment": "VoiceOver label of the custom minutes field.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Minutes, optionally followed by a name"
+          }
+        }
+      }
+    },
+    "time.quickStart.field.prompt": {
+      "comment": "Placeholder of the custom minutes field (an example length).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "45"
+          }
+        }
+      }
+    },
+    "time.quickStart.meta": {
+      "comment": "Time tab: quick-start card meta (Return starts). Uppercase.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "↵ START"
+          }
+        }
+      }
+    },
+    "time.quickStart.min": {
+      "comment": "Time tab quick start: unit after a preset or the custom field. Uppercase.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MIN"
+          }
+        }
+      }
+    },
+    "time.quickStart.pomodoro": {
+      "comment": "Time tab quick start: Pomodoro button label. Uppercase.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "POMODORO"
+          }
+        }
+      }
+    },
+    "time.quickStart.pomodoro.a11y": {
+      "comment": "VoiceOver label of the Pomodoro quick-start button; the argument is its lengths (25 · 5 · 15).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start a Pomodoro, %@ minutes"
+          }
+        }
+      }
+    },
+    "time.quickStart.pomodoro.busy": {
+      "comment": "Tooltip of the disabled Pomodoro quick-start button (one Pomodoro at a time).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A Pomodoro is already running. Stop it to start another."
+          }
+        }
+      }
+    },
+    "time.quickStart.pomodoro.help": {
+      "comment": "Tooltip of the Pomodoro quick-start button.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Work and break cycles: work, short break, long break (minutes)."
+          }
+        }
+      }
+    },
+    "time.quickStart.pomodoro.running": {
+      "comment": "VoiceOver label of the disabled Pomodoro quick-start button while one runs; the argument is its lengths.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pomodoro, %@ minutes, already running"
+          }
+        }
+      }
+    },
+    "time.quickStart.preset.a11y": {
+      "comment": "VoiceOver label of a quick-start preset. Arg = minutes.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start a %lld minute timer"
+          }
+        }
+      }
+    },
+    "time.quickStart.start": {
+      "comment": "Time tab: start the custom timer or the countdown. Uppercase.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "START"
+          }
+        }
+      }
+    },
+    "time.quickStart.title": {
+      "comment": "Time tab: quick-start card title. Uppercase.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "QUICK START"
+          }
+        }
+      }
+    },
+    "time.running.meta": {
+      "comment": "Time tab running card meta. Uppercase.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SORTED BY END TIME"
+          }
+        }
+      }
+    },
+    "time.running.title": {
+      "comment": "Time tab running card title. Arg = running and paused items. Uppercase.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RUNNING · %lld"
+          }
+        }
+      }
+    },
+    "time.undo.removed": {
+      "comment": "Time tab: shown for 5 s after a Remove, beside UNDO. Uppercase.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "REMOVED"
+          }
+        }
+      }
+    },
+    "usage.bar.a11y.elapsed": {
+      "comment": "VoiceOver: share of a usage window's time elapsed.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "elapsed %lld percent"
+          }
+        }
+      }
+    },
+    "usage.bar.a11y.reset": {
+      "comment": "VoiceOver: the reset time and the time left of a usage window.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "reset %1$@ in %2$@"
+          }
+        }
+      }
+    },
+    "usage.bar.elapsed": {
+      "comment": "Usage bar pace line: share of the window's time elapsed.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ELAPSED %lld%%"
+          }
+        }
+      }
+    },
+    "usage.bar.in": {
+      "comment": "Usage bar: time left before the reset, e.g. IN 1H52.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "IN %@"
+          }
+        }
+      }
+    },
+    "usage.bar.pace.aheadLead": {
+      "comment": "Usage bar pace label: usage ahead of the elapsed time by more than the tolerance.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AHEAD OF PACE · +%lld"
+          }
+        }
+      }
+    },
+    "usage.bar.pace.warning": {
+      "comment": "Usage bar label: the window is at or over the warning threshold.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "WARN · ≥ %lld%%"
+          }
+        }
+      }
+    },
+    "usage.bar.pace.within": {
+      "comment": "Usage bar pace label: usage at or under the elapsed time plus the tolerance.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "WITHIN PACE"
+          }
+        }
+      }
+    },
+    "usage.bar.pace.withinLead": {
+      "comment": "Usage bar pace label: usage ahead of the elapsed time by this many points, inside the tolerance.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "WITHIN PACE · +%lld"
+          }
+        }
+      }
+    },
+    "usage.bar.reset": {
+      "comment": "Usage bar: before the reset time, e.g. RESET 16:40 · IN 1H52.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RESET"
+          }
+        }
+      }
+    },
+    "usage.bar.value": {
+      "comment": "Usage bar: share of the window used, e.g. 62%.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%%"
+          }
+        }
+      }
+    },
+    "usage.card.meta.dailyOnly": {
+      "comment": "Usage provider card meta: the plan has a daily quota only.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DAILY QUOTA ONLY"
+          }
+        }
+      }
+    },
+    "usage.card.meta.localOnly": {
+      "comment": "Usage provider card meta: no plan limits, only local logs.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "LOCAL LOGS ONLY"
+          }
+        }
+      }
+    },
+    "usage.card.meta.percent": {
+      "comment": "Usage provider card meta: the warning threshold value, e.g. 80%.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%%"
+          }
+        }
+      }
+    },
+    "usage.card.meta.warn": {
+      "comment": "Usage provider card meta before the warning threshold, e.g. WARN 80%.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "WARN"
+          }
+        }
+      }
+    },
+    "usage.card.meta.weeklyOnly": {
+      "comment": "Usage provider card meta: the plan has a weekly window and no 5-hour window.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "WEEKLY ONLY"
+          }
+        }
+      }
+    },
+    "usage.card.moveDown": {
+      "comment": "VoiceOver action on a Usage provider card moving it one place down.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move down"
+          }
+        }
+      }
+    },
+    "usage.card.moveUp": {
+      "comment": "VoiceOver action on a Usage provider card moving it one place up.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move up"
+          }
+        }
+      }
+    },
+    "usage.card.noPlanWindows": {
+      "comment": "Usage provider card of a provider without plan limits (tokens and cost from local logs only).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "NO PLAN WINDOWS"
+          }
+        }
+      }
+    },
+    "usage.cost.apiRate": {
+      "comment": "Usage tab: label next to today's estimated cost (priced at API rates).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "API RATE"
+          }
+        }
+      }
+    },
+    "usage.cost.apiRate.partial": {
+      "comment": "Usage tab: label next to today's cost when some records have no price and are left out.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "API RATE · SOME MODELS UNPRICED"
+          }
+        }
+      }
+    },
+    "usage.cost.approximate": {
+      "comment": "Usage tab: today's cost when some records are unpriced, e.g. ≈ $4.12.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "≈ %@"
+          }
+        }
+      }
+    },
+    "usage.cost.meta": {
+      "comment": "Usage tab: meta of today's cost card (an estimate, never a bill).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ESTIMATE"
+          }
+        }
+      }
+    },
+    "usage.cost.none": {
+      "comment": "Usage tab: today's cost when there is no record today.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "—"
+          }
+        }
+      }
+    },
+    "usage.cost.source": {
+      "comment": "Usage tab: source line of today's cost.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "FROM LOCAL LOGS · OFFLINE"
+          }
+        }
+      }
+    },
+    "usage.cost.split.accounts": {
+      "comment": "Usage tab COST · TODAY: show the cost per provider Account (Story 7.10).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ACCOUNTS"
+          }
+        }
+      }
+    },
+    "usage.cost.split.projects": {
+      "comment": "Usage tab COST · TODAY: show the cost per project (Story 7.10).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PROJECTS"
+          }
+        }
+      }
+    },
+    "usage.cost.title": {
+      "comment": "Usage tab: title of today's estimated cost card.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "COST · TODAY"
+          }
+        }
+      }
+    },
+    "usage.dial.a11y.ahead": {
+      "comment": "VoiceOver: one plan window that is ahead of pace (used more than the elapsed time plus the tolerance).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@, ahead of pace"
+          }
+        }
+      }
+    },
+    "usage.dial.a11y.join": {
+      "comment": "VoiceOver: joins the quota dial label so far and the next window.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@, %2$@"
+          }
+        }
+      }
+    },
+    "usage.dial.a11y.stale": {
+      "comment": "VoiceOver: quota dial whose last refresh failed; the values are the last known ones.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@, stale"
+          }
+        }
+      }
+    },
+    "usage.dial.a11y.warning": {
+      "comment": "VoiceOver: prefix of a quota dial with a window at or over the warning threshold.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quota warning, %@"
+          }
+        }
+      }
+    },
+    "usage.dial.a11y.window": {
+      "comment": "VoiceOver part for one plan window: window name, percent used (5 hour window 38 percent).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ %2$lld percent"
+          }
+        }
+      }
+    },
+    "usage.footer.reorder": {
+      "comment": "Usage tab footer under a scrolling provider list, before SETTINGS.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DRAG TO REORDER · ALSO IN"
+          }
+        }
+      }
+    },
+    "usage.footer.settings": {
+      "comment": "Usage tab footer: the end of DRAG TO REORDER · ALSO IN SETTINGS.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SETTINGS"
+          }
+        }
+      }
+    },
+    "usage.history.a11y.day": {
+      "comment": "VoiceOver: one day of the token history, weekday then tokens.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ %2$@"
+          }
+        }
+      }
+    },
+    "usage.history.a11y.total": {
+      "comment": "VoiceOver: the 7-day token total.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tokens, last 7 days: %@"
+          }
+        }
+      }
+    },
+    "usage.history.allAgents": {
+      "comment": "Usage tab: label next to the 7-day token total.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ALL AGENTS"
+          }
+        }
+      }
+    },
+    "usage.history.meta": {
+      "comment": "Usage tab: meta of the 7-day history card.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "TOKENS"
+          }
+        }
+      }
+    },
+    "usage.history.title": {
+      "comment": "Usage tab: title of the 7-day token history card.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HISTORY · 7D"
+          }
+        }
+      }
+    },
+    "usage.home.title": {
+      "comment": "Home usage card title (Story 11.2).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usage"
+          }
+        }
+      }
+    },
+    "usage.pace.ahead": {
+      "comment": "Label next to a usage window that is ahead of pace (non-color cue).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AHEAD OF PACE"
+          }
+        }
+      }
+    },
+    "usage.readout.label": {
+      "comment": "Closed notch single-provider readout label: provider name and window, uppercase (CLAUDE · 5H).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ · %2$@"
+          }
+        }
+      }
+    },
+    "usage.readout.percent": {
+      "comment": "Closed notch single-provider readout value: percent of the window used (38 %).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld %%"
+          }
+        }
+      }
+    },
+    "usage.tab.noProviders": {
+      "comment": "Usage tab: meta of the no-provider card.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "0 PROVIDERS"
+          }
+        }
+      }
+    },
+    "usage.tab.settingsShortcut": {
+      "comment": "Usage tab: shortcut shown on the Open settings button.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "⌘,"
+          }
+        }
+      }
+    },
+    "usage.tab.title": {
+      "comment": "Usage tab: title of the card that holds the no-provider empty state.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "USAGE"
+          }
+        }
+      }
+    },
+    "usage.window.5h.short": {
+      "comment": "Quota readout label: the 5-hour plan window, after the provider name (CLAUDE · 5H).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "5H"
+          }
+        }
+      }
+    },
+    "usage.window.5h.spoken": {
+      "comment": "VoiceOver: name of the 5-hour plan window, before its percent.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "5 hour window"
+          }
+        }
+      }
+    },
+    "usage.window.daily.short": {
+      "comment": "Quota readout label: the daily plan window (CLAUDE · DAY).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DAY"
+          }
+        }
+      }
+    },
+    "usage.window.daily.spoken": {
+      "comment": "VoiceOver: name of the daily plan window, before its percent.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "daily"
+          }
+        }
+      }
+    },
+    "usage.window.weekly.short": {
+      "comment": "Quota readout label: the weekly plan window (CLAUDE · WEEK).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "WEEK"
+          }
+        }
+      }
+    },
+    "usage.window.weekly.spoken": {
+      "comment": "VoiceOver: name of the weekly plan window, before its percent.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "weekly"
+          }
+        }
+      }
+    },
+    "vigieui.sample.appName": {
+      "comment": "Sample string proving the VigieUI String Catalog is bundled.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vigie"
           }
         }
       }
@@ -3398,5 +3554,5 @@
       }
     }
   },
-  "version" : "1.0"
+  "version": "1.0"
 }

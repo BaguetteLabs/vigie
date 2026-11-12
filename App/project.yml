@@ -122,11 +122,14 @@ targets:
           VIGIE_DISPLAY_NAME: Vigie Dev
           # AppEnvironment.cliName for the dev flavor (AD-17).
           VIGIE_CLI_NAME: vigie-dev
+          # CFBundleURLTypes scheme = AppEnvironment.urlScheme (AD-17, AD-20, A89): dev links never open the release app.
+          VIGIE_URL_SCHEME: vigie-dev
         Release:
           PRODUCT_BUNDLE_IDENTIFIER: fr.baguettelabs.vigie
           PRODUCT_NAME: Vigie
           VIGIE_DISPLAY_NAME: Vigie
           VIGIE_CLI_NAME: vigie
+          VIGIE_URL_SCHEME: vigie
 
     # Bundles the `vigie` CLI (FR8, AD-22): Packages/VigieCLI is built with SwiftPM in the same
     # configuration as the app (Debug -> VIGIE_DEV, so the dev app ships `vigie-dev` talking to the

@@ -1,0 +1,14 @@
+{
+  "description": "author needs schema 2: a schema 1 file has no author.",
+  "kind": "front-matter",
+  "document": {
+    "id": "dev.minimal",
+    "name": "Minimal",
+    "interval": "5m",
+    "runtime": "bash",
+    "widget": "text",
+    "schema": 1,
+    "author": "Léa"
+  },
+  "error": "author"
+}

@@ -50,6 +50,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var updater: SparkleUpdater?
     private var updatesConfig: UpdatesConfigBridge?
     private var isShuttingDown = false
+    /// `vigie://install` links (Story 12.9, AD-20): created before launch finishes, since a launch by URL delivers
+    /// the link before assembly ends; integrations drains it once started.
+    private let scriptInstalls = ScriptInstallInbox()
 
     private let environment = AppEnvironment.current
     private lazy var logger = Logger(subsystem: environment.logSubsystem, category: "app")
@@ -317,7 +320,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             permissions: coordinator, hotkeyCenter: hotkeyCenter, alertCenter: alertCenter,
             activityStore: activityStore, executables: executables, secretStore: secretStore,
             hostControl: { CoreHostControl(moduleID: $0, link: hostLink) },
-            dropZones: CoreDropZoneDirectory(link: hostLink), privacy: privacy)
+            dropZones: CoreDropZoneDirectory(link: hostLink), privacy: privacy, scriptInstalls: scriptInstalls)
         let registry = ModuleRegistry(
             descriptors: descriptors,
             enablement: ConfigModuleEnablement(store: configStore),
@@ -511,6 +514,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             sender.reply(toApplicationShouldTerminate: true)
         }
         return .terminateLater
+    }
+
+    /// `vigie://install?url=…` (Story 12.9). macOS delivers a link to the running instance; a second copy that
+    /// loses the instance lock quits (AD-21) and its link is dropped with a log line.
+    func application(_ application: NSApplication, open urls: [URL]) {
+        guard instanceLock != nil else {
+            logger.error("URL received by a second instance; ignored")
+            return
+        }
+        AppURLRouter(
+            scheme: environment.urlScheme, inbox: scriptInstalls,
+            logger: Logger(subsystem: environment.logSubsystem, category: "url")
+        ).handle(urls)
     }
 
     func applicationWillTerminate(_ notification: Notification) {

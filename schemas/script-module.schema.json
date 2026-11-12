@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://vigie.app/schemas/script-module.schema.json",
   "title": "Vigie script module",
-  "description": "Script modules (SPEC §9, AD-18), schema version 1. A script module is a Markdown file whose YAML front matter is described by #/$defs/frontMatter; each run prints one JSON document to stdout described by #/$defs/output. Front matter is strict (an unknown key is an error, so a typo never silently falls back to a default); output is tolerant (unknown keys are ignored, so a script may print extra fields). Validated without a JSON Schema library: Vigie decodes both with Swift Codable types, and Scripts/check-script-schema.sh checks that this file and those types accept and reject the same sample documents.",
+  "description": "Script modules (SPEC §9, AD-18), schema version 2 (version 1 still read; schemas/README.md lists what each version adds). A script module is a Markdown file whose YAML front matter is described by #/$defs/frontMatter; each run prints one JSON document to stdout described by #/$defs/output. Front matter is strict (an unknown key is an error, so a typo never silently falls back to a default); output is tolerant (unknown keys are ignored, so a script may print extra fields). Validated without a JSON Schema library: Vigie decodes both with Swift Codable types, and Scripts/check-script-schema.sh checks that this file and those types accept and reject the same sample documents.",
   "oneOf": [
     { "$ref": "#/$defs/frontMatter" },
     { "$ref": "#/$defs/output" }
@@ -10,9 +10,9 @@
   "$defs": {
     "schemaVersion": {
       "title": "Schema version",
-      "description": "Version of this schema the document is written for. Defaults to 1. Bumped on every breaking change; a document with a version this Vigie does not support is rejected with an error naming the version.",
+      "description": "Version of this schema the document is written for. Absent means 1; new files write 2. Bumped on every breaking change; a document with a version this Vigie does not support is rejected with an error naming the version. Version 2 adds the front matter keys author, source and version (Story 12.8); output is the same in both.",
       "type": "integer",
-      "enum": [1],
+      "enum": [1, 2],
       "default": 1
     },
     "duration": {
@@ -29,10 +29,12 @@
     },
     "frontMatter": {
       "title": "Front matter",
-      "description": "The YAML front matter of a script module file. Unknown keys are rejected.",
+      "description": "The YAML front matter of a script module file. Unknown keys are rejected. author, source and version need schema: 2 (a file without schema is version 1, which has none of them).",
       "type": "object",
       "required": ["id", "name", "interval", "runtime", "widget"],
       "additionalProperties": false,
+      "if": { "required": ["schema"], "properties": { "schema": { "minimum": 2 } } },
+      "else": { "properties": { "author": false, "source": false, "version": false } },
       "properties": {
         "schema": { "$ref": "#/$defs/schemaVersion" },
         "id": {
@@ -90,6 +92,24 @@
           "type": "array",
           "items": { "$ref": "#/$defs/setting" },
           "default": []
+        },
+        "author": {
+          "title": "Author",
+          "description": "Who wrote the script, as the file claims it (schema 2). Shown in the Script Confirmation; for a file without a valid Script repository signature it reads \"claimed by the file\".",
+          "type": "string",
+          "minLength": 1
+        },
+        "source": {
+          "title": "Source",
+          "description": "HTTPS URL the script is published at (schema 2), e.g. its page in the Script repository. A link install whose download host differs from this host is shown as coming from another site (not verified).",
+          "type": "string",
+          "pattern": "^https://[A-Za-z0-9.-]+(:[0-9]+)?([/?#][^\\s]*)?$"
+        },
+        "version": {
+          "title": "Version",
+          "description": "The script's own version (schema 2): one to three dot-separated numbers, optionally followed by a -prerelease and a +build part, e.g. 1.2.0 or 2.0.0-beta.1.",
+          "type": "string",
+          "pattern": "^[0-9]+(\\.[0-9]+){0,2}(-[0-9A-Za-z.-]+)?(\\+[0-9A-Za-z.-]+)?$"
         }
       }
     },

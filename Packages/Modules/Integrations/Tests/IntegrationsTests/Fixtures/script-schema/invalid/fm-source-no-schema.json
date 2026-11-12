@@ -1,0 +1,13 @@
+{
+  "description": "A file without schema is version 1, which has no source.",
+  "kind": "front-matter",
+  "document": {
+    "id": "dev.minimal",
+    "name": "Minimal",
+    "interval": "5m",
+    "runtime": "bash",
+    "widget": "text",
+    "source": "https://example.com/ci.md"
+  },
+  "error": "source"
+}

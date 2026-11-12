@@ -1,0 +1,14 @@
+{
+  "description": "Schema 2: a one-part version with prerelease and build parts, a source with a port and a query.",
+  "kind": "front-matter",
+  "document": {
+    "id": "dev.minimal",
+    "name": "Minimal",
+    "interval": "5m",
+    "runtime": "bash",
+    "widget": "text",
+    "schema": 2,
+    "source": "https://scripts.example.com:8443/ci?ref=main",
+    "version": "2-beta.1+build.5"
+  }
+}

@@ -1032,6 +1032,42 @@
           }
         }
       }
+    },
+    "config.scripts.sources.url": {
+      "comment": "Label for the local.toml key scripts.sources.<script file>.url: the HTTPS URL a script installed from a vigie://install link was downloaded from on this Mac.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Installed from"
+          }
+        }
+      }
+    },
+    "config.scripts.sources.sig": {
+      "comment": "Label for the local.toml key scripts.sources.<script file>.sig: the URL of the detached signature fetched with a link install.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Signature fetched from"
+          }
+        }
+      }
+    },
+    "config.scripts.sources.installed_at": {
+      "comment": "Label for the local.toml key scripts.sources.<script file>.installed_at: when the link install was confirmed on this Mac (ISO 8601).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Installed on"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

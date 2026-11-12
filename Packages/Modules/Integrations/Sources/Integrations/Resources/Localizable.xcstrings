@@ -924,6 +924,174 @@
           }
         }
       }
+    },
+    "script.error.requires_schema": {
+      "comment": "Script schema error. %1$@ = key path, %2$lld = the schema version that adds the key.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@: needs schema: %2$lld or later in the front matter (a file without schema is version 1)."
+          }
+        }
+      }
+    },
+    "script.format.httpsURL": {
+      "comment": "Expected format in a script schema error: front matter source (schema 2).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "an https:// URL with a host, without spaces"
+          }
+        }
+      }
+    },
+    "script.format.version": {
+      "comment": "Expected format in a script schema error: front matter version (schema 2).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "a version such as 1.2.0 or 2.0.0-beta.1"
+          }
+        }
+      }
+    },
+    "script.install.failed.download": {
+      "comment": "Script Confirmation of a vigie://install link when the download failed: nothing to confirm (UX-DR100).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The script could not be downloaded."
+          }
+        }
+      }
+    },
+    "script.install.failed.invalid": {
+      "comment": "Script Confirmation of a link install whose file fails parsing or the schema.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This file is not a valid Vigie script. Nothing was installed."
+          }
+        }
+      }
+    },
+    "script.install.failed.idInUse": {
+      "comment": "Script Confirmation of a link install whose id another file of the scripts folder declares (updates arrive with Story 12.10).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A script with the same id is already installed. Nothing was installed."
+          }
+        }
+      }
+    },
+    "script.install.failed.noFolder": {
+      "comment": "Script Confirmation of a link install when the host has no config folder.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vigie has no scripts folder to install into."
+          }
+        }
+      }
+    },
+    "script.install.failed.write": {
+      "comment": "Script Confirmation of a link install when writing the file or its records failed.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The script could not be saved. Nothing was installed."
+          }
+        }
+      }
+    },
+    "script.install.detail.notHTTPS": {
+      "comment": "Link install refused: the file URL's scheme is not https (AD-18). %@ = the scheme.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only https:// links can be installed; this one uses “%@”."
+          }
+        }
+      }
+    },
+    "script.install.detail.insecureRedirect": {
+      "comment": "Link install refused: a redirect left HTTPS.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The server redirected to an address that is not https://."
+          }
+        }
+      }
+    },
+    "script.install.detail.tooLarge": {
+      "comment": "Link install refused: the file exceeds the size cap. %lld = the cap in KB.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The file is larger than %lld KB, too large for a script."
+          }
+        }
+      }
+    },
+    "script.install.detail.httpStatus": {
+      "comment": "Link install failed: HTTP status. %lld = the status code.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The server answered with status %lld."
+          }
+        }
+      }
+    },
+    "script.install.detail.idInUse": {
+      "comment": "Link install refused. %1$@ = the script id, %2$@ = the existing file name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The id “%1$@” is already used by %2$@."
+          }
+        }
+      }
+    },
+    "script.install.installed": {
+      "comment": "Settings › Scripts notice after a confirmed link install. %@ = the file name in the scripts folder.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Installed %@. It runs now on this Mac."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

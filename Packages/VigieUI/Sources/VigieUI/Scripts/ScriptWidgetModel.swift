@@ -94,7 +94,7 @@ public enum ScriptWidgetContent: Sendable, Equatable {
 
 /// The meta line under a card's body, in `ink-3` (DESIGN "Script widget").
 public enum ScriptCardMeta: Sendable, Equatable {
-    /// `CHECKED 2 MIN AGO` (status widgets).
+    /// `CHECKED 2 MIN AGO` (status widgets); `CHECKED JUST NOW` under a minute.
     case checked(Date)
     /// `DOWN SINCE 14:44` (a status widget at DOWN).
     case downSince(Date)
@@ -108,7 +108,10 @@ public enum ScriptCardMeta: Sendable, Equatable {
         let formatter = StatusLabelFormatter(timeZone: timeZone)
         switch self {
         case .checked(let date):
-            return formatter.qualifier(.checkedAgo(Self.elapsed(from: date, to: now)))
+            // Flow 7, UX-DR106: a script's first run reads `CHECKED JUST NOW`.
+            let elapsed = Self.elapsed(from: date, to: now)
+            if StatusLabelFormatter.wholeMinutes(elapsed) < 1 { return L10n.string("script.meta.checkedJustNow") }
+            return formatter.qualifier(.checkedAgo(elapsed))
         case .downSince(let date):
             return formatter.label(for: RunStatus.down, qualifier: .since(date))
         case .updated(let date):

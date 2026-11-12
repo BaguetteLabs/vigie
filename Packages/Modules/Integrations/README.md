@@ -2,8 +2,9 @@
 
 The `integrations` module is the runtime of script modules (SPEC §7.4, §9, AD-18). This package holds the script
 schema types (Story 12.1, checked against `schemas/script-module.schema.json`), script discovery (Story 12.2) and
-per-Mac confirmation (Story 12.3), the runner (Story 12.4) and Settings › Scripts (Story 12.6). The per-script
-dynamic modules come with Story 12.5.
+per-Mac confirmation (Story 12.3), the runner (Story 12.4), the per-script dynamic modules (Story 12.5),
+Settings › Scripts (Story 12.6), the bundled examples (Story 12.7) and installs from `vigie://install` links
+(Story 12.9). Front matter follows schema version 2 (`author`, `source`, `version`; `schemas/README.md`).
 
 ## Where scripts live
 
@@ -203,6 +204,55 @@ run until you review and confirm it.
 
 **Scripts run unsandboxed, as you, with your files and network. Only install scripts you trust**, bundled or not:
 read the whole file in the review sheet, which says the same, before you confirm.
+
+## Install links
+
+Story 12.9 (SPEC §9.4, AD-18, Flow 7). The app registers the `vigie` URL scheme (`vigie-dev` in the dev build, A89;
+`AppEnvironment.urlScheme`) and routes `vigie://install?url=<https URL>[&sig=<https URL of the .sig>]` to this
+module: `AppURLRouter` (VigieCore) parses it into a `ScriptInstallRequest` (ModuleKit) with a `UserIntent` and puts
+it in the launch's `ScriptInstallInbox`, which `context.scriptFolder.installRequests()` drains. A link received while
+the app launches, or before this module started, is queued and delivered once it subscribes (after its first scan).
+Parameter values must be percent-encoded. Other hosts or paths, a missing or unreadable `url`, and the other
+flavor's scheme are ignored with a log line. macOS hands a link to the running instance; a second copy that loses
+the instance lock (AD-21) drops it with a log line.
+
+The module then opens Settings on its pane (`context.host.openOwnSettings(focus:)`, which acts only with the link's
+intent) and Settings › Scripts presents the Script Confirmation for `installReview`:
+
+1. **Download** (`ScriptInstaller`, off the main actor, through `ScriptDownloading`: an ephemeral `URLSession`, the
+   only network path of this module, AD-16). The link's `url` must be `https`; any other scheme is refused with a
+   message and never fetched. A redirect to a non-HTTPS URL is refused. Files over 256 KB are refused. Any failure
+   (status, network, size, redirect) makes the sheet say "The script could not be downloaded." with only Close
+   (UX-DR100).
+2. **Signature**: the link's `sig`, else `<url>.sig` (query kept). A 404 or any other failure means unsigned. Format
+   and keys: [`docs/script-signing.md`](../../../docs/script-signing.md).
+3. **Parse**: `ScriptMarkdown` and the schema, as if the file were in the folder. An invalid file, or an id another
+   file already declares (updates are Story 12.10), shows the error with only Close.
+4. **Verify**: Ed25519 over the exact bytes against `TrustedScriptKeys` (empty until A84). Valid → `Verified: Vigie
+   Script repository`. Unsigned, a signature that matches no trusted key (tampered bytes and unknown keys look the
+   same), or a valid signature on a file whose front matter `source` names another host than the download →
+   `Not verified: …` plus "Anyone could have written or changed this file", and the author reads "(claimed by the
+   file)".
+5. **Review**: the sheet shows the whole file (documentation, front matter, code, exact text), the source URL, the
+   author, the verification line and the unsandboxed warning. Privacy mode masks body, author and source URL and
+   disables Confirm; Decline and Close still work (UX-DR98).
+6. **Confirm** moves the reviewed bytes from the temporary file (an `NSItemReplacementDirectory` on the folder's
+   volume, so the move is a rename) into `<config folder>/modules/<name>.md`, named from the URL's last path
+   component reduced to `[A-Za-z0-9._-]`, `-2`, `-3`… when taken: never over a file. It then records the bytes' hash
+   as confirmed on this Mac and the source in `local.toml`, and rescans: the script starts. If a record cannot be
+   written the file is removed again.
+7. **Decline, Close, a failure, a newer link or the module stopping** remove the temporary file. Nothing is
+   recorded for a declined link (there is no file to remember).
+
+**Where the source is recorded:** `[scripts.sources."modules/<file>"] url, sig, installed_at` in `local.toml`
+(`ScriptConfirmationStore.recordSource`, written by VigieCore's `ConfigScriptConfirmations`). The file itself is
+never modified (its hash and signature cover the exact bytes), so its own front matter `source` stays a claim.
+Nothing is synced: another Mac that receives the file through the config folder has no confirmation and no source
+record, so it shows the script `NOT CONFIRMED` until confirmed there (PRD FR-39). Story 12.10's update checks read
+the record (and may fall back to the front matter `source` on other Macs).
+
+After the first run of a status script its widget reads `CHECKED JUST NOW` (VigieUI `ScriptCardMeta`, under a
+minute; Flow 7, UX-DR106).
 
 ## Surfaces
 

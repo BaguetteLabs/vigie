@@ -32,6 +32,18 @@ public protocol ScriptConfirmationStore: Sendable {
     /// Yields once after any record changes, including an edit of `local.toml` made outside the app. The stream
     /// ends when the module stops.
     @MainActor func changes() -> AsyncStream<Void>
+    /// Where the file at `relativePath` was installed from on this Mac (Story 12.9), or nil.
+    @MainActor func source(for relativePath: String) -> ScriptSourceRecord?
+    /// Records where a file installed from a link came from (`local.toml`, this Mac only). Call only after the user
+    /// confirmed the install.
+    func recordSource(_ relativePath: String, _ source: ScriptSourceRecord) async throws
+}
+
+extension ScriptConfirmationStore {
+    @MainActor public func source(for relativePath: String) -> ScriptSourceRecord? { nil }
+    public func recordSource(_ relativePath: String, _ source: ScriptSourceRecord) async throws {
+        throw ModuleServiceError.notAvailable
+    }
 }
 
 /// The default store: nothing is ever confirmed (no script can run), writes throw

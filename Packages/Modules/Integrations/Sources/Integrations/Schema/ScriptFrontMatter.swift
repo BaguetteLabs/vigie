@@ -23,8 +23,12 @@ public enum ScriptSurface: String, CaseIterable, Sendable, Codable {
 /// `schemas/script-module.schema.json`).
 ///
 /// Strict, like the schema: an unknown key is an error (``ScriptSchemaError/Reason/unknownKey``), so a typo never
-/// silently falls back to a default; new keys arrive with a `schema` bump. Defaults: `schema` 1, `icon`
-/// `terminal`, `surfaces` `[home]`, `settings` none, `priority` nil (the host's default).
+/// silently falls back to a default; new keys arrive with a `schema` bump. Defaults: `schema` 1 when absent (new
+/// files write 2), `icon` `terminal`, `surfaces` `[home]`, `settings` none, `priority` nil (the host's default).
+///
+/// Schema 2 (Story 12.8) adds the optional provenance keys `author`, `source` (an HTTPS URL) and `version`; a
+/// version 1 file (including one without `schema`) using one of them is rejected at that key
+/// (``ScriptSchemaError/Reason/requiresSchema(_:)``).
 ///
 /// Checks that need more than one file or the module registry (reserved and duplicate ids, AD-18) and
 /// cross-field checks the schema cannot express (a `default` inside `min`...`max` or among `options`) belong to
@@ -46,6 +50,13 @@ public struct ScriptFrontMatter: Equatable, Sendable, Codable {
     /// Left-wing item priority (lower is shown first); nil when the file does not set one.
     public var priority: Int?
     public var settings: [ScriptSetting]
+    /// Who wrote the script, as the file claims it (schema 2). Shown as "claimed by the file" unless a Script
+    /// repository signature verifies the file (Story 12.9).
+    public var author: String?
+    /// Where the script is published (schema 2): an HTTPS URL.
+    public var source: URL?
+    /// The script's own version (schema 2), e.g. `1.2.0`.
+    public var version: String?
 
     public init(
         schema: ScriptSchemaVersion = .current,
@@ -57,7 +68,10 @@ public struct ScriptFrontMatter: Equatable, Sendable, Codable {
         widget: ScriptWidgetType,
         surfaces: [ScriptSurface] = ScriptFrontMatter.defaultSurfaces,
         priority: Int? = nil,
-        settings: [ScriptSetting] = []
+        settings: [ScriptSetting] = [],
+        author: String? = nil,
+        source: URL? = nil,
+        version: String? = nil
     ) {
         self.schema = schema
         self.id = id
@@ -69,16 +83,25 @@ public struct ScriptFrontMatter: Equatable, Sendable, Codable {
         self.surfaces = surfaces
         self.priority = priority
         self.settings = settings
+        self.author = author
+        self.source = source
+        self.version = version
     }
 
-    static let keys: Set<String> = [
-        "schema", "id", "name", "icon", "interval", "runtime", "widget", "surfaces", "priority", "settings",
-    ]
+    static let keys = Set(
+        ["schema", "id", "name", "icon", "interval", "runtime", "widget", "surfaces", "priority", "settings"]
+            + provenanceKeys)
+
+    /// The keys schema 2 adds, in the order their errors are reported.
+    static let provenanceKeys = ["author", "source", "version"]
 
     public init(from decoder: any Decoder) throws {
         let object = try SchemaObject(decoder)
         try object.rejectUnknownKeys(allowed: Self.keys)
         schema = try object.schemaVersion()
+        if schema < .provenance, let key = Self.provenanceKeys.first(where: object.has) {
+            throw ScriptSchemaError(object.path(key), .requiresSchema(ScriptSchemaVersion.provenance.rawValue))
+        }
 
         let rawID = try object.required(String.self, "id", expected: .string)
         guard let id = ModuleID(rawID) else {
@@ -115,6 +138,24 @@ public struct ScriptFrontMatter: Equatable, Sendable, Codable {
         surfaces = try Self.decodeSurfaces(object) ?? Self.defaultSurfaces
         priority = try object.int("priority")
         settings = try object.optional([ScriptSetting].self, "settings", expected: .array) ?? []
+
+        author = try object.nonEmptyString("author")
+        if let rawSource = try object.string("source") {
+            guard let url = Self.httpsURL(rawSource) else {
+                throw ScriptSchemaError(object.path("source"), .invalidFormat(rawSource, .httpsURL))
+            }
+            source = url
+        } else {
+            source = nil
+        }
+        if let rawVersion = try object.string("version") {
+            guard Self.isVersion(rawVersion) else {
+                throw ScriptSchemaError(object.path("version"), .invalidFormat(rawVersion, .version))
+            }
+            version = rawVersion
+        } else {
+            version = nil
+        }
     }
 
     private static func decodeSurfaces(_ object: SchemaObject) throws -> [ScriptSurface]? {
@@ -145,6 +186,9 @@ public struct ScriptFrontMatter: Equatable, Sendable, Codable {
         try container.encode(surfaces, forKey: SchemaKey("surfaces"))
         try container.encodeIfPresent(priority, forKey: SchemaKey("priority"))
         try container.encode(settings, forKey: SchemaKey("settings"))
+        try container.encodeIfPresent(author, forKey: SchemaKey("author"))
+        try container.encodeIfPresent(source?.absoluteString, forKey: SchemaKey("source"))
+        try container.encodeIfPresent(version, forKey: SchemaKey("version"))
     }
 
     /// Decodes front matter written in YAML (the text between the `---` fences), with Yams (AD-16). A schema
@@ -157,6 +201,22 @@ public struct ScriptFrontMatter: Equatable, Sendable, Codable {
             if let error = context.underlyingError as? ScriptSchemaError { throw error }
             throw DecodingError.dataCorrupted(context)
         }
+    }
+
+    /// The schema's `source` pattern, `^https://[A-Za-z0-9.-]+(:[0-9]+)?([/?#][^\s]*)?$`, as a URL; nil otherwise.
+    static func httpsURL(_ value: String) -> URL? {
+        guard let regex = try? Regex(#"https://[A-Za-z0-9.-]+(:[0-9]+)?([/?#]\S*)?"#),
+            (try? regex.wholeMatch(in: value)) != nil
+        else { return nil }
+        return URL(string: value)
+    }
+
+    /// The schema's `version` pattern, `^[0-9]+(\.[0-9]+){0,2}(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$`.
+    static func isVersion(_ value: String) -> Bool {
+        guard let regex = try? Regex(#"[0-9]+(\.[0-9]+){0,2}(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?"#) else {
+            return false
+        }
+        return (try? regex.wholeMatch(in: value)) != nil
     }
 
     /// `^[a-z0-9]+(\.[a-z0-9]+)*$`

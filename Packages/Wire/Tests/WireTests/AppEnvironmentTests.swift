@@ -19,6 +19,7 @@ import Testing
         #expect(env.bundleID == "fr.baguettelabs.vigie")
         #expect(env.displayName == "Vigie")
         #expect(env.cliName == "vigie")
+        #expect(env.urlScheme == "vigie")
         #expect(env.logSubsystem == env.bundleID)
     }
 
@@ -27,6 +28,7 @@ import Testing
         #expect(env.bundleID == "fr.baguettelabs.vigie.dev")
         #expect(env.displayName == "Vigie Dev")
         #expect(env.cliName == "vigie-dev")
+        #expect(env.urlScheme == "vigie-dev")
         #expect(env.logSubsystem == "fr.baguettelabs.vigie.dev")
     }
 

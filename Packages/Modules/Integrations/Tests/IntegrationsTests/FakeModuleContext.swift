@@ -223,6 +223,10 @@ final class RecordingHost: HostControl, @unchecked Sendable {
     func requestPeek() {}
     func expand(focus: UserIntent?) {}
     func openOwnTab(focus: UserIntent?) { lock.withLock { opens.append(focus) } }
+    private var settingsOpens: [UserIntent?] = []
+    /// Every `openOwnSettings` call (Story 12.9).
+    var openedOwnSettings: [UserIntent?] { lock.withLock { settingsOpens } }
+    func openOwnSettings(focus: UserIntent?) { lock.withLock { settingsOpens.append(focus) } }
     /// Dynamic modules registered and not cancelled yet, in registration order (Story 12.5).
     private var registered: [(id: UUID, module: any NotchModule)] = []
     private var registrationCount = 0
@@ -378,6 +382,29 @@ final class FakeScriptFolder: ScriptFolderService, @unchecked Sendable {
     }
 
     var subscribers: Int { lock.withLock { continuations.count } }
+
+    /// `vigie://install` requests (Story 12.9): queued until the module subscribes, like the host's inbox.
+    private var pendingInstalls: [ScriptInstallRequest] = []
+    private var installContinuation: AsyncStream<ScriptInstallRequest>.Continuation?
+
+    @MainActor func installRequests() -> AsyncStream<ScriptInstallRequest> {
+        let (stream, continuation) = AsyncStream<ScriptInstallRequest>.makeStream()
+        let pending = lock.withLock {
+            installContinuation = continuation
+            defer { pendingInstalls = [] }
+            return pendingInstalls
+        }
+        for request in pending { continuation.yield(request) }
+        return stream
+    }
+
+    func submitInstall(_ request: ScriptInstallRequest) {
+        let continuation = lock.withLock {
+            if installContinuation == nil { pendingInstalls.append(request) }
+            return installContinuation
+        }
+        continuation?.yield(request)
+    }
 
     func send() {
         for continuation in lock.withLock({ continuations }) { continuation.yield() }

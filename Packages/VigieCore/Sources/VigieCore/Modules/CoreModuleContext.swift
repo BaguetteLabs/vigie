@@ -114,6 +114,8 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
     public let builtInModuleIDs: Set<ModuleID>
     /// The signed price table's location (Story 6.5), for `context.updates`; nil = never fetched.
     public let priceTable: PriceTableLocation?
+    /// The launch's `vigie://install` inbox (Story 12.9), handed to `context.scriptFolder`; nil: no links.
+    public let scriptInstalls: ScriptInstallInbox?
 
     /// - Parameters:
     ///   - environment: injected by the App (`AppEnvironment.current`); VigieCore never reads `.current`.
@@ -136,6 +138,7 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
     ///     one that is off.
     ///   - builtInModuleIDs: the ids scripts must not take; defaults to the modules `configStore` knows plus
     ///     ``ModuleID/specBuiltIns``.
+    ///   - scriptInstalls: the `vigie://install` inbox the App's open-URL handler feeds (Story 12.9).
     ///   - away: the launch's Away service; defaults to one on the real idle reader and screen signals, its
     ///     threshold read from `[modules.time.breaks] away_after` (90 s without it), transitions recorded in
     ///     `activityStore`.
@@ -155,9 +158,11 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
         away: CoreAwayService? = nil,
         builtInModuleIDs: Set<ModuleID>? = nil,
         priceTable: PriceTableLocation? = UpdaterConfiguration.priceTableLocation(
-            infoDictionary: Bundle.main.infoDictionary ?? [:])
+            infoDictionary: Bundle.main.infoDictionary ?? [:]),
+        scriptInstalls: ScriptInstallInbox? = nil
     ) {
         self.priceTable = priceTable
+        self.scriptInstalls = scriptInstalls
         self.environment = environment
         self.eventBus = eventBus
         self.configStore = configStore
@@ -223,7 +228,8 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
                 } ?? NoScriptConfirmations(),
                 settings: configStore.map {
                     ConfigScriptSettings(store: $0, tracker: tracker) as any ScriptSettingsStore
-                } ?? NoScriptSettings()),
+                } ?? NoScriptSettings(),
+                installInbox: scriptInstalls),
             updates: CoreUpdatesService(shared: configStore?.shared, priceTable: priceTable),
             log: log
         )

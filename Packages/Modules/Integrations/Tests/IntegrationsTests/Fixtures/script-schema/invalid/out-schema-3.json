@@ -1,0 +1,12 @@
+{
+  "description": "A schema version newer than this Vigie reads is rejected.",
+  "kind": "output",
+  "document": {
+    "schema": 3,
+    "widget": {
+      "type": "status",
+      "level": "ok"
+    }
+  },
+  "error": "schema"
+}

@@ -75,7 +75,10 @@ import Testing
     @Test func relativeTimesCountWholeMinutesFromNow() {
         let now = Self.now
         #expect(ScriptCardMeta.checked(now.addingTimeInterval(-150)).text(now: now) == "CHECKED 2 MIN AGO")
-        #expect(ScriptCardMeta.checked(now.addingTimeInterval(-20)).text(now: now) == "CHECKED <1 MIN AGO")
+        // Flow 7 (UX-DR106, Story 12.9): the first run of a just-installed status script reads `CHECKED JUST NOW`.
+        #expect(ScriptCardMeta.checked(now.addingTimeInterval(-20)).text(now: now) == "CHECKED JUST NOW")
+        #expect(ScriptCardMeta.checked(now).text(now: now) == "CHECKED JUST NOW")
+        #expect(ScriptCardMeta.checked(now.addingTimeInterval(-60)).text(now: now) == "CHECKED 1 MIN AGO")
         #expect(ScriptCardMeta.updated(now.addingTimeInterval(-240)).text(now: now) == "UPDATED 4 MIN AGO")
         #expect(ScriptCardMeta.updated(now).text(now: now) == "UPDATED <1 MIN AGO")
         #expect(ScriptCardMeta.updated(now.addingTimeInterval(-112 * 60)).text(now: now) == "UPDATED 1H52 AGO")

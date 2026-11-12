@@ -1,0 +1,14 @@
+{
+  "description": "A source must be an HTTPS URL.",
+  "kind": "front-matter",
+  "document": {
+    "id": "dev.minimal",
+    "name": "Minimal",
+    "interval": "5m",
+    "runtime": "bash",
+    "widget": "text",
+    "schema": 2,
+    "source": "http://example.com/ci.md"
+  },
+  "error": "source"
+}

@@ -95,9 +95,9 @@ struct SchemaObject {
         return value
     }
 
-    /// The document's `schema` version (default 1); a version this Vigie does not read is rejected.
+    /// The document's `schema` version (absent: 1); a version this Vigie does not read is rejected.
     func schemaVersion() throws -> ScriptSchemaVersion {
-        guard let raw = try int("schema") else { return .current }
+        guard let raw = try int("schema") else { return .absent }
         guard let version = ScriptSchemaVersion(rawValue: raw) else {
             throw ScriptSchemaError(
                 path("schema"), .unsupportedSchema(raw, supported: ScriptSchemaVersion.current.rawValue))

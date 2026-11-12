@@ -46,6 +46,20 @@ public enum CoreSettings {
         ConfigKeyPath(["scripts", kind.rawValue, relativePath, scriptRecordKey])
     }
 
+    /// `[scripts.sources."<relative path>"]` keys in `local.toml` (Story 12.9): where a script installed from a
+    /// `vigie://install` link was downloaded from on this Mac (`url`, `sig`, `installed_at`). Written only by
+    /// `ConfigScriptConfirmations`; never synced, so another Mac that receives the file has no source record.
+    public enum ScriptSourceKey: String, CaseIterable, Sendable {
+        case url
+        case sig
+        case installedAt = "installed_at"
+    }
+
+    /// `scripts.sources."<relative path>".<url|sig|installed_at>`.
+    public static func scriptSourcePath(_ relativePath: String, _ key: ScriptSourceKey) -> ConfigKeyPath {
+        ConfigKeyPath(["scripts", "sources", relativePath, key.rawValue])
+    }
+
     /// `[scripts.enabled] "<relative path>" = false` in `local.toml` (Story 12.6, AD-8): a script file disabled on
     /// this Mac. Absent means enabled; enabling removes the key. Written only by `ConfigScriptSettings`.
     public static func scriptEnabledPath(_ relativePath: String) -> ConfigKeyPath {

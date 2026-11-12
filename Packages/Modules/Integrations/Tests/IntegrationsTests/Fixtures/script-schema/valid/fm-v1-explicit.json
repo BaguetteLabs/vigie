@@ -1,0 +1,12 @@
+{
+  "description": "Schema 1 written out: read as before (no author, source or version).",
+  "kind": "front-matter",
+  "document": {
+    "id": "dev.minimal",
+    "name": "Minimal",
+    "interval": "5m",
+    "runtime": "bash",
+    "widget": "text",
+    "schema": 1
+  }
+}

@@ -3,7 +3,8 @@
 
 No JSON Schema library is allowed (AD-16) and CI has none, so this is a small validator for the subset of
 JSON Schema 2020-12 the schema uses: type, enum, const, required, properties, additionalProperties, items,
-oneOf, minimum, exclusiveMinimum, maximum, minLength, minItems, uniqueItems, pattern and $ref within the file.
+oneOf, if/then/else, minimum, exclusiveMinimum, maximum, minLength, minItems, uniqueItems, pattern and $ref within
+the file (boolean subschemas included: `false` rejects any value).
 Any other keyword in the schema is an error, so the subset cannot drift silently.
 
 Fixtures live in Packages/Modules/Integrations/Tests/IntegrationsTests/Fixtures/script-schema/{valid,invalid}.
@@ -31,6 +32,7 @@ ANNOTATIONS = {"$schema", "$id", "$defs", "$comment", "title", "description", "d
 ASSERTIONS = {
     "type", "enum", "const", "required", "properties", "additionalProperties", "items", "oneOf",
     "minimum", "exclusiveMinimum", "maximum", "minLength", "minItems", "uniqueItems", "pattern", "$ref",
+    "if", "then", "else",
 }
 
 
@@ -60,7 +62,7 @@ class Validator:
                 self.check_keywords(sub, f"{ptr}/{key}/{name}")
         for i, sub in enumerate(node.get("oneOf", [])):
             self.check_keywords(sub, f"{ptr}/oneOf/{i}")
-        for key in ("items", "additionalProperties"):
+        for key in ("items", "additionalProperties", "if", "then", "else"):
             if isinstance(node.get(key), dict):
                 self.check_keywords(node[key], f"{ptr}/{key}")
 
@@ -173,6 +175,17 @@ class Validator:
                     self.validate(props[name], item, f"{ptr}/properties/{name}", child, errors)
                 elif "additionalProperties" in node:
                     self.validate(node["additionalProperties"], item, f"{ptr}/additionalProperties", child, errors)
+        if "if" in node:
+            # The condition only selects a branch: its failures are not errors. Coverage counts only the main
+            # properties (the branches restrict them, e.g. schema-2-only keys).
+            condition_errors = []
+            saved = self.recording
+            self.recording = False
+            self.validate(node["if"], value, f"{ptr}/if", path, condition_errors)
+            branch = "else" if condition_errors else "then"
+            if branch in node:
+                self.validate(node[branch], value, f"{ptr}/{branch}", path, errors)
+            self.recording = saved
         if "oneOf" in node:
             matches = []
             for i, branch in enumerate(node["oneOf"]):

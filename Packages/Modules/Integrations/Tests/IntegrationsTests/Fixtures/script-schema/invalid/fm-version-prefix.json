@@ -1,0 +1,14 @@
+{
+  "description": "A version is numbers, not v1.2.",
+  "kind": "front-matter",
+  "document": {
+    "id": "dev.minimal",
+    "name": "Minimal",
+    "interval": "5m",
+    "runtime": "bash",
+    "widget": "text",
+    "schema": 2,
+    "version": "v1.2"
+  },
+  "error": "version"
+}

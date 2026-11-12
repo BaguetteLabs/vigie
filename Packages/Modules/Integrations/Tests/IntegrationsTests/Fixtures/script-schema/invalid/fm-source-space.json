@@ -1,0 +1,14 @@
+{
+  "description": "A source has no spaces.",
+  "kind": "front-matter",
+  "document": {
+    "id": "dev.minimal",
+    "name": "Minimal",
+    "interval": "5m",
+    "runtime": "bash",
+    "widget": "text",
+    "schema": 2,
+    "source": "https://example.com/my script.md"
+  },
+  "error": "source"
+}

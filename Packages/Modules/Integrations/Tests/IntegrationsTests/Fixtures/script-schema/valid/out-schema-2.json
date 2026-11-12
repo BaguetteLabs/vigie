@@ -1,5 +1,5 @@
 {
-  "description": "A newer schema version is rejected.",
+  "description": "Schema 2 output: the same as version 1.",
   "kind": "output",
   "document": {
     "schema": 2,
@@ -7,6 +7,5 @@
       "type": "status",
       "level": "ok"
     }
-  },
-  "error": "schema"
+  }
 }

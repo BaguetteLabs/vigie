@@ -21,11 +21,16 @@ public protocol ScriptFolderService: Sendable {
     /// This Mac's enabled flags of script files (`local.toml`, AD-8) and the scripts' configured setting values
     /// (`[modules."<script id>"]`, synced), Story 12.6. Default: ``NoScriptSettings``.
     var settings: any ScriptSettingsStore { get }
+    /// The `vigie://install` links the app received (Story 12.9, AD-18), in order. Links received before the module
+    /// subscribed (while the app was launching) are delivered first. One subscriber at a time; the stream ends
+    /// when the module stops. Default: an empty, finished stream.
+    @MainActor func installRequests() -> AsyncStream<ScriptInstallRequest>
 }
 
 extension ScriptFolderService {
     public var confirmations: any ScriptConfirmationStore { NoScriptConfirmations() }
     public var settings: any ScriptSettingsStore { NoScriptSettings() }
+    @MainActor public func installRequests() -> AsyncStream<ScriptInstallRequest> { AsyncStream { $0.finish() } }
 
     /// Whether the script file at `relativePath` (`modules/github.md`) is enabled on this Mac (AD-8, Story 12.6):
     /// read from `local.toml` through ``settings``, never from the synced `[modules."<id>"] enabled`. Default true.

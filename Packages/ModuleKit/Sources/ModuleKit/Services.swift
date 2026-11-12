@@ -316,6 +316,13 @@ public protocol HostControl: Sendable {
     @MainActor func openOwnTab(focus: UserIntent?)
     /// Registers a dynamic (script) module; the token unregisters it (AD-18).
     @MainActor func registerDynamicModule(_ module: any NotchModule) throws -> RegistrationToken
+    /// Opens the Settings window on this module's pane and brings it forward; acts only with a `UserIntent`
+    /// (AD-13), e.g. the one of a `vigie://install` link (Story 12.9). Default: does nothing.
+    @MainActor func openOwnSettings(focus: UserIntent?)
+}
+
+extension HostControl {
+    @MainActor public func openOwnSettings(focus: UserIntent?) {}
 }
 
 // MARK: - Permissions (implemented in Story 2.12)

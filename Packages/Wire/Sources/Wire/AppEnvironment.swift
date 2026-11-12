@@ -32,6 +32,10 @@ public struct AppEnvironment: Sendable {
     public let bundleID: String
     public let displayName: String
     public let cliName: String
+    /// The URL scheme the app registers (`CFBundleURLTypes`, AD-20): `vigie`, or `vigie-dev` for the dev build
+    /// (AD-17, A89), so a link never opens the other flavor. `App/project.yml` sets the same value per configuration
+    /// (`VIGIE_URL_SCHEME`).
+    public let urlScheme: String
     public let applicationSupportURL: URL
     public let socketURL: URL
     public let spoolURL: URL
@@ -68,10 +72,12 @@ public struct AppEnvironment: Sendable {
             bundleID = "fr.baguettelabs.vigie"
             displayName = "Vigie"
             cliName = "vigie"
+            urlScheme = "vigie"
         case .dev:
             bundleID = "fr.baguettelabs.vigie.dev"
             displayName = "Vigie Dev"
             cliName = "vigie-dev"
+            urlScheme = "vigie-dev"
         }
 
         let support: URL

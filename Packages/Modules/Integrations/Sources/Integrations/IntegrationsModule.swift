@@ -31,6 +31,12 @@ public final class IntegrationsModule: NotchModule {
     public internal(set) var localStates: [String: ScriptLocalState] = [:]
     /// The file under review in the Script Confirmation (Story 12.3), nil when none is open.
     public internal(set) var reviewing: ScriptModuleDefinition?
+    /// The `vigie://install` link under review (Story 12.9), nil when none is open.
+    public internal(set) var installReview: ScriptInstallReview?
+    /// Downloads, verifies and installs link scripts (Story 12.9). Tests inject a fake downloader and keys.
+    @ObservationIgnored public var installer = ScriptInstaller()
+    @ObservationIgnored var installTask: Task<Void, Never>?
+    @ObservationIgnored var prepareTask: Task<Void, Never>?
 
     /// Runs the eligible scripts (Story 12.4); nil while stopped. Its `states` are the scripts' run states.
     public private(set) var runner: ScriptRunner?
@@ -65,7 +71,10 @@ public final class IntegrationsModule: NotchModule {
         self.context = context
         startConfirmations(context)
         startSettings(context)
-        guard context.scriptFolder.url != nil else { return }
+        guard context.scriptFolder.url != nil else {
+            startInstalls(context)
+            return
+        }
         // Subscribe before the first scan so a change made during it is not lost.
         let changes = context.scriptFolder.changes()
         runner = ScriptRunner(context: context) { [weak self] definition in
@@ -73,6 +82,8 @@ public final class IntegrationsModule: NotchModule {
             return isScriptEligible?(definition) ?? isEligible(definition)
         }
         await rescan()
+        // After the first scan, so a link received while launching sees the folder's ids.
+        startInstalls(context)
         watchTask = Task { [weak self] in
             for await _ in changes {
                 guard !Task.isCancelled else { return }
@@ -82,6 +93,7 @@ public final class IntegrationsModule: NotchModule {
     }
 
     public func stop() async {
+        await stopInstalls()
         watchTask?.cancel()
         watchTask = nil
         await runner?.stop()

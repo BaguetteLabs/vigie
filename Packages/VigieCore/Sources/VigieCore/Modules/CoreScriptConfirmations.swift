@@ -12,6 +12,15 @@ import ModuleKit
 /// sha256 = "<lowercase hex SHA-256 of the declined file bytes>"
 /// ```
 ///
+/// A file installed from a `vigie://install` link also gets (Story 12.9):
+///
+/// ```toml
+/// [scripts.sources."modules/ci-status.md"]
+/// url = "https://…/ci-status.md"        # downloaded from, after redirects
+/// sig = "https://…/ci-status.md.sig"    # absent when no signature was found
+/// installed_at = "2026-11-12T21:04:00Z"
+/// ```
+///
 /// Records are read from `local.toml` only: a `[scripts]` table in the synced `config.toml` never confirms
 /// anything (it is an open table there, ignored without a problem). Confirming removes the file's decline and
 /// declining removes its confirmation.
@@ -53,6 +62,34 @@ public struct ConfigScriptConfirmations: ScriptConfirmationStore {
         await MainActor.run { store.registerScriptRecord(relativePath) }
         try await store.set(CoreSettings.scriptRecordPath(kind, relativePath), to: .string(sha256.lowercased()))
         try await store.remove(CoreSettings.scriptRecordPath(other, relativePath))
+    }
+
+    @MainActor public func source(for relativePath: String) -> ScriptSourceRecord? {
+        func text(_ key: CoreSettings.ScriptSourceKey) -> String? {
+            guard
+                case .string(let value) = store.rawValue(
+                    at: CoreSettings.scriptSourcePath(relativePath, key), in: .local),
+                !value.isEmpty
+            else { return nil }
+            return value
+        }
+        guard let url = text(.url).flatMap(URL.init(string:)) else { return nil }
+        let installedAt = text(.installedAt).flatMap { try? Date($0, strategy: .iso8601) } ?? .distantPast
+        return ScriptSourceRecord(
+            url: url, signatureURL: text(.sig).flatMap(URL.init(string:)), installedAt: installedAt)
+    }
+
+    public func recordSource(_ relativePath: String, _ source: ScriptSourceRecord) async throws {
+        await MainActor.run { store.registerScriptSource(relativePath) }
+        try await store.set(CoreSettings.scriptSourcePath(relativePath, .url), to: .string(source.url.absoluteString))
+        if let sig = source.signatureURL {
+            try await store.set(CoreSettings.scriptSourcePath(relativePath, .sig), to: .string(sig.absoluteString))
+        } else {
+            try await store.remove(CoreSettings.scriptSourcePath(relativePath, .sig))
+        }
+        try await store.set(
+            CoreSettings.scriptSourcePath(relativePath, .installedAt),
+            to: .string(source.installedAt.formatted(.iso8601)))
     }
 
     /// Yields after each load or write that changes a key under `[scripts]`; ends when the module stops.

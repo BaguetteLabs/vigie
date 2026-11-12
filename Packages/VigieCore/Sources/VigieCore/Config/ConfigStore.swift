@@ -114,6 +114,12 @@ public final class ConfigStore {
         if added { recompute() }
     }
 
+    /// Makes one script file's `[scripts.sources]` keys known (Story 12.9). Idempotent.
+    public func registerScriptSource(_ relativePath: String) {
+        let added = shared.update { $0.schema.registerScriptSource(relativePath) }
+        if added { recompute() }
+    }
+
     /// Makes one script file's per-Mac `[scripts.enabled]` key known (Story 12.6). Idempotent.
     public func registerScriptEnabled(_ relativePath: String) {
         let added = shared.update { $0.schema.registerScriptEnabled(relativePath) }

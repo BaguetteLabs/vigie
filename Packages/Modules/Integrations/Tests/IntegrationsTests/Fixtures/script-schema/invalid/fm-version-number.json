@@ -1,0 +1,14 @@
+{
+  "description": "A version is a string (quote it in YAML).",
+  "kind": "front-matter",
+  "document": {
+    "id": "dev.minimal",
+    "name": "Minimal",
+    "interval": "5m",
+    "runtime": "bash",
+    "widget": "text",
+    "schema": 2,
+    "version": 1.2
+  },
+  "error": "version"
+}

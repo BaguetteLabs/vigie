@@ -317,6 +317,23 @@ public struct ConfigSchema: Sendable {
         return added
     }
 
+    /// Adds `scripts.sources."<relative path>".<url|sig|installed_at>` (local strings, Story 12.9). Returns whether
+    /// they were added.
+    @discardableResult
+    public mutating func registerScriptSource(_ relativePath: String) -> Bool {
+        var added = false
+        for key in CoreSettings.ScriptSourceKey.allCases {
+            let path = CoreSettings.scriptSourcePath(relativePath, key)
+            guard entries[path] == nil else { continue }
+            let descriptor = SettingDescriptor(
+                key: key.rawValue, label: CoreSettings.label("config.scripts.sources.\(key.rawValue)"),
+                kind: .string(default: ""), scope: .local)
+            entries[path] = ConfigSchemaEntry(path: path, descriptor: descriptor, moduleID: nil)
+            added = true
+        }
+        return added
+    }
+
     /// Adds `scripts.enabled."<relative path>"` (a local bool, default true; Story 12.6). Returns whether it was
     /// added.
     @discardableResult

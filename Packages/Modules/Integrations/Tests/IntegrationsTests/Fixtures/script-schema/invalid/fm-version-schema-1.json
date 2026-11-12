@@ -1,0 +1,14 @@
+{
+  "description": "version needs schema 2.",
+  "kind": "front-matter",
+  "document": {
+    "id": "dev.minimal",
+    "name": "Minimal",
+    "interval": "5m",
+    "runtime": "bash",
+    "widget": "text",
+    "schema": 1,
+    "version": "1.0.0"
+  },
+  "error": "version"
+}

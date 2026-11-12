@@ -1,5 +1,5 @@
 {
-  "description": "A newer schema version is rejected.",
+  "description": "A schema version newer than this Vigie reads is rejected.",
   "kind": "front-matter",
   "document": {
     "id": "dev.minimal",
@@ -7,7 +7,7 @@
     "interval": "5m",
     "runtime": "bash",
     "widget": "text",
-    "schema": 2
+    "schema": 3
   },
   "error": "schema"
 }

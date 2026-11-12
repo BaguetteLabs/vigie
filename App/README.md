@@ -12,6 +12,8 @@ xcodebuild -project Vigie.xcodeproj -scheme Vigie -configuration Debug build
 
 Debug builds are `Vigie Dev.app` (`fr.baguettelabs.vigie.dev`); Release builds are `Vigie.app` (`fr.baguettelabs.vigie`).
 
+URL scheme (AD-20, Story 12.9): `Info.plist` `CFBundleURLTypes` registers `$(VIGIE_URL_SCHEME)`, which `project.yml` sets to `vigie-dev` for Debug and `vigie` for Release (same value as Wire's `AppEnvironment.urlScheme`; `Scripts/check-services-plist.sh` checks both). `AppDelegate.application(_:open:)` hands `vigie://install?url=…` links to VigieCore's `AppURLRouter`, which queues them for the Scripts module.
+
 ## Signing
 
 All signing settings live in `Config/Signing.xcconfig` (the `configFiles` of `project.yml`; the target sets no signing key, since target settings would win). Maintainer prerequisites (certificates, profiles, API key, Sparkle keys, GitHub secrets) are in [`docs/release-setup.md`](../docs/release-setup.md).

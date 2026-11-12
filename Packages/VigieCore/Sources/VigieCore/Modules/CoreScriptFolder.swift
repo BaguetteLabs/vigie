@@ -13,6 +13,8 @@ public struct CoreScriptFolder: ScriptFolderService {
     public let confirmations: any ScriptConfirmationStore
     /// Enabled flags and configured values (Story 12.6): ``ConfigScriptSettings`` when the host has a ConfigStore.
     public let settings: any ScriptSettingsStore
+    /// The launch's `vigie://install` inbox (Story 12.9), fed by the App's open-URL handler; nil: no links.
+    public let installInbox: ScriptInstallInbox?
 
     /// - Parameters:
     ///   - makeWatcher: one watcher per `changes()` stream; tests pass a `ManualDirectoryWatcher`.
@@ -20,6 +22,7 @@ public struct CoreScriptFolder: ScriptFolderService {
         url: URL?, builtInModuleIDs: Set<ModuleID>, tracker: RegistrationTracker,
         confirmations: any ScriptConfirmationStore = NoScriptConfirmations(),
         settings: any ScriptSettingsStore = NoScriptSettings(),
+        installInbox: ScriptInstallInbox? = nil,
         makeWatcher: @escaping @MainActor @Sendable () -> any DirectoryWatching = { DispatchDirectoryWatcher() }
     ) {
         self.url = url
@@ -27,7 +30,16 @@ public struct CoreScriptFolder: ScriptFolderService {
         self.tracker = tracker
         self.confirmations = confirmations
         self.settings = settings
+        self.installInbox = installInbox
         self.makeWatcher = makeWatcher
+    }
+
+    /// The inbox's requests, queued ones first; the stream ends when the module stops (Story 12.9).
+    @MainActor public func installRequests() -> AsyncStream<ScriptInstallRequest> {
+        guard let installInbox else { return AsyncStream { $0.finish() } }
+        let (stream, finish) = installInbox.subscribe()
+        tracker.track(RegistrationToken(cancel: finish))
+        return stream
     }
 
     /// Watches the folder and, as hints, the `*.md` files in it at each event, so in-place writes (which do not

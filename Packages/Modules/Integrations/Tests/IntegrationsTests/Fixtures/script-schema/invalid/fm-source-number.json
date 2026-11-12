@@ -1,0 +1,14 @@
+{
+  "description": "A source is a string.",
+  "kind": "front-matter",
+  "document": {
+    "id": "dev.minimal",
+    "name": "Minimal",
+    "interval": "5m",
+    "runtime": "bash",
+    "widget": "text",
+    "schema": 2,
+    "source": 42
+  },
+  "error": "source"
+}

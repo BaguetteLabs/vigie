@@ -58,6 +58,78 @@ import Testing
         }
     }
 
+    static func install(_ verification: ScriptConfirmationContent.Verification, author: String? = "Léa")
+        -> ScriptConfirmationContent
+    {
+        var content = Self.content
+        content.sourceURL = "https://example.com/ci.md"
+        content.author = author
+        content.verification = verification
+        return content
+    }
+
+    /// Story 12.9 copy: SPEC §9.4 wording for the verified line and "claimed by the file" when not verified.
+    @Test func linkInstallCopy() {
+        #expect(ScriptConfirmationCopy.verification(.verified) == "Verified: Vigie Script repository")
+        for state in [ScriptConfirmationContent.Verification.unsigned, .badSignature, .otherSite] {
+            #expect(ScriptConfirmationCopy.verification(state).hasPrefix("Not verified: "))
+        }
+        #expect(ScriptConfirmationCopy.author("Léa", verified: true) == "Author: Léa")
+        #expect(ScriptConfirmationCopy.author("Léa", verified: false) == "Author: Léa (claimed by the file)")
+        #expect(ScriptConfirmationCopy.author(nil, verified: false) == "Author: not given")
+        #expect(ScriptConfirmationCopy.source("https://a.com/x.md") == "Source: https://a.com/x.md")
+        #expect(ScriptConfirmationCopy.close == "Close")
+    }
+
+    /// Privacy mode disables Confirm (UX-DR98); a failed download has nothing to confirm (UX-DR100).
+    @Test func confirmNeedsAFileAndPrivacyOff() {
+        let ready = Self.install(.verified)
+        #expect(ScriptConfirmationView.confirmEnabled(ready, privacyActive: false))
+        #expect(!ScriptConfirmationView.confirmEnabled(ready, privacyActive: true))
+        let failed = ScriptConfirmationContent.unavailable(
+            sourceURL: "https://a.com/x.md", availability: .failed(title: "Could not be downloaded", detail: "404"))
+        #expect(!ScriptConfirmationView.confirmEnabled(failed, privacyActive: false))
+        let downloading = ScriptConfirmationContent.unavailable(
+            sourceURL: "https://a.com/x.md", availability: .downloading)
+        #expect(!ScriptConfirmationView.confirmEnabled(downloading, privacyActive: false))
+    }
+
+    @Test func linkInstallStatesRenderInBothPrivacyStates() throws {
+        let contents: [ScriptConfirmationContent] = [
+            Self.install(.verified), Self.install(.unsigned, author: nil), Self.install(.badSignature),
+            Self.install(.otherSite),
+            .unavailable(sourceURL: "https://a.com/x.md", availability: .downloading),
+            .unavailable(
+                sourceURL: "https://a.com/x.md", availability: .failed(title: "Could not be downloaded", detail: "404")),
+        ]
+        for content in contents {
+            for privacy in [false, true] {
+                let view = ScriptConfirmationView(content: content, onConfirm: {}, onDecline: {}, onCancel: {})
+                    .privacyActive(privacy)
+                    .frame(width: 640, height: 640)
+                #expect(ImageRenderer(content: view).cgImage != nil)
+            }
+        }
+    }
+
+    /// UX-DR98: in Privacy mode the author and source URL are masked like the body; the verification line stays.
+    @Test func privacyMasksAuthorAndSource() {
+        func strings(_ privacy: Bool) -> String {
+            let view = ScriptConfirmationView(
+                content: Self.install(.unsigned), onConfirm: {}, onDecline: {}, onCancel: {}
+            )
+            .privacyActive(privacy)
+            return PrivacyTests.accessibilityStrings(view, size: CGSize(width: 640, height: 640)).joined(separator: "|")
+        }
+        let open = strings(false)
+        #expect(open.contains("Léa (claimed by the file)"))
+        #expect(open.contains("https://example.com/ci.md"))
+        let masked = strings(true)
+        #expect(!masked.contains("Léa"))
+        #expect(!masked.contains("example.com"))
+        #expect(masked.contains("Not verified: this file is not signed."))
+    }
+
     @Test func viewsRenderInBothPrivacyStates() throws {
         for privacy in [false, true] {
             let view = ScriptConfirmationView(content: Self.content, onConfirm: {}, onDecline: {}, onCancel: {})

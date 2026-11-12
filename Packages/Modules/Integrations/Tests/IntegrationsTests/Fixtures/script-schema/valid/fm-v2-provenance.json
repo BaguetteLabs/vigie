@@ -1,0 +1,15 @@
+{
+  "description": "Schema 2 with the provenance keys of Story 12.8: author, an HTTPS source and a version.",
+  "kind": "front-matter",
+  "document": {
+    "id": "dev.minimal",
+    "name": "Minimal",
+    "interval": "5m",
+    "runtime": "bash",
+    "widget": "text",
+    "schema": 2,
+    "author": "Léa Martin",
+    "source": "https://github.com/OWNER/vigie-scripts/blob/main/ci-status/ci-status.md",
+    "version": "1.2.0"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "description": "A version has at most three numbers.",
+  "kind": "front-matter",
+  "document": {
+    "id": "dev.minimal",
+    "name": "Minimal",
+    "interval": "5m",
+    "runtime": "bash",
+    "widget": "text",
+    "schema": 2,
+    "version": "1.2.3.4"
+  },
+  "error": "version"
+}

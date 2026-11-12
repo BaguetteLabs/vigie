@@ -40,6 +40,17 @@ public struct CoreHostControl: HostControl {
         link.host?.openTab(moduleID.rawValue, focus: focus)
     }
 
+    /// Opens Settings on this module's pane (pane id = module id), only with a `UserIntent` (Story 12.9: the
+    /// Script Confirmation of a `vigie://install` link lives in Settings › Scripts).
+    @MainActor public func openOwnSettings(focus: UserIntent?) {
+        guard focus != nil, let host = link.host else { return }
+        if let openPane = host.openSettingsPane {
+            openPane(moduleID.rawValue)
+        } else {
+            host.openSettings?()
+        }
+    }
+
     /// Registers a script module with the host's ``ModuleRegistry`` on behalf of this module (AD-18, Story
     /// 12.5): it then takes part in arbitration, Home, the tabs and Settings like a built-in. Throws
     /// ``ModuleServiceError/notAvailable`` while the link is unbound, ``DynamicModuleError`` when the id is taken.

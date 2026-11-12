@@ -15,6 +15,8 @@ final class MemoryScriptConfirmations: ScriptConfirmationStore, @unchecked Senda
     private let lock = NSLock()
     private var stored: [String: ScriptConfirmationRecord] = [:]
     private var log: [Write] = []
+    private var sources: [String: ScriptSourceRecord] = [:]
+    var sourceRecords: [String: ScriptSourceRecord] { lock.withLock { sources } }
     private var continuations: [UUID: AsyncStream<Void>.Continuation] = [:]
     /// Set to make the next write throw.
     var failure: (any Error)?
@@ -43,6 +45,13 @@ final class MemoryScriptConfirmations: ScriptConfirmationStore, @unchecked Senda
             log.append(.decline(relativePath, sha256))
         }
         notify()
+    }
+
+    @MainActor func source(for relativePath: String) -> ScriptSourceRecord? { lock.withLock { sources[relativePath] } }
+
+    func recordSource(_ relativePath: String, _ source: ScriptSourceRecord) async throws {
+        if let failure = lock.withLock({ failure }) { throw failure }
+        lock.withLock { sources[relativePath] = source }
     }
 
     /// An outside edit of `local.toml`.

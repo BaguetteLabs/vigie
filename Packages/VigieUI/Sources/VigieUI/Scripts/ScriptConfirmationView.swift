@@ -20,12 +20,46 @@ public struct ScriptConfirmationContent: Equatable, Sendable, Identifiable {
     public var fileText: String?
     /// Why the file cannot run even once confirmed (a parse problem), or nil.
     public var problem: String?
+    /// Link installs (Story 12.9): the HTTPS URL the file was downloaded from; nil for a file already in the folder.
+    public var sourceURL: String?
+    /// Link installs: the front matter's `author`, as the file states it (nil when it names none).
+    public var author: String?
+    /// Link installs: the signature state, nil for a file already in the folder (no line is shown).
+    public var verification: Verification?
+    /// Link installs: whether there is a file to review yet (UX-DR100).
+    public var availability: Availability
+
+    /// Where a link-installed file comes from (SPEC §9.4, AD-18).
+    public enum Verification: Equatable, Sendable {
+        /// A valid Script repository signature: `Verified: Vigie Script repository`.
+        case verified
+        /// No signature found (none at `<url>.sig` or the link's `sig`).
+        case unsigned
+        /// A signature that matches no key built into this Vigie (tampered file, wrong or unknown key).
+        case badSignature
+        /// The file's `source` names another site than the one it was downloaded from.
+        case otherSite
+
+        public var isVerified: Bool { self == .verified }
+    }
+
+    /// Whether the sheet has a file to show.
+    public enum Availability: Equatable, Sendable {
+        case ready
+        /// The link's file is being downloaded: only Close.
+        case downloading
+        /// Nothing to confirm (download failed, invalid file): the reason and only Close (UX-DR100).
+        case failed(title: String, detail: String?)
+
+        public var canConfirm: Bool { self == .ready }
+    }
 
     public var id: String { path }
 
     public init(
         fileName: String, path: String, documentation: String, frontMatter: String?, code: String?,
-        language: String?, fileText: String?, problem: String? = nil
+        language: String?, fileText: String?, problem: String? = nil, sourceURL: String? = nil,
+        author: String? = nil, verification: Verification? = nil, availability: Availability = .ready
     ) {
         self.fileName = fileName
         self.path = path
@@ -35,6 +69,17 @@ public struct ScriptConfirmationContent: Equatable, Sendable, Identifiable {
         self.language = language
         self.fileText = fileText
         self.problem = problem
+        self.sourceURL = sourceURL
+        self.author = author
+        self.verification = verification
+        self.availability = availability
+    }
+
+    /// A link install with nothing to review yet (downloading) or nothing to confirm (failed).
+    public static func unavailable(sourceURL: String, availability: Availability) -> ScriptConfirmationContent {
+        ScriptConfirmationContent(
+            fileName: "", path: sourceURL, documentation: "", frontMatter: nil, code: nil, language: nil,
+            fileText: nil, sourceURL: sourceURL, availability: availability)
     }
 }
 
@@ -55,6 +100,33 @@ public enum ScriptConfirmationCopy {
     public static var confirm: String { L10n.string("script.confirmation.confirm") }
     public static var decline: String { L10n.string("script.confirmation.decline") }
     public static var cancel: String { L10n.string("script.confirmation.cancel") }
+    public static var close: String { L10n.string("script.confirmation.close") }
+    /// SPEC §9.4, verbatim.
+    public static var verified: String { L10n.string("script.confirmation.verified") }
+    public static var unverifiedExplanation: String { L10n.string("script.confirmation.unverified.explanation") }
+    public static var installNote: String { L10n.string("script.confirmation.installNote") }
+    public static var downloading: String { L10n.string("script.confirmation.downloading") }
+    public static var noAuthor: String { L10n.string("script.confirmation.author.none") }
+
+    /// The verification line: `Verified: Vigie Script repository`, or the stronger warning's reason.
+    public static func verification(_ state: ScriptConfirmationContent.Verification) -> String {
+        switch state {
+        case .verified: verified
+        case .unsigned: L10n.string("script.confirmation.unverified.unsigned")
+        case .badSignature: L10n.string("script.confirmation.unverified.badSignature")
+        case .otherSite: L10n.string("script.confirmation.unverified.otherSite")
+        }
+    }
+
+    /// `Source: https://…`.
+    public static func source(_ url: String) -> String { L10n.format("script.confirmation.source", url) }
+
+    /// `Author: Léa`, or `Author: Léa (claimed by the file)` unless the file is verified.
+    public static func author(_ name: String?, verified: Bool) -> String {
+        guard let name, !name.isEmpty else { return noAuthor }
+        return verified
+            ? L10n.format("script.confirmation.author", name) : L10n.format("script.confirmation.author.claimed", name)
+    }
 
     /// `Code · python`, or `Code` without a language tag.
     public static func codeHeading(language: String?) -> String {
@@ -70,6 +142,11 @@ public enum ScriptConfirmationCopy {
         "script.confirmation.code.language", "script.confirmation.noCode", "script.confirmation.fileText",
         "script.confirmation.privacy", "script.confirmation.confirm", "script.confirmation.decline",
         "script.confirmation.cancel", "script.state.notConfirmed", "script.state.notConfirmed.hint",
+        "script.confirmation.close", "script.confirmation.verified", "script.confirmation.unverified.unsigned",
+        "script.confirmation.unverified.badSignature", "script.confirmation.unverified.otherSite",
+        "script.confirmation.unverified.explanation", "script.confirmation.installNote",
+        "script.confirmation.downloading", "script.confirmation.source", "script.confirmation.author",
+        "script.confirmation.author.claimed", "script.confirmation.author.none", "script.meta.checkedJustNow",
     ]
 }
 
@@ -104,24 +181,10 @@ public struct ScriptConfirmationView: View {
     public var body: some View {
         VStack(alignment: .leading, spacing: ScriptConfirmationMetrics.sectionSpacing) {
             header
-            ScrollView {
-                VStack(alignment: .leading, spacing: ScriptConfirmationMetrics.sectionSpacing) {
-                    documentationSection
-                    textSection(
-                        ScriptConfirmationCopy.frontMatter, text: content.frontMatter,
-                        empty: ScriptConfirmationCopy.noFrontMatter)
-                    textSection(
-                        ScriptConfirmationCopy.codeHeading(language: content.language), text: content.code,
-                        empty: ScriptConfirmationCopy.noCode)
-                    if let fileText = content.fileText {
-                        DisclosureGroup(isExpanded: $showsFileText) {
-                            CodeBlock(text: fileText)
-                        } label: {
-                            Text(verbatim: ScriptConfirmationCopy.fileText).font(.headline)
-                        }
-                    }
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
+            switch content.availability {
+            case .ready: fileSections
+            case .downloading: downloadingSection
+            case .failed(let title, let detail): failureSection(title: title, detail: detail)
             }
             footer
         }
@@ -131,15 +194,103 @@ public struct ScriptConfirmationView: View {
             minHeight: ScriptConfirmationMetrics.minHeight, idealHeight: ScriptConfirmationMetrics.idealHeight)
     }
 
-    private var header: some View {
+    private var fileSections: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: ScriptConfirmationMetrics.sectionSpacing) {
+                documentationSection
+                textSection(
+                    ScriptConfirmationCopy.frontMatter, text: content.frontMatter,
+                    empty: ScriptConfirmationCopy.noFrontMatter)
+                textSection(
+                    ScriptConfirmationCopy.codeHeading(language: content.language), text: content.code,
+                    empty: ScriptConfirmationCopy.noCode)
+                if let fileText = content.fileText {
+                    DisclosureGroup(isExpanded: $showsFileText) {
+                        CodeBlock(text: fileText)
+                    } label: {
+                        Text(verbatim: ScriptConfirmationCopy.fileText).font(.headline)
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    private var downloadingSection: some View {
+        HStack(spacing: ScriptConfirmationMetrics.paragraphSpacing) {
+            ProgressView().controlSize(.small)
+            Text(verbatim: ScriptConfirmationCopy.downloading).foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    }
+
+    /// UX-DR100: the reason, and nothing to confirm.
+    private func failureSection(title: String, detail: String?) -> some View {
         VStack(alignment: .leading, spacing: ScriptConfirmationMetrics.lineSpacing) {
-            Text(verbatim: ScriptConfirmationCopy.title).font(.title2.weight(.semibold))
-            Text(verbatim: content.fileName).font(.headline).sensitive()
-            Text(verbatim: content.path)
+            Label {
+                Text(verbatim: title).font(.headline).fixedSize(horizontal: false, vertical: true)
+            } icon: {
+                Image(systemName: "xmark.octagon")
+            }
+            if let detail {
+                Text(verbatim: detail)
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .textSelection(.enabled)
+                    .sensitive()
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    }
+
+    /// Link installs (Story 12.9): source URL, author and the verification line, with the stronger warning when
+    /// the file is not verified. Source and author are user text: masked in Privacy mode (UX-DR98).
+    @ViewBuilder private var provenance: some View {
+        if let sourceURL = content.sourceURL {
+            Text(verbatim: ScriptConfirmationCopy.source(sourceURL))
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .textSelection(.enabled)
                 .sensitive()
+        }
+        if let verification = content.verification, content.availability.canConfirm {
+            Text(verbatim: ScriptConfirmationCopy.author(content.author, verified: verification.isVerified))
+                .font(.callout)
+                .sensitive()
+            if verification.isVerified {
+                Label {
+                    Text(verbatim: ScriptConfirmationCopy.verified).font(.callout.weight(.semibold))
+                } icon: {
+                    Image(systemName: "checkmark.seal.fill")
+                }
+            } else {
+                Label {
+                    VStack(alignment: .leading, spacing: ScriptConfirmationMetrics.lineSpacing) {
+                        Text(verbatim: ScriptConfirmationCopy.verification(verification))
+                            .font(.callout.weight(.bold))
+                        Text(verbatim: ScriptConfirmationCopy.unverifiedExplanation).font(.callout)
+                    }
+                    .fixedSize(horizontal: false, vertical: true)
+                } icon: {
+                    Image(systemName: "exclamationmark.shield.fill")
+                }
+            }
+        }
+    }
+
+    private var header: some View {
+        VStack(alignment: .leading, spacing: ScriptConfirmationMetrics.lineSpacing) {
+            Text(verbatim: ScriptConfirmationCopy.title).font(.title2.weight(.semibold))
+            if content.availability.canConfirm {
+                Text(verbatim: content.fileName).font(.headline).sensitive()
+                Text(verbatim: content.path)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .textSelection(.enabled)
+                    .sensitive()
+            }
+            provenance
             Label {
                 Text(verbatim: ScriptConfirmationCopy.warning)
                     .font(.callout.weight(.semibold))
@@ -152,6 +303,12 @@ public struct ScriptConfirmationView: View {
                 .font(.callout)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
+            if content.verification != nil, content.availability.canConfirm {
+                Text(verbatim: ScriptConfirmationCopy.installNote)
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
             if let problem = content.problem {
                 Label {
                     Text(verbatim: problem).fixedSize(horizontal: false, vertical: true).sensitive()
@@ -201,15 +358,29 @@ public struct ScriptConfirmationView: View {
                     .frame(maxWidth: .infinity, alignment: .trailing)
             }
             HStack {
-                Button(action: onCancel) { Text(verbatim: ScriptConfirmationCopy.cancel) }
-                    .keyboardShortcut(.cancelAction)
-                Spacer()
-                // No `.defaultAction` on either: Return never confirms or declines (explicit click only).
-                Button(action: onDecline) { Text(verbatim: ScriptConfirmationCopy.decline) }
-                Button(action: onConfirm) { Text(verbatim: ScriptConfirmationCopy.confirm) }
-                    .disabled(privacyActive)
+                if content.availability.canConfirm {
+                    Button(action: onCancel) { Text(verbatim: ScriptConfirmationCopy.cancel) }
+                        .keyboardShortcut(.cancelAction)
+                    Spacer()
+                    // No `.defaultAction` on either: Return never confirms or declines (explicit click only).
+                    Button(action: onDecline) { Text(verbatim: ScriptConfirmationCopy.decline) }
+                    Button(action: onConfirm) { Text(verbatim: ScriptConfirmationCopy.confirm) }
+                        .disabled(!Self.confirmEnabled(content, privacyActive: privacyActive))
+                } else {
+                    // Nothing to confirm (UX-DR100): Close only.
+                    Spacer()
+                    Button(action: onCancel) { Text(verbatim: ScriptConfirmationCopy.close) }
+                        .keyboardShortcut(.cancelAction)
+                }
             }
         }
+    }
+}
+
+extension ScriptConfirmationView {
+    /// Confirm is offered only with a file to confirm and never while Privacy mode hides it (PRD FR-39, UX-DR98).
+    public static func confirmEnabled(_ content: ScriptConfirmationContent, privacyActive: Bool) -> Bool {
+        content.availability.canConfirm && !privacyActive
     }
 }
 

@@ -96,9 +96,39 @@ import Testing
         #expect(
             minimal
                 == ScriptFrontMatter(
-                    schema: .current, id: "dev.minimal", name: "Minimal", icon: "terminal", interval: .seconds(300),
+                    schema: .absent, id: "dev.minimal", name: "Minimal", icon: "terminal", interval: .seconds(300),
                     runtime: "bash", widget: .text, surfaces: [.home], priority: nil, settings: []))
-        #expect(minimal.schema.rawValue == 1)
+        #expect(minimal.schema.rawValue == 1, "a file without schema is version 1")
+        #expect(ScriptSchemaVersion.current.rawValue == 2, "new files write schema 2 (Story 12.8)")
+    }
+
+    /// Story 12.8 (schema part, done with 12.9): schema 2 adds `author`, `source` (HTTPS) and `version`; a schema 1
+    /// file (explicit or without `schema`) cannot use them, so an older Vigie refuses a v2 file by its version.
+    @Test func schemaTwoProvenanceKeys() throws {
+        let v2 = try Self.fixture(ScriptFrontMatter.self, "fm-v2-provenance")
+        #expect(v2.schema == .provenance)
+        #expect(v2.author == "Léa Martin")
+        #expect(v2.source?.host() == "github.com")
+        #expect(v2.version == "1.2.0")
+        let v1 = try Self.fixture(ScriptFrontMatter.self, "fm-v1-explicit")
+        #expect(v1.schema == .absent)
+        #expect(v1.author == nil && v1.source == nil && v1.version == nil)
+        #expect(Self.node("#/$defs/schemaVersion")["default"] as? Int == ScriptSchemaVersion.absent.rawValue)
+
+        let yaml = "id: dev.a\nname: A\ninterval: 5m\nruntime: sh\nwidget: text\nauthor: Léa\n"
+        #expect(throws: ScriptSchemaError(path: "author", reason: .requiresSchema(2))) {
+            try ScriptFrontMatter.decode(yaml: yaml)
+        }
+        let message = ScriptSchemaError(path: "author", reason: .requiresSchema(2)).message
+        #expect(message.hasPrefix("author: needs schema: 2"))
+        let decoded = try ScriptFrontMatter.decode(yaml: "schema: 2\n" + yaml + "version: \"1.0\"\n")
+        #expect(decoded.author == "Léa" && decoded.version == "1.0")
+        for good in ["1", "1.2", "1.2.3", "1.2.3-rc.1", "1.0+build.7"] { #expect(ScriptFrontMatter.isVersion(good)) }
+        for bad in ["v1", "1.2.3.4", "1.", "", "1.0 beta"] { #expect(!ScriptFrontMatter.isVersion(bad), "\(bad)") }
+        #expect(ScriptFrontMatter.httpsURL("https://example.com") != nil)
+        for bad in ["http://example.com", "https://", "https://a b", "ftp://x", "HTTPS://example.com"] {
+            #expect(ScriptFrontMatter.httpsURL(bad) == nil, "\(bad)")
+        }
     }
 
     @Test func specExampleDecodes() throws {
@@ -146,7 +176,7 @@ import Testing
     @Test func outputDefaultsAndSpecExample() throws {
         let minimal = try Self.fixture(ScriptOutput.self, "out-status-minimal")
         #expect(
-            minimal == ScriptOutput(schema: .current, state: .ambient, widget: ScriptWidget(type: .status, level: .ok)))
+            minimal == ScriptOutput(schema: .absent, state: .ambient, widget: ScriptWidget(type: .status, level: .ok)))
 
         let spec = try Self.fixture(ScriptOutput.self, "out-spec-example")
         #expect(spec.state == .active)
