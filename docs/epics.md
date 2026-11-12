@@ -2623,7 +2623,7 @@ So that I can pace my work against my real limits.
 **Then** it offers two choices, per Account and per Mac (`plan_auth = "token" | "claude_code"`, local):
 **And** "Paste a token": the user pastes a credential, stored through SecretStore as a local, non-synchronizable Keychain item
 **And** "Use Claude Code's login": Settings explains that Vigie will read the login Claude Code already stored on this Mac, only to fetch plan usage, and nothing happens until the user clicks `Allow`; macOS may then show its own Keychain access prompt, which the user answers
-**And** with Claude Code's login, Vigie reads the credential in memory at each refresh, never copies it into its own Keychain items, files, logs or diagnostics, never writes or refreshes it, and never syncs the consent; `Stop using Claude Code's login` revokes the consent immediately
+**And** with Claude Code's login, Vigie reads the credential once per launch and holds it in process memory (re-read only on expiry or rejection; amended 2026-11-12, Keychain prompt loop fix), never copies it into its own Keychain items, files, logs or diagnostics, never writes or refreshes it, and never syncs the consent; `Stop using Claude Code's login` revokes the consent immediately
 **And** (added 2026-11-07) the consent text names the external Keychain item from the descriptor the Claude adapter declares (AD-9 amended)
 
 **Given** either sign-in choice is set up
