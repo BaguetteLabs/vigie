@@ -56,15 +56,20 @@ public struct ClaudeAdapter: AgentAdapter {
     private let fileReader: any ConfigFileReader
     /// Where `~/.claude/projects` (the `logReader` root) is resolved.
     private let homeDirectory: URL
+    /// Claude Code's login, held in memory across `usageProvider` calls for the life of the adapter (one per
+    /// process), so the Keychain is read once per launch (SPEC §7.2).
+    private let credentialCache: ExternalCredentialCache
 
     public init(
         runner: any ProcessRunner = SystemProcessRunner(),
         fileReader: any ConfigFileReader = FileSystemConfigFileReader(),
-        homeDirectory: URL = FileManager.default.homeDirectoryForCurrentUser
+        homeDirectory: URL = FileManager.default.homeDirectoryForCurrentUser,
+        credentialCache: ExternalCredentialCache = ExternalCredentialCache()
     ) {
         self.runner = runner
         self.fileReader = fileReader
         self.homeDirectory = homeDirectory
+        self.credentialCache = credentialCache
     }
 
     public var id: AgentID { Self.agentID }
@@ -76,7 +81,9 @@ public struct ClaudeAdapter: AgentAdapter {
 
     /// Plan windows from the unofficial endpoint (Story 7.3); called only while `usage_providers` has `plan`
     /// (per Account, Story 7.10).
-    public var usageProvider: (any UsageProvider)? { ClaudePlanUsageProvider(homeDirectory: homeDirectory) }
+    public var usageProvider: (any UsageProvider)? {
+        ClaudePlanUsageProvider(homeDirectory: homeDirectory, credentialCache: credentialCache)
+    }
 
     /// `~/.claude/projects/**/*.jsonl` (Story 7.1, AD-23).
     public var logReader: (any AgentLogReader)? { ClaudeLogReader(homeDirectory: homeDirectory) }

@@ -6,20 +6,26 @@ import Foundation
 /// adapter's `usage_providers` contains `plan`, and merges the windows with the local log data.
 ///
 /// The credential comes from `plan_auth` (local): `token` reads the pasted `plan_token` from the adapter's
-/// SecretStore; `claude_code` reads Claude Code's login through `readExternal` (consent required) and uses its
-/// access token for this request only. Nothing is logged, stored or renewed.
+/// SecretStore at each fetch; `claude_code` reads Claude Code's login through `readExternal` (consent required)
+/// once and holds its access token in ``ExternalCredentialCache`` for the session (SPEC §7.2): the Keychain is
+/// read again only when the held token has expired, or on the fetch after the endpoint rejected it (401/403).
+/// Nothing is logged, written to disk or renewed.
 public struct ClaudePlanUsageProvider: UsageProvider {
     public static let refreshInterval: Duration = .seconds(300)
 
     let now: @Sendable () -> Date
     /// Expands `~` in Account locations (the credential of a non-default Account).
     let homeDirectory: URL
+    /// Shared by every provider ``ClaudeAdapter/usageProvider`` returns.
+    let credentials: ExternalCredentialCache
 
     public init(
         homeDirectory: URL = FileManager.default.homeDirectoryForCurrentUser,
+        credentialCache: ExternalCredentialCache = ExternalCredentialCache(),
         now: @escaping @Sendable () -> Date = { Date() }
     ) {
         self.homeDirectory = homeDirectory
+        self.credentials = credentialCache
         self.now = now
     }
 
@@ -41,15 +47,25 @@ public struct ClaudePlanUsageProvider: UsageProvider {
     /// One Account: its `plan_auth` (`account.<id>.plan_auth` past the default), its pasted token
     /// (`plan_token.<id>`) or its Claude Code login.
     public func fetch(context: any AdapterContext, account: AgentAccount) async throws -> UsageSnapshot {
-        let token = try await credential(context: context, account: account)
-        return try await ClaudePlanUsageClient(http: context.http).fetch(token: token, now: now())
+        let (token, held) = try await credential(context: context, account: account)
+        do {
+            return try await ClaudePlanUsageClient(http: context.http).fetch(token: token, now: now())
+        } catch PlanUsageError.unauthorized {
+            // The held login was rejected: forget it, the next fetch reads the Keychain again (not this one, so
+            // a refresh reads it at most once).
+            if let held { await credentials.drop(held.id) }
+            throw PlanUsageError.unauthorized
+        }
     }
 
     func credential(context: any AdapterContext) async throws(PlanUsageError) -> String {
-        try await credential(context: context, account: AgentAccount(id: .default, label: "", location: nil))
+        try await credential(context: context, account: AgentAccount(id: .default, label: "", location: nil)).token
     }
 
-    func credential(context: any AdapterContext, account: AgentAccount) async throws(PlanUsageError) -> String {
+    /// The token, and the external descriptor it came from (nil for a pasted token).
+    func credential(context: any AdapterContext, account: AgentAccount) async throws(PlanUsageError) -> (
+        token: String, held: ExternalCredentialDescriptor?
+    ) {
         let raw = context.settings.value(account.settingKey(ClaudeAdapter.SettingKey.planAuth), as: String.self)
         switch ClaudeAdapter.PlanAuth(rawValue: raw ?? "") ?? .token {
         case .token:
@@ -62,18 +78,38 @@ public struct ClaudePlanUsageProvider: UsageProvider {
             guard let token = token?.trimmingCharacters(in: .whitespacesAndNewlines), !token.isEmpty else {
                 throw .credentialMissing
             }
-            return token
+            return (token, nil)
         case .claudeCode:
             guard let descriptor = externalCredential(for: account) else { throw .credentialMissing }
-            let text: String
-            do {
-                text = try await context.secrets.readExternal(descriptor)
-            } catch SecretStoreError.consentRequired {
-                throw .consentRequired
-            } catch {
-                throw .credentialMissing
-            }
-            return try ClaudeCodeCredential.accessToken(fromJSON: text, now: now())
+            return (try await externalToken(context: context, descriptor: descriptor), descriptor)
         }
+    }
+
+    /// The held login's token while it is valid and consent still stands; else one Keychain read, held when it
+    /// carries a valid token.
+    func externalToken(context: any AdapterContext, descriptor: ExternalCredentialDescriptor)
+        async throws(PlanUsageError) -> String
+    {
+        if let login = await credentials.login(for: descriptor.id) {
+            if await context.secrets.hasConsent(for: descriptor),
+                let token = try? ClaudeCodeCredential.accessToken(of: login, now: now())
+            {
+                return token
+            }
+            // Expired, or consent revoked: never reuse it.
+            await credentials.drop(descriptor.id)
+        }
+        let text: String
+        do {
+            text = try await context.secrets.readExternal(descriptor)
+        } catch SecretStoreError.consentRequired {
+            throw .consentRequired
+        } catch {
+            throw .credentialMissing
+        }
+        let login = try ClaudeCodeCredential.login(fromJSON: text)
+        let token = try ClaudeCodeCredential.accessToken(of: login, now: now())
+        await credentials.hold(login, for: descriptor.id)
+        return token
     }
 }

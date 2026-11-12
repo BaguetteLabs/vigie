@@ -66,8 +66,8 @@ public protocol SecretStore: Sendable {
     /// Whether a secret is stored under `key`, without reading its value (Story 7.3). Default: `read != nil`.
     func contains(_ key: String) async throws -> Bool
 
-    /// Reads a credential another app stored on this Mac (AD-9 as amended 2026-11-06), into memory for the
-    /// request that needs it only: never copied, cached, written, renewed or deleted. Throws
+    /// Reads a credential another app stored on this Mac (AD-9 as amended 2026-11-06 and 2026-11-12) into process
+    /// memory: the caller may hold it for the session, never writes it to disk, renews or deletes it. Throws
     /// ``SecretStoreError/consentRequired`` while the user has not allowed it on this Mac (``hasConsent(for:)``),
     /// `.notFound` when the item does not exist. macOS may show its own Keychain prompt on the first read.
     /// Default: throws `.unavailable`.

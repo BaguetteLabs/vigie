@@ -161,8 +161,9 @@ public actor KeychainSecretStore {
         log.notice("Consent revoked for external credential \(descriptor.id, privacy: .public)")
     }
 
-    /// Reads another app's generic password from the login keychain, only with consent, into the returned string
-    /// only: nothing is stored, cached or logged, and the item is never written, renewed or deleted. A separate
+    /// Reads another app's generic password from the login keychain, only with consent, into the returned string:
+    /// the store keeps and logs nothing, and the item is never written, renewed or deleted. The caller may hold the
+    /// value in process memory for the session (SPEC §7.2, AD-9 amended 2026-11-12), never on disk. A separate
     /// path from Vigie's own items: no data-protection flag, no access group, so it works when ``availability()``
     /// is unavailable (ad-hoc builds). macOS may show its Keychain access prompt.
     public func readExternal(_ descriptor: ExternalCredentialDescriptor) async throws -> String {

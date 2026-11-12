@@ -5,8 +5,9 @@ import Foundation
 /// Claude Code's stored login (Story 7.3, A57): a generic password in the login keychain, service
 /// `Claude Code-credentials`, account = the macOS user name, value = JSON with `claudeAiOauth.accessToken`,
 /// `refreshToken`, `expiresAt` (ms since 1970), `scopes`, `subscriptionType`. Vigie reads it through
-/// `SecretStore.readExternal` with the user's consent, uses `accessToken` for one request, and never writes,
-/// renews or keeps it (AD-9 amended).
+/// `SecretStore.readExternal` with the user's consent, once per launch, keeps `accessToken` and `expiresAt` in
+/// process memory for the session (``ExternalCredentialCache``), and never writes it to disk, renews or logs it
+/// (AD-9 amended 2026-11-12).
 public enum ClaudeCodeCredential {
     /// Keychain service of the item Claude Code writes.
     public static let service = "Claude Code-credentials"
@@ -54,15 +55,23 @@ public enum ClaudeCodeCredential {
     /// Pure: the access token in the item's JSON. Throws `.credentialMissing` when there is none (or the JSON is
     /// not the known shape), `.credentialExpired` when `expiresAt` is at or before `now`. Never logs.
     public static func accessToken(fromJSON text: String, now: Date) throws(PlanUsageError) -> String {
+        try accessToken(of: login(fromJSON: text), now: now)
+    }
+
+    /// Pure: `accessToken` and `expiresAt` of the item's JSON (the refresh token is not kept). Throws
+    /// `.credentialMissing` when there is no access token.
+    static func login(fromJSON text: String) throws(PlanUsageError) -> ExternalCredentialCache.Login {
         guard let object = try? JSONSerialization.jsonObject(with: Data(text.utf8)) as? [String: Any],
             let oauth = object["claudeAiOauth"] as? [String: Any],
             let token = oauth["accessToken"] as? String, !token.isEmpty
         else { throw .credentialMissing }
-        if let expires = (oauth["expiresAt"] as? NSNumber)?.doubleValue,
-            Date(timeIntervalSince1970: expires / 1000) <= now
-        {
-            throw .credentialExpired
-        }
-        return token
+        let expires = (oauth["expiresAt"] as? NSNumber).map { Date(timeIntervalSince1970: $0.doubleValue / 1000) }
+        return ExternalCredentialCache.Login(accessToken: token, expiresAt: expires)
+    }
+
+    /// The login's token, or `.credentialExpired` when `expiresAt` is at or before `now`.
+    static func accessToken(of login: ExternalCredentialCache.Login, now: Date) throws(PlanUsageError) -> String {
+        if let expires = login.expiresAt, expires <= now { throw .credentialExpired }
+        return login.accessToken
     }
 }

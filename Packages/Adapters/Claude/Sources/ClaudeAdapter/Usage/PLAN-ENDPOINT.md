@@ -69,7 +69,12 @@ unavailable" (dedupe `plan:claude`), and resolves it on the next success.
   - No consent → `.consentRequired`; item missing or unreadable (or the Keychain prompt denied) →
     `.credentialMissing`.
 
-The credential and the token live in memory for one request; they are never logged, cached or written.
+The pasted token is read from SecretStore at each fetch. Claude Code's login is read once per launch: the
+provider keeps its `accessToken` and `expiresAt` (not the refresh token) in process memory
+(`ExternalCredentialCache`, one per `ClaudeAdapter`) and reads the Keychain again only when the held token has
+expired, or on the fetch after the endpoint answered 401/403. So macOS's Keychain prompt appears at most once per
+launch (SPEC §7.2, AD-9 amended 2026-11-12). Nothing is logged, written to disk or renewed; revoking consent
+drops the held token at the next fetch.
 
 ## Verified
 

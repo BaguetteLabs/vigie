@@ -53,6 +53,36 @@ final class PlanSecrets: SecretStore, @unchecked Sendable {
         guard let external else { throw SecretStoreError.notFound }
         return external
     }
+    func hasConsent(for descriptor: ExternalCredentialDescriptor) async -> Bool { consent }
+}
+
+/// Answers each request with the next status of `statuses` (the last one repeats) and the `ok` fixture body.
+final class ScriptedHTTP: HTTPClient, @unchecked Sendable {
+    private let lock = NSLock()
+    private var statuses: [Int]
+    private var _authorizations: [String?] = []
+
+    init(_ statuses: [Int]) { self.statuses = statuses }
+
+    var authorizations: [String?] { lock.withLock { _authorizations } }
+
+    func data(for request: URLRequest) async throws -> (Data, HTTPURLResponse) {
+        let status = lock.withLock {
+            _authorizations.append(request.value(forHTTPHeaderField: "Authorization"))
+            return statuses.count > 1 ? statuses.removeFirst() : statuses[0]
+        }
+        let body = PlanFixtures.data(status == 200 ? "ok" : "unauthorized")
+        return (body, HTTPURLResponse(url: request.url!, statusCode: status, httpVersion: nil, headerFields: nil)!)
+    }
+}
+
+/// A clock tests move by hand.
+final class PlanClock: @unchecked Sendable {
+    private let lock = NSLock()
+    private var _now: Date
+    init(_ now: Date = planNow) { _now = now }
+    var now: Date { lock.withLock { _now } }
+    func advance(_ seconds: TimeInterval) { lock.withLock { _now += seconds } }
 }
 
 enum PlanFixtures {
@@ -223,6 +253,108 @@ func credentialJSON(token: String, expiresAt: Date) -> String {
         #expect(descriptor.displayName == "Claude Code" && descriptor.accountHint == nil)
         let text = String(localized: descriptor.explanation)
         #expect(!text.hasPrefix("claude.") && text.contains("Claude Code"))
+    }
+}
+
+// MARK: - Held login (keychain prompt loop fix)
+
+@Suite struct PlanHeldLoginTests {
+    let clock = PlanClock()
+    var provider: ClaudePlanUsageProvider {
+        let clock = clock
+        return ClaudePlanUsageProvider(credentialCache: cache, now: { clock.now })
+    }
+    let cache = ExternalCredentialCache()
+
+    func fetch(_ secrets: PlanSecrets, _ http: any HTTPClient) async throws -> UsageSnapshot {
+        try await provider.fetch(context: planContext(auth: "claude_code", secrets: secrets, http: http))
+    }
+
+    @Test func secondFetchReusesTheHeldLoginWithoutTheKeychain() async throws {
+        let http = ScriptedHTTP([200])
+        let secrets = PlanSecrets(external: credentialJSON(token: "held", expiresAt: planNow + 3600), consent: true)
+        _ = try await fetch(secrets, http)
+        clock.advance(300)
+        _ = try await fetch(secrets, http)
+        clock.advance(300)
+        _ = try await fetch(secrets, http)
+        #expect(secrets.externalReads.count == 1)
+        #expect(http.authorizations == Array(repeating: "Bearer held", count: 3))
+        #expect(secrets.writes == 0)
+    }
+
+    @Test func theAdapterKeepsTheLoginAcrossUsageProviderCalls() async throws {
+        let adapter = ClaudeAdapter()
+        let http = ScriptedHTTP([200])
+        let secrets = PlanSecrets(external: credentialJSON(token: "t", expiresAt: Date() + 3600), consent: true)
+        let context = planContext(auth: "claude_code", secrets: secrets, http: http)
+        _ = try await #require(adapter.usageProvider).fetch(context: context)
+        _ = try await #require(adapter.usageProvider).fetch(context: context)
+        #expect(secrets.externalReads.count == 1 && http.authorizations.count == 2)
+        // Another adapter (another launch) reads again.
+        _ = try await #require(ClaudeAdapter().usageProvider).fetch(context: context)
+        #expect(secrets.externalReads.count == 2)
+    }
+
+    @Test func anExpiredHeldTokenIsReadAgain() async throws {
+        let http = ScriptedHTTP([200])
+        let secrets = PlanSecrets(external: credentialJSON(token: "old", expiresAt: planNow + 100), consent: true)
+        _ = try await fetch(secrets, http)
+        // Claude Code renewed its login meanwhile.
+        secrets.external = credentialJSON(token: "new", expiresAt: planNow + 7200)
+        clock.advance(200)
+        _ = try await fetch(secrets, http)
+        #expect(secrets.externalReads.count == 2)
+        #expect(http.authorizations == ["Bearer old", "Bearer new"])
+        clock.advance(300)
+        _ = try await fetch(secrets, http)
+        #expect(secrets.externalReads.count == 2)
+    }
+
+    @Test func anExpiredReadIsNotHeld() async throws {
+        let http = ScriptedHTTP([200])
+        let secrets = PlanSecrets(external: credentialJSON(token: "old", expiresAt: planNow - 1), consent: true)
+        await #expect(throws: PlanUsageError.credentialExpired) { try await fetch(secrets, http) }
+        await #expect(throws: PlanUsageError.credentialExpired) { try await fetch(secrets, http) }
+        #expect(secrets.externalReads.count == 2 && http.authorizations.isEmpty)
+    }
+
+    @Test func aRejectedTokenIsDroppedAndReadAgainOnTheNextFetch() async throws {
+        let http = ScriptedHTTP([200, 401, 200])
+        let secrets = PlanSecrets(external: credentialJSON(token: "a", expiresAt: planNow + 7200), consent: true)
+        _ = try await fetch(secrets, http)
+        await #expect(throws: PlanUsageError.unauthorized) { try await fetch(secrets, http) }
+        // Not re-read within the failing refresh.
+        #expect(secrets.externalReads.count == 1)
+        secrets.external = credentialJSON(token: "b", expiresAt: planNow + 7200)
+        _ = try await fetch(secrets, http)
+        #expect(secrets.externalReads.count == 2)
+        #expect(http.authorizations == ["Bearer a", "Bearer a", "Bearer b"])
+    }
+
+    @Test func aRevokedConsentIsNeverBypassedByTheHeldLogin() async throws {
+        let http = ScriptedHTTP([200])
+        let secrets = PlanSecrets(external: credentialJSON(token: "t", expiresAt: planNow + 3600), consent: true)
+        _ = try await fetch(secrets, http)
+        secrets.consent = false
+        await #expect(throws: PlanUsageError.consentRequired) { try await fetch(secrets, http) }
+        #expect(http.authorizations.count == 1)
+        // Allowed again: read again (the held login was dropped).
+        secrets.consent = true
+        _ = try await fetch(secrets, http)
+        #expect(secrets.externalReads.count == 3)
+    }
+
+    @Test func thePastedTokenIsReadAtEachFetchAndNeverHeld() async throws {
+        let http = ScriptedHTTP([401, 200])
+        let secrets = PlanSecrets(token: "one", external: credentialJSON(token: "x", expiresAt: planNow + 3600))
+        let context = planContext(auth: "token", secrets: secrets, http: http)
+        await #expect(throws: PlanUsageError.unauthorized) { try await provider.fetch(context: context) }
+        secrets.token = "two"
+        _ = try await provider.fetch(context: context)
+        #expect(http.authorizations == ["Bearer one", "Bearer two"])
+        #expect(secrets.externalReads.isEmpty && secrets.writes == 0)
+        #expect(await cache.login(for: ClaudeCodeCredential.descriptor.id) == nil)
     }
 }
 
