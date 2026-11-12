@@ -960,6 +960,18 @@
           }
         }
       }
+    },
+    "config.notify.focus_filter_ran": {
+      "comment": "Settings label for the config key notify.focus_filter_ran (a local record).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Focus filter set up"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

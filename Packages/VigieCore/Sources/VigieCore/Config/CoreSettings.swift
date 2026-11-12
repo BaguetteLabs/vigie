@@ -9,8 +9,8 @@ public struct CoreSetting: Sendable {
 
 /// The core (non-module) settings of SPEC §11, with their scope (AD-8). Module settings come from manifests.
 ///
-/// `.local` settings live at the same path in `local.toml`: `[display]`, `[virtual_notch]`, `[privacy]`, `[sync]`
-/// and `general.launch_at_login`.
+/// `.local` settings live at the same path in `local.toml`: `[display]`, `[virtual_notch]`, `[privacy]`, `[sync]`,
+/// `general.launch_at_login` and `notify.focus_filter_ran`.
 public enum CoreSettings {
     /// Tables whose keys are free-form (`[appearance.colors]` overrides any status, pace or warning color).
     /// `[integrations]` (local.toml) holds one table per connected agent adapter (Story 4.7, AD-22); its keys
@@ -79,6 +79,9 @@ public enum CoreSettings {
         make("notify", "after_focus", .enumeration(options: ["drop", "replay"], default: "drop")),
         make("notify", "min_severity", .enumeration(options: ["info", "warn", "critical"], default: "info")),
         make("notify", "cooldown", .duration(default: .zero)),
+        // Local record, not a preference: true once the Focus filter has run on this Mac (Story 3.10). Shown as the
+        // Focus row of Settings › Alerts, never as a generated row.
+        make("notify", "focus_filter_ran", .bool(default: false), .local),
         // [privacy] (local)
         // Default false: spike 21.1 chose manual-only (no detector ships); A88 keeps it off whenever the method needs Screen Recording.
         make("privacy", "auto", .bool(default: false), .local),

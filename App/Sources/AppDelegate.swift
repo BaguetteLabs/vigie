@@ -1,6 +1,7 @@
 import AgentKit
 import AgentsSessions
 import AgentsUsage
+import AppIntents
 import AppKit
 import ClaudeAdapter
 import GenericTerminal
@@ -33,6 +34,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var executableOverrides: ExecutableOverrides?
     private var alertCenter: AlertCenter?
     private var focusMonitor: (any FocusModeMonitor)?
+    /// Fed by the Focus filter intent and `app.focus` (Story 3.10). Created before launch finishes, since macOS
+    /// may launch Vigie to run the intent.
+    private let focusFilter: FocusFilterMonitor
+    private var focusFilterSetup: FocusFilterSetup?
     private var peekPresenter: PeekPresenter?
     private var setupProblems: SetupProblemReporter?
     private var settings: SettingsController?
@@ -45,6 +50,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private let environment = AppEnvironment.current
     private lazy var logger = Logger(subsystem: environment.logSubsystem, category: "app")
+
+    override init() {
+        let focusFilter = FocusFilterMonitor(
+            source: SilenceVigieFilterSource(),
+            log: Logger(subsystem: AppEnvironment.current.logSubsystem, category: "notifier"))
+        self.focusFilter = focusFilter
+        super.init()
+        // `SilenceVigieFilter.perform()` reaches the monitor through `@Dependency`.
+        AppDependencyManager.shared.add(dependency: focusFilter)
+    }
 
     func applicationWillFinishLaunching(_ notification: Notification) {
         AppActivation.configureAsAccessory()
@@ -183,6 +198,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         self.notifyRules = notifyRules
         let focusMonitor = makeFocusMonitor(log: notifierLog)
         self.focusMonitor = focusMonitor
+        // The filter of a Focus already on at launch; then record the first filter run in local.toml.
+        let focusFilter = focusFilter
+        Task { await focusFilter.start() }
+        let focusFilterSetup = FocusFilterSetup(store: configStore, monitor: focusFilter, log: notifierLog)
+        focusFilterSetup.start()
+        self.focusFilterSetup = focusFilterSetup
         let actionRouter = AppAlertActionRouter(
             registry: { [weak self] in self?.registry },
             openSettings: { [weak self] pane in self?.openSettings(pane: pane) },
@@ -375,11 +396,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         privacyConfig.start()
         self.privacyConfig = privacyConfig
 
-        // `vigie reload` and `app.expand` (Story 4.3, AD-21). Subscribed before the server's queue is released.
+        // `vigie reload` and `app.expand` (Story 4.3, AD-21), and the Shortcuts Focus bridge `app.focus` (Story
+        // 3.10). Subscribed before the server's queue is released.
         let appTopics = AppTopics(
             bus: eventBus, logger: logger,
             onReload: { await configStore.reload() },
-            onExpand: { [weak host] _ in host?.expand(focus: nil) })
+            onExpand: { [weak host] _ in host?.expand(focus: nil) },
+            onFocus: { [focusFilter] message in focusFilter.receiveShortcut(message) })
         appTopics.start()
         self.appTopics = appTopics
 
@@ -413,8 +436,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         #endif
     }
 
-    /// `-VigieSimulateFocus YES` (Debug) pretends a Focus mode is on, to exercise FR17 without changing the
-    /// system's Focus.
+    /// The Focus filter monitor (Story 3.10). `-VigieSimulateFocus YES` (Debug) pretends a Focus mode is on, to
+    /// exercise FR17 without changing the system's Focus.
     private func makeFocusMonitor(log: Logger) -> any FocusModeMonitor {
         #if DEBUG
             if UserDefaults.standard.bool(forKey: "VigieSimulateFocus") {
@@ -422,7 +445,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 return ManualFocusModeMonitor(isActive: true)
             }
         #endif
-        return SystemFocusModeMonitor(assertionsURL: SystemFocusModeMonitor.defaultAssertionsURL(), log: log)
+        return focusFilter
     }
 
     /// Links `~/.local/bin/<cliName>` to the bundled helper (FR8, AD-22); never overwrites a foreign file.
@@ -454,6 +477,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         notchHost?.stop()
         hotkeyBridge?.stop()
         setupProblems?.stop()
+        focusFilterSetup?.stop()
         appTopics?.stop()
         notifyRules?.stop()
         executableOverrides?.stop()

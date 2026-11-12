@@ -139,7 +139,7 @@ struct SettingsHarness {
             return []
         }
         let core = Set(CoreSettings.all.map(\.path)).subtracting([
-            CoreSettings.path("general", "launch_at_login"), HomePaneModel.cardsPath,
+            CoreSettings.path("general", "launch_at_login"), HomePaneModel.cardsPath, FocusFilterSetup.path,
         ])
         #expect(Set(placed) == core)
         #expect(placed.count == core.count)

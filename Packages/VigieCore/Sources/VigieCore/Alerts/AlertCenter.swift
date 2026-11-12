@@ -112,7 +112,7 @@ public final class AlertCenter {
     ///   - clock: drives reminders.
     ///   - now: wall time for quiet hours, cooldowns and timestamps.
     ///   - calendar: the calendar and time zone quiet hours are read in.
-    ///   - focus: macOS Focus / Do Not Disturb state (`SystemFocusModeMonitor` in the App).
+    ///   - focus: macOS Focus / Do Not Disturb state (`FocusFilterMonitor` in the App).
     ///   - activity: where every history entry is also recorded (the activity log, Story 3.8); nil for none.
     public init(
         rules: any NotifyRulesProvider,

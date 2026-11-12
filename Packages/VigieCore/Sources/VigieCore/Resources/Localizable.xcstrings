@@ -2028,6 +2028,174 @@
           }
         }
       }
+    },
+    "settings.section.focus": {
+      "comment": "Settings › Alerts section heading for Focus detection (Story 3.10).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Focus"
+          }
+        }
+      }
+    },
+    "settings.focus.title": {
+      "comment": "Settings › Alerts: title of the Focus row.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Focus"
+          }
+        }
+      }
+    },
+    "settings.focus.needsSetup": {
+      "comment": "Settings › Alerts: Focus row in its needs-setup state.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not set up. Add Vigie's Focus filter so alerts stay silent during the Focus modes you choose."
+          }
+        }
+      }
+    },
+    "settings.focus.step1": {
+      "comment": "Settings › Alerts: first step of the Focus filter how-to.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1. Click Open Focus settings, then choose a Focus, such as Do Not Disturb."
+          }
+        }
+      }
+    },
+    "settings.focus.step2": {
+      "comment": "Settings › Alerts: second step of the Focus filter how-to.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "2. Under Focus Filters, click Add Filter, then choose Vigie."
+          }
+        }
+      }
+    },
+    "settings.focus.step3": {
+      "comment": "Settings › Alerts: third step of the Focus filter how-to.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "3. Leave Silence Vigie on and click Add. Repeat for each Focus that should silence Vigie."
+          }
+        }
+      }
+    },
+    "settings.focus.open": {
+      "comment": "Settings › Alerts: button opening System Settings › Focus.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open Focus settings"
+          }
+        }
+      }
+    },
+    "settings.focus.ready": {
+      "comment": "Settings › Alerts: Focus row once Vigie's Focus filter has run.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Filter set up"
+          }
+        }
+      }
+    },
+    "settings.focus.shortcuts.title": {
+      "comment": "Settings › Alerts: disclosure with the two-automation Shortcuts recipe.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use Shortcuts instead"
+          }
+        }
+      }
+    },
+    "settings.focus.shortcuts.intro": {
+      "comment": "Settings › Alerts: Shortcuts recipe introduction.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In Shortcuts › Automation, create two automations for each Focus, both set to Run Immediately, each with a Run Shell Script action."
+          }
+        }
+      }
+    },
+    "settings.focus.shortcuts.on": {
+      "comment": "Settings › Alerts: Shortcuts recipe, label before the 'on' command.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "When Turning On:"
+          }
+        }
+      }
+    },
+    "settings.focus.shortcuts.off": {
+      "comment": "Settings › Alerts: Shortcuts recipe, label before the 'off' command.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "When Turning Off:"
+          }
+        }
+      }
+    },
+    "settings.focus.shortcuts.scripts": {
+      "comment": "Settings › Alerts: Shortcuts recipe, script permission step.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn on Allow Running Scripts in Shortcuts › Settings › Advanced."
+          }
+        }
+      }
+    },
+    "settings.focus.shortcuts.cap": {
+      "comment": "Settings › Alerts: Shortcuts recipe, staleness cap note.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Without a later message, an “on” counts for 12 hours."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

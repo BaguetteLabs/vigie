@@ -138,6 +138,9 @@ update_checks = true          # scripts installed from a link, at most once a da
 # [general]
 # launch_at_login = false
 #
+# [notify]
+# focus_filter_ran = false    # set by Vigie once its Focus filter has run (Settings › Alerts › Focus)
+#
 # [privacy]
 # auto = false                # detect screen sharing/recording (not available yet: manual only)
 # force = false               # always on

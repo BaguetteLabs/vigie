@@ -1,0 +1,54 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "Keeps Vigie's peeks and sounds quiet while this Focus is on. The notch still updates.": {
+      "comment": "Focus filter description shown under System Settings › Focus › Focus Filters (Story 3.10).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keeps Vigie's peeks and sounds quiet while this Focus is on. The notch still updates."
+          }
+        }
+      }
+    },
+    "Off": {
+      "comment": "Focus filter subtitle: Vigie is not silenced by this Focus.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Off"
+          }
+        }
+      }
+    },
+    "On": {
+      "comment": "Focus filter subtitle: Vigie is silenced by this Focus.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "On"
+          }
+        }
+      }
+    },
+    "Silence Vigie": {
+      "comment": "Focus filter title and its Boolean parameter (Story 3.10).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Silence Vigie"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

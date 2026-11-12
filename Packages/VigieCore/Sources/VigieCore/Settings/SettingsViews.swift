@@ -91,6 +91,8 @@ struct SettingsPaneView: View {
                         if let title = section.title { Text(title) }
                     }
                 }
+                // Focus detection setup and the Shortcuts recipe (Story 3.10).
+                if pane.id == "notify" { FocusSettingsSection(controller: controller) }
                 if pane.id == "general" {
                     CLISection(controller: controller)
                     Section {
