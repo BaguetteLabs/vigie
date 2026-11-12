@@ -6,6 +6,7 @@ Story 6.4 (FR107). Vigie takes no outside contributions, so there is no CONTRIBU
 
 - `CFBundleShortVersionString` (`MARKETING_VERSION`) is `X.Y.Z`, taken from the release git tag `vX.Y.Z`. Anything that is not a plain triple (`v1.2`, `v1.2.3-beta`) is rejected.
 - `CFBundleVersion` (`CURRENT_PROJECT_VERSION`) is the CI run number (`$GITHUB_RUN_NUMBER`). It only goes up, and Sparkle compares `CFBundleVersion`, so every published build is newer than the last whatever its tag.
+- A pre-release tag `vX.Y.Z-<suffix>` (`v1.2.0-beta.1`) builds `X.Y.Z`: the suffix only names the files and marks the public release as a pre-release (`Scripts/release/check-tag.sh` strips it before calling `Scripts/version.sh`, Story 6.2). Pre-releases of `X.Y.Z` precede the `vX.Y.Z` release and Sparkle orders them by build number.
 - Dev and local builds use `0.0.0` and `git rev-list --count HEAD` as the build number.
 
 `Scripts/version.sh` is the single source:

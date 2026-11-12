@@ -888,7 +888,7 @@ A release is published when **a `vX.Y.Z` tag is pushed on a commit that is on `m
 4. **Notarize** with `xcrun notarytool submit --wait`, using an App Store Connect API key (stored as secrets), then `xcrun stapler staple`.
 5. Package two files: `Vigie-X.Y.Z.dmg` for people downloading by hand, and `Vigie-X.Y.Z.zip` for Sparkle updates. Notarize and staple the DMG too.
 6. Sign the zip with Sparkle's **EdDSA** key (`sign_update`, private key stored as a secret) and generate `appcast.xml` (`generate_appcast`), using release notes taken from the tag message or `CHANGELOG.md`.
-7. Create the release on the public releases host (a GitHub Release in the releases-only repository, using a token scoped to that repository and stored as a secret) and attach the DMG, the zip, `appcast.xml` and SHA-256 checksums.
+7. Create the release on the public releases host (a GitHub Release in the releases-only repository, using a token scoped to that repository and stored as a secret) and attach the DMG, the zip, `appcast.xml` and SHA-256 checksums (`Vigie-X.Y.Z.dmg`, `Vigie-X.Y.Z.zip`, `SHA256SUMS.txt`; release notes from the `CHANGELOG.md` section, else the tag message).
 8. Open a pull request on the Homebrew tap (a `homebrew-vigie` repository, `brew tap <org>/vigie`, at first; the official homebrew-cask repository later) with the new version and checksum.
 
 **Secrets** are stored in a GitHub **environment** called `release`, which requires a maintainer's approval and only allows tags as the source. Workflows triggered by forks or pull requests can never read them.

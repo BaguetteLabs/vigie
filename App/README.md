@@ -35,6 +35,10 @@ The script writes the gitignored `Config/Signing.local.xcconfig`: `DEVELOPMENT_T
 
 Without a team: with exactly one `Apple Development:` identity, or a self-signed `Vigie Dev Signing` code-signing certificate (the script prints how to create one), `Scripts/dev-signing.sh` pins that identity's SHA-1 for Debug, so Keychain "Always Allow" answers survive rebuilds (`anchor apple generic` in `codesign -dr -` for Apple Development); there is no profile, so Debug keeps `Vigie.entitlements` and SecretStore reports "unavailable". With several Apple Development identities and no `--team`, it lists them with their team and exits 1.
 
+## Release
+
+Releases are built only by `.github/workflows/release.yml` on a pushed `vX.Y.Z` tag on `master` (Story 6.2): archive and Developer ID export with `../Scripts/release/ExportOptions.plist`, notarization, DMG + zip + checksums published on the public releases-only repository. Scripts in `../Scripts/release/` (each with `--dry-run`); how to release: [`docs/release-setup.md`](../docs/release-setup.md#releasing-story-62).
+
 ## Bundled CLI
 
 The "Embed vigie CLI" build phase (`project.yml`) builds `Packages/VigieCLI` with SwiftPM in the app's configuration and copies it to `Contents/Helpers/$(VIGIE_CLI_NAME)`: `vigie-dev` in `Vigie Dev.app` (Debug, so it talks to the dev socket and spool), `vigie` in `Vigie.app` (Release, universal). Its String Catalog bundle goes to `Contents/Resources/VigieCLI_VigieCLI.bundle`. The phase signs the helper with the app's identity (ad-hoc when there is none; skipped when `CODE_SIGNING_ALLOWED=NO`). At launch `CLIInstaller` links `~/.local/bin/<cli name>` to the helper (AD-22).
