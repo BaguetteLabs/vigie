@@ -716,6 +716,8 @@ Dimensions and slots are shared; skins restyle only.
 
 `{colors.base-island}`, `components.island-closed`. Two wings, each `{spacing.wing-gap}` apart internally. Ornament (inside the outline only): A, iris rim 1px along the bottom and sides plus interior shimmer; C, 1px struct hairline inside the edge, small corner marks in the lower corners, a 3px tick scale and a 28px gold tracer along the bottom. On plain displays in `virtual_notch.style = "menu_bar"`, light looks fill the island with `surface-vn-top` → `surface-vn-bottom` and use the light role set.
 
+**Band height.** The 34px `{spacing.band-height}` is the notched-MacBook case; on plain displays the virtual notch is exactly as tall as that display's menu bar (24 pt by default, plus `notch_overlap`) and closed-notch content scales to it: rings and glyphs cap at the band minus 2 pt per side, two-line readouts scale down together, and a dial drops the name under it (Story 2.16).
+
 **Hover reaction** (inside the outline, enters over `{motion.enter}`): A, the iris rim goes to full strength, the interior lifts and one shimmer passes; C, hairline and corner marks brighten and the gold tracer runs once.
 
 ### Quota dial
