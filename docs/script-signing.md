@@ -35,6 +35,12 @@ What the Script Confirmation shows:
 So the repository's CI must publish `source` values on the same host the install links download from (for GitHub,
 the raw file host, `raw.githubusercontent.com`), or leave `source` out.
 
+## Updates
+
+An update (Story 12.10) is verified the same way, on the new bytes: its signature is fetched from the recorded `sig`
+URL, else `<source URL>.sig`, and checked again when the update review opens. A version that verified before does
+not carry its state over: an unsigned or tampered update shows the stronger warning.
+
 ## Producing a signature (repository CI, Story 12.8)
 
 The private key exists only in the repository's protected signing environment; pull-request workflows never see it.
