@@ -607,8 +607,8 @@ import os, json
 ### 9.2 Execution
 - **Confirmation per Mac.** A script runs only after the user confirms it on this Mac, after seeing the whole file (documentation, front matter and code). A script that arrives through sync (§11.1), a git pull or a link (§9.4), or whose content changes in any way, shows as "awaiting confirmation" and does not run until confirmed; declining disables it on that Mac only. Secrets must be entered on each Mac.
 - Runs every `interval`, plus once at startup and whenever the user clicks "refresh".
-- Settings are passed as environment variables: `VIGIE_SETTING_TOKEN`, `VIGIE_SETTING_REPO`, … Secrets are read from the Keychain at run time.
-- Timeout: `min(interval, 30s)`. stderr goes to the module log. A non-zero exit code marks the module as errored and keeps showing the last good output with a warning badge.
+- Settings are passed as environment variables: `VIGIE_SETTING_TOKEN`, `VIGIE_SETTING_REPO`, … (the configured value, else the front-matter default). Secrets are read from the Keychain at run time and exist only in the script's environment. The environment holds nothing else but `PATH` (the login shell's), `HOME` and `LANG` (Story 12.4).
+- Timeout: `min(interval, 30s)`; on timeout the script's process group is killed. stderr goes to the module log. A non-zero exit code, a timeout or invalid output marks the module as errored and keeps showing the last good output with a warning badge until the next good run.
 - Scripts run as the user, with no sandbox. The README and the confirmation screen must say so clearly: only install scripts you trust.
 
 ### 9.3 Output (stdout, JSON)

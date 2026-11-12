@@ -32,6 +32,12 @@ public final class IntegrationsModule: NotchModule {
     /// The file under review in the Script Confirmation (Story 12.3), nil when none is open.
     public internal(set) var reviewing: ScriptModuleDefinition?
 
+    /// Runs the eligible scripts (Story 12.4); nil while stopped. Its `states` are the scripts' run states.
+    public private(set) var runner: ScriptRunner?
+    /// Whether a script may run on this Mac: parsed, enabled and confirmed here (``isEligible(_:)``, Story 12.3).
+    /// Tests may override it; ``updateRunner()`` is called after every scan and record change.
+    @ObservationIgnored public var isScriptEligible: (@MainActor (ScriptModuleDefinition) -> Bool)?
+
     @ObservationIgnored private var context: (any ModuleContext)?
     @ObservationIgnored private var watchTask: Task<Void, Never>?
     /// Last bytes read per file, kept while an iCloud file is pending (AD-12: last good value stays).
@@ -53,6 +59,10 @@ public final class IntegrationsModule: NotchModule {
         guard context.scriptFolder.url != nil else { return }
         // Subscribe before the first scan so a change made during it is not lost.
         let changes = context.scriptFolder.changes()
+        runner = ScriptRunner(context: context) { [weak self] definition in
+            guard let self else { return false }
+            return isScriptEligible?(definition) ?? isEligible(definition)
+        }
         await rescan()
         watchTask = Task { [weak self] in
             for await _ in changes {
@@ -65,6 +75,8 @@ public final class IntegrationsModule: NotchModule {
     public func stop() async {
         watchTask?.cancel()
         watchTask = nil
+        await runner?.stop()
+        runner = nil
         for problem in problems.values { problem.handle.resolve() }
         problems = [:]
         stopConfirmations()
@@ -102,8 +114,20 @@ public final class IntegrationsModule: NotchModule {
         if next != scripts { scripts = next }
         refreshLocalStates()
         reconcileProblems(context.notifier)
+        updateRunner()
         completedScans += 1
     }
+
+    /// Matches the runs to ``scripts`` and ``isScriptEligible`` (after each scan; Story 12.3 calls it after a
+    /// confirmation or a decline).
+    public func updateRunner() { runner?.update(scripts) }
+
+    /// The host's Refresh for one script (SPEC §9.2), by ``ScriptModuleDefinition/id`` (its file name): runs it
+    /// now unless it is running.
+    public func refresh(scriptID: String) { runner?.refresh(id: scriptID) }
+
+    /// Refresh for every eligible script.
+    public func refreshAll() { runner?.refreshAll() }
 
     private func reconcileProblems(_ notifier: any Notifier) {
         var open: Set<String> = []

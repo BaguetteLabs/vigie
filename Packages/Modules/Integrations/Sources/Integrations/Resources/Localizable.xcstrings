@@ -1,594 +1,714 @@
 {
-  "sourceLanguage" : "en",
-  "strings" : {
-    "integrations.module.name" : {
-      "comment" : "Module name of the script modules runtime (Settings, module list).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Integrations"
+  "sourceLanguage": "en",
+  "strings": {
+    "integrations.module.name": {
+      "comment": "Module name of the script modules runtime (Settings, module list).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Integrations"
           }
         }
       }
     },
-    "script.error.action_count" : {
-      "comment" : "Script schema error. %@ = key path of the action.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@: needs exactly one of open, run or copy."
+    "script.error.action_count": {
+      "comment": "Script schema error. %@ = key path of the action.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@: needs exactly one of open, run or copy."
           }
         }
       }
     },
-    "script.error.document" : {
-      "comment" : "Script schema error: names the whole document when the problem is not one key.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "the document"
+    "script.error.document": {
+      "comment": "Script schema error: names the whole document when the problem is not one key.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "the document"
           }
         }
       }
     },
-    "script.error.duplicate" : {
-      "comment" : "Script schema error. %1$@ = key path, %2$@ = the repeated value.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@: “%2$@” is listed twice."
+    "script.error.duplicate": {
+      "comment": "Script schema error. %1$@ = key path, %2$@ = the repeated value.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@: “%2$@” is listed twice."
           }
         }
       }
     },
-    "script.error.empty" : {
-      "comment" : "Script schema error. %@ = key path.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@: must not be empty."
+    "script.error.empty": {
+      "comment": "Script schema error. %@ = key path.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@: must not be empty."
           }
         }
       }
     },
-    "script.error.invalid_format" : {
-      "comment" : "Script schema error. %1$@ = key path, %2$@ = the value, %3$@ = expected format (script.format.*).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@: “%2$@” is not %3$@."
+    "script.error.invalid_format": {
+      "comment": "Script schema error. %1$@ = key path, %2$@ = the value, %3$@ = expected format (script.format.*).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@: “%2$@” is not %3$@."
           }
         }
       }
     },
-    "script.error.missing_key" : {
-      "comment" : "Script schema error. %@ = key path, e.g. settings[1].label.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@: required key is missing."
+    "script.error.missing_key": {
+      "comment": "Script schema error. %@ = key path, e.g. settings[1].label.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@: required key is missing."
           }
         }
       }
     },
-    "script.error.not_positive" : {
-      "comment" : "Script schema error. %@ = key path.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@: must be greater than zero."
+    "script.error.not_positive": {
+      "comment": "Script schema error. %@ = key path.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@: must be greater than zero."
           }
         }
       }
     },
-    "script.error.reserved_key" : {
-      "comment" : "Script schema error. %1$@ = key path, %2$@ = the reserved setting key.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@: “%2$@” is reserved by Vigie (enabled, side, priority, surfaces, notify)."
+    "script.error.reserved_key": {
+      "comment": "Script schema error. %1$@ = key path, %2$@ = the reserved setting key.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@: “%2$@” is reserved by Vigie (enabled, side, priority, surfaces, notify)."
           }
         }
       }
     },
-    "script.error.unknown_key" : {
-      "comment" : "Script schema error. %@ = key path.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@: unknown key."
+    "script.error.unknown_key": {
+      "comment": "Script schema error. %@ = key path.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@: unknown key."
           }
         }
       }
     },
-    "script.error.unknown_value" : {
-      "comment" : "Script schema error. %1$@ = key path, %2$@ = the value, %3$@ = accepted values.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@: unknown value “%2$@” (expected one of: %3$@)."
+    "script.error.unknown_value": {
+      "comment": "Script schema error. %1$@ = key path, %2$@ = the value, %3$@ = accepted values.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@: unknown value “%2$@” (expected one of: %3$@)."
           }
         }
       }
     },
-    "script.error.unsupported_schema" : {
-      "comment" : "Script schema error. %1$@ = key path, %2$lld = version in the file, %3$lld = newest supported version.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@: schema version %2$lld is not supported by this version of Vigie (it reads up to %3$lld)."
+    "script.error.unsupported_schema": {
+      "comment": "Script schema error. %1$@ = key path, %2$lld = version in the file, %3$lld = newest supported version.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@: schema version %2$lld is not supported by this version of Vigie (it reads up to %3$lld)."
           }
         }
       }
     },
-    "script.error.wrong_type" : {
-      "comment" : "Script schema error. %1$@ = key path, %2$@ = expected kind (script.kind.*).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@: expected %2$@."
+    "script.error.wrong_type": {
+      "comment": "Script schema error. %1$@ = key path, %2$@ = expected kind (script.kind.*).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@: expected %2$@."
           }
         }
       }
     },
-    "script.format.duration" : {
-      "comment" : "Expected format in a script schema error.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "a duration such as 30s, 5m or 1h30m"
+    "script.format.duration": {
+      "comment": "Expected format in a script schema error.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "a duration such as 30s, 5m or 1h30m"
           }
         }
       }
     },
-    "script.format.icon" : {
-      "comment" : "Expected format in a script schema error.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "an SF Symbol name such as arrow.triangle.pull"
+    "script.format.icon": {
+      "comment": "Expected format in a script schema error.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "an SF Symbol name such as arrow.triangle.pull"
           }
         }
       }
     },
-    "script.format.interval" : {
-      "comment" : "Expected format in a script schema error.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "a duration above zero such as 30s, 5m or 1h30m"
+    "script.format.interval": {
+      "comment": "Expected format in a script schema error.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "a duration above zero such as 30s, 5m or 1h30m"
           }
         }
       }
     },
-    "script.format.moduleID" : {
-      "comment" : "Expected format in a script schema error.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "a valid id (lowercase and dotted, e.g. github.prs)"
+    "script.format.moduleID": {
+      "comment": "Expected format in a script schema error.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "a valid id (lowercase and dotted, e.g. github.prs)"
           }
         }
       }
     },
-    "script.format.runtime" : {
-      "comment" : "Expected format in a script schema error.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "an executable name such as bash or python3"
+    "script.format.runtime": {
+      "comment": "Expected format in a script schema error.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "an executable name such as bash or python3"
           }
         }
       }
     },
-    "script.format.settingKey" : {
-      "comment" : "Expected format in a script schema error.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "a snake_case key"
+    "script.format.settingKey": {
+      "comment": "Expected format in a script schema error.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "a snake_case key"
           }
         }
       }
     },
-    "script.format.url" : {
-      "comment" : "Expected format in a script schema error.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "a URL with a scheme such as https://"
+    "script.format.url": {
+      "comment": "Expected format in a script schema error.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "a URL with a scheme such as https://"
           }
         }
       }
     },
-    "script.kind.array" : {
-      "comment" : "Expected kind in a script schema error.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "a list"
+    "script.kind.array": {
+      "comment": "Expected kind in a script schema error.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "a list"
           }
         }
       }
     },
-    "script.kind.boolean" : {
-      "comment" : "Expected kind in a script schema error.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "true or false"
+    "script.kind.boolean": {
+      "comment": "Expected kind in a script schema error.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "true or false"
           }
         }
       }
     },
-    "script.kind.integer" : {
-      "comment" : "Expected kind in a script schema error.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "a whole number"
+    "script.kind.integer": {
+      "comment": "Expected kind in a script schema error.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "a whole number"
           }
         }
       }
     },
-    "script.kind.number" : {
-      "comment" : "Expected kind in a script schema error.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "a number"
+    "script.kind.number": {
+      "comment": "Expected kind in a script schema error.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "a number"
           }
         }
       }
     },
-    "script.kind.object" : {
-      "comment" : "Expected kind in a script schema error.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "an object"
+    "script.kind.object": {
+      "comment": "Expected kind in a script schema error.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "an object"
           }
         }
       }
     },
-    "script.kind.string" : {
-      "comment" : "Expected kind in a script schema error.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "a string"
+    "script.kind.string": {
+      "comment": "Expected kind in a script schema error.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "a string"
           }
         }
       }
     },
-    "script.kind.stringOrNumber" : {
-      "comment" : "Expected kind in a script schema error.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "a string or a number"
+    "script.kind.stringOrNumber": {
+      "comment": "Expected kind in a script schema error.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "a string or a number"
           }
         }
       }
     },
-    "script.parse.builtin_id" : {
-      "comment" : "Script parse error. %@ = the script id, equal to a built-in module id.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "id: “%@” is the id of a built-in module."
+    "script.parse.builtin_id": {
+      "comment": "Script parse error. %@ = the script id, equal to a built-in module id.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "id: “%@” is the id of a built-in module."
           }
         }
       }
     },
-    "script.parse.code_block_unclosed" : {
-      "comment" : "Script parse error. %lld = line of the opening fence.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "the code block opened on line %lld is never closed."
+    "script.parse.code_block_unclosed": {
+      "comment": "Script parse error. %lld = line of the opening fence.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "the code block opened on line %lld is never closed."
           }
         }
       }
     },
-    "script.parse.duplicate_id" : {
-      "comment" : "Script parse error. %1$@ = the script id, %2$@ = the other files declaring it, comma-separated.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "id: “%1$@” is also declared by %2$@."
+    "script.parse.duplicate_id": {
+      "comment": "Script parse error. %1$@ = the script id, %2$@ = the other files declaring it, comma-separated.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "id: “%1$@” is also declared by %2$@."
           }
         }
       }
     },
-    "script.parse.front_matter_missing" : {
-      "comment" : "Script parse error: no front matter at the top of the file.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "the file must start with front matter between two --- lines."
+    "script.parse.front_matter_missing": {
+      "comment": "Script parse error: no front matter at the top of the file.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "the file must start with front matter between two --- lines."
           }
         }
       }
     },
-    "script.parse.front_matter_unclosed" : {
-      "comment" : "Script parse error: the front matter is not closed.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "the front matter has no closing --- line."
+    "script.parse.front_matter_unclosed": {
+      "comment": "Script parse error: the front matter is not closed.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "the front matter has no closing --- line."
           }
         }
       }
     },
-    "script.parse.in_file" : {
-      "comment" : "A script problem prefixed with its file. %1$@ = file name, %2$@ = the problem.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@: %2$@"
+    "script.parse.in_file": {
+      "comment": "A script problem prefixed with its file. %1$@ = file name, %2$@ = the problem.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@: %2$@"
           }
         }
       }
     },
-    "script.parse.no_code_block" : {
-      "comment" : "Script parse error: the file has no fenced code block.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "no fenced code block; a script needs exactly one."
+    "script.parse.no_code_block": {
+      "comment": "Script parse error: the file has no fenced code block.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "no fenced code block; a script needs exactly one."
           }
         }
       }
     },
-    "script.parse.not_text" : {
-      "comment" : "Script parse error: the file is not UTF-8 text.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "the file is not UTF-8 text."
+    "script.parse.not_text": {
+      "comment": "Script parse error: the file is not UTF-8 text.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "the file is not UTF-8 text."
           }
         }
       }
     },
-    "script.parse.reserved_prefix" : {
-      "comment" : "Script parse error. %1$@ = the script id, %2$@ = the reserved prefix (agents.).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "id: “%1$@” starts with %2$@, which is reserved for built-in modules."
+    "script.parse.reserved_prefix": {
+      "comment": "Script parse error. %1$@ = the script id, %2$@ = the reserved prefix (agents.).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "id: “%1$@” starts with %2$@, which is reserved for built-in modules."
           }
         }
       }
     },
-    "script.parse.several_code_blocks" : {
-      "comment" : "Script parse error. %lld = number of fenced code blocks (2 or more).",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld fenced code blocks; a script needs exactly one."
+    "script.parse.several_code_blocks": {
+      "comment": "Script parse error. %lld = number of fenced code blocks (2 or more).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld fenced code blocks; a script needs exactly one."
           }
         }
       }
     },
-    "script.parse.yaml" : {
-      "comment" : "Script parse error: YAML that does not parse, no line known.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "the front matter is not valid YAML."
+    "script.parse.yaml": {
+      "comment": "Script parse error: YAML that does not parse, no line known.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "the front matter is not valid YAML."
           }
         }
       }
     },
-    "script.parse.yaml_line" : {
-      "comment" : "Script parse error. %lld = line in the file.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "the front matter is not valid YAML (line %lld)."
+    "script.parse.yaml_line": {
+      "comment": "Script parse error. %lld = line in the file.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "the front matter is not valid YAML (line %lld)."
           }
         }
       }
     },
-    "script.problem.body" : {
-      "comment" : "Setup-problem alert body. %1$@ = full path of the script file, %2$@ = the problem.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@\n%2$@"
+    "script.problem.body": {
+      "comment": "Setup-problem alert body. %1$@ = full path of the script file, %2$@ = the problem.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@\n%2$@"
           }
         }
       }
     },
-    "script.problem.category" : {
-      "comment" : "Setup-problem kicker category (SETUP · SCRIPTS), uppercase.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SCRIPTS"
+    "script.problem.category": {
+      "comment": "Setup-problem kicker category (SETUP · SCRIPTS), uppercase.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SCRIPTS"
           }
         }
       }
     },
-    "script.problem.title" : {
-      "comment" : "Setup-problem alert title for a script file that cannot be used. %@ = file name.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Script %@ can’t be loaded"
+    "script.problem.title": {
+      "comment": "Setup-problem alert title for a script file that cannot be used. %@ = file name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Script %@ can’t be loaded"
           }
         }
       }
     },
-    "script.settings.empty" : {
-      "comment" : "Settings › Integrations: no script file in the scripts folder.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No scripts in the modules folder."
+    "script.run.exit": {
+      "comment": "Run record label: the script's exit code (mono label, UX-DR87). %lld = exit code.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EXIT %lld"
           }
         }
       }
     },
-    "script.settings.review" : {
-      "comment" : "Settings › Integrations: button that opens the Script Confirmation for a script.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Review…"
+    "script.run.invalid_output": {
+      "comment": "Run record label: the script exited 0 but its stdout is not a valid script output (mono label).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "INVALID OUTPUT"
           }
         }
       }
     },
-    "script.settings.saveFailed" : {
-      "comment" : "Settings › Integrations: confirming or declining could not be saved. %1$@ = file name, %2$@ = error.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Could not save your choice for %1$@: %2$@"
+    "script.run.launch_failed": {
+      "comment": "Run record label: the script's process could not be started (mono label).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "LAUNCH FAILED"
           }
         }
       }
     },
-    "script.settings.state.confirmed" : {
-      "comment" : "Settings › Integrations: script state, confirmed on this Mac. Uppercase like the other script states.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "CONFIRMED"
+    "script.run.output_empty": {
+      "comment": "Why a run's output is invalid: stdout is empty.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The script printed nothing on standard output."
           }
         }
       }
     },
-    "script.settings.state.declined" : {
-      "comment" : "Settings › Integrations: script state, declined on this Mac (disabled here only). Uppercase.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "DECLINED"
+    "script.run.output_not_json": {
+      "comment": "Why a run's output is invalid: stdout does not parse as JSON.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Standard output is not valid JSON."
           }
         }
       }
     },
-    "script.settings.state.errored" : {
-      "comment" : "Settings › Integrations: script state, the file cannot be loaded (a setup problem). Uppercase.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "CAN’T LOAD"
+    "script.run.output_too_large": {
+      "comment": "Why a run's output is invalid: stdout exceeds the limit. %lld = limit in KB.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Standard output is larger than %lld KB."
           }
         }
       }
     },
-    "script.settings.title" : {
-      "comment" : "Settings › Integrations: heading of the script list with their confirmation state on this Mac.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Scripts on this Mac"
+    "script.run.runtime_not_found": {
+      "comment": "Run record label: the script's runtime was not found in the login-shell PATH or local.toml (mono label).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RUNTIME NOT FOUND"
+          }
+        }
+      }
+    },
+    "script.run.timed_out": {
+      "comment": "Run record label: the run hit its timeout and was killed (mono label, UX-DR87). %lld = timeout in seconds.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "TIMED OUT · %lldS"
+          }
+        }
+      }
+    },
+    "script.run.waiting_first_run": {
+      "comment": "Run state of a confirmed script that has not finished a run yet (mono label, UX-DR87).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "WAITING · FIRST RUN"
+          }
+        }
+      }
+    },
+    "script.run.widget_mismatch": {
+      "comment": "Why a run's output is invalid: the widget type differs from the file's. %1$@ = type printed, %2$@ = type declared.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "widget.type is “%1$@” but the front matter declares “%2$@”."
+          }
+        }
+      }
+    },
+    "script.settings.empty": {
+      "comment": "Settings › Integrations: no script file in the scripts folder.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No scripts in the modules folder."
+          }
+        }
+      }
+    },
+    "script.settings.review": {
+      "comment": "Settings › Integrations: button that opens the Script Confirmation for a script.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Review…"
+          }
+        }
+      }
+    },
+    "script.settings.saveFailed": {
+      "comment": "Settings › Integrations: confirming or declining could not be saved. %1$@ = file name, %2$@ = error.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Could not save your choice for %1$@: %2$@"
+          }
+        }
+      }
+    },
+    "script.settings.state.confirmed": {
+      "comment": "Settings › Integrations: script state, confirmed on this Mac. Uppercase like the other script states.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CONFIRMED"
+          }
+        }
+      }
+    },
+    "script.settings.state.declined": {
+      "comment": "Settings › Integrations: script state, declined on this Mac (disabled here only). Uppercase.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DECLINED"
+          }
+        }
+      }
+    },
+    "script.settings.state.errored": {
+      "comment": "Settings › Integrations: script state, the file cannot be loaded (a setup problem). Uppercase.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CAN’T LOAD"
+          }
+        }
+      }
+    },
+    "script.settings.title": {
+      "comment": "Settings › Integrations: heading of the script list with their confirmation state on this Mac.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scripts on this Mac"
           }
         }
       }
     }
   },
-  "version" : "1.0"
+  "version": "1.0"
 }

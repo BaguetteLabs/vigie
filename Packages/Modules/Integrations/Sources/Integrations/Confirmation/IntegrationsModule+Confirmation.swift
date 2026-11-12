@@ -35,7 +35,10 @@ extension IntegrationsModule {
     func refreshLocalStates() {
         var next: [String: ScriptLocalState] = [:]
         for script in scripts { next[script.id] = computedState(script) }
-        if next != localStates { localStates = next }
+        if next != localStates {
+            localStates = next
+            updateRunner()
+        }
     }
 
     private func computedState(_ definition: ScriptModuleDefinition) -> ScriptLocalState {

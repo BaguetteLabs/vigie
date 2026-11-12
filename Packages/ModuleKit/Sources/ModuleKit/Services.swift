@@ -358,6 +358,15 @@ public protocol ClipboardService: Sendable {
 public protocol ExecutableResolver: Sendable {
     /// Absolute URL of `name` from the login-shell PATH or a `local.toml` override; nil if not found.
     func resolve(_ name: String) async -> URL?
+    /// The login-shell `PATH` entries `resolve` searches, in order (captured once per launch). The script runner
+    /// passes them as the child's `PATH` (AD-18, Story 12.4). Default: none (the caller falls back).
+    var searchPath: [String] { get async }
+}
+
+extension ExecutableResolver {
+    public var searchPath: [String] {
+        get async { [] }
+    }
 }
 
 // MARK: - Privacy (implemented in Story 21.2)
