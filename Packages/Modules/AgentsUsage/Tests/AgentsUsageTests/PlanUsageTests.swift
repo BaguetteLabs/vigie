@@ -172,7 +172,25 @@ struct PlanHarness {
 /// Lets observer tasks run.
 func settle() async {
     // Generous: an ingest pass also schedules the Usage tab overview reload (Story 7.8) on the main actor.
+    // Work that hops off the main actor (a plan fetch on the HTTP client) needs real time, not only yields:
+    // a few short sleeps keep the wait small locally and long enough on a loaded CI runner.
     for _ in 0..<200 { await Task.yield() }
+    for _ in 0..<10 {
+        try? await Task.sleep(for: .milliseconds(5))
+        await Task.yield()
+    }
+}
+
+/// Waits until `condition` holds (polling every 5 ms, at most `timeout`), then returns. The caller still asserts
+/// the condition, so a timeout fails with the real values rather than a vague "timed out".
+@MainActor
+func settle(timeout: Duration = .seconds(10), until condition: @MainActor () -> Bool) async {
+    let clock = ContinuousClock()
+    let deadline = clock.now + timeout
+    while !condition(), clock.now < deadline {
+        await Task.yield()
+        try? await Task.sleep(for: .milliseconds(5))
+    }
 }
 
 // MARK: - Tests
@@ -335,13 +353,13 @@ func settle() async {
         #expect(harness.http.count == 0)
         try await harness.module.setPlanEnabled(true, for: "claude")
         #expect(harness.store.value("usage_providers", as: [String].self) == ["local", "plan"])
-        await settle()
+        await settle { harness.module.planState(for: "claude")?.windows == [fiveHour] }
         #expect(harness.http.count == 1)
         #expect(harness.module.planState(for: "claude")?.windows == [fiveHour])
 
         try await harness.module.setPlanEnabled(false, for: "claude")
         #expect(harness.store.value("usage_providers", as: [String].self) == ["local"])
-        await settle()
+        await settle { harness.module.planState(for: "claude") == nil }
         #expect(harness.module.planState(for: "claude") == nil)
         #expect(harness.http.count == 1)
 
