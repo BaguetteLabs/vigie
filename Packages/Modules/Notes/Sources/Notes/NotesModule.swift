@@ -126,6 +126,10 @@ public final class NotesModule: NotchModule {
     /// The key is held in memory only (entered while the store is unavailable).
     public private(set) var keyIsSessionOnly = false
     public private(set) var isRunning = false
+    /// The notes of ``folder`` while the key state is ready (Story 15.2); nil otherwise.
+    public private(set) var store: NoteStore?
+    /// Note files of the folder this Vigie cannot open with the key it holds (locked states), from the last scan.
+    public private(set) var scannedLockedNotes = 0
 
     /// The held key, when ``keyState`` is ready (Story 15.2 encrypts with it). Never logged or shown.
     @ObservationIgnored public private(set) var key: SyncedKey?
@@ -135,10 +139,24 @@ public final class NotesModule: NotchModule {
     @ObservationIgnored var context: (any ModuleContext)?
     @ObservationIgnored private var tasks: [Task<Void, Never>] = []
     @ObservationIgnored private var generation = 0
+    @ObservationIgnored let makeStore: (@MainActor (URL, SyncedKey, any ModuleContext) -> NoteStore)?
 
-    /// - Parameter openSettings: opens a Settings pane by id (the tab's `Open settings`).
-    public init(openSettings: (@MainActor @Sendable (String) -> Void)? = nil) {
+    /// - Parameters:
+    ///   - openSettings: opens a Settings pane by id (the tab's `Open settings`).
+    ///   - makeStore: builds the note store for a folder and key (tests inject fakes); nil = ``defaultStore``.
+    public init(
+        openSettings: (@MainActor @Sendable (String) -> Void)? = nil,
+        makeStore: (@MainActor (URL, SyncedKey, any ModuleContext) -> NoteStore)? = nil
+    ) {
         self.openSettings = openSettings
+        self.makeStore = makeStore
+    }
+
+    /// The production store: real file I/O (Trash on delete, `NSFileVersion` conflicts), kqueue watcher, the
+    /// module logger (messages carry ids and counts only).
+    public static func defaultStore(folder: URL, key: SyncedKey, context: any ModuleContext) -> NoteStore {
+        let logger = context.log
+        return NoteStore(folder: folder, key: key, log: { logger.info("\($0, privacy: .public)") })
     }
 
     // MARK: Lifecycle
@@ -170,6 +188,7 @@ public final class NotesModule: NotchModule {
         tasks = []
         isRunning = false
         generation += 1
+        tearDownStore()
         key = nil
         sessionKey = nil
         pendingRecoveryKey = nil
@@ -204,6 +223,7 @@ public final class NotesModule: NotchModule {
         let held = stored ?? sessionKey
         key = nil
         keyIsSessionOnly = stored == nil && sessionKey != nil
+        scannedLockedNotes = scan.noteFiles - (held.flatMap { scan.keyIDCounts[$0.keyID] } ?? 0)
         if let held {
             let foreign = scan.keyIDs.subtracting([held.keyID])
             if foreign.isEmpty {
@@ -221,6 +241,41 @@ public final class NotesModule: NotchModule {
         } else {
             keyState = .noKey
         }
+        await syncStore()
+    }
+
+    // MARK: Store
+
+    /// Notes readable now (0 without a store).
+    public var noteCount: Int { store?.notes.count ?? 0 }
+
+    /// Note files that cannot be opened with the held key: the store's locked files when ready, otherwise the
+    /// scan's.
+    public var lockedNoteCount: Int {
+        if let store { return store.lockedFiles.count }
+        return keyState.isLocked ? scannedLockedNotes : 0
+    }
+
+    /// Creates the store when the key is ready (or recreates it for a new folder or key); tears it down in every
+    /// other state, so nothing is written while the folder carries a key this Vigie does not hold (AD-10).
+    private func syncStore() async {
+        guard isRunning, case .ready(let keyID) = keyState, let key, let folder, let context else {
+            tearDownStore()
+            return
+        }
+        if let store, store.folder == folder.standardizedFileURL, store.keyID == keyID { return }
+        tearDownStore()
+        let store = makeStore?(folder, key, context) ?? Self.defaultStore(folder: folder, key: key, context: context)
+        store.onForeignKey = { [weak self] in
+            Task { await self?.refresh() }
+        }
+        self.store = store
+        await store.start()
+    }
+
+    private func tearDownStore() {
+        store?.stop()
+        store = nil
     }
 
     /// `Set up notes` (explicit user action only). Re-checks first; creates a key only when the store holds none

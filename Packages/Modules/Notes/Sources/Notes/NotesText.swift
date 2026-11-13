@@ -8,6 +8,26 @@ enum NotesText {
         LocalizedStringResource(String.LocalizationValue(key), bundle: bundle)
     }
 
+    /// `N NOTES` (plural).
+    static func noteCount(_ count: Int) -> LocalizedStringResource {
+        LocalizedStringResource("notes.count.notes \(count)", bundle: bundle)
+    }
+
+    /// `N LOCKED`.
+    static func lockedCount(_ count: Int) -> LocalizedStringResource {
+        LocalizedStringResource("notes.count.locked \(count)", bundle: bundle)
+    }
+
+    /// `N DOWNLOADING`.
+    static func downloadingCount(_ count: Int) -> LocalizedStringResource {
+        LocalizedStringResource("notes.count.downloading \(count)", bundle: bundle)
+    }
+
+    /// "N notes in this folder." (plural).
+    static func folderCount(_ count: Int) -> LocalizedStringResource {
+        LocalizedStringResource("notes.settings.count \(count)", bundle: bundle)
+    }
+
     /// The localized value for `key`, or `key` itself when the catalog has no entry.
     static func string(_ key: String) -> String {
         Bundle.module.localizedString(forKey: key, value: nil, table: nil)

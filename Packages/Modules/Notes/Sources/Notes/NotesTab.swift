@@ -13,7 +13,7 @@ public enum NotesTabContent: Hashable, Sendable {
     case setup
     /// `NOTES LOCKED` · "Waiting for iCloud Keychain, or enter your recovery key." and the recovery entry.
     case locked
-    /// Ready: `NO NOTES` until Story 15.5's list.
+    /// Ready: `NO NOTES`, or `N NOTES` until Story 15.5's list.
     case ready
 }
 
@@ -75,14 +75,33 @@ struct NotesTabView: View {
             case .locked:
                 VStack(spacing: theme.spacing(.rowGap)) {
                     EmptyStateBlock(VigieCopy.notesLocked)
+                    countLine(NotesText.lockedCount(module.lockedNoteCount), when: module.lockedNoteCount > 0)
                     NotesRecoveryEntry(module: module)
                 }
             case .ready:
-                EmptyStateBlock(VigieCopy.noNotes)
+                VStack(spacing: theme.spacing(.rowGap)) {
+                    if module.noteCount > 0 {
+                        EmptyStateBlock(label: NotesText.noteCount(module.noteCount))
+                    } else {
+                        EmptyStateBlock(VigieCopy.noNotes)
+                    }
+                    countLine(NotesText.lockedCount(module.lockedNoteCount), when: module.lockedNoteCount > 0)
+                    let downloading = module.store?.downloadingFiles.count ?? 0
+                    countLine(NotesText.downloadingCount(downloading), when: downloading > 0)
+                }
             }
         }
         .padding(theme.spacing(.gridPaddingX))
         .task { await module.refresh() }
+    }
+
+    @ViewBuilder private func countLine(_ text: LocalizedStringResource, when shown: Bool) -> some View {
+        if shown {
+            Text(text)
+                .font(theme.font(.kicker))
+                .tracking(theme.tracking(.kicker))
+                .foregroundStyle(theme.color(.ink3))
+        }
     }
 }
 

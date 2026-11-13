@@ -20,7 +20,9 @@
     Tab: `NOTES LOCKED` · "Waiting for iCloud Keychain, or enter your recovery key." and the recovery field.
   - `mismatch(keyIDs)`: a key is held but the folder carries other `key_id`s. Shown as the waiting state; nothing
     is written.
-  - `ready(keyID)`: the key is held (`module.key`). Tab: `NO NOTES` until Story 15.5.
+  - `ready(keyID)`: the key is held (`module.key`); the module owns a `NoteStore` (below). Tab: `NO NOTES` or
+    `N NOTES` (with `N LOCKED` / `N DOWNLOADING` when any) until Story 15.5's list. Locked states show
+    `N LOCKED` under `NOTES LOCKED`. Settings › Notes adds "N notes in this folder."
   The state is recomputed at start, on the store's change stream (local writes, and a 30 s poll while the module
   listens, so a key arriving through iCloud Keychain unlocks), on `folder` changes and when the tab or pane
   appears. Recomputing never writes.
@@ -45,3 +47,45 @@
   Settings › Notes always states: "If iCloud Keychain is off, your recovery key is the only way to read your
   notes on another Mac." When it is off the item simply stays on this Mac.
 - **Never logged:** key bytes, recovery keys, note content. Logs carry `key_id`s and Keychain statuses only.
+
+## Encrypted storage (Story 15.2)
+
+Byte layout: `docs/notes-file-format.md`.
+
+| | |
+| --- | --- |
+| File | `<id>.vnote`, one per note, name stable across title edits |
+| Header | plaintext line `{"format":1,"key_id":"<16 hex>"}\n` (`NoteFileHeader`) |
+| Body | `ChaChaPoly` sealed box (`combined`: nonce ‖ ciphertext ‖ tag) of the JSON payload `{id, title, body, created, modified, format}`, header line as authenticated data |
+| Write | `NoteFileIO` actor: coordinated write (`.forReplacing`), temp file `.<name>.<uuid>.tmp` in the same folder renamed over the note; folder created on first write |
+| Delete | coordinated, `FileManager.trashItem` (recoverable in the Trash) |
+| Read | coordinated read off the main actor; header first; unknown `key_id` → locked, never decrypted |
+
+- **`NoteStore`** (`@MainActor @Observable`, `module.store`, created when the key state becomes `ready`, stopped
+  and dropped in every other state, and recreated when `folder` or the key changes): `notes` (modified
+  descending), `note(_:)`, `load()`, `reload()`, `create(body:)`, `update(_:body:)` (title = first non-empty line,
+  leading `#` removed, ≤ 120 characters; `modified` = now; unchanged body writes nothing), `delete(_:)`;
+  `lockedFiles`, `foreignKeyIDs`, `downloadingFiles`, `unreadableFiles`, `unresolvedConflictFiles`, `canWrite` /
+  `writeBlock` (`notLoaded`, `foreignKey`, `stopped`).
+- **Locked files (AD-10).** A note file or key marker with another `key_id` blocks every write (`canWrite ==
+  false`, nothing in the folder is touched) and asks the module to re-check the key; the module then shows the
+  locked state and drops the store.
+- **Unreadable files** (tampered, truncated, header changed, newer format) are listed by name and left alone; the
+  other notes stay writable.
+- **Watcher** (`NotesFolderWatcher`): a kqueue `DispatchSource` on the folder (or, while it does not exist, on its
+  nearest existing ancestor, re-armed on every event), debounced 250 ms. A reload re-reads only files whose
+  modification date or size changed, and skips files whose SHA-256 is the one this store wrote last, so its own
+  writes are not decrypted again. Files gone from the listing leave the list.
+- **iCloud.** A note not downloaded yet (`.<name>.icloud` placeholder, or `ubiquitousItemDownloadingStatus` not
+  current) is in `downloadingFiles`; `startDownloadingUbiquitousItem` is called and the last decrypted value stays
+  in `notes` meanwhile. The sync toggle is Story 16.2.
+- **Conflicts (AD-10 as amended 2026-11-07).** After each read, for every readable note, `NSFileVersion`'s
+  unresolved conflict versions (`ConflictVersionsProviding`, real `FileVersionConflicts`) are read through a
+  coordinated read and opened with the key; each becomes a new note titled `<title> (conflict)` (catalog
+  `notes.conflict.title`; `Untitled (conflict)` without a title) with the version's body, `created` and
+  `modified` = now. Only after that note is written is the version marked resolved (coordinated write).
+  `removeOtherVersionsOfItem` is never called: macOS keeps the history. The current version stays in place. A
+  version with an unknown key, unreadable, or whose copy fails to save stays unresolved and is retried on the next
+  change. The copy's id derives from the file name and the version, so a retry never makes a second copy.
+- **Never logged:** titles and bodies. `Note`'s `description`, `debugDescription` and mirror show the id and the
+  body length only; store log lines carry file names, ids and counts.

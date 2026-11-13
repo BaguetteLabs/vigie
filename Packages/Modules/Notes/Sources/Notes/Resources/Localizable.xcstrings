@@ -49,6 +49,66 @@
         }
       }
     },
+    "notes.conflict.title": {
+      "comment": "Title of a note saved from a sync conflict version; %@ is the note's title.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ (conflict)"
+          }
+        }
+      }
+    },
+    "notes.count.downloading %lld": {
+      "comment": "Notes tab: note files iCloud has not downloaded yet.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld DOWNLOADING"
+          }
+        }
+      }
+    },
+    "notes.count.locked %lld": {
+      "comment": "Notes tab: note files encrypted with a key this Mac does not hold.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld LOCKED"
+          }
+        }
+      }
+    },
+    "notes.count.notes %lld": {
+      "comment": "Notes tab: how many notes the folder holds.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld NOTE"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld NOTES"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "notes.folder.ownBuild": {
       "comment": "Settings line in Vigie Dev; %@ is the folder path.",
       "extractionState": "manual",
@@ -229,6 +289,30 @@
         }
       }
     },
+    "notes.settings.count %lld": {
+      "comment": "Settings › Notes: how many notes the folder holds.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld note in this folder."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld notes in this folder."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "notes.settings.key": {
       "comment": "Settings section title.",
       "extractionState": "manual",
@@ -393,6 +477,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "This build cannot keep the notes key. Enter your recovery key to unlock notes until Vigie quits."
+          }
+        }
+      }
+    },
+    "notes.untitled": {
+      "comment": "Title of a note with no text.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Untitled"
           }
         }
       }

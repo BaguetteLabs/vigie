@@ -14,6 +14,9 @@ struct NotesSettingsView: View {
             Text(NotesText.resource("notes.settings.key")).font(.headline)
             Text(verbatim: NotesSettingsView.statusLine(module.keyState, sessionOnly: module.keyIsSessionOnly))
                 .font(.callout)
+            if module.store != nil {
+                Text(NotesText.folderCount(module.noteCount)).font(.caption).foregroundStyle(.secondary)
+            }
             if module.usesOwnFolder, let folder = module.folder {
                 Text(verbatim: NotesText.format("notes.folder.ownBuild", folder.path))
                     .font(.caption).foregroundStyle(.secondary)

@@ -50,6 +50,8 @@ public struct NotesFolderScan: Hashable, Sendable {
     public var unreadableFiles = 0
     /// The `key_id`s of the note headers and of the key marker.
     public var keyIDs: Set<String> = []
+    /// Note files per header `key_id` (the marker not counted).
+    public var keyIDCounts: [String: Int] = [:]
     /// The marker's `key_id`, when it was read.
     public var markerKeyID: String?
     /// The marker exists but is not downloaded or readable.
@@ -93,10 +95,11 @@ public enum NotesFolder {
                 }
             } else if name == ".\(markerName).\(placeholderExtension)" {
                 scan.markerUnreadable = true
-            } else if url.pathExtension == noteExtension {
+            } else if url.pathExtension == noteExtension, !name.hasPrefix(".") {
                 scan.noteFiles += 1
                 if let header = readHeader(url) {
                     scan.keyIDs.insert(header.keyID)
+                    scan.keyIDCounts[header.keyID, default: 0] += 1
                 } else {
                     scan.unreadableFiles += 1
                 }
