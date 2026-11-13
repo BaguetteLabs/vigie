@@ -218,10 +218,43 @@ final class RecordingHost: HostControl, @unchecked Sendable {
     private var opens: [UserIntent?] = []
     var openedOwnTab: [UserIntent?] { lock.withLock { opens } }
 
+    /// Floating panel requests, with their intents; ``panel`` is the one shown. Like the core, a request without
+    /// an intent is refused and a new one replaces (closes) the shown one.
+    @MainActor private(set) var panelRequests: [(request: FloatingPanelRequest, focus: UserIntent?)] = []
+    @MainActor private(set) var panel: FloatingPanelRequest?
+    @MainActor private(set) var dismissCount = 0
+    @MainActor var refusesPanels = false
+
     func requestPeek() {}
     func expand(focus: UserIntent?) {}
     func openOwnTab(focus: UserIntent?) { lock.withLock { opens.append(focus) } }
     func registerDynamicModule(_ module: any NotchModule) throws -> RegistrationToken { RegistrationToken {} }
+
+    @MainActor func presentFloatingPanel(_ request: FloatingPanelRequest, focus: UserIntent?) -> Bool {
+        panelRequests.append((request, focus))
+        guard focus != nil, !refusesPanels else { return false }
+        if let shown = panel {
+            panel = nil
+            shown.onClose()
+        }
+        panel = request
+        return true
+    }
+
+    @MainActor func dismissFloatingPanel() {
+        dismissCount += 1
+        guard let shown = panel else { return }
+        panel = nil
+        shown.onClose()
+    }
+
+    /// Esc in the shown panel, as the core does it: `onEscape`, then close.
+    @MainActor func pressEscape() {
+        guard let shown = panel else { return }
+        shown.onEscape()
+        panel = nil
+        shown.onClose()
+    }
 }
 
 /// One sleep/wake stream; `send` yields to it.

@@ -89,3 +89,33 @@ Byte layout: `docs/notes-file-format.md`.
   change. The copy's id derives from the file name and the version, so a retry never makes a second copy.
 - **Never logged:** titles and bodies. `Note`'s `description`, `debugDescription` and mirror show the id and the
   body length only; store log lines carry file names, ids and counts.
+
+## Floating panel (Story 15.3)
+
+- **Hotkey** `notes.open` (registered as `open`), shortcut = `[modules.notes] hotkey` (default `opt+cmd+n`, ⌥⌘N);
+  the module registers it again when the setting changes (`""` or `none` = off). Pressing it opens the panel;
+  pressing it while the panel is open closes it. Because the registered name (`open`) differs from the setting
+  key (`hotkey`), the module feeds the setting in as the registration's default; `HotkeyConfigBridge`'s
+  `notes.hotkey` mapping matches no registration.
+- **Host API** (AD-13, the only window a module may request): `context.host.presentFloatingPanel(_:focus:)` with
+  a `FloatingPanelRequest` (`id`, `size` nil = the theme's `components.notes-panel` 460 × 372, `content`,
+  `onEscape`, `onClose`) and `dismissFloatingPanel()`. The host draws the frame (`surface-panel`,
+  `rounded.notes-panel`, iris filament, no band), places it centred below the menu bar of the main Vigie display,
+  makes it key without activating Vigie and, on Esc or close while key, gives focus back to the app that was
+  frontmost. One floating panel at a time; a request without a live `UserIntent` is refused. A click outside does
+  not close it.
+- **Which note.** A new, empty note, unless the most recently created note was created less than 2 min ago and is
+  still blank: that one is reused (`NotesPanelSession.reusableNote`).
+- **Autosave.** 500 ms debounce after each edit (`store.update`), and at once on Esc and on close. A blank note
+  is never written: the file is created by the first save that has text. A note blank at close (reused, or
+  cleared by the user) is deleted (Trash).
+- **Header** `NOTES · <title>` (title = first line, live; `NOTES · UNTITLED` when blank), meta
+  `SYNCED · ENCRYPTED · ESC` when the notes folder is in iCloud Drive (`FileManager.isUbiquitousItem(at:)`,
+  checked once per open), else `ENCRYPTED · ESC`. **Footer** `EDITED HH:MM` (locale short time, the last write;
+  empty for a new note before its first save); its left slot is kept for Story 15.4's `COPIED · CLEARS IN 30S`.
+- **States.** Key not ready: the panel shows the Notes tab's own state (setup, locked, unavailable, recovery key)
+  under `NOTES`; a session starts as soon as the key becomes ready. Store refusing writes (`canWrite == false`):
+  the editor is read-only under `NOTES LOCKED`.
+- **Privacy mode** (AD-24): the header title is `.sensitive()`; the body is VigieUI's `SensitiveTextEditor`, which
+  draws the text transparent and shows one fixed-width `PrivacyMask.text` per non-empty line in `ink-3` (line
+  count kept, lengths not); typing, selection and the caret keep working. Meta and footer stay.

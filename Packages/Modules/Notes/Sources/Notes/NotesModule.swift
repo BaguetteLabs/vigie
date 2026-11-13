@@ -80,6 +80,8 @@ public final class NotesModule: NotchModule {
     public nonisolated static let settingsPane = "notes"
     /// `[modules.notes] folder` default (SPEC §11).
     public nonisolated static let defaultFolder = "~/Notes/Vigie"
+    /// `[modules.notes] hotkey` default (SPEC §11, A30): ⌥⌘N.
+    public nonisolated static let defaultHotkey = "opt+cmd+n"
     /// `[modules.notes] clipboard_clear` default (SPEC §11).
     public nonisolated static let defaultClipboardClear: Duration = .seconds(30)
 
@@ -91,7 +93,7 @@ public final class NotesModule: NotchModule {
             SettingDescriptor(
                 key: "hotkey",
                 label: LocalizedStringResource("notes.setting.hotkey", bundle: bundle),
-                kind: .hotkey(default: "opt+cmd+n"),
+                kind: .hotkey(default: defaultHotkey),
                 help: LocalizedStringResource("notes.setting.hotkey.help", bundle: bundle)),
             SettingDescriptor(
                 key: "folder",
@@ -137,19 +139,39 @@ public final class NotesModule: NotchModule {
     @ObservationIgnored private var sessionKey: SyncedKey?
     @ObservationIgnored let openSettings: (@MainActor @Sendable (String) -> Void)?
     @ObservationIgnored var context: (any ModuleContext)?
-    @ObservationIgnored private var tasks: [Task<Void, Never>] = []
+    @ObservationIgnored var tasks: [Task<Void, Never>] = []
     @ObservationIgnored private var generation = 0
     @ObservationIgnored let makeStore: (@MainActor (URL, SyncedKey, any ModuleContext) -> NoteStore)?
+
+    // Floating panel (Story 15.3, NotesModule+Panel.swift).
+    /// The panel's note while the panel is open and the key is ready.
+    public internal(set) var panelSession: NotesPanelSession?
+    /// True from a presented panel until its `onClose`.
+    public internal(set) var isPanelOpen = false
+    @ObservationIgnored var panelHotkey: RegistrationToken?
+    @ObservationIgnored var panelClose: Task<Void, Never>?
+    @ObservationIgnored let isUbiquitous: @Sendable (URL) -> Bool
+    @ObservationIgnored let now: @Sendable () -> Date
+    @ObservationIgnored let panelSleep: @Sendable (Duration) async throws -> Void
 
     /// - Parameters:
     ///   - openSettings: opens a Settings pane by id (the tab's `Open settings`).
     ///   - makeStore: builds the note store for a folder and key (tests inject fakes); nil = ``defaultStore``.
+    ///   - isUbiquitous: whether the notes folder is in iCloud Drive (`FileManager.isUbiquitousItem(at:)`).
+    ///   - now: the clock of the panel's reuse rule.
+    ///   - panelSleep: the panel's autosave wait (tests drive it).
     public init(
         openSettings: (@MainActor @Sendable (String) -> Void)? = nil,
-        makeStore: (@MainActor (URL, SyncedKey, any ModuleContext) -> NoteStore)? = nil
+        makeStore: (@MainActor (URL, SyncedKey, any ModuleContext) -> NoteStore)? = nil,
+        isUbiquitous: @escaping @Sendable (URL) -> Bool = { FileManager.default.isUbiquitousItem(at: $0) },
+        now: @escaping @Sendable () -> Date = { Date() },
+        panelSleep: @escaping @Sendable (Duration) async throws -> Void = { try await Task.sleep(for: $0) }
     ) {
         self.openSettings = openSettings
         self.makeStore = makeStore
+        self.isUbiquitous = isUbiquitous
+        self.now = now
+        self.panelSleep = panelSleep
     }
 
     /// The production store: real file I/O (Trash on delete, `NSFileVersion` conflicts), kqueue watcher, the
@@ -180,12 +202,14 @@ public final class NotesModule: NotchModule {
                     await self?.refresh()
                 }
             })
+        startPanelHotkey(context)
         await refresh()
     }
 
     public func stop() async {
         for task in tasks { task.cancel() }
         tasks = []
+        await stopPanel()
         isRunning = false
         generation += 1
         tearDownStore()

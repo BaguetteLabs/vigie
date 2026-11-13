@@ -6,9 +6,20 @@ import os
 @MainActor
 public final class NotchHostLink {
     public weak var host: NotchHost?
+    /// The module floating panel (Story 15.3), built from ``host`` on first use; tests set their own.
+    public var floatingPanels: FloatingPanelController?
 
     public init(host: NotchHost? = nil) {
         self.host = host
+    }
+
+    /// ``floatingPanels``, built for ``host`` the first time; nil while the link is unbound.
+    public func floatingPanelController() -> FloatingPanelController? {
+        if let floatingPanels { return floatingPanels }
+        guard let host else { return nil }
+        let controller = FloatingPanelController(host: host)
+        floatingPanels = controller
+        return controller
     }
 }
 
@@ -49,6 +60,20 @@ public struct CoreHostControl: HostControl {
         } else {
             host.openSettings?()
         }
+    }
+
+    /// Shows this module's floating panel with focus (Story 15.3, AD-13); refused without a live `UserIntent` or
+    /// while the link is unbound. One floating panel at a time: it replaces any shown one.
+    @MainActor @discardableResult public func presentFloatingPanel(
+        _ request: FloatingPanelRequest, focus: UserIntent?
+    ) -> Bool {
+        guard focus != nil, let controller = link.floatingPanelController() else { return false }
+        return controller.present(request, owner: moduleID, focus: focus)
+    }
+
+    /// Closes this module's floating panel, if it is the one shown.
+    @MainActor public func dismissFloatingPanel() {
+        link.floatingPanels?.dismiss(owner: moduleID)
     }
 
     /// Registers a script module with the host's ``ModuleRegistry`` on behalf of this module (AD-18, Story

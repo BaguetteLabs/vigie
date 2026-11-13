@@ -145,6 +145,83 @@
         }
       }
     },
+    "notes.panel.edited": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EDITED %@"
+          }
+        }
+      }
+    },
+    "notes.panel.editor": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Note"
+          }
+        }
+      }
+    },
+    "notes.panel.header": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notes · %@"
+          }
+        }
+      }
+    },
+    "notes.panel.kicker": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "NOTES"
+          }
+        }
+      }
+    },
+    "notes.panel.meta": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ENCRYPTED · ESC"
+          }
+        }
+      }
+    },
+    "notes.panel.meta.synced": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SYNCED · ENCRYPTED · ESC"
+          }
+        }
+      }
+    },
+    "notes.panel.separator": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " · "
+          }
+        }
+      }
+    },
     "notes.recovery.error.invalid": {
       "comment": "Recovery entry refused: malformed or checksum mismatch.",
       "extractionState": "manual",

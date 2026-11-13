@@ -325,10 +325,23 @@ public protocol HostControl: Sendable {
     /// Opens the Settings window on this module's pane and brings it forward; acts only with a `UserIntent`
     /// (AD-13), e.g. the one of a `vigie://install` link (Story 12.9). Default: does nothing.
     @MainActor func openOwnSettings(focus: UserIntent?)
+    /// Shows this module's floating panel and makes it key (Story 15.3, AD-13: the only window a module may
+    /// request). Refused (returns false) without a live `UserIntent`. Replaces any floating panel already shown.
+    /// Default: refuses.
+    @MainActor @discardableResult func presentFloatingPanel(_ request: FloatingPanelRequest, focus: UserIntent?)
+        -> Bool
+    /// Closes this module's floating panel, if it is shown (its `onClose` runs). Default: does nothing.
+    @MainActor func dismissFloatingPanel()
 }
 
 extension HostControl {
     @MainActor public func openOwnSettings(focus: UserIntent?) {}
+
+    @MainActor @discardableResult public func presentFloatingPanel(
+        _ request: FloatingPanelRequest, focus: UserIntent?
+    ) -> Bool { false }
+
+    @MainActor public func dismissFloatingPanel() {}
 }
 
 // MARK: - Permissions (implemented in Story 2.12)
