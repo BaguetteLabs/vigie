@@ -145,6 +145,7 @@ graph TD
   - **Privacy:** every output passes the Privacy filter (AD-24); macOS notification text is redacted the same way as peeks.
   - **Lifecycle:** `post` returns an `AlertHandle`; the module calls `resolve()` when the condition ends, which cancels pending reminders and retracts a visible peek. `action` is `.module(id:, actionID:, payload: Data)` routed back to the posting module, `.openSettings(pane:)` or `.openURL`.
   - **Focus:** focus-taking host calls (`expand(focus:)`, `showPanel(focus:)`) require a `UserIntent` token that VigieCore issues only inside hotkey callbacks, clicks and menu actions; without it surfaces open without focus. At most one Vigie surface is key at a time; Esc closes only the key surface.
+    - Clarified 2026-11-13 (Story 15.3, no rule change): the notes floating panel is requested with `context.host.presentFloatingPanel(_:focus:)` (a `FloatingPanelRequest`: content, `onEscape`, `onClose`) and closed with `dismissFloatingPanel()`; one floating panel at a time, refused without a live `UserIntent`; VigieCore's `FloatingPanelController` owns the window and returns focus to the previous app on close.
   - **Hotkeys:** names are namespaced `<module id>.<name>`; on a conflict the earlier registration wins and the later module raises a setup-problem alert. Peek shortcuts take precedence over every other Vigie shortcut while a peek is visible.
 
 ### AD-14 — Themes are TOML token files [ADOPTED]
