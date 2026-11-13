@@ -1,11 +1,17 @@
 import Foundation
 import ModuleKit
+import Wire
 
 /// `context.scriptFolder` (AD-18, Story 12.2): `<config folder>/modules/` from `AppEnvironment` (AD-17), the
 /// built-in ids scripts must not take, a watch on the folder (AD-12) that ends when the module stops, this Mac's
 /// confirmations (Story 12.3), and this Mac's enabled flags plus the scripts' configured values (Story 12.6).
 public struct CoreScriptFolder: ScriptFolderService {
-    public let url: URL?
+    /// `<config folder>/modules/` now: it follows ``folderLocation`` when the host has one (Story 16.1).
+    public var url: URL? { folderLocation?.scriptModulesFolderURL ?? fixedURL }
+    let fixedURL: URL?
+    /// The config folder in effect (ConfigStore's ``ConfigStore/location``): after a relocation ``url`` points at
+    /// the new `modules/` and ``changes()`` yields so the module rescans. Nil: the folder is fixed at `url`.
+    public let folderLocation: ConfigFolderLocation?
     public let builtInModuleIDs: Set<ModuleID>
     let tracker: RegistrationTracker
     let makeWatcher: @MainActor @Sendable () -> any DirectoryWatching
@@ -22,10 +28,12 @@ public struct CoreScriptFolder: ScriptFolderService {
         url: URL?, builtInModuleIDs: Set<ModuleID>, tracker: RegistrationTracker,
         confirmations: any ScriptConfirmationStore = NoScriptConfirmations(),
         settings: any ScriptSettingsStore = NoScriptSettings(),
+        folderLocation: ConfigFolderLocation? = nil,
         installInbox: ScriptInstallInbox? = nil,
         makeWatcher: @escaping @MainActor @Sendable () -> any DirectoryWatching = { DispatchDirectoryWatcher() }
     ) {
-        self.url = url
+        fixedURL = url
+        self.folderLocation = folderLocation
         self.builtInModuleIDs = builtInModuleIDs
         self.tracker = tracker
         self.confirmations = confirmations
@@ -44,6 +52,8 @@ public struct CoreScriptFolder: ScriptFolderService {
 
     /// Watches the folder and, as hints, the `*.md` files in it at each event, so in-place writes (which do not
     /// touch the directory) are seen too. A missing folder is retried by the watcher and reported when it appears.
+    /// When the config folder is relocated (Story 16.1), the watch moves to the new `modules/` and the stream
+    /// yields once.
     @MainActor public func changes() -> AsyncStream<Void> {
         let (stream, continuation) = AsyncStream<Void>.makeStream(bufferingPolicy: .bufferingNewest(1))
         guard let url else {
@@ -52,9 +62,19 @@ public struct CoreScriptFolder: ScriptFolderService {
         }
         let watch = FolderWatch(folder: url, watcher: makeWatcher()) { continuation.yield() }
         watch.arm()
+        let relocations = folderLocation.map { location in
+            let moves = location.changes()
+            return Task { @MainActor in
+                for await folder in moves {
+                    watch.retarget(AppEnvironment.scriptModulesFolderURL(in: folder))
+                    continuation.yield()
+                }
+            }
+        }
         let token = tracker.track(
             RegistrationToken {
                 continuation.finish()
+                relocations?.cancel()
                 Task { @MainActor in watch.stop() }
             })
         continuation.onTermination = { _ in token.cancel() }
@@ -65,7 +85,7 @@ public struct CoreScriptFolder: ScriptFolderService {
 /// Re-arms its watcher with the current `*.md` names after every event.
 @MainActor
 final class FolderWatch {
-    private let folder: URL
+    private var folder: URL
     private let watcher: any DirectoryWatching
     private let onChange: @MainActor () -> Void
     private var stopped = false
@@ -84,6 +104,12 @@ final class FolderWatch {
             self.arm()
             self.onChange()
         }
+    }
+
+    /// Watches `folder` from now on (the config folder moved).
+    func retarget(_ folder: URL) {
+        self.folder = folder
+        arm()
     }
 
     func stop() {

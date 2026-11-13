@@ -9,7 +9,7 @@ public struct CoreSetting: Sendable {
 
 /// The core (non-module) settings of SPEC §11, with their scope (AD-8). Module settings come from manifests.
 ///
-/// `.local` settings live at the same path in `local.toml`: `[display]`, `[virtual_notch]`, `[privacy]`, `[sync]`,
+/// `.local` settings live at the same path in `local.toml`: `[display]`, `[virtual_notch]`, `[privacy]`, `[sync]`, `[config]`,
 /// `general.launch_at_login` and `notify.focus_filter_ran`.
 public enum CoreSettings {
     /// Tables whose keys are free-form (`[appearance.colors]` overrides any status, pace or warning color).
@@ -129,6 +129,10 @@ public enum CoreSettings {
         make("privacy", "force", .bool(default: false), .local),
         // [home]
         make("home", "cards", .list(of: .string, default: [])),
+        // [config] (local): the recorded config folder location (Story 16.1, AD-12), written only by
+        // `ConfigStore.relocate(to:)` and read at launch by `AppEnvironment`. Edited by Settings › General › Config
+        // folder, never as a generated row.
+        make("config", "folder", .string(default: ""), .local),
         // [sync] (local)
         make("sync", "icloud", .bool(default: false), .local),
         // [updates]

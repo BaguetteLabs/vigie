@@ -80,6 +80,81 @@ import Testing
         #expect(make(.dev, override: explicit).configFolderURL == explicit)
     }
 
+    // MARK: - Config folder record (Story 16.1)
+
+    /// A temp support folder holding `local.toml` with `text`, and a temp home.
+    func recordFixture(_ text: String?) throws -> (support: URL, home: URL) {
+        let base = FileManager.default.temporaryDirectory.appendingPathComponent(
+            "vigie-env-\(UUID().uuidString)", isDirectory: true)
+        let support = base.appendingPathComponent("Support", isDirectory: true)
+        let home = base.appendingPathComponent("home", isDirectory: true)
+        try FileManager.default.createDirectory(at: support, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: home, withIntermediateDirectories: true)
+        if let text {
+            try text.write(to: support.appendingPathComponent("local.toml"), atomically: true, encoding: .utf8)
+        }
+        return (support, home)
+    }
+
+    func makeRecorded(_ support: URL, _ home: URL) -> AppEnvironment {
+        AppEnvironment(
+            flavor: .release, applicationSupportURL: support, homeDirectoryURL: home, tempDirectoryProvider: { nil })
+    }
+
+    @Test func recordedFolderInLocalTOMLIsUsedAtLaunch() throws {
+        let (support, home) = try recordFixture(
+            "# header\n[display]\ndisplay = \"main\"\n\n[config]\nfolder = \"~/dotfiles/vigie\"\n")
+        let folder = home.appendingPathComponent("dotfiles/vigie", isDirectory: true)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        let env = makeRecorded(support, home)
+        #expect(env.configFolderURL.standardizedFileURL == folder.standardizedFileURL)
+        #expect(env.configFolderSource == .localRecord)
+        #expect(env.configFolderRecordProblem == nil)
+        #expect(env.scriptModulesFolderURL.standardizedFileURL.path == folder.appendingPathComponent("modules").path)
+        #expect(env.abbreviatingHome(folder) == "~/dotfiles/vigie")
+    }
+
+    @Test func missingRecordedFolderFallsBackToDefaultWithAProblem() throws {
+        let (support, home) = try recordFixture("[config]\nfolder = \"/nonexistent/vigie-\(UUID().uuidString)\"\n")
+        let env = makeRecorded(support, home)
+        #expect(env.configFolderURL == env.defaultConfigFolderURL)
+        #expect(env.configFolderSource == .defaultFolder)
+        #expect(env.configFolderRecordProblem?.contains("missing") == true)
+    }
+
+    @Test func relativeRecordedPathIsAProblem() throws {
+        let (support, home) = try recordFixture("[config]\nfolder = \"dotfiles\"\n")
+        let env = makeRecorded(support, home)
+        #expect(env.configFolderURL == env.defaultConfigFolderURL)
+        #expect(env.configFolderRecordProblem != nil)
+    }
+
+    @Test func noRecordMeansDefault() throws {
+        for text in [nil, "", "[config]\nfolder = \"\"\n", "[other]\nfolder = \"/tmp\"\n"] {
+            let (support, home) = try recordFixture(text)
+            let env = makeRecorded(support, home)
+            #expect(env.configFolderSource == .defaultFolder)
+            #expect(env.configFolderRecordProblem == nil)
+        }
+    }
+
+    @Test func explicitOverrideWinsOverTheRecord() throws {
+        let (support, home) = try recordFixture("[config]\nfolder = \"~\"\n")
+        let explicit = URL(fileURLWithPath: "/tmp/vt/explicit", isDirectory: true)
+        let env = AppEnvironment(
+            flavor: .release, applicationSupportURL: support, configFolderOverride: explicit, homeDirectoryURL: home)
+        #expect(env.configFolderURL == explicit)
+        #expect(env.configFolderSource == .explicitOverride)
+    }
+
+    @Test func recordParserReadsTheTwoStringForms() {
+        #expect(AppEnvironment.configFolderRecord(inLocalTOML: "[config]\nfolder = '/a b/c' # x\n") == "/a b/c")
+        #expect(AppEnvironment.configFolderRecord(inLocalTOML: "[ config ]\n  folder=\"/a\\\\b\\\"c\"\n") == "/a\\b\"c")
+        #expect(AppEnvironment.configFolderRecord(inLocalTOML: "config.folder = \"/root\"\n") == "/root")
+        #expect(AppEnvironment.configFolderRecord(inLocalTOML: "[config.sub]\nfolder = \"/no\"\n") == nil)
+        #expect(AppEnvironment.configFolderRecord(inLocalTOML: "[config]\nfolder = 3\n") == nil)
+    }
+
     @Test func socketStaysInApplicationSupportAtLimit() {
         // Build a root whose socket path is exactly 100 bytes.
         let suffix = "/" + sockName

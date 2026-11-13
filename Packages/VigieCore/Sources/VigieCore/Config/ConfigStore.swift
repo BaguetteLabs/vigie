@@ -20,33 +20,40 @@ public final class ConfigStore {
     public private(set) var revision = 0
 
     public nonisolated let environment: AppEnvironment
-    /// `<config folder>/config.toml` (synced).
-    public nonisolated let configURL: URL
+    /// The config folder in effect, shared with the services derived from it (Story 16.1). Moved only by
+    /// ``relocate(to:)``.
+    public nonisolated let location: ConfigFolderLocation
+    /// `<config folder>/config.toml` (synced), in the folder in effect now.
+    public nonisolated var configURL: URL { location.configFileURL }
+    /// The config folder in effect (observable, for Settings › General › Config folder).
+    public internal(set) var configFolderURL: URL
     /// `AppEnvironment.localConfigURL` (never synced).
     public nonisolated let localURL: URL
 
     nonisolated let shared: ConfigSharedState
 
-    private struct FileState {
+    struct FileState {
         var data: Data?
         var document = ConfigDocument.empty
         var problem: ConfigProblem?
     }
 
-    @ObservationIgnored private let watcher: any DirectoryWatching
+    @ObservationIgnored let watcher: any DirectoryWatching
     @ObservationIgnored private let debounce: Duration
-    @ObservationIgnored private let logger: Logger
-    @ObservationIgnored private var configFile = FileState()
-    @ObservationIgnored private var localFile = FileState()
+    @ObservationIgnored let logger: Logger
+    @ObservationIgnored var configFile = FileState()
+    @ObservationIgnored var localFile = FileState()
     @ObservationIgnored private var loggedUnknownKeys: Set<String> = []
     @ObservationIgnored private var reloadTask: Task<Void, Never>?
     @ObservationIgnored private var debounceTask: Task<Void, Never>?
-    @ObservationIgnored private var isStarted = false
-    @ObservationIgnored private let writer = ConfigWriter()
+    @ObservationIgnored var isStarted = false
+    @ObservationIgnored let writer = ConfigWriter()
+    /// Tests only: the file steps of a relocation (copy, remove), so a failing step can be injected.
+    @ObservationIgnored var relocationFileSystem = ConfigRelocationFileSystem.standard
     /// Tests only: rewrites the patched text before verification.
     @ObservationIgnored var patchHook: (@Sendable (String) -> String)?
 
-    public static let configFileName = "config.toml"
+    public static let configFileName = AppEnvironment.configFileName
 
     /// - Parameters:
     ///   - environment: paths (AD-17); injected by the App.
@@ -60,7 +67,8 @@ public final class ConfigStore {
         debounce: Duration = .milliseconds(100)
     ) {
         self.environment = environment
-        configURL = environment.configFolderURL.appendingPathComponent(Self.configFileName)
+        location = ConfigFolderLocation(folder: environment.configFolderURL)
+        configFolderURL = environment.configFolderURL
         localURL = environment.localConfigURL
         var schema = ConfigSchema()
         for manifest in manifests { schema.register(manifest) }
@@ -146,6 +154,9 @@ public final class ConfigStore {
     public func start() async {
         guard !isStarted else { return }
         isStarted = true
+        if let problem = environment.configFolderRecordProblem {
+            logger.error("\(problem, privacy: .public)")
+        }
         let configURL = configURL
         let localURL = localURL
         let defaultText = Self.defaultConfigText
@@ -154,16 +165,35 @@ public final class ConfigStore {
         }.value
         for message in created { logger.info("\(message, privacy: .public)") }
         await reload()
+        armWatches()
+    }
 
-        let configFolder = configURL.deletingLastPathComponent().standardizedFileURL
-        let localFolder = localURL.deletingLastPathComponent().standardizedFileURL
+    /// Watches the config folder (a symlinked folder is watched at its target, since opening it follows the link),
+    /// the folder `config.toml` resolves to when the file itself is a symlink into another folder (a dotfiles
+    /// checkout), and the `local.toml` folder (AD-12). Replaces every previous watch.
+    func armWatches() {
+        watcher.stopAll()
         let onChange: @MainActor () -> Void = { [weak self] in self?.scheduleReload() }
-        if configFolder.path == localFolder.path {
-            watcher.watch(
-                configFolder, files: [configURL.lastPathComponent, localURL.lastPathComponent], handler: onChange)
-        } else {
-            watcher.watch(configFolder, files: [configURL.lastPathComponent], handler: onChange)
-            watcher.watch(localFolder, files: [localURL.lastPathComponent], handler: onChange)
+        let configName = configURL.lastPathComponent
+        let localName = localURL.lastPathComponent
+        var folders: [(URL, Set<String>)] = []
+        func add(_ folder: URL, _ name: String) {
+            let folder = folder.standardizedFileURL
+            if let index = folders.firstIndex(where: { $0.0.path == folder.path }) {
+                folders[index].1.insert(name)
+            } else {
+                folders.append((folder, [name]))
+            }
+        }
+        // Opening a symlinked folder watches its target, so the folder itself needs no resolving.
+        add(configURL.deletingLastPathComponent(), configName)
+        if (try? FileManager.default.destinationOfSymbolicLink(atPath: configURL.path)) != nil {
+            let resolvedFile = configURL.resolvingSymlinksInPath()
+            add(resolvedFile.deletingLastPathComponent(), resolvedFile.lastPathComponent)
+        }
+        add(localURL.deletingLastPathComponent(), localName)
+        for (folder, files) in folders {
+            watcher.watch(folder, files: files.sorted(), handler: onChange)
         }
     }
 
@@ -183,7 +213,7 @@ public final class ConfigStore {
     }
 
     /// Runs `operation` after every reload or write already queued, before any queued later.
-    private func serialized<T: Sendable>(_ operation: @escaping @MainActor () async -> T) async -> T {
+    func serialized<T: Sendable>(_ operation: @escaping @MainActor () async -> T) async -> T {
         let previous = reloadTask
         let task = Task {
             await previous?.value
@@ -368,7 +398,7 @@ public final class ConfigStore {
 
         """
 
-    private nonisolated static func createMissingFiles(configURL: URL, localURL: URL, defaultText: String?)
+    nonisolated static func createMissingFiles(configURL: URL, localURL: URL, defaultText: String?)
         -> [String]
     {
         var messages: [String] = []
@@ -397,7 +427,7 @@ public final class ConfigStore {
 
     // MARK: - Loading
 
-    private func performReload() async {
+    func performReload() async {
         async let configRead = ConfigFileReader.read(configURL)
         async let localRead = ConfigFileReader.read(localURL)
         let (configResult, localResult) = await (configRead, localRead)
@@ -465,7 +495,7 @@ public final class ConfigStore {
     /// changed values. Keys that were not known before (just registered) are not reported as changed.
     /// `rawChanged`: leaf paths whose parsed value changed in this load; reported on `changes` and bump
     /// `revision` even when no schema key changed.
-    private func recompute(rawChanged: Set<ConfigKeyPath> = []) {
+    func recompute(rawChanged: Set<ConfigKeyPath> = []) {
         // Template instances the files hold (Story 7.10: one table per Account) become known keys first.
         let documents = [configFile.document, localFile.document]
         shared.update { _ = $0.schema.expandTemplates(in: documents) }

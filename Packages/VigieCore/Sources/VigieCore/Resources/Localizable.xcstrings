@@ -2232,6 +2232,258 @@
           }
         }
       }
+    },
+    "settings.section.configFolder": {
+      "comment": "Settings › General section heading: where config.toml, themes and script modules live (Story 16.1).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Config Folder"
+          }
+        }
+      }
+    },
+    "settings.configFolder.label": {
+      "comment": "Settings › General › Config folder row label; the folder path is shown below it.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Config folder"
+          }
+        }
+      }
+    },
+    "settings.configFolder.change": {
+      "comment": "Button: choose another config folder.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change…"
+          }
+        }
+      }
+    },
+    "settings.configFolder.reveal": {
+      "comment": "Button: show the config folder in Finder.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reveal in Finder"
+          }
+        }
+      }
+    },
+    "settings.configFolder.useDefault": {
+      "comment": "Button: go back to the default config folder (~/.config/vigie).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use Default"
+          }
+        }
+      }
+    },
+    "settings.configFolder.cancel": {
+      "comment": "Button: cancel a pending config folder change.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel"
+          }
+        }
+      }
+    },
+    "settings.configFolder.choose.prompt": {
+      "comment": "Open panel prompt when choosing the config folder.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use Folder"
+          }
+        }
+      }
+    },
+    "settings.configFolder.confirm.adopt": {
+      "comment": "Confirmation before switching to a config folder that already holds a config.toml.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This folder already has a config.toml. Vigie will use it and leave the current one in place."
+          }
+        }
+      }
+    },
+    "settings.configFolder.confirm.move": {
+      "comment": "Confirmation before moving the config folder's contents to the chosen folder.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vigie will move config.toml, themes and modules there."
+          }
+        }
+      }
+    },
+    "settings.configFolder.confirm.adoptButton": {
+      "comment": "Button confirming the switch to a folder that already has a config.toml.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use This Folder"
+          }
+        }
+      }
+    },
+    "settings.configFolder.confirm.moveButton": {
+      "comment": "Button confirming the move of the config files to the chosen folder.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move"
+          }
+        }
+      }
+    },
+    "settings.configFolder.recordMissing": {
+      "comment": "Shown under the config folder when the location recorded on this Mac could not be found at launch.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The config folder chosen earlier is missing, so Vigie is using the default folder."
+          }
+        }
+      }
+    },
+    "settings.configFolder.error.sameFolder": {
+      "comment": "Config folder change refused: the chosen folder is the current one.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That is already the config folder."
+          }
+        }
+      }
+    },
+    "settings.configFolder.error.insideCurrent": {
+      "comment": "Config folder change refused: the chosen folder is inside the current one.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose a folder outside the current config folder."
+          }
+        }
+      }
+    },
+    "settings.configFolder.error.containsCurrent": {
+      "comment": "Config folder change refused: the current folder is inside the chosen one.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose a folder that does not contain the current config folder."
+          }
+        }
+      }
+    },
+    "settings.configFolder.error.applicationSupport": {
+      "comment": "Config folder change refused: the chosen folder is Vigie's Application Support folder.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That folder holds this Mac's own data. Choose another folder."
+          }
+        }
+      }
+    },
+    "settings.configFolder.error.notAFolder": {
+      "comment": "Config folder change refused: the chosen path is a file.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That is a file, not a folder."
+          }
+        }
+      }
+    },
+    "settings.configFolder.error.notWritable": {
+      "comment": "Config folder change refused: the folder is not writable.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vigie can't write to that folder."
+          }
+        }
+      }
+    },
+    "settings.configFolder.error.conflict": {
+      "comment": "Config folder change refused: the target already has themes or modules. %@ is the folder name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That folder already has a %@ folder but no config.toml. Move it away or choose another folder."
+          }
+        }
+      }
+    },
+    "settings.configFolder.error.moveFailed": {
+      "comment": "Config folder move failed and was rolled back. %@ is the reason.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't move the config files (%@). Nothing changed."
+          }
+        }
+      }
+    },
+    "settings.configFolder.error.recordFailed": {
+      "comment": "Config folder change failed: the location could not be recorded. %@ is the reason.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't save the new location in local.toml (%@). Nothing changed."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

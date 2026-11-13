@@ -95,6 +95,7 @@ struct SettingsPaneView: View {
                 if pane.id == "notify" { FocusSettingsSection(controller: controller) }
                 if pane.id == "updates" { UpdatesActionSection(controller: controller) }
                 if pane.id == "general" {
+                    ConfigFolderSection(model: controller.configFolder)
                     CLISection(controller: controller)
                     Section {
                         Button {

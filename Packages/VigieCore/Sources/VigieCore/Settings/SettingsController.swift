@@ -47,6 +47,8 @@ public final class SettingsController {
     public var privacy: CorePrivacyService?
     /// Settings › Home state (Story 11.1).
     public let home: HomePaneModel
+    /// Settings › General › Config folder (Story 16.1).
+    public let configFolder: ConfigFolderModel
     /// The app's updater (Story 6.3), for Settings › Updates › Check for Updates…. The App sets it; nil (tests, or
     /// before assembly) shows the button disabled.
     public var updater: (any UpdaterControlling)?
@@ -99,6 +101,7 @@ public final class SettingsController {
         self.secretStore = secretStore
         self.activity = ActivityPaneModel(store: activityStore)
         sounds = SoundsPaneModel(configStore: configStore)
+        configFolder = ConfigFolderModel(configStore: configStore)
         var extraHomeProviders: (@MainActor () -> [HomeProviderDescriptor])?
         home = HomePaneModel(configStore: configStore) {
             Self.moduleHomeProviders(registry) + (extraHomeProviders?() ?? [])

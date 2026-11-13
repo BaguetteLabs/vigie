@@ -1080,6 +1080,18 @@
           }
         }
       }
+    },
+    "config.config.folder": {
+      "comment": "Settings label for the config key config.folder (the recorded config folder location, local.toml).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Config folder"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

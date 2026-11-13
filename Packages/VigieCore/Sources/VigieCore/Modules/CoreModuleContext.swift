@@ -241,6 +241,7 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
                 settings: configStore.map {
                     ConfigScriptSettings(store: $0, tracker: tracker) as any ScriptSettingsStore
                 } ?? NoScriptSettings(),
+                folderLocation: configStore?.location,
                 installInbox: scriptInstalls),
             updates: CoreUpdatesService(shared: configStore?.shared, priceTable: priceTable),
             notesKey: manifest.id == Self.notesModuleID ? notesKey : UnavailableSyncedKeyStore(reason: .notOwner),
