@@ -878,7 +878,7 @@ sha256 = "41ab…"              # declined on this Mac only; a byte change asks 
 | Script modules | Config folder, readable Markdown | With the config folder; confirmation required on each Mac before first run (§9.2) |
 | Notes | Notes folder, end-to-end encrypted | iCloud when sync is on |
 
-- Turning iCloud sync on moves the config and notes folders into `iCloud Drive/Vigie/`; turning it off moves them back.
+- Turning iCloud sync on moves the config and notes folders into `iCloud Drive/Vigie/` (`config/`, `Notes/`), or adopts them when another Mac put them there first; turning it off moves them back to this Mac's defaults (and out of iCloud for the other Macs). Their locations are recorded in `local.toml`; `local.toml` and secrets never move. Files not yet downloaded are never read: Vigie requests the download and keeps the last good values (Story 16.2).
 - The notes key is created only when the user sets up notes; on another Mac, Vigie waits for it to sync through iCloud Keychain or asks for the recovery key, never creating a second key.
 - The config folder location is user-choosable so it can be committed to git (with or without iCloud sync). Script files stay readable for the same reason; their secrets stay in the Keychain. Choosing a folder (Settings › General › Config folder) moves `config.toml`, `themes/` and `modules/` there, or adopts the folder's own `config.toml` if it has one (the previous folder is then left untouched); the location is recorded in `local.toml` `[config] folder` and read at launch. A symlinked folder or file is written through its resolved path, atomically, one line per edit (Story 16.1).
 
