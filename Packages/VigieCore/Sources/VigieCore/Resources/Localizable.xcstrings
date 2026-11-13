@@ -1,6 +1,282 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "settings.sync.status.off": {
+      "comment": "Sync status line when iCloud sync is off.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OFF"
+          }
+        }
+      }
+    },
+    "settings.sync.status.on": {
+      "comment": "Sync status line when on. %@ is the iCloud Drive folder path.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ON · %@"
+          }
+        }
+      }
+    },
+    "settings.sync.status.unavailable": {
+      "comment": "Sync status line when iCloud Drive is turned off on this Mac.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "UNAVAILABLE · iCloud Drive is off"
+          }
+        }
+      }
+    },
+    "settings.sync.confirm.on": {
+      "comment": "Confirmation before turning iCloud sync on.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vigie will move your config folder and notes into iCloud Drive › Vigie."
+          }
+        }
+      }
+    },
+    "settings.sync.confirm.adopt": {
+      "comment": "Added to the turn-on confirmation when iCloud Drive › Vigie already holds a config or notes (another Mac turned sync on first).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iCloud Drive › Vigie already has a config or notes from another Mac: this Mac will use them and leave its own where they are."
+          }
+        }
+      }
+    },
+    "settings.sync.confirm.off": {
+      "comment": "Confirmation before turning iCloud sync off.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vigie will move your config folder and notes out of iCloud Drive, back to this Mac. Other Macs with sync on will no longer receive them."
+          }
+        }
+      }
+    },
+    "settings.sync.confirm.onButton": {
+      "comment": "Button that confirms turning iCloud sync on.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn On"
+          }
+        }
+      }
+    },
+    "settings.sync.confirm.offButton": {
+      "comment": "Button that confirms turning iCloud sync off.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn Off"
+          }
+        }
+      }
+    },
+    "settings.sync.cancel": {
+      "comment": "Button that cancels turning iCloud sync on or off.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel"
+          }
+        }
+      }
+    },
+    "settings.sync.reveal": {
+      "comment": "Button that shows the iCloud Drive › Vigie folder in Finder.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reveal in Finder"
+          }
+        }
+      }
+    },
+    "settings.sync.note": {
+      "comment": "Note under the iCloud sync toggle.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Per-Mac settings (displays, virtual notch, terminal, script confirmations) and secrets never sync: they stay in this Mac's local.toml and Keychain."
+          }
+        }
+      }
+    },
+    "settings.sync.error.unavailable": {
+      "comment": "Error: iCloud sync cannot be turned on because iCloud Drive is off.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iCloud Drive is off on this Mac. Turn it on in System Settings › Apple Account › iCloud, then try again."
+          }
+        }
+      }
+    },
+    "settings.sync.error.config": {
+      "comment": "Error while moving the config folder for iCloud sync. %@ is the reason.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Config folder: %@"
+          }
+        }
+      }
+    },
+    "settings.sync.error.notes": {
+      "comment": "Error while moving the notes folder for iCloud sync. %@ is the reason.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notes folder: %@"
+          }
+        }
+      }
+    },
+    "settings.sync.error.record": {
+      "comment": "Error: the sync setting could not be saved; folders were moved back. %@ is the reason.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't save the sync setting (%@). Nothing changed."
+          }
+        }
+      }
+    },
+    "settings.userFolder.error.sameFolder": {
+      "comment": "Folder move refused: it is the folder in use.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This is already the folder in use."
+          }
+        }
+      }
+    },
+    "settings.userFolder.error.insideCurrent": {
+      "comment": "Folder move refused: the target is inside the current folder.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The new folder is inside the current one."
+          }
+        }
+      }
+    },
+    "settings.userFolder.error.containsCurrent": {
+      "comment": "Folder move refused: the target contains the current folder.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The new folder contains the current one."
+          }
+        }
+      }
+    },
+    "settings.userFolder.error.notAFolder": {
+      "comment": "Folder move refused: the path is a file.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That path is a file, not a folder."
+          }
+        }
+      }
+    },
+    "settings.userFolder.error.notWritable": {
+      "comment": "Folder move refused: Vigie cannot write there.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vigie can't write to that folder."
+          }
+        }
+      }
+    },
+    "settings.userFolder.error.downloadsPending": {
+      "comment": "Folder move refused while files download from iCloud. %lld is the number of files.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld files are still downloading from iCloud. Try again once they are on this Mac."
+          }
+        }
+      }
+    },
+    "settings.userFolder.error.moveFailed": {
+      "comment": "Folder move failed and was rolled back. %@ is the reason.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't move the files (%@). Nothing changed."
+          }
+        }
+      }
+    },
+    "settings.userFolder.error.recordFailed": {
+      "comment": "Folder move: the new location could not be saved. %@ is the reason.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't save the new location (%@). Nothing changed."
+          }
+        }
+      }
+    },
     "vigiecore.service.shelfOff.title": {
       "comment": "Setup-problem alert title: the Services entry Stash in Vigie was used while the Shelf module is disabled.",
       "extractionState": "manual",

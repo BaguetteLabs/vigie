@@ -196,4 +196,34 @@ import Testing
             #expect(AppEnvironment.current.bundleID == "fr.baguettelabs.vigie")
         #endif
     }
+
+    @Test func iCloudLocationsForReleaseAndDev() throws {
+        let release = make(.release)
+        let drive = "/tmp/vt/home/Library/" + "Mobile" + " Documents/com~apple~CloudDocs"
+        #expect(release.iCloudDriveFolderURL.path == drive)
+        #expect(release.iCloudSyncRootURL.path == drive + "/Vigie")
+        #expect(release.iCloudConfigFolderURL.path == drive + "/Vigie/config")
+        #expect(release.iCloudNotesFolderURL.path == drive + "/Vigie/Notes")
+        #expect(release.localNotesFolderURL.path == "/tmp/vt/home/Notes/Vigie")
+        let dev = make(.dev)
+        #expect(dev.iCloudSyncRootURL.path == drive + "/Vigie Dev")
+        #expect(dev.iCloudConfigFolderURL.path == drive + "/Vigie Dev/config")
+        #expect(dev.iCloudNotesFolderURL.path == drive + "/Vigie Dev/Notes")
+        #expect(dev.localNotesFolderURL.path == "/tmp/vt/home/Notes/Vigie Dev")
+    }
+
+    @Test func iCloudDriveAvailabilityFollowsTheFolder() throws {
+        let home = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: home) }
+        let env = AppEnvironment(
+            flavor: .release, applicationSupportURL: root, homeDirectoryURL: home, tempDirectoryProvider: { nil })
+        #expect(!env.isICloudDriveAvailable)
+        try FileManager.default.createDirectory(
+            at: env.iCloudDriveFolderURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try Data().write(to: env.iCloudDriveFolderURL)
+        #expect(!env.isICloudDriveAvailable)
+        try FileManager.default.removeItem(at: env.iCloudDriveFolderURL)
+        try FileManager.default.createDirectory(at: env.iCloudDriveFolderURL, withIntermediateDirectories: true)
+        #expect(env.isICloudDriveAvailable)
+    }
 }

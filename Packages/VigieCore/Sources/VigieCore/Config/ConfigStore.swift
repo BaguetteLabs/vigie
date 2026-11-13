@@ -48,6 +48,15 @@ public final class ConfigStore {
     @ObservationIgnored private var debounceTask: Task<Void, Never>?
     @ObservationIgnored var isStarted = false
     @ObservationIgnored let writer = ConfigWriter()
+    /// Reads both files: dataless iCloud files are not read but downloaded, the last good values kept (AD-12).
+    /// Tests replace it with one on a fake status provider.
+    @ObservationIgnored var fileReader = CoordinatedFileReader()
+    /// While a file downloads from iCloud, a reload is retried this often (the watcher may not see the content
+    /// land in a dataless file).
+    @ObservationIgnored var pendingRetryInterval: Duration = .seconds(2)
+    @ObservationIgnored private var pendingRetryTask: Task<Void, Never>?
+    /// Files whose pending download was logged (once per wait).
+    @ObservationIgnored private var loggedPending: Set<String> = []
     /// Tests only: the file steps of a relocation (copy, remove), so a failing step can be injected.
     @ObservationIgnored var relocationFileSystem = ConfigRelocationFileSystem.standard
     /// Tests only: rewrites the patched text before verification.
@@ -204,6 +213,8 @@ public final class ConfigStore {
         watcher.stopAll()
         debounceTask?.cancel()
         debounceTask = nil
+        pendingRetryTask?.cancel()
+        pendingRetryTask = nil
         shared.finishAll()
     }
 
@@ -428,9 +439,11 @@ public final class ConfigStore {
     // MARK: - Loading
 
     func performReload() async {
-        async let configRead = ConfigFileReader.read(configURL)
-        async let localRead = ConfigFileReader.read(localURL)
+        let reader = fileReader
+        async let configRead = reader.readResult(configURL)
+        async let localRead = reader.readResult(localURL)
         let (configResult, localResult) = await (configRead, localRead)
+        if configResult == .pending || localResult == .pending { schedulePendingRetry() }
         let oldConfig = configFile.document
         let oldLocal = localFile.document
         let configChanged = ingest(configResult, into: &configFile, url: configURL)
@@ -441,6 +454,18 @@ public final class ConfigStore {
         recompute(rawChanged: rawChanged)
     }
 
+    /// Reloads again after ``pendingRetryInterval`` while a file is still downloading from iCloud.
+    private func schedulePendingRetry() {
+        guard isStarted, pendingRetryTask == nil else { return }
+        let interval = pendingRetryInterval
+        pendingRetryTask = Task {
+            try? await Task.sleep(for: interval)
+            self.pendingRetryTask = nil
+            guard self.isStarted, !Task.isCancelled else { return }
+            await self.reload()
+        }
+    }
+
     /// Leaf paths whose value differs between two parses of one file (added, removed or changed).
     static func changedLeafPaths(_ old: ConfigDocument, _ new: ConfigDocument) -> Set<ConfigKeyPath> {
         guard old != new else { return [] }
@@ -449,8 +474,9 @@ public final class ConfigStore {
     }
 
     /// Applies one read to a file's state; returns whether anything changed.
-    private func ingest(_ read: ConfigFileRead, into state: inout FileState, url: URL) -> Bool {
+    private func ingest(_ read: CoordinatedRead, into state: inout FileState, url: URL) -> Bool {
         let name = url.lastPathComponent
+        if read != .pending { loggedPending.remove(url.path) }
         switch read {
         case .data(let data):
             guard data != state.data else { return false }
@@ -480,7 +506,9 @@ public final class ConfigStore {
             }
             return false
         case .pending:
-            logger.info("\(name, privacy: .public) is downloading from iCloud; keeping the last values")
+            if loggedPending.insert(url.path).inserted {
+                logger.info("\(name, privacy: .public) is downloading from iCloud; keeping the last values")
+            }
             return false
         case .failed(let reason):
             state.data = nil
@@ -538,44 +566,5 @@ public final class ConfigStore {
         if newProblems != problems { problems = newProblems }
         if !changed.isEmpty || !enablement.isEmpty { revision += 1 }
         shared.notify(changed: changed, enablement: enablement)
-    }
-}
-
-/// The outcome of reading one config file off the main actor.
-enum ConfigFileRead: Sendable {
-    case data(Data)
-    case missing
-    /// An iCloud item that is not downloaded yet; a download was requested (AD-12).
-    case pending
-    case failed(String)
-}
-
-enum ConfigFileReader {
-    /// Reads `url` off the main actor through `NSFileCoordinator`, after checking its iCloud status (AD-12).
-    static func read(_ url: URL) async -> ConfigFileRead {
-        await Task.detached { readNow(url) }.value
-    }
-
-    static func readNow(_ url: URL) -> ConfigFileRead {
-        let fm = FileManager.default
-        guard fm.fileExists(atPath: url.path) else { return .missing }
-        if let values = try? url.resourceValues(forKeys: [.isUbiquitousItemKey, .ubiquitousItemDownloadingStatusKey]),
-            values.isUbiquitousItem == true,
-            let status = values.ubiquitousItemDownloadingStatus, status != .current
-        {
-            try? fm.startDownloadingUbiquitousItem(at: url)
-            return .pending
-        }
-        var coordinationError: NSError?
-        var result = ConfigFileRead.failed("coordination failed")
-        NSFileCoordinator().coordinate(readingItemAt: url, options: [], error: &coordinationError) { readURL in
-            do {
-                result = .data(try Data(contentsOf: readURL))
-            } catch {
-                result = fm.fileExists(atPath: readURL.path) ? .failed(error.localizedDescription) : .missing
-            }
-        }
-        if let coordinationError { return .failed(coordinationError.localizedDescription) }
-        return result
     }
 }

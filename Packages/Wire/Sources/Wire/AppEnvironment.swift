@@ -101,6 +101,47 @@ public struct AppEnvironment: Sendable {
         folder.appendingPathComponent(scriptModulesFolderName, isDirectory: true)
     }
 
+    // MARK: - iCloud Drive (Story 16.2)
+
+    /// The user-visible iCloud Drive folder, `~/Library/Mobile Documents/com~apple~CloudDocs`.
+    ///
+    /// Vigie is not sandboxed and has no iCloud container entitlement (`NSUbiquitousContainers`), so
+    /// `FileManager.url(forUbiquityContainerIdentifier:)` has nothing to return: iCloud Drive's own folder is the
+    /// only route. Files there are synced by the system (`bird`/FileProvider) and may be dataless until read.
+    public var iCloudDriveFolderURL: URL {
+        homeDirectoryURL.appendingPathComponent("Library/Mobile Documents/com~apple~CloudDocs", isDirectory: true)
+    }
+
+    /// iCloud Drive is turned on for this Mac: its folder exists and is a directory.
+    public var isICloudDriveAvailable: Bool {
+        var isDirectory: ObjCBool = false
+        return FileManager.default.fileExists(atPath: iCloudDriveFolderURL.path, isDirectory: &isDirectory)
+            && isDirectory.boolValue
+    }
+
+    /// `<iCloud Drive>/Vigie` (`Vigie Dev` for the dev build, like the Application Support folder): the folder
+    /// iCloud sync moves the config and notes folders into (SPEC §11.1).
+    public var iCloudSyncRootURL: URL {
+        iCloudDriveFolderURL.appendingPathComponent(displayName, isDirectory: true)
+    }
+
+    /// `<iCloud Drive>/Vigie/config`: the config folder while sync is on.
+    public var iCloudConfigFolderURL: URL {
+        iCloudSyncRootURL.appendingPathComponent("config", isDirectory: true)
+    }
+
+    /// `<iCloud Drive>/Vigie/Notes`: the notes folder while sync is on.
+    public var iCloudNotesFolderURL: URL {
+        iCloudSyncRootURL.appendingPathComponent("Notes", isDirectory: true)
+    }
+
+    /// The notes folder iCloud sync moves back to when turned off: `~/Notes/Vigie`, or `~/Notes/Vigie Dev` for the
+    /// dev build so it never takes the release build's notes (the Notes module's own default stays `~/Notes/Vigie`).
+    public var localNotesFolderURL: URL {
+        homeDirectoryURL.appendingPathComponent("Notes", isDirectory: true)
+            .appendingPathComponent(displayName, isDirectory: true)
+    }
+
     /// `path` with the home folder abbreviated to `~` (the form recorded in `local.toml` and shown in Settings).
     public func abbreviatingHome(_ url: URL) -> String {
         let path = url.standardizedFileURL.path

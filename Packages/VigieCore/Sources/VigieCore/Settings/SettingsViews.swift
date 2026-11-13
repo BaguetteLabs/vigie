@@ -94,6 +94,7 @@ struct SettingsPaneView: View {
                 // Focus detection setup and the Shortcuts recipe (Story 3.10).
                 if pane.id == "notify" { FocusSettingsSection(controller: controller) }
                 if pane.id == "updates" { UpdatesActionSection(controller: controller) }
+                if pane.id == "sync" { SyncSection(model: controller.sync) }
                 if pane.id == "general" {
                     ConfigFolderSection(model: controller.configFolder)
                     CLISection(controller: controller)

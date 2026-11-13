@@ -9,6 +9,7 @@ import Testing
         "Application" + " Support",
         ".config" + "/vigie",
         "vigie" + ".sock",
+        "Mobile" + " Documents",
     ]
 
     static func repoRoot(from file: String = #filePath) -> URL? {

@@ -47,7 +47,7 @@ public struct SettingsPane: Identifiable, Sendable {
 /// | `home`       | Home         | `[home] cards`, `[general] tab_order`                                   |
 /// | `notify`     | Alerts       | `[notify]`                                                              |
 /// | `sounds`     | Sounds       | `[sounds]`                                                              |
-/// | `sync`       | Sync         | `[sync]` (local)                                                        |
+/// | `sync`       | Sync         | `[sync] icloud` (local), drawn by `SyncSection` (Story 16.2)            |
 /// | `updates`    | Updates      | `[updates]`                                                             |
 /// | `<module id>`| module name  | `[modules."<id>"]` (`enabled` + the manifest's descriptors)             |
 ///
@@ -135,7 +135,9 @@ public enum SettingsPaneCatalog {
                 ])),
             SettingsPane(
                 id: "sync", title: SettingsText.resource("settings.pane.sync"), icon: "icloud",
-                content: .core([SettingsSection(keys: keys("sync", ["icloud"]))])),
+                // `[sync] icloud` is the Sync section's toggle (SyncSection), never a generated row: turning it on
+                // moves folders (Story 16.2).
+                content: .core([])),
             SettingsPane(
                 id: "updates", title: SettingsText.resource("settings.pane.updates"),
                 icon: "arrow.triangle.2.circlepath",

@@ -49,6 +49,8 @@ public final class SettingsController {
     public let home: HomePaneModel
     /// Settings › General › Config folder (Story 16.1).
     public let configFolder: ConfigFolderModel
+    /// Settings › Sync (Story 16.2).
+    public let sync: SyncPaneModel
     /// The app's updater (Story 6.3), for Settings › Updates › Check for Updates…. The App sets it; nil (tests, or
     /// before assembly) shows the button disabled.
     public var updater: (any UpdaterControlling)?
@@ -102,6 +104,7 @@ public final class SettingsController {
         self.activity = ActivityPaneModel(store: activityStore)
         sounds = SoundsPaneModel(configStore: configStore)
         configFolder = ConfigFolderModel(configStore: configStore)
+        sync = SyncPaneModel(controller: SyncController(configStore: configStore))
         var extraHomeProviders: (@MainActor () -> [HomeProviderDescriptor])?
         home = HomePaneModel(configStore: configStore) {
             Self.moduleHomeProviders(registry) + (extraHomeProviders?() ?? [])
@@ -341,9 +344,10 @@ public final class SettingsController {
 
     // MARK: - General extras
 
-    /// Re-reads everything the system can change behind Vigie's back: login item, CLI link, permissions.
+    /// Re-reads everything the system can change behind Vigie's back: login item, iCloud Drive, CLI link, permissions.
     public func refresh() async {
         refreshLoginItem()
+        sync.refresh()
         await refreshCLI()
         for permission in Set(manifests.flatMap(\.permissions)) {
             _ = await permissions.status(of: permission)

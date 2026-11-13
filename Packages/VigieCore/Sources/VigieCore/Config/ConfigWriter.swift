@@ -30,7 +30,7 @@ actor ConfigWriter {
 
         let original: Data
         var exists = true
-        switch ConfigFileReader.readNow(target) {
+        switch CoordinatedFileReader.readNow(target, status: SystemUbiquitousItemStatus()) {
         case .data(let data): original = data
         case .missing:
             original = Data()
