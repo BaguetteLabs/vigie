@@ -745,6 +745,9 @@ cards = []                    # Home cards in order, written by Settings › Hom
 [sync]
 icloud = false                # config/personalization and notes only (§11.1)
 
+[config]                      # local (local.toml only): the config folder location, written by Settings › General ›
+folder = "~/dotfiles/vigie"   # Config folder (Story 16.1); absent = ~/.config/vigie
+
 [updates]
 auto_check = true
 check_interval = "24h"
@@ -877,7 +880,7 @@ sha256 = "41ab…"              # declined on this Mac only; a byte change asks 
 
 - Turning iCloud sync on moves the config and notes folders into `iCloud Drive/Vigie/`; turning it off moves them back.
 - The notes key is created only when the user sets up notes; on another Mac, Vigie waits for it to sync through iCloud Keychain or asks for the recovery key, never creating a second key.
-- The config folder location is user-choosable so it can be committed to git (with or without iCloud sync). Script files stay readable for the same reason; their secrets stay in the Keychain.
+- The config folder location is user-choosable so it can be committed to git (with or without iCloud sync). Script files stay readable for the same reason; their secrets stay in the Keychain. Choosing a folder (Settings › General › Config folder) moves `config.toml`, `themes/` and `modules/` there, or adopts the folder's own `config.toml` if it has one (the previous folder is then left untouched); the location is recorded in `local.toml` `[config] folder` and read at launch. A symlinked folder or file is written through its resolved path, atomically, one line per edit (Story 16.1).
 
 ---
 
