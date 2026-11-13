@@ -66,7 +66,10 @@ keys() { plutil -convert json -o - "$1" | /usr/bin/python3 -c 'import json,sys; 
   fail "Vigie.signed.entitlements keys"
 [ "$(plutil -extract keychain-access-groups.0 raw -o - "$APP/Vigie.signed.entitlements")" = \
   '$(AppIdentifierPrefix)$(PRODUCT_BUNDLE_IDENTIFIER)' ] || fail "keychain access group"
-[ "$(plutil -extract keychain-access-groups raw -o - "$APP/Vigie.signed.entitlements")" = 1 ] || fail "one access group"
+# The notes key group (AD-9): shared by Vigie and Vigie Dev, named after the release bundle id.
+[ "$(plutil -extract keychain-access-groups.1 raw -o - "$APP/Vigie.signed.entitlements")" = \
+  '$(AppIdentifierPrefix)fr.baguettelabs.vigie.notes' ] || fail "notes access group"
+[ "$(plutil -extract keychain-access-groups raw -o - "$APP/Vigie.signed.entitlements")" = 2 ] || fail "two access groups"
 
 # Info.plist and its String Catalog.
 [ "$(plutil -extract LSUIElement raw -o - "$APP/Info.plist")" = true ] || fail "LSUIElement"

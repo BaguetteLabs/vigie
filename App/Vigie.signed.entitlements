@@ -9,6 +9,7 @@
 	<key>keychain-access-groups</key>
 	<array>
 		<string>$(AppIdentifierPrefix)$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+		<string>$(AppIdentifierPrefix)fr.baguettelabs.vigie.notes</string>
 	</array>
 </dict>
 </plist>

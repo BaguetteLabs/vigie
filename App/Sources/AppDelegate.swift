@@ -9,6 +9,7 @@ import GenericTerminal
 import ITermTerminal
 import Integrations
 import ModuleKit
+import Notes
 import OSLog
 import Shelf
 import TerminalAppTerminal
@@ -155,6 +156,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             // EventKit calendars and the Calendar tab (SPEC §7.5, Story 13.1). Off by default; asks access when enabled.
             ModuleDescriptor(manifest: CalendarModule.staticManifest) {
                 CalendarModule(openSettings: { [weak self] pane in self?.openSettings(pane: pane) })
+            },
+            // Encrypted notes: key setup and recovery (SPEC §7.6, Story 15.1). Off by default.
+            ModuleDescriptor(manifest: NotesModule.staticManifest) {
+                NotesModule(openSettings: { [weak self] pane in self?.openSettings(pane: pane) })
             },
             // Script modules runtime (SPEC §7.4, §9); Story 12.1 skeleton, scripts arrive with Stories 12.2–12.5.
             ModuleDescriptor(manifest: IntegrationsModule.staticManifest) { IntegrationsModule() },

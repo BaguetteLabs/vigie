@@ -29,6 +29,8 @@ packages:
     path: ../Packages/Modules/Time
   Calendar:
     path: ../Packages/Modules/Calendar
+  Notes:
+    path: ../Packages/Modules/Notes
   Integrations:
     path: ../Packages/Modules/Integrations
   ClaudeAdapter:
@@ -91,6 +93,7 @@ targets:
       - package: Shelf
       - package: Time
       - package: Calendar
+      - package: Notes
       - package: Integrations
       - package: ClaudeAdapter
       - package: GenericTerminal

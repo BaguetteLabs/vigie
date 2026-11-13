@@ -45,7 +45,8 @@ profile only installs on registered Macs, so this Mac must be registered once.
      Device Name `Sirius`, Device ID (UDID) `00006020-001641040298C01E` (System Information › Hardware ›
      Provisioning UDID) › Continue › Register; then build once with `-allowProvisioningUpdates`.
 3. Check: `codesign -d --entitlements - "<DerivedData>/Build/Products/Debug/Vigie Dev.app"` shows
-   `keychain-access-groups` = `BWMPMACCYZ.fr.baguettelabs.vigie.dev` and
+   `keychain-access-groups` = `BWMPMACCYZ.fr.baguettelabs.vigie.dev` plus `BWMPMACCYZ.fr.baguettelabs.vigie.notes`
+   (the notes key group shared with the release build, AD-9) and
    `com.apple.application-identifier` = `BWMPMACCYZ.fr.baguettelabs.vigie.dev`; Vigie Dev no longer shows the
    "Secrets are unavailable in this build" setup problem.
 
@@ -89,7 +90,8 @@ Continue › Provisioning Profile Name **`Vigie Developer ID`** (exact: `PROVISI
 `App/Config/Signing.xcconfig`) › Generate › Download.
 
 - Check: `security cms -D -i "Vigie_Developer_ID.provisionprofile"` shows `keychain-access-groups` containing
-  `BWMPMACCYZ.*` and `com.apple.application-identifier` `BWMPMACCYZ.fr.baguettelabs.vigie`.
+  `BWMPMACCYZ.*` (the wildcard covers the notes group `BWMPMACCYZ.fr.baguettelabs.vigie.notes`) and
+  `com.apple.application-identifier` `BWMPMACCYZ.fr.baguettelabs.vigie`.
 - To build Release on this Mac, double-click the profile (installs it), then
   `xcodebuild -project App/Vigie.xcodeproj -scheme Vigie -configuration Release build`.
 - For CI: `base64 -i Vigie_Developer_ID.provisionprofile | pbcopy` gives `DEVELOPER_ID_PROFILE` (step 8).
