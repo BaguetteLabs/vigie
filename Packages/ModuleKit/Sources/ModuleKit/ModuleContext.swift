@@ -32,6 +32,9 @@ public protocol ModuleContext: Sendable {
     /// The app-level `[updates]` keys and the price table's location (Story 6.5). Used by `agents.usage` only.
     /// Default: ``NoUpdatesService`` (nothing fetched).
     var updates: any UpdatesService { get }
+    /// The notes encryption key (Story 15.1, AD-9): a working store in the `notes` module's context only.
+    /// Default: ``UnavailableSyncedKeyStore`` (`.notOwner`).
+    var notesKey: any SyncedKeyStore { get }
     /// `os.Logger`, subsystem = bundle id, category = module id. Never log secrets or note content.
     var log: Logger { get }
 }
@@ -40,6 +43,7 @@ extension ModuleContext {
     public var dropZones: any DropZoneDirectory { EmptyDropZoneDirectory() }
     public var scriptFolder: any ScriptFolderService { NoScriptFolder() }
     public var updates: any UpdatesService { NoUpdatesService() }
+    public var notesKey: any SyncedKeyStore { UnavailableSyncedKeyStore() }
 }
 
 /// Error thrown by a service that is declared but not available yet (or not in this build).

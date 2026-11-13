@@ -25,6 +25,7 @@ public struct CoreModuleContext: ModuleContext {
     public let dropZones: any DropZoneDirectory
     public let scriptFolder: any ScriptFolderService
     public let updates: any UpdatesService
+    public let notesKey: any SyncedKeyStore
     public let log: Logger
 
     public init(
@@ -47,8 +48,10 @@ public struct CoreModuleContext: ModuleContext {
         dropZones: any DropZoneDirectory = EmptyDropZoneDirectory(),
         scriptFolder: any ScriptFolderService = NoScriptFolder(),
         updates: any UpdatesService = NoUpdatesService(),
+        notesKey: any SyncedKeyStore = UnavailableSyncedKeyStore(),
         log: Logger
     ) {
+        self.notesKey = notesKey
         self.settings = settings
         self.storage = storage
         self.secrets = secrets
@@ -97,6 +100,9 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
     public let power: CorePowerService
     /// The launch's secret store; each module gets ``KeychainSecretStore/scoped(to:)`` with its id.
     public let secretStore: KeychainSecretStore
+    /// The notes key store (Story 15.1, AD-9): `context.notesKey` of the `notes` module only; every other module
+    /// gets an ``UnavailableSyncedKeyStore``.
+    public let notesKey: any SyncedKeyStore
     /// `context.host` for a module: a ``CoreHostControl`` bound to the Notch Host through a ``NotchHostLink``.
     public let hostControl: @MainActor @Sendable (ModuleID) -> any HostControl
     /// `context.clipboard` for every module: copy-only, on the general pasteboard (Story 9.9).
@@ -130,6 +136,8 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
     ///   - power: the launch's power service; defaults to one reading `[general] prevent_idle_sleep` from
     ///     `configStore` (off without one) and following that key's changes.
     ///   - secretStore: the launch's secret store; defaults to one on the real Keychain for `environment`.
+    ///   - notesKey: the notes key store; defaults to a ``KeychainSyncedKeyStore`` for `environment` (it touches
+    ///     the Keychain only once the `notes` module uses it).
     ///   - hostControl: builds `context.host` per module; defaults to a ``CoreHostControl`` on an unbound
     ///     ``NotchHostLink`` (host requests do nothing).
     ///   - clipboard: `context.clipboard`; defaults to a ``CoreClipboardService`` on the general pasteboard.
@@ -151,6 +159,7 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
         executables: ExecutableResolverImpl? = nil,
         power: CorePowerService? = nil,
         secretStore: KeychainSecretStore? = nil,
+        notesKey: (any SyncedKeyStore)? = nil,
         hostControl: (@MainActor @Sendable (ModuleID) -> any HostControl)? = nil,
         clipboard: (any ClipboardService)? = nil,
         dropZones: (any DropZoneDirectory)? = nil,
@@ -178,6 +187,7 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
             ?? ExecutableResolverImpl(log: Logger(subsystem: environment.logSubsystem, category: "executables"))
         self.power = power ?? Self.makePower(configStore: configStore)
         self.secretStore = secretStore ?? KeychainSecretStore(environment: environment)
+        self.notesKey = notesKey ?? KeychainSyncedKeyStore(environment: environment)
         self.hostControl =
             hostControl ?? { @MainActor id in CoreHostControl(moduleID: id, link: NotchHostLink()) }
         self.clipboard = clipboard ?? CoreClipboardService()
@@ -204,7 +214,9 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
         let activity = CoreActivityLog(moduleID: manifest.id, store: activityStore)
         return CoreModuleContext(
             settings: settings,
-            storage: ModuleStorageImpl(moduleID: manifest.id, environment: environment, logger: log),
+            storage: ModuleStorageImpl(
+                moduleID: manifest.id, environment: environment, logger: log,
+                userFolderResolver: Self.userFolderResolver(settings)),
             secrets: secretStore.scoped(to: manifest.id.rawValue),
             scheduler: CoreScheduler(tracker: tracker),
             hotkeys: CoreHotkeyRegistry(moduleID: manifest.id, center: hotkeyCenter, tracker: tracker),
@@ -231,8 +243,22 @@ public struct CoreModuleContextFactory: ModuleContextFactory {
                 } ?? NoScriptSettings(),
                 installInbox: scriptInstalls),
             updates: CoreUpdatesService(shared: configStore?.shared, priceTable: priceTable),
+            notesKey: manifest.id == Self.notesModuleID ? notesKey : UnavailableSyncedKeyStore(reason: .notOwner),
             log: log
         )
+    }
+
+    /// The one module that holds the notes key (AD-9).
+    static let notesModuleID: ModuleID = "notes"
+
+    /// `context.storage.userFolder(setting:)` (AD-11): the folder a `path` setting resolves to (config, else its
+    /// declared default), `~` expanded.
+    static func userFolderResolver(_ settings: any ModuleSettings) -> @Sendable (String) -> URL? {
+        { key in
+            if let url = settings.value(key, as: URL.self) { return url }
+            guard let path = settings.value(key, as: String.self), !path.isEmpty else { return nil }
+            return URL(fileURLWithPath: (path as NSString).expandingTildeInPath, isDirectory: true)
+        }
     }
 
     /// The `[modules.time.breaks] away_after` key the Away service reads (declared by the Time module, Story

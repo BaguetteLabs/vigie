@@ -1,0 +1,402 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "notes.action.copy": {
+      "comment": "Button: copy the recovery key.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copy"
+          }
+        }
+      }
+    },
+    "notes.action.enterRecoveryKey": {
+      "comment": "Button: unlock notes with the recovery key.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter recovery key"
+          }
+        }
+      }
+    },
+    "notes.action.saved": {
+      "comment": "Button: confirm the recovery key was saved; it is never shown again.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I saved it"
+          }
+        }
+      }
+    },
+    "notes.action.setUp": {
+      "comment": "Button: create the notes key.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set up notes"
+          }
+        }
+      }
+    },
+    "notes.folder.ownBuild": {
+      "comment": "Settings line in Vigie Dev; %@ is the folder path.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This build cannot read the release notes key, so it uses its own folder: %@"
+          }
+        }
+      }
+    },
+    "notes.icloud.statement": {
+      "comment": "Settings statement shown when iCloud Keychain is off or cannot be told.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "If iCloud Keychain is off, your recovery key is the only way to read your notes on another Mac."
+          }
+        }
+      }
+    },
+    "notes.module.name": {
+      "comment": "Module name (sidebar, tab).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notes"
+          }
+        }
+      }
+    },
+    "notes.recovery.error.invalid": {
+      "comment": "Recovery entry refused: malformed or checksum mismatch.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This recovery key has a typo. Check it and try again."
+          }
+        }
+      }
+    },
+    "notes.recovery.error.keychain": {
+      "comment": "Recovery entry refused: Keychain write failed.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The key could not be saved in the Keychain. Try again."
+          }
+        }
+      }
+    },
+    "notes.recovery.error.wrongKey": {
+      "comment": "Recovery entry refused: valid key, other key_id.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This recovery key does not match your notes."
+          }
+        }
+      }
+    },
+    "notes.recovery.field": {
+      "comment": "Field label and placeholder for the recovery key.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recovery key"
+          }
+        }
+      }
+    },
+    "notes.recovery.sentence": {
+      "comment": "Explains the recovery key after setup.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save this key somewhere safe, such as a password manager. It is shown only once. It unlocks your notes on a Mac where iCloud Keychain does not bring the key."
+          }
+        }
+      }
+    },
+    "notes.recovery.title": {
+      "comment": "Kicker above the recovery key shown once after setup.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "RECOVERY KEY"
+          }
+        }
+      }
+    },
+    "notes.setting.clipboardClear": {
+      "comment": "Setting label: delay before the clipboard is cleared after a copy.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clear copied secrets after"
+          }
+        }
+      }
+    },
+    "notes.setting.clipboardClear.help": {
+      "comment": "Setting help for clipboard_clear.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The clipboard is cleared after this delay if it still holds the copied value."
+          }
+        }
+      }
+    },
+    "notes.setting.folder": {
+      "comment": "Setting label: the folder where notes are saved.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notes folder"
+          }
+        }
+      }
+    },
+    "notes.setting.folder.help": {
+      "comment": "Setting help for the notes folder.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Where each encrypted note is saved, one file per note. Local to this Mac."
+          }
+        }
+      }
+    },
+    "notes.setting.hotkey": {
+      "comment": "Setting label: the shortcut that opens the floating notes panel.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open notes"
+          }
+        }
+      }
+    },
+    "notes.setting.hotkey.help": {
+      "comment": "Setting help for the notes hotkey.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opens the floating notes panel."
+          }
+        }
+      }
+    },
+    "notes.settings.key": {
+      "comment": "Settings section title.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notes key"
+          }
+        }
+      }
+    },
+    "notes.setup.failed": {
+      "comment": "Settings: setup failed.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The notes key could not be created. Try again."
+          }
+        }
+      }
+    },
+    "notes.setup.sentence": {
+      "comment": "Setup card sentence.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vigie creates one key that encrypts your notes and syncs it through iCloud Keychain. You save a recovery key."
+          }
+        }
+      }
+    },
+    "notes.setup.title": {
+      "comment": "Setup card title.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set up encrypted notes"
+          }
+        }
+      }
+    },
+    "notes.setup.topic": {
+      "comment": "Setup card topic, shown as SETUP · NOTES.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "NOTES"
+          }
+        }
+      }
+    },
+    "notes.status.checking": {
+      "comment": "Settings status line.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Checking the notes key…"
+          }
+        }
+      }
+    },
+    "notes.status.mismatch": {
+      "comment": "Settings status line: folder key_id differs from the held key.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your notes use a key this Mac does not hold. Enter your recovery key."
+          }
+        }
+      }
+    },
+    "notes.status.noKey": {
+      "comment": "Settings status line.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notes are not set up on this Mac."
+          }
+        }
+      }
+    },
+    "notes.status.ready": {
+      "comment": "Settings status line; %@ is the 16-character key id.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notes key ready (key id %@)."
+          }
+        }
+      }
+    },
+    "notes.status.readySession": {
+      "comment": "Settings status line when the key is only in memory; %@ is the key id.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notes key held until Vigie quits (key id %@)."
+          }
+        }
+      }
+    },
+    "notes.status.unavailable": {
+      "comment": "Settings status line.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keychain unavailable in this build."
+          }
+        }
+      }
+    },
+    "notes.status.waiting": {
+      "comment": "Settings status line: the key exists elsewhere.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waiting for iCloud Keychain, or enter your recovery key."
+          }
+        }
+      }
+    },
+    "notes.unavailable.label": {
+      "comment": "Empty state label: the build cannot use the notes key store.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "KEYCHAIN UNAVAILABLE IN THIS BUILD"
+          }
+        }
+      }
+    },
+    "notes.unavailable.sentence": {
+      "comment": "Empty state sentence: the build cannot use the notes key store.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This build cannot keep the notes key. Enter your recovery key to unlock notes until Vigie quits."
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

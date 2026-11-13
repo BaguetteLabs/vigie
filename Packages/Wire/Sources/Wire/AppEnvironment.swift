@@ -16,6 +16,10 @@ public struct AppEnvironment: Sendable {
     /// Longest socket path (UTF-8 bytes) we accept; `sun_path` is 104 bytes, minus a safety margin.
     public static let maxSocketPathBytes = 100
 
+    /// The release app's bundle id. Vigie Dev names it too: the notes key lives in the release app's
+    /// `<TeamID>.<release bundle id>.notes` access group, shared by both builds (AD-9).
+    public static let releaseBundleID = "fr.baguettelabs.vigie"
+
     /// Environment variable that overrides the config folder in dev builds.
     public static let configDirVariable = "VIGIE_CONFIG_DIR"
 
@@ -69,7 +73,7 @@ public struct AppEnvironment: Sendable {
         self.flavor = flavor
         switch flavor {
         case .release:
-            bundleID = "fr.baguettelabs.vigie"
+            bundleID = Self.releaseBundleID
             displayName = "Vigie"
             cliName = "vigie"
             urlScheme = "vigie"
