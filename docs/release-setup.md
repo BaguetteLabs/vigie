@@ -139,14 +139,15 @@ build a release in that state (step "Updater configured for this release host").
 
 ## 7. GitHub organization, public releases repository and its token (To do, A49, A86)
 
-Choose the organization that hosts the private code repository, the public releases-only repository
+Choose the organization that hosts the code repository (public since 2026-11-25), the public releases-only repository
 (`<org>/vigie-releases`, SPEC §12.1) and the Homebrew tap (`<org>/homebrew-vigie`). The appcast URL and the cask
 are built from it (Stories 6.2, 6.3).
 
 **Public release host (decided 2026-11-06, SPEC §12.1, AD-20):** a separate **public** GitHub repository that only
-holds releases. GitHub Releases of the private code repository are not an option: visitors without access to the
-code cannot see them, so Sparkle and Homebrew could not download anything. `release.yml` publishes there with a
-token, and the private repository's own `GITHUB_TOKEN` stays read-only.
+holds releases. GitHub Releases of the code repository were ruled out because it was private (visitors without access to the
+code could not see them); it is public since 2026-11-25, so that reason no longer holds, and the hosting decision is
+unchanged. `release.yml` publishes there with a
+token, and the code repository's own `GITHUB_TOKEN` stays read-only.
 
 0. In `App/Config/Updates.xcconfig` replace the placeholder `VIGIE_RELEASE_REPO = OWNER/vigie-releases` with
    `<org>/vigie-releases` and commit (the same value as the `RELEASE_REPO` variable, step 8). The app's feed is
@@ -167,7 +168,7 @@ token, and the private repository's own `GITHUB_TOKEN` stays read-only.
 
 ## 8. GitHub `release` environment and secrets (To do)
 
-Private code repository › Settings › Environments › New environment `release` › Configure:
+Code repository › Settings › Environments › New environment `release` › Configure:
 
 - Deployment protection rules: **Required reviewers** › Romain; tick Prevent self-review only if a second
   maintainer exists.

@@ -193,7 +193,7 @@ graph TD
 - **Binds:** App target, VigieCLI, VigieCore Permissions, Terminals/*, release
 - **Prevents:** features that work in debug and fail silently in the hardened, notarized build; missing usage strings; entitlement sprawl; permissions requested for features that are off; updates that depend on a public source repository.
 - **Rule:** Vigie.app is unsandboxed, Hardened Runtime on, Developer ID signed with an embedded Developer ID provisioning profile (explicit App ID, Keychain Sharing), notarized. Allowed entitlements: `com.apple.security.automation.apple-events`, `keychain-access-groups` (plus the application and team identifiers the profile requires); nothing else without a new AD. The bundled CLI is signed with Hardened Runtime and no entitlements. Info.plist carries `LSUIElement = YES`, `NSAppleEventsUsageDescription`, `NSCalendarsFullAccessUsageDescription`, `CFBundleURLTypes` for the `vigie` scheme (`vigie-dev` in dev builds, AD-17), and `NSServices` with one entry, `Stash in Vigie` (file URLs and plain text), handled by the app target's services provider and routed to drop zones (AD-19; amended 2026-11-07). No Share extension or other app extension target in v1. `Permission` has cases `.accessibility`, `.automation(bundleID)`, `.calendar`, `.notifications`, `.screenRecording`; folder access is on-demand TCC. `.screenRecording` is requested only if the Privacy mode detection method chosen by its spike needs it, and only while automatic detection is turned on (AD-24). The Developer ID provisioning profile is stored as a `release`-environment secret and installed by `release.yml`; the `.dev` Development profile is Xcode-managed on each registered Mac (automatic signing) and is not stored in GitHub, since CI never signs Debug builds (amended 2026-11-12, Story 6.2).
-  - **Release hosting:** the code repository is private. Signed DMGs, update zips and the Sparkle appcast are published to a public location (a public releases-only GitHub repository or a static host); `SUFeedURL` and the Homebrew cask point only there. `release.yml` in the private repo publishes to it; no source is published. (Story 6.2: the host is the public releases-only GitHub repository of SPEC §12.1, named by the `RELEASE_REPO` variable, written with a token scoped to that repository, `RELEASE_REPO_TOKEN`.)
+  - **Release hosting:** the code repository is public since 2026-11-25 (was private from 2026-11-06; amended 2026-11-25 for this fact only, the hosting below is unchanged). Signed DMGs, update zips and the Sparkle appcast are published to a public location (a public releases-only GitHub repository or a static host); `SUFeedURL` and the Homebrew cask point only there. `release.yml` in the code repository publishes to it; no source is published there. (Story 6.2: the host is the public releases-only GitHub repository of SPEC §12.1, named by the `RELEASE_REPO` variable, written with a token scoped to that repository, `RELEASE_REPO_TOKEN`.)
 
 ### AD-21 — Process model and single instance [ADOPTED]
 
@@ -255,7 +255,7 @@ graph TD
 | Hotkeys | Registered only through `context.hotkeys` (KeyboardShortcuts), names `<module id>.<name>`; peek shortcuts registered only while the peek is visible; the shortcut Recorder appears only in the Settings window; defaults never use Option-only modifiers (blocked on macOS 15.0–15.1) |
 | External executables | Resolved only through `context.executables` / `AdapterContext.executables`; never `Process` with a bare name |
 | Tests | Unit tests per package with `swift test`; CI also builds and tests through `xcodebuild` (AD-15). CI floor: SessionStore transitions (incl. out-of-order, replay, wake), arbitration, ConfigStore patcher round-trip corpus, spool/replay/launch order, usage ingest, adapter fixtures, theme regeneration diff, locale check. Adapter fixtures under `Packages/Adapters/<Name>/Tests/Fixtures/<cli-version>/` |
-| Release | SPEC §12 is binding except hosting (AD-20): release only from `v*.*.*` tags on `master`, secrets and provisioning profiles only in the `release` environment, CI never signs; artifacts and appcast go to the public releases host, source stays private. The app is licensed under the GNU GPLv3 only (`GPL-3.0-only`, decided 2026-11-25; it was closed source, all rights reserved, from 2026-11-06) |
+| Release | SPEC §12 is binding except hosting (AD-20): release only from `v*.*.*` tags on `master`, secrets and provisioning profiles only in the `release` environment, CI never signs; artifacts and appcast go to the public releases host (hosting unchanged); the code repository is public since 2026-11-25 (was private from 2026-11-06). The app is licensed under the GNU GPLv3 only (`GPL-3.0-only`, decided 2026-11-25; it was closed source, all rights reserved, from 2026-11-06) |
 
 ## Stack
 
@@ -336,7 +336,7 @@ flowchart TB
   Link --> App
   App -->|update checks| GH[Public releases host: appcast, DMG, zip]
   App -->|install / update fetch, HTTPS| SR[Script repository: .md + .sig]
-  CI[GitHub Actions in private repo: ci.yml / release.yml] --> GH
+  CI[GitHub Actions in the code repo: ci.yml / release.yml] --> GH
   CI --> Tap[Homebrew tap]
 ```
 

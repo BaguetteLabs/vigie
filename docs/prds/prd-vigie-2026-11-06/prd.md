@@ -463,7 +463,7 @@ Vigie's position: **a lookout, not a remote control.** It differentiates on:
 6. **Privacy by construction:** no telemetry, Keychain secrets, encrypted notes, Privacy mode.
 7. **Light footprint**, measured (SM-4).
 
-Vigie does not try to win on agent count or on all-in-one breadth. The app is licensed under the GNU GPLv3 (decided 2026-11-25; it started closed source), but its source repository stays private (2026-11-06, AD-20), so the research's "open-source hybrid" slot is not claimed for now; positioning rests on items 1 to 7.
+Vigie does not try to win on agent count or on all-in-one breadth. The app is licensed under the GNU GPLv3 (decided 2026-11-25; it started closed source), and its source repository `BaguetteLabs/vigie` is public since 2026-11-25 (was private from 2026-11-06, AD-20). The research's "open-source hybrid" slot was not claimed because the source was private; it stays unclaimed for now (positioning unchanged, open for the user to revisit) and positioning rests on items 1 to 7.
 
 ## 8. Success Metrics
 
@@ -486,7 +486,7 @@ No input document set these targets; this PRD proposes them, confirmed in §11.
 
 ## 9. Open Questions
 
-1. **Business model.** Decided 2026-11-25: the app is licensed under the GNU GPLv3 only (`GPL-3.0-only`; supersedes the 2026-11-06 decision "closed source with no license, all rights reserved"). Unchanged: no outside contributions to the app for now (2026-11-06, not changed by the license) and a private code repository. Still open: paid or free at public release, and the Script repository's own license (it is public). Distribution consequence: releases and the update feed must be hosted publicly even though the code repository is private (addendum §4). Donationware and the EXPERIENCE.md Settings Support pane stay superseded (2026-11-06) until a model is chosen; the 2026-11-25 license change does not reinstate them.
+1. **Business model.** Decided 2026-11-25: the app is licensed under the GNU GPLv3 only (`GPL-3.0-only`; supersedes the 2026-11-06 decision "closed source with no license, all rights reserved"). Unchanged: no outside contributions to the app for now (2026-11-06, not changed by the license) and the code repository public since 2026-11-25 (was private from 2026-11-06). Still open: paid or free at public release, and the Script repository's own license (it is public). Distribution consequence: releases and the update feed must be hosted publicly (addendum §4; the code repository was private when this was decided and is public since 2026-11-25, the hosting decision is unchanged). Donationware and the EXPERIENCE.md Settings Support pane stay superseded (2026-11-06) until a model is chosen; the 2026-11-25 license change does not reinstate them.
 2. **Privacy mode detection.** Whether macOS 15+ lets Vigie reliably detect screen sharing and recording (addendum §2).
 3. **Script repository review policy** (what is accepted, who may merge); its license is part of question 1.
 4. ~~**Epics reconciliation.**~~ Resolved: epics.md is reconciled with this PRD and all assumptions A1–A90 are ruled.
