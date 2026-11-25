@@ -24,6 +24,11 @@ public final class DispatchDirectoryWatcher: DirectoryWatching {
         let handler: @MainActor () -> Void
         var sources: [any DispatchSourceFileSystemObject] = []
         var retryScheduled = false
+        /// Bumped by every `arm`: a registration callback of an older generation is stale.
+        var generation = 0
+        /// Sources of the current generation whose kernel watch is live, and how many there are in all.
+        var registered = 0
+        var expected = 0
 
         init(directory: URL, files: [String], handler: @escaping @MainActor () -> Void) {
             self.directory = directory
@@ -41,6 +46,11 @@ public final class DispatchDirectoryWatcher: DirectoryWatching {
 
     private var watches: [UUID: Watch] = [:]
     private let retryInterval: Duration
+    /// Descriptors opened and not yet closed by a cancel handler (a leak check for tests).
+    private(set) var openDescriptors = 0
+    /// Test seam: runs with a source's path once the source is built, before it is resumed (so before the
+    /// kernel watch exists).
+    var beforeResume: (@MainActor (String) -> Void)?
 
     /// - Parameter retryInterval: how often to retry opening a directory that disappeared.
     public init(retryInterval: Duration = .seconds(1)) {
@@ -64,9 +74,14 @@ public final class DispatchDirectoryWatcher: DirectoryWatching {
     private func arm(_ id: UUID) -> Bool {
         guard let watch = watches[id] else { return false }
         watch.cancelSources()
+        watch.generation += 1
+        watch.registered = 0
+        watch.expected = 0
+        defer { watch.expected = watch.sources.count }
         guard
             let directorySource = makeSource(
-                path: watch.directory.path, mask: [.write, .rename, .delete, .link], id: id)
+                path: watch.directory.path, mask: [.write, .rename, .delete, .link], id: id,
+                generation: watch.generation)
         else {
             scheduleRetry(id)
             return false
@@ -74,7 +89,9 @@ public final class DispatchDirectoryWatcher: DirectoryWatching {
         watch.sources.append(directorySource)
         for file in watch.files {
             let path = watch.directory.appendingPathComponent(file).path
-            if let source = makeSource(path: path, mask: [.write, .extend, .rename, .delete], id: id) {
+            if let source = makeSource(
+                path: path, mask: [.write, .extend, .rename, .delete], id: id, generation: watch.generation)
+            {
                 watch.sources.append(source)
             }
         }
@@ -82,17 +99,36 @@ public final class DispatchDirectoryWatcher: DirectoryWatching {
     }
 
     private func makeSource(
-        path: String, mask: DispatchSource.FileSystemEvent, id: UUID
+        path: String, mask: DispatchSource.FileSystemEvent, id: UUID, generation: Int
     ) -> (any DispatchSourceFileSystemObject)? {
         let fd = open(path, O_EVTONLY)
         guard fd >= 0 else { return nil }
+        openDescriptors += 1
         let source = DispatchSource.makeFileSystemObjectSource(fileDescriptor: fd, eventMask: mask, queue: .main)
         source.setEventHandler { [weak self] in
             MainActor.assumeIsolated { self?.fired(id) }
         }
-        source.setCancelHandler { close(fd) }
+        // libdispatch registers the kernel watch asynchronously after `resume()`; whatever changed before that
+        // raised no event, so one read is requested once every source of this generation is live.
+        source.setRegistrationHandler { [weak self] in
+            MainActor.assumeIsolated { self?.registered(id, generation: generation) }
+        }
+        source.setCancelHandler { [weak self] in
+            close(fd)
+            MainActor.assumeIsolated { self?.openDescriptors -= 1 }
+        }
+        beforeResume?(path)
         source.resume()
         return source
+    }
+
+    /// One source of `generation` is live. When the last one is, the handler runs once, so a change made
+    /// between the caller's read and the registration is not lost. Never re-arms (no loop); a stale
+    /// generation, a cancelled source or a stopped watch does nothing.
+    private func registered(_ id: UUID, generation: Int) {
+        guard let watch = watches[id], watch.generation == generation else { return }
+        watch.registered += 1
+        if watch.registered == watch.expected { watch.handler() }
     }
 
     private func fired(_ id: UUID) {

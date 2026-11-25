@@ -82,13 +82,15 @@ public struct CoreScriptFolder: ScriptFolderService {
     }
 }
 
-/// Re-arms its watcher with the current `*.md` names after every event.
+/// Re-arms its watcher when the `*.md` names change; every event reports a change.
 @MainActor
 final class FolderWatch {
     private var folder: URL
     private let watcher: any DirectoryWatching
     private let onChange: @MainActor () -> Void
     private var stopped = false
+    /// The `*.md` names the current watch was armed with.
+    private var armedNames: [String] = []
 
     init(folder: URL, watcher: any DirectoryWatching, onChange: @escaping @MainActor () -> Void) {
         self.folder = folder
@@ -98,10 +100,14 @@ final class FolderWatch {
 
     func arm() {
         guard !stopped else { return }
+        let names = Self.markdownFiles(in: folder)
+        armedNames = names
         watcher.stopAll()
-        watcher.watch(folder, files: Self.markdownFiles(in: folder)) { [weak self] in
+        watcher.watch(folder, files: names) { [weak self] in
             guard let self, !self.stopped else { return }
-            self.arm()
+            // The watcher may call this once more after each (re)arm, when its watch goes live: re-arming then
+            // would never settle, so the watch is renewed only when the file list changed.
+            if Self.markdownFiles(in: self.folder) != self.armedNames { self.arm() }
             self.onChange()
         }
     }
