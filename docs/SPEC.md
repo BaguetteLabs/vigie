@@ -675,6 +675,7 @@ v1 widget types: **status** (e.g. a website health check), **number** (stats), *
 - **Settings** is a regular macOS window with native controls that edits the config files (§4.4, §11). Panes are listed in EXPERIENCE.md. Reached from setup-problem alerts, empty states, `⌘,`, a settings icon in the expanded view, and the menu shown by right-clicking the closed notch (`Settings…`, `Quit Vigie`).
 - **Onboarding** (first launch, guided, each step skippable): theme, agent connections and hooks (diff confirmation, §8.3), Accessibility permission, display choice (always asks about non-notch displays, whatever the setup), sounds on/off (skipping it leaves sounds off), launch at login (preselected on). Vigie never shows a Dock icon.
 - **Before onboarding exists (v0.1–v0.3):** a first launch on a Mac with a display without a notch shows a one-time prompt in the expanded view asking where Vigie should appear, and Settings › General has a `Launch at login` toggle.
+- **Copy diagnostics** (Settings › General, Story 17.4, AD-16): one button puts a plain-text report on the clipboard (app version and build, macOS, display kinds, modules, adapter versions and support status, setup problems, config keys, the last 200 log lines of Vigie's subsystem); secrets, tokens and note content are left out and nothing is sent (`docs/diagnostics.md`).
 
 ### 10.2 Appearance and sounds
 

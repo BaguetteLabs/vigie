@@ -51,6 +51,10 @@ public final class SettingsController {
     public let configFolder: ConfigFolderModel
     /// Settings › Sync (Story 16.2).
     public let sync: SyncPaneModel
+    /// Settings › General › Copy diagnostics (Story 17.4).
+    public private(set) var diagnostics: DiagnosticsModel!
+    /// The Notifier, for the diagnostics' setup problems; nil falls back to the registry's context factory's.
+    public var alertCenter: AlertCenter?
     /// The app's updater (Story 6.3), for Settings › Updates › Check for Updates…. The App sets it; nil (tests, or
     /// before assembly) shows the button disabled.
     public var updater: (any UpdaterControlling)?
@@ -114,6 +118,19 @@ public final class SettingsController {
         for manifest in manifests { configStore.register(manifest: manifest) }
         panes = SettingsPaneCatalog.corePanes() + manifests.map(SettingsPaneCatalog.modulePane)
         extraHomeProviders = { [weak self] in self?.additionalHomeProviders() ?? [] }
+        diagnostics = makeDiagnostics()
+    }
+
+    /// Copy diagnostics on in-process state only: this controller's stores and the registry's context factory
+    /// (its Notifier and clipboard service).
+    private func makeDiagnostics() -> DiagnosticsModel {
+        let factory = registry.contextFactory as? CoreModuleContextFactory
+        let sync = sync.controller
+        let collector = DiagnosticsCollector.live(
+            configStore: configStore, registry: registry, secretStore: secretStore,
+            alertCenter: { [weak self] in self?.alertCenter ?? factory?.alertCenter },
+            syncOn: { sync.isOn }, iCloudAvailable: { sync.isAvailable })
+        return DiagnosticsModel(collector: collector, clipboard: factory?.clipboard ?? CoreClipboardService())
     }
 
     /// Running modules that offer a `homeCard()`, in registry order (Settings › Home).

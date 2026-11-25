@@ -1,6 +1,78 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "settings.section.diagnostics": {
+      "comment": "Settings › General section header: Copy diagnostics (Story 17.4).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diagnostics"
+          }
+        }
+      }
+    },
+    "settings.diagnostics.label": {
+      "comment": "Settings › General › Diagnostics row label.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copy diagnostics"
+          }
+        }
+      }
+    },
+    "settings.diagnostics.help": {
+      "comment": "Settings › General › Diagnostics row help: what the copied text holds.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App, system, display, module, agent and recent log details for a bug report. Secrets, tokens and note content are left out, and nothing is sent anywhere. Review the text before sharing it."
+          }
+        }
+      }
+    },
+    "settings.diagnostics.copy": {
+      "comment": "Button: build the diagnostics text and copy it to the clipboard.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copy Diagnostics"
+          }
+        }
+      }
+    },
+    "settings.diagnostics.copied": {
+      "comment": "Inline status after copying diagnostics; %@ is the size, e.g. 12 KB.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "COPIED · %@"
+          }
+        }
+      }
+    },
+    "settings.diagnostics.logsUnavailable": {
+      "comment": "Inline error: the diagnostics were copied without their log lines.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copied without recent log lines: the log could not be read."
+          }
+        }
+      }
+    },
     "settings.sync.status.off": {
       "comment": "Sync status line when iCloud sync is off.",
       "extractionState": "manual",

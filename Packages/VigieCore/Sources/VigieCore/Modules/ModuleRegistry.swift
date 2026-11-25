@@ -65,7 +65,7 @@ public final class ModuleRegistry {
     }
 
     @ObservationIgnored private let enablement: any ModuleEnablement
-    @ObservationIgnored private let contextFactory: any ModuleContextFactory
+    @ObservationIgnored let contextFactory: any ModuleContextFactory
     @ObservationIgnored private let logger: Logger
     @ObservationIgnored private let permissions: PermissionsCoordinator
     @ObservationIgnored private var waiters: [ModuleID: (permission: Permission, task: Task<Void, Never>)] = [:]

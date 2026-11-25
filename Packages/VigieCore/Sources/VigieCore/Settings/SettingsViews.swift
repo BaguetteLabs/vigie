@@ -98,6 +98,7 @@ struct SettingsPaneView: View {
                 if pane.id == "general" {
                     ConfigFolderSection(model: controller.configFolder)
                     CLISection(controller: controller)
+                    DiagnosticsSection(model: controller.diagnostics)
                     Section {
                         Button {
                             controller.selectedPaneID = "activity"
