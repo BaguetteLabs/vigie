@@ -1,0 +1,1 @@
+Delegate all code searching and reading to the Explore subagent, research outside this codebase to the researcher subagent, and all file edits and test runs to the worker subagent; keep planning and the final review in the main session.
