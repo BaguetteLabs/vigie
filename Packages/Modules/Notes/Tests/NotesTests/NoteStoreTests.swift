@@ -276,6 +276,80 @@ final class FakeConflicts: ConflictVersionsProviding, @unchecked Sendable {
         watched.stop()
     }
 
+    @Test func aFolderCreatedBeforeTheRegistrationIsWatched() async throws {
+        let watcher = NotesFolderWatcher(debounce: .milliseconds(20))
+        var created = false
+        // The folder appears after the ancestor was chosen, before the kernel watch exists: no event says so.
+        watcher.beforeResume = { [temp] _ in
+            guard !created else { return }
+            created = true
+            try? temp.create()
+        }
+        var calls = 0
+        watcher.start(temp.folder) { calls += 1 }
+        await waitFor { watcher.watchesFolder }
+        #expect(watcher.watchesFolder)
+        try temp.writeNote("late", keyID: "k")
+        await waitFor { calls > 0 }
+        #expect(calls > 0)
+        watcher.stop()
+    }
+
+    @Test func aFileWrittenBeforeTheRegistrationReachesTheHandler() async throws {
+        try temp.create()
+        let watcher = NotesFolderWatcher(debounce: .milliseconds(20))
+        watcher.beforeResume = { [temp] _ in try? temp.writeNote("early", keyID: "k") }
+        var calls = 0
+        watcher.start(temp.folder) { calls += 1 }
+        await waitFor { calls > 0 }
+        #expect(calls > 0)
+        watcher.stop()
+    }
+
+    @Test func stoppingBeforeTheRegistrationLeavesNothingArmed() async throws {
+        try temp.create()
+        let watcher = NotesFolderWatcher(debounce: .milliseconds(20))
+        var calls = 0
+        watcher.start(temp.folder) { calls += 1 }
+        watcher.stop()
+        #expect(!watcher.watchesFolder)
+        await waitFor { watcher.openDescriptors == 0 }
+        try await Task.sleep(for: .milliseconds(100))
+        try temp.writeNote("after", keyID: "k")
+        try await Task.sleep(for: .milliseconds(100))
+        #expect(calls == 0 && watcher.openDescriptors == 0)
+    }
+
+    @Test func aWatcherDroppedWithoutStopIsDeallocated() async throws {
+        try temp.create()
+        weak var weakWatcher: NotesFolderWatcher?
+        do {
+            let watcher = NotesFolderWatcher(debounce: .milliseconds(20))
+            weakWatcher = watcher
+            watcher.start(temp.folder) {}
+            try await Task.sleep(for: .milliseconds(50))
+        }
+        await waitFor { weakWatcher == nil }
+        #expect(weakWatcher == nil)
+    }
+
+    @Test func repeatedArmAndStopLeakNoDescriptor() async throws {
+        try temp.create()
+        let watcher = NotesFolderWatcher(debounce: .milliseconds(20))
+        for _ in 0..<50 {
+            watcher.start(temp.folder) {}
+            watcher.stop()
+        }
+        watcher.start(temp.folder) {}
+        try temp.writeNote("one", keyID: "k")
+        try temp.writeNote("two", keyID: "k")
+        await waitFor { watcher.openDescriptors == 1 }
+        #expect(watcher.openDescriptors == 1)
+        watcher.stop()
+        await waitFor { watcher.openDescriptors == 0 }
+        #expect(watcher.openDescriptors == 0)
+    }
+
     // MARK: iCloud placeholders
 
     @Test func datalessPlaceholdersAreDownloadingAndKeepTheLastGoodValue() async throws {
