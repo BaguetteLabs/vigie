@@ -255,7 +255,7 @@ graph TD
 | Hotkeys | Registered only through `context.hotkeys` (KeyboardShortcuts), names `<module id>.<name>`; peek shortcuts registered only while the peek is visible; the shortcut Recorder appears only in the Settings window; defaults never use Option-only modifiers (blocked on macOS 15.0–15.1) |
 | External executables | Resolved only through `context.executables` / `AdapterContext.executables`; never `Process` with a bare name |
 | Tests | Unit tests per package with `swift test`; CI also builds and tests through `xcodebuild` (AD-15). CI floor: SessionStore transitions (incl. out-of-order, replay, wake), arbitration, ConfigStore patcher round-trip corpus, spool/replay/launch order, usage ingest, adapter fixtures, theme regeneration diff, locale check. Adapter fixtures under `Packages/Adapters/<Name>/Tests/Fixtures/<cli-version>/` |
-| Release | SPEC §12 is binding except hosting (AD-20): release only from `v*.*.*` tags on `master`, secrets and provisioning profiles only in the `release` environment, CI never signs; artifacts and appcast go to the public releases host, source stays private. The app is closed source with no license (all rights reserved) |
+| Release | SPEC §12 is binding except hosting (AD-20): release only from `v*.*.*` tags on `master`, secrets and provisioning profiles only in the `release` environment, CI never signs; artifacts and appcast go to the public releases host, source stays private. The app is licensed under the GNU GPLv3 only (`GPL-3.0-only`, decided 2026-11-25; it was closed source, all rights reserved, from 2026-11-06) |
 
 ## Stack
 

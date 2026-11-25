@@ -22,7 +22,7 @@ Product scope, module system, adapters, config format and roadmap live in `SPEC.
 | Form factor | Desktop only. On a MacBook with a physical notch, Vigie draws around the notch. On plain displays (external monitors, Mac mini/Studio, iMac without notch) it draws a virtual notch (SPEC §5.5). Dynamic Island Macs run in plain/fallback mode (SPEC §14.10). |
 | UI system | None. Notch surfaces are custom, styled by `DESIGN.md` tokens. Settings is a regular macOS window with native controls. |
 | Visual reference | `DESIGN.md` (theme family: Chrome Hologram default, Twin Metal Tactical; each light and dark). |
-| Stakes | Hobby / dogfooding first, public release once stable; closed source for now, business model undecided (SPEC §2.1). |
+| Stakes | Hobby / dogfooding first, public release once stable; GNU GPLv3 since 2026-11-25 (was closed source from 2026-11-06), business model undecided (SPEC §2.1). |
 | Language | English first. All strings go through i18n from the first commit; other languages later. |
 
 ## Information Architecture

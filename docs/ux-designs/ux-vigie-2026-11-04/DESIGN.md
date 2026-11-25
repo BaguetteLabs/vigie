@@ -1,6 +1,6 @@
 ---
 name: Vigie
-description: Theme family for a macOS notch companion (closed source for now, business model undecided; SPEC §2.1). One shared base (geometry, layout, motion grammar) and two built-in variants, Chrome Hologram (default) and Twin Metal Tactical, each in light and dark. Sci-fi instrument aesthetic, strictly contained inside the notch.
+description: Theme family for a macOS notch companion (GNU GPLv3 since 2026-11-25, was closed source from 2026-11-06; business model undecided; SPEC §2.1). One shared base (geometry, layout, motion grammar) and two built-in variants, Chrome Hologram (default) and Twin Metal Tactical, each in light and dark. Sci-fi instrument aesthetic, strictly contained inside the notch.
 status: final
 updated: 2026-11-07
 sources:

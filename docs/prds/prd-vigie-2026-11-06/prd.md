@@ -2,7 +2,7 @@
 title: Vigie PRD
 status: final
 created: 2026-11-06
-updated: 2026-11-07
+updated: 2026-11-25
 ---
 
 # PRD: Vigie
@@ -44,7 +44,7 @@ It should feel like a quiet sci-fi instrument: metal, thin rings, uppercase read
 
 1. **Now:** the author, Romain (solo developer, MacBook and Mac Studio, Claude Code and Codex in Warp).
 2. **Next:** a few invited developers, before any public release. Léa (UJ-3, UJ-7) stands for them: a backend developer on a MacBook Pro with an external display, Codex for work and Claude Code on the side, in iTerm2.
-3. **Later:** public release once stable. The app is closed source for now; paid or free is undecided (§9).
+3. **Later:** public release once stable. The app is licensed under the GNU GPLv3 (decided 2026-11-25, §9); paid or free is undecided (§9).
 
 Primary user at every stage: a developer on macOS 15+ running CLI coding agents. Secondary: anyone who wants only the Shelf, Time, Calendar or Notes modules; they must get those and nothing else (FR-4).
 
@@ -445,7 +445,7 @@ No cut line: scope stays as listed; implementation will be mostly AI-generated.
 - Public script website with install buttons: after v1 (the repository and links ship in v1).
 - Natural-language timer entry: later.
 - Dynamic Island display mode, touch input, menu bar fallback mode: later, hardware-gated.
-- Community Adapters (OpenCode, Aider, Cursor CLI) and further terminals: not before outside contributions are accepted (the app is closed source for now).
+- Community Adapters (OpenCode, Aider, Cursor CLI) and further terminals: not before outside contributions are accepted (no outside contributions to the app for now, 2026-11-06; the license is the GNU GPLv3, decided 2026-11-25).
 - Script-raised alerts, script sandboxing, list widgets; Touch ID for notes; full VoiceOver; calendar week view; Home card sizes and an in-place Home edit mode.
 
 ## 7. Positioning
@@ -463,7 +463,7 @@ Vigie's position: **a lookout, not a remote control.** It differentiates on:
 6. **Privacy by construction:** no telemetry, Keychain secrets, encrypted notes, Privacy mode.
 7. **Light footprint**, measured (SM-4).
 
-Vigie does not try to win on agent count or on all-in-one breadth. The app starts closed source, so the research's "open-source hybrid" slot is not claimed for now; positioning rests on items 1 to 7.
+Vigie does not try to win on agent count or on all-in-one breadth. The app is licensed under the GNU GPLv3 (decided 2026-11-25; it started closed source), but its source repository stays private (2026-11-06, AD-20), so the research's "open-source hybrid" slot is not claimed for now; positioning rests on items 1 to 7.
 
 ## 8. Success Metrics
 
@@ -486,7 +486,7 @@ No input document set these targets; this PRD proposes them, confirmed in §11.
 
 ## 9. Open Questions
 
-1. **Business model.** Decided for now: the app repository is closed source with no license (all rights reserved); no outside contributions to the app. Still open: paid or free at public release, and the Script repository's own license (it is public). Distribution consequence: releases and the update feed must be hosted publicly even though the code repository is private (addendum §4). SPEC §2 and §2.1 (GPL-3.0, donationware) and the EXPERIENCE.md Settings Support pane are superseded until a model is chosen.
+1. **Business model.** Decided 2026-11-25: the app is licensed under the GNU GPLv3 only (`GPL-3.0-only`; supersedes the 2026-11-06 decision "closed source with no license, all rights reserved"). Unchanged: no outside contributions to the app for now (2026-11-06, not changed by the license) and a private code repository. Still open: paid or free at public release, and the Script repository's own license (it is public). Distribution consequence: releases and the update feed must be hosted publicly even though the code repository is private (addendum §4). Donationware and the EXPERIENCE.md Settings Support pane stay superseded (2026-11-06) until a model is chosen; the 2026-11-25 license change does not reinstate them.
 2. **Privacy mode detection.** Whether macOS 15+ lets Vigie reliably detect screen sharing and recording (addendum §2).
 3. **Script repository review policy** (what is accepted, who may merge); its license is part of question 1.
 4. ~~**Epics reconciliation.**~~ Resolved: epics.md is reconciled with this PRD and all assumptions A1–A90 are ruled.
@@ -499,7 +499,7 @@ No input document set these targets; this PRD proposes them, confirmed in §11.
 | Agent CLIs change hooks or log formats often | Wrong or missing Status | Version gating, fixtures per Adapter, honest "unsupported" (FR-17) |
 | Unofficial usage endpoints break or rate-limit | Wrong quota | Opt-in, isolated, stale indicator (FR-30); local logs first |
 | Apple ships native agent or Live Activity features in the notch | Reduced need | Stay focused on what Apple won't do: cross-agent, scripts, terminal focus |
-| Single maintainer, closed source | Stalls; no outside fixes to the app | Plain-text config, scripts as extension point (public Script repository), small dependency list |
+| Single maintainer; no outside contributions to the app for now | Stalls; no outside fixes to the app | Plain-text config, scripts as extension point (public Script repository), small dependency list |
 | Community scripts run arbitrary code | User harm, reputation | Confirmation per Mac, diff on update, plain warning; repository review covers only repository scripts, and links from other sites get a stronger warning (FR-42) |
 | New MacBook Pros have a system Dynamic Island | Vigie falls back to a virtual notch on the newest laptops | Virtual notch in v1 (FR-2); revisit the island display mode before public release |
 | Crowded market | Few users | Not a goal before v1 (SM-C3); positioning §7 |

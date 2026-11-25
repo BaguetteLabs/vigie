@@ -1,7 +1,7 @@
 # Vigie
 
 Vigie is a macOS 15+ notch companion (Swift 6 / SwiftUI) that shows AI coding agent sessions, usage and everyday tools in the notch.
-Licensed under the GNU General Public License v3.0 (see `LICENSE`). Rules for contributors and agents: `CLAUDE.md`.
+Licensed under the GNU General Public License, version 3 only (`GPL-3.0-only`, see `LICENSE`). Rules for contributors and agents: `CLAUDE.md`.
 
 ## Build
 

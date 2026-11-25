@@ -165,7 +165,7 @@ FR105 (§12.2, §12.3): `release.yml` on a `vX.Y.Z` tag on `master`: verify ance
 FR106 (§12.4): Sparkle 2 auto-update from the GitHub Releases appcast; `[updates]` settings `auto_check`, `check_interval`, `auto_install`, `channel = stable | beta` (beta uses `appcast-beta.xml`); public EdDSA key in `Info.plist`. **[Changed by PRD FR-61 and §9 Q1: the appcast is served from the public release host; Vigie installs only after the user agrees, automatic install is opt-in.]** **[A63 ruled 2026-11-06: the beta channel arrives with the public release, Story 19.3.]**
 FR107 (§12.5): Semantic versioning; `CFBundleVersion` is an always-increasing CI build number; the script schema and adapter event format carry their own versions.
 FR108 (§12.3, §12.4, §13): Homebrew cask (tap at first) declaring `auto_updates true`.
-FR109 (§2.1): **[SUPERSEDED by PRD §9 Q1 and memlog: closed source, no license, business model undecided; SPEC §2.1 donationware and the Settings Support pane are superseded. Story 17.3 superseded; no replacement story.]** Settings has a Support item (GitHub Sponsors, Ko-fi/Buy Me a Coffee); at most one dismissible donation message after a few weeks of use, never shown again once dismissed.
+FR109 (§2.1): **[SUPERSEDED 2026-11-06 by PRD §9 Q1 and memlog (business model undecided; SPEC §2.1 donationware and the Settings Support pane are superseded); not reinstated by the 2026-11-25 license change to GNU GPLv3. Story 17.3 superseded; no replacement story.]** Settings has a Support item (GitHub Sponsors, Ko-fi/Buy Me a Coffee); at most one dismissible donation message after a few weeks of use, never shown again once dismissed.
 FR110 (§14.8): Vigie detects other notch apps and warns that two apps can't share the notch.
 FR111 (§4.5, §11): Global hotkeys: expand hotkey (`expand_hotkey`, default `cmd+shift+space`) and module hotkeys, with conflict detection.
 
@@ -191,7 +191,7 @@ NFR17 (§1, AD-8): Config as code: human-editable TOML; app writes preserve comm
 NFR18 (§14.5, AD-23): Robust to agent CLI changes: version detection, recorded fixtures per supported version, never wrong statuses on unsupported versions.
 NFR19 (§9.2): Script trust: scripts run unsandboxed as the user, only after per-Mac confirmation of the exact content; the README says so clearly.
 NFR20 (§7.6, AD-10): Note plaintext exists only in memory; each note file is authenticated-encrypted at rest.
-NFR21 (§2): ~~GPL-3.0 license; reused GPL-compatible code (e.g. Boring Notch) is attributed.~~ **[SUPERSEDED by PRD §9 Q1 and memlog: the app is closed source with no license (all rights reserved). Consequence: GPL code such as Boring Notch must not be copied into the app; only permissively licensed code may be reused, with attribution.]**
+NFR21 (§2): GPL-3.0 license; reused GPL-compatible code (e.g. Boring Notch) is attributed. **[REINSTATED 2026-11-25: the user decided GNU GPLv3 only (GPL-3.0-only). It was struck through on 2026-11-06 (closed source, all rights reserved, PRD §9 Q1) and is reinstated for the license only. The rule kept from that decision stays: GPL code such as Boring Notch is not copied into the app; only permissively licensed code may be reused, with attribution.]**
 NFR22 (§2): Bundle IDs fixed from v0.1: `fr.baguettelabs.vigie` (release), `fr.baguettelabs.vigie.dev` (dev).
 NFR23 (§8.3, AD-4): Adding an agent adapter = one new package + one line in App assembly; no change to `agents.sessions` or `agents.usage`.
 NFR24 (AD-3): Responsiveness and safety: all I/O off the main actor; Swift 6 language mode with complete concurrency checking in every target.
@@ -448,7 +448,7 @@ Added 2026-11-06. Maps each requirement of the final PRD to this file's FRs/NFRs
 
 PRD success metric with no FR: SM-4 footprint (and counter-metric SM-C2) → NFR29 → 19.2 (AC added 2026-11-07).
 
-PRD decisions with no FR that change stories: closed source with no license (1.1, 17.2, 17.3 superseded, 19.2), public release hosting with a private code repository (6.2, 6.3, 19.1), no animated companions or pets (NFR26, 19.2), Warp fallback rule (5.4), Dynamic Island Macs in plain mode (2.7).
+PRD decisions with no FR that change stories: closed source with no license from 2026-11-06, replaced 2026-11-25 by GNU GPLv3 only (1.1, 17.2, 17.3 superseded, 19.2), public release hosting with a private code repository (6.2, 6.3, 19.1), no animated companions or pets (NFR26, 19.2), Warp fallback rule (5.4), Dynamic Island Macs in plain mode (2.7).
 
 ### FR Coverage Map
 
@@ -590,7 +590,7 @@ NFR17: Epic 2 (2.3, 2.13) — Config as code: human-editable TOML; app writes pr
 NFR18: Epic 4, 8, 14 (4.6, 8.1, 14.1) — Robust to agent CLI changes: version detection, recorded fixtures per supported…
 NFR19: Epic 12, 16, 19 (12.3, 12.7, 16.3, 19.2) — Script trust: scripts run unsandboxed as the user, only after per-Mac…
 NFR20: Epic 15 (15.1, 15.2) — Note plaintext exists only in memory; each note file is authenticated-encrypted…
-NFR21: **[SUPERSEDED]** Epic 1, 19 (1.1, 19.2: now state "all rights reserved") — GPL-3.0 license; reused GPL-compatible code (e.g. Boring Notch) is attributed.
+NFR21: **[REINSTATED 2026-11-25; superseded 2026-11-06]** Epic 1, 19 (1.1, 19.2: now state GNU GPLv3 only) — GPL-3.0 license; reused GPL-compatible code (e.g. Boring Notch) is attributed.
 NFR22: Epic 1 (1.1, 1.2) — Bundle IDs fixed from v0.1: fr.baguettelabs.vigie (release),…
 NFR23: Epic 4, 8 (4.4, 8.1) — Adding an agent adapter = one new package + one line in App assembly; no change…
 NFR24: Epic 1, 7 (1.1, 7.1) — Responsiveness and safety: all I/O off the main actor; Swift 6 language mode…
@@ -889,7 +889,7 @@ Users choose where their config lives (git, iCloud) and optionally sync config a
 **FRs covered:** FR63, FR76, FR100, FR101, FR102
 
 ### Epic 17: Onboarding and settings polish
-New users are guided through setup on first launch; everyone gets a complete Settings window, diagnostics and a warning when another notch app is running. (The donation option is superseded: closed source, PRD §9 Q1.)
+New users are guided through setup on first launch; everyone gets a complete Settings window, diagnostics and a warning when another notch app is running. (The donation option is superseded 2026-11-06, PRD §9 Q1, and not reinstated by the 2026-11-25 GNU GPLv3 license change.)
 **FRs covered:** FR41, FR93, FR94, FR110 (FR109 superseded)
 
 ### Epic 18: Theme family and presence
@@ -923,7 +923,7 @@ Listed for traceability; no stories are created for them (A26–A28, A66; now co
 | Calendar week view, presence levels between full and calm, calendar-to-metal color mapping | SPEC §7.5, EXPERIENCE Open Questions | Maybe later |
 | release-please automation, official homebrew-cask submission, GitHub Pages appcast mirror | SPEC §12.2, §12.3, §12.4 | Optional later |
 | ~~Paid supporter edition~~ | SPEC §2.1 | **[SUPERSEDED]** business model undecided (PRD §9 Q1) |
-| Community adapters (OpenCode, Aider, Cursor CLI, …) and other terminals | SPEC §8.3, §7.1; PRD §6.2 | Not before outside contributions are accepted (app is closed source) |
+| Community adapters (OpenCode, Aider, Cursor CLI, …) and other terminals | SPEC §8.3, §7.1; PRD §6.2 | Not before outside contributions are accepted (no outside contributions for now, 2026-11-06; license is GNU GPLv3) |
 | Escalation to phone (ntfy, Pushover) after a Session stays blocked | PRD §6.2, memlog | Accepted, after v1 |
 | Public script website with install buttons | PRD FR-44, §6.2 | After v1 (repository and links ship in v0.3) |
 | Natural-language timer entry ("25m tea") | PRD §4.10, §6.2 | Later |
@@ -941,13 +941,13 @@ As Romain (solo developer working with AI coding agents),
 I want the repository laid out exactly as the Architecture Spine's Structural Seed with compiler-enforced package boundaries,
 So that every later story lands in the right package and agents cannot create hidden coupling.
 
-**Requirements:** NFR1, NFR8, NFR21 (superseded: closed source), NFR22, NFR24, AD-1, AD-2, AD-3, AD-15, AD-16, AD-20 (Info.plist part), Additional: Starter/scaffold, PRD §9 Q1, PRD FR-64
+**Requirements:** NFR1, NFR8, NFR21 (GPL-3.0-only, reinstated 2026-11-25), NFR22, NFR24, AD-1, AD-2, AD-3, AD-15, AD-16, AD-20 (Info.plist part), Additional: Starter/scaffold, PRD §9 Q1, PRD FR-64
 
 **Acceptance Criteria:**
 
 **Given** an empty `vigie/` repository
 **When** the scaffold is created
-**Then** it contains `App/` (thin Xcode app target), `Packages/Wire`, `Packages/ModuleKit`, `Packages/AgentKit`, `Packages/VigieUI`, `Packages/VigieCore`, `Packages/VigieCLI`, `Themes/`, `schemas/`, `.github/workflows/`, a `LICENSE` file stating "All rights reserved" (no open-source license, PRD §9 Q1; changed 2026-11-06, was GPL-3.0) and a `.xcode-version` pinning Xcode 27.1
+**Then** it contains `App/` (thin Xcode app target), `Packages/Wire`, `Packages/ModuleKit`, `Packages/AgentKit`, `Packages/VigieUI`, `Packages/VigieCore`, `Packages/VigieCLI`, `Themes/`, `schemas/`, `.github/workflows/`, a `LICENSE` file holding the GNU GPLv3 text, license GPL-3.0-only (changed 2026-11-25; was "All rights reserved" from 2026-11-06, PRD §9 Q1, and GPL-3.0 before that) and a `.xcode-version` pinning Xcode 27.1
 **And** `Modules/*`, `Adapters/*` and `Terminals/*` packages are NOT created yet (each is created by the first story that needs it, A7)
 
 **Given** the package manifests
@@ -955,7 +955,7 @@ So that every later story lands in the right package and agents cannot create hi
 **Then** they match the layer table exactly (Core → ModuleKit, VigieUI, Wire; AgentKit → ModuleKit, Wire; VigieUI → ModuleKit; VigieCLI → Wire only; contracts depend on Foundation/SwiftUI only)
 **And** every target uses Swift 6 language mode with complete concurrency checking
 **And** no third-party dependency outside the AD-16 allowlist is declared
-**And** no GPL-licensed code (e.g. from Boring Notch) is copied into the repository (NFR21 superseded)
+**And** no GPL-licensed code (e.g. from Boring Notch) is copied into the repository (NFR21: rule kept after the 2026-11-25 GNU GPLv3 decision)
 
 **Given** the app target
 **When** it is built in Debug and Release
@@ -4284,7 +4284,7 @@ So that sync never runs code or leaks secrets.
 
 ## Epic 17: Onboarding and settings polish
 
-New users are guided through setup on first launch; everyone gets a complete Settings window, diagnostics and a warning when another notch app runs. (The donation option, Story 17.3, is superseded by PRD §9 Q1: closed source, no license.)
+New users are guided through setup on first launch; everyone gets a complete Settings window, diagnostics and a warning when another notch app runs. (The donation option, Story 17.3, is superseded 2026-11-06 by PRD §9 Q1 and not reinstated by the 2026-11-25 GNU GPLv3 license change.)
 
 ### Story 17.1: First-launch onboarding
 
@@ -4542,8 +4542,8 @@ So that I can adopt Vigie with confidence.
 
 **Given** the README
 **When** published
-**Then** it covers install (DMG, Homebrew), supported agents and terminals with their focus level, the script trust warning (including what a "Verified" signature does and doesn't mean), privacy (no telemetry; network calls listed, including script install and update fetches; Privacy mode), the license status "all rights reserved", and attributions for any reused permissively licensed code
-**And** it contains no GPL or donation wording (changed 2026-11-06, PRD §9 Q1)
+**Then** it covers install (DMG, Homebrew), supported agents and terminals with their focus level, the script trust warning (including what a "Verified" signature does and doesn't mean), privacy (no telemetry; network calls listed, including script install and update fetches; Privacy mode), the license status "GNU GPLv3 only (GPL-3.0-only)" (changed 2026-11-25; was "all rights reserved"), and attributions for any reused permissively licensed code
+**And** it contains no donation wording (changed 2026-11-06, PRD §9 Q1; the "no GPL wording" part was dropped 2026-11-25 when the license became GNU GPLv3)
 
 **Given** an accessibility audit
 **When** run against every surface
@@ -4915,7 +4915,7 @@ So that I never have to remember it.
 
 - **PRD coverage (updated 2026-11-06; rechecked 2026-11-07):** 64 / 64 PRD FRs map to at least one story (see PRD traceability). 18 stories were added for PRD features that had none: 2.15, 3.8, 7.10, 8.4, 9.8, 9.9, 12.8, 12.9, 12.10, 20.1–20.6, 21.1–21.3.
 - **FR coverage:** 110 / 110 active FRs map to at least one story (see FR Coverage Map); FR109 superseded. No uncovered FR.
-- **NFR coverage:** ~~27 / 27 active (NFR21 superseded)~~ 28 / 28 active, NFR21 superseded (updated 2026-11-07: NFR29 → 19.2). **UX-DR coverage:** ~~79 / 79 (UX-DR74 Support pane superseded)~~ 106 / 106 active UX-DRs map to at least one story AC (UX-DR20 superseded by UX-DR83; UX-DR74 Support pane superseded; updated 2026-11-07). No uncovered requirement.
+- **NFR coverage:** ~~27 / 27 active (NFR21 superseded)~~ ~~28 / 28 active, NFR21 superseded (updated 2026-11-07: NFR29 → 19.2)~~ 29 / 29 active (updated 2026-11-25: NFR21 reinstated → 1.1, 19.2). **UX-DR coverage:** ~~79 / 79 (UX-DR74 Support pane superseded)~~ 106 / 106 active UX-DRs map to at least one story AC (UX-DR20 superseded by UX-DR83; UX-DR74 Support pane superseded; updated 2026-11-07). No uncovered requirement.
 - **Update run 2026-11-07 (step 1, requirements inventory):** NFR29 and UX-DR80–UX-DR107 added, UX-DR20 superseded by UX-DR83; inventory now NFR1–NFR29 (28 active) and UX-DR1–UX-DR107. The coverage counts above were recomputed in step 3.
 - **Update run 2026-11-07 (step 3, story ACs):** acceptance criteria updated so every PRD FR, NFR29, AD requirement and UX-DR1–UX-DR107 is tested by at least one story AC (changed ACs struck through and marked *Amended 2026-11-07*, new ACs marked *(added 2026-11-07)*); Stories 3.9 (peek concurrency, from 3.2) and 12.11 (script page, from 12.5) split out for size; Epic 20 build order noted (old numbers 20.1 → 20.2 → 20.5 → 20.6 → 20.3 → 20.4; renumbered in step 4 so the numbers follow it); A41 and A42 superseded; AD-13 amended (Pomodoro work-phase end = `time.break_reminder`).
 - **Totals:** 21 epics; 130 stories (recounted 2026-11-07; the earlier figure of 127 was one short), of which 129 active and 1 superseded (17.3); 9.10, 3.9 and 12.11 added 2026-11-07.
@@ -4976,7 +4976,7 @@ Every judgement call made while running the workflow unattended. Format: **id �
 - **A30** **[RULED 2026-11-06: default notes hotkey ⌥⌘N (`opt+cmd+n`)]** — Story 15.3 (§14.19) — Default notes hotkey `cmd+shift+n`. · *Alternative: no default, user sets one.*
 - **A31** **[RULED 2026-11-06: accepted: sounds off when the onboarding sound step is skipped]** — Stories 10.2, 17.1 (§14.19, EXPERIENCE OQ18) — If the onboarding sound step is skipped, sounds are off; before onboarding exists (v0.2–v0.3) the SPEC §11 example defaults apply (blocked, failed, quota on; done off). · *Alternative: sounds on by default everywhere.*
 - **A32** **[RULED 2026-11-06: right-click menu accepted, plus a settings icon in the expanded view (design: Story 1.7a; Stories 2.10, 2.14, 17.2)]** **[SUPERSEDED 2026-11-07 by the Story 1.7a design: DESIGN.md / EXPERIENCE.md, `ux-designs/ux-vigie-2026-11-04/mockups/key-design-pass-1-7.html`]** — Stories 2.1, 17.2 (§14.19 Settings entry points) — New entry point: right-clicking the closed notch shows a small menu with `Settings…` and `Quit Vigie` (an accessory app otherwise has no way to quit). · *Alternative: `vigie settings` / `vigie quit` CLI commands, or Settings only from ⌘, and alerts.*
-- **A33** **[SUPERSEDED by PRD §9 Q1 and memlog: closed source, no donation prompt; Story 17.3 superseded]** — Story 17.3 (§2.1) — "A few weeks" = 21 days; the support message appears once in the expanded view, never as a peek. · *Alternative: 30 days, or a Settings badge only.*
+- **A33** **[SUPERSEDED 2026-11-06 by PRD §9 Q1 and memlog: no donation prompt; Story 17.3 superseded; not reinstated by the 2026-11-25 license change]** — Story 17.3 (§2.1) — "A few weeks" = 21 days; the support message appears once in the expanded view, never as a peek. · *Alternative: 30 days, or a Settings badge only.*
 - **A34** **[RESOLVED by PRD FR-7: clicking a card opens that module's Tab]** — Story 11.1 — Clicking a Home card opens that module's tab (EXPERIENCE assumption). · *Alternative: cards are not clickable.*
 - **A35** **[RULED 2026-11-06: design first: Story 1.7b; the proposed visuals are placeholders only]** **[SUPERSEDED 2026-11-07 by the Story 1.7b design: DESIGN.md / EXPERIENCE.md, `ux-designs/ux-vigie-2026-11-04/mockups/key-design-pass-1-7.html`]** — Stories 4.8, 14.2 (EXPERIENCE OQ8) — Undesigned visuals: stale = `?` badge in `ink-3` and label `WORKING · ?`; process-only = idle shape in `ink-3` with label `RUNNING`. · *Alternative: get these designed before Epic 4.*
 - **A36** **[RULED 2026-11-06: accepted as proposed]** — Story 7.6 (EXPERIENCE OQ9) — Closed-ring quota warning = warning hue arc + triangle replacing the value (DESIGN assumption). · *Alternative: hatch pattern on the ring too.*

@@ -4,7 +4,7 @@ Vigie is a GPLv3-licensed macOS 15+ notch companion in Swift 6 / SwiftUI. Read `
 
 1. `docs/architecture/architecture-vigie-2026-11-05/ARCHITECTURE-SPINE.md` — build rules AD-1..AD-26, package layout (Structural Seed), stack allowlist, conventions. Never violate an AD; if one must change, stop and report.
 2. `docs/ux-designs/ux-vigie-2026-11-04/DESIGN.md` and `EXPERIENCE.md` — look and behavior. They win over SPEC on UX.
-3. `docs/SPEC.md` (v0.9) and `docs/prds/prd-vigie-2026-11-06/prd.md` — what and why.
+3. `docs/SPEC.md` (v0.10) and `docs/prds/prd-vigie-2026-11-06/prd.md` — what and why.
 4. `docs/epics.md` — the story you are implementing, with acceptance criteria. Implement the story as written; do not widen scope.
 
 ## Hard rules
