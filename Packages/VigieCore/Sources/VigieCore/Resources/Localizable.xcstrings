@@ -2832,6 +2832,42 @@
           }
         }
       }
+    },
+    "vigiecore.setup.title.notchApp": {
+      "comment": "Title: another notch app is running while Vigie draws on a physical notch. %@ is the app's product name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Another notch app is running: %@"
+          }
+        }
+      }
+    },
+    "vigiecore.setup.body.notchApp": {
+      "comment": "Body: two apps cannot share the notch. %@ is the other app's product name.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Two apps can't share the notch. Quit %@, or choose another display for Vigie."
+          }
+        }
+      }
+    },
+    "vigiecore.setup.category.display": {
+      "comment": "Kicker category after SETUP, for display problems. Uppercase.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DISPLAY"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

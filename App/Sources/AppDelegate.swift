@@ -43,6 +43,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var focusFilterSetup: FocusFilterSetup?
     private var peekPresenter: PeekPresenter?
     private var setupProblems: SetupProblemReporter?
+    private var otherNotchApps: OtherNotchAppMonitor?
     private var settings: SettingsController?
     private var appTopics: AppTopics?
     private var hostConfig: HostConfigBridge?
@@ -438,6 +439,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         self.appTopics = appTopics
 
         host.start()
+        // Another notch app running while Vigie draws on a physical notch is a setup problem (Story 17.5).
+        let otherNotchApps = OtherNotchAppMonitor(
+            apps: WorkspaceRunningApplications(),
+            drawsOnPhysicalNotch: { [weak host] in host?.islands.contains { $0.display.hasNotch } ?? false },
+            notifier: coreNotifier,
+            wasDismissed: { [weak alertCenter] id in
+                alertCenter?.history.contains { $0.alertID == id && $0.outcome == .dismissed } ?? false
+            },
+            log: Logger(subsystem: environment.logSubsystem, category: "notch-apps"))
+        otherNotchApps.start()
+        self.otherNotchApps = otherNotchApps
         await registry.start()
         // AD-6 steps 4-6: replay the spool, release the socket queue, then announce readiness.
         if let server = eventServer {
@@ -512,6 +524,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         notchHost?.stop()
         hotkeyBridge?.stop()
         setupProblems?.stop()
+        otherNotchApps?.stop()
         focusFilterSetup?.stop()
         appTopics?.stop()
         notifyRules?.stop()
