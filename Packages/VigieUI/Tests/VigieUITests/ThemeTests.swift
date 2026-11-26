@@ -236,6 +236,22 @@ enum Fixtures {
         #expect(abs(try #require(prose.lineHeight) - 11.5 * 1.45) < 0.0001)
         #expect(c.fontSpec(.readoutValue).family == .monospaced)
     }
+
+    @Test func twinMetalLightKeepsGoldTextApartFromGoldFills() {
+        let light = Fixtures.library.resolve(themeID: "twin-metal-tactical", look: .light).theme
+        #expect(light.defines(.gold) && light.defines(.goldText))
+        #expect(light.themeColor(.goldText) != light.themeColor(.gold))
+        #expect(light.themeColor(.goldText).hex == "#765709")
+        #expect(light.themeColor(.gold).hex == "#A07418")
+    }
+
+    @Test func twinMetalHasDarkAndLightLooksWithSameRolesAsChrome() {
+        for look in Look.allCases {
+            let c = Fixtures.library.resolve(themeID: "twin-metal-tactical", look: look).theme
+            #expect(c.variantID == "twin-metal-tactical" && c.look == look)
+            #expect(c.defines(.ink1) && c.defines(.surfacePanel) && c.defines(.statusBlocked))
+        }
+    }
 }
 
 @Suite struct ThemeFilesTests {
