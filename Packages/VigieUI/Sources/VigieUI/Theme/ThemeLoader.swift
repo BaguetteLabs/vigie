@@ -54,6 +54,14 @@ public struct ThemeLibrary: Sendable, Equatable {
         return defaults + builtIn.filter { $0.id != Self.defaultVariantID } + sorted(customs, custom: true)
     }
 
+    /// ``choices``, plus an entry for `current` when no theme has that id (a typo or a removed file), so a picker
+    /// shows what is configured.
+    public func choices(including current: String) -> [Choice] {
+        let all = choices
+        guard !all.contains(where: { $0.id == current }) else { return all }
+        return all + [Choice(id: current, name: current, isCustom: false)]
+    }
+
     /// This library with the custom themes found in `folder` (`<config folder>/themes/`) in place of any it had,
     /// and their load problems added after the existing ones. Call it on a library without custom themes.
     public func replacingCustomThemes(from folder: URL?) -> ThemeLibrary {

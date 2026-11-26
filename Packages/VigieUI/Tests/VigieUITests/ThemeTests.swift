@@ -331,7 +331,11 @@ enum Fixtures {
         let resolved = library.resolve(themeID: "mine", look: .dark).theme
         #expect(resolved.variantID == "mine")
         #expect(resolved.themeColor(.ink1).hex == "#010203")
-        #expect(resolved.themeColor(.gold).hex == library.builtIns["twin-metal-tactical"]!.tokens(for: .dark).colors["gold"])
+        let tactical = library.resolve(themeID: "twin-metal-tactical", look: .dark).theme
+        #expect(resolved.themeColor(.gold).hex == tactical.themeColor(.gold).hex)
+        // A picker keeps the configured id when no theme has it.
+        #expect(library.choices(including: "mine").map(\.id) == ["chrome-hologram", "twin-metal-tactical", "mine"])
+        #expect(library.choices(including: "gone").map(\.id).last == "gone")
         // A missing folder means no custom themes.
         #expect(Fixtures.library.replacingCustomThemes(from: nil).customs.isEmpty)
         #expect(Fixtures.library.replacingCustomThemes(from: folder.appending(path: "nope")).customs.isEmpty)
