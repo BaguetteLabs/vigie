@@ -437,8 +437,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let privacyConfig = PrivacyConfigBridge(store: configStore, privacy: privacy, permissions: coordinator)
         privacyConfig.start()
         self.privacyConfig = privacyConfig
-        // `[appearance] theme` re-skins the app at launch and live (Story 18.1).
-        let appearanceConfig = AppearanceConfigBridge(store: configStore, themes: themeController)
+        // `[appearance]` theme, mode and colors, and the custom themes folder, re-skin the app at launch and live
+        // (Stories 18.1, 18.2).
+        let appearanceConfig = AppearanceConfigBridge(
+            store: configStore, themes: themeController,
+            problems: ThemeProblemReporter(
+                notifier: coreNotifier, log: Logger(subsystem: environment.logSubsystem, category: "theme")))
         appearanceConfig.start()
         self.appearanceConfig = appearanceConfig
         // `[updates]` drives Sparkle, live (Story 6.3); a build without key or feed logs once and never checks.

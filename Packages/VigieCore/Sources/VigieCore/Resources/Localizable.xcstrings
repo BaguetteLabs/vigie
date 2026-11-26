@@ -2269,6 +2269,78 @@
         }
       }
     },
+    "vigiecore.setup.category.theme" : {
+      "comment" : "Kicker category after SETUP, for theme problems. Uppercase.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "THEME"
+          }
+        }
+      }
+    },
+    "vigiecore.setup.body.theme" : {
+      "comment" : "Setup alert body for a theme problem.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pick a theme in Settings › Appearance, or fix the file in the themes folder."
+          }
+        }
+      }
+    },
+    "vigiecore.setup.title.themeSchemaTooNew" : {
+      "comment" : "Setup alert title: a theme file needs a newer Vigie. %1$@ is the theme file or id, %2$@ its schema number.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Theme %1$@ needs a newer Vigie (schema %2$@), using the default theme"
+          }
+        }
+      }
+    },
+    "vigiecore.setup.title.themeIdClash" : {
+      "comment" : "Setup alert title: a custom theme file reuses a built-in theme id. %1$@ is the file name, %2$@ the id.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Custom theme %1$@ reuses the built-in id %2$@, so it is ignored"
+          }
+        }
+      }
+    },
+    "vigiecore.setup.title.themeUnreadable" : {
+      "comment" : "Setup alert title: a theme file cannot be read. %1$@ is the file name.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Theme file %1$@ can't be read"
+          }
+        }
+      }
+    },
+    "vigiecore.setup.title.themeUnknown" : {
+      "comment" : "Setup alert title: the chosen theme does not exist. %1$@ is the theme id.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Theme %1$@ not found, using the default theme"
+          }
+        }
+      }
+    },
     "vigiecore.setup.category.sound" : {
       "comment" : "Kicker category after SETUP, for sound problems. Uppercase.",
       "extractionState" : "manual",
