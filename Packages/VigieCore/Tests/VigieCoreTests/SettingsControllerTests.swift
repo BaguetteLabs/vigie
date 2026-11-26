@@ -148,6 +148,8 @@ struct SettingsHarness {
             ConfigStore.folderRecordPath,
             // `[sync] icloud` is the Sync section's toggle (Story 16.2): turning it on moves folders.
             SyncController.icloudPath,
+            // `[onboarding] complete` is a local record; Settings › General › Run setup again resets it (Story 17.1).
+            CoreSettings.path("onboarding", "complete"),
         ])
         #expect(Set(placed) == core)
         #expect(placed.count == core.count)

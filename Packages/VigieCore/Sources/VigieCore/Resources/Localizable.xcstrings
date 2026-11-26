@@ -2892,6 +2892,414 @@
           }
         }
       }
+    },
+    "onboarding.window.title": {
+      "comment": "Title of the first-launch onboarding window.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set up Vigie"
+          }
+        }
+      }
+    },
+    "onboarding.progress": {
+      "comment": "Progress line above each onboarding step: current step, number of steps.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Step %1$lld of %2$lld"
+          }
+        }
+      }
+    },
+    "onboarding.back": {
+      "comment": "Onboarding button: previous step.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Back"
+          }
+        }
+      }
+    },
+    "onboarding.skip": {
+      "comment": "Onboarding button: skip the current step.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skip"
+          }
+        }
+      }
+    },
+    "onboarding.continue": {
+      "comment": "Onboarding button: keep the choice and go to the next step.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continue"
+          }
+        }
+      }
+    },
+    "onboarding.finish": {
+      "comment": "Onboarding button on the last step.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finish"
+          }
+        }
+      }
+    },
+    "onboarding.theme.title": {
+      "comment": "Onboarding theme step heading.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pick a look"
+          }
+        }
+      }
+    },
+    "onboarding.theme.detail": {
+      "comment": "Onboarding theme step description.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vigie has two looks. Pick one to see it on your notch now. You can change it later in Settings › Appearance."
+          }
+        }
+      }
+    },
+    "onboarding.agents.title": {
+      "comment": "Onboarding agents step heading.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connect your agents"
+          }
+        }
+      }
+    },
+    "onboarding.agents.detail": {
+      "comment": "Onboarding agents step description.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vigie adds hooks to the config of each agent CLI it finds. You review every change before it is written."
+          }
+        }
+      }
+    },
+    "onboarding.accessibility.title": {
+      "comment": "Onboarding Accessibility step heading.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allow Accessibility"
+          }
+        }
+      }
+    },
+    "onboarding.accessibility.detail": {
+      "comment": "Onboarding Accessibility step description.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vigie uses Accessibility to bring the exact terminal tab forward when you jump to an agent."
+          }
+        }
+      }
+    },
+    "onboarding.accessibility.granted": {
+      "comment": "Onboarding Accessibility step status when granted.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Accessibility is allowed."
+          }
+        }
+      }
+    },
+    "onboarding.accessibility.notGranted": {
+      "comment": "Onboarding Accessibility step status when not granted.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Accessibility is not allowed yet."
+          }
+        }
+      }
+    },
+    "onboarding.accessibility.allow": {
+      "comment": "Button that asks macOS for the Accessibility permission.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allow Accessibility"
+          }
+        }
+      }
+    },
+    "onboarding.accessibility.openSettings": {
+      "comment": "Button that opens the Accessibility pane of System Settings.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open System Settings"
+          }
+        }
+      }
+    },
+    "onboarding.accessibility.skipNote": {
+      "comment": "Note under the Accessibility buttons.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "If you skip this, Vigie brings the terminal forward without selecting the tab, and shows a setup problem."
+          }
+        }
+      }
+    },
+    "onboarding.displays.title": {
+      "comment": "Onboarding displays step heading.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose where Vigie appears"
+          }
+        }
+      }
+    },
+    "onboarding.displays.detail": {
+      "comment": "Onboarding displays step description.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vigie draws a virtual notch on a display without a notch. Choose which displays show it."
+          }
+        }
+      }
+    },
+    "onboarding.displays.none": {
+      "comment": "Shown when every connected display has a notch.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No display without a notch is connected. Change this later in Settings › Displays."
+          }
+        }
+      }
+    },
+    "onboarding.displays.default": {
+      "comment": "Display choice: the default rule.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The notched display, or the main display"
+          }
+        }
+      }
+    },
+    "onboarding.displays.all": {
+      "comment": "Display choice: all displays.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Every display"
+          }
+        }
+      }
+    },
+    "onboarding.displays.virtual": {
+      "comment": "Caption of a display without a notch.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No notch: Vigie draws a virtual notch"
+          }
+        }
+      }
+    },
+    "onboarding.displays.physical": {
+      "comment": "Caption of a display with a notch.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Has a notch"
+          }
+        }
+      }
+    },
+    "onboarding.sounds.title": {
+      "comment": "Onboarding sounds step heading.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alert sounds"
+          }
+        }
+      }
+    },
+    "onboarding.sounds.detail": {
+      "comment": "Onboarding sounds step description.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vigie can play a short sound when an agent is blocked or fails, and for quota warnings."
+          }
+        }
+      }
+    },
+    "onboarding.sounds.toggle": {
+      "comment": "Onboarding sounds switch label.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Play alert sounds"
+          }
+        }
+      }
+    },
+    "onboarding.sounds.skipNote": {
+      "comment": "Note under the sounds switch.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "If you skip this step, sounds stay off. Choose them later in Settings › Sounds."
+          }
+        }
+      }
+    },
+    "onboarding.launchAtLogin.title": {
+      "comment": "Onboarding launch at login step heading.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Launch at login"
+          }
+        }
+      }
+    },
+    "onboarding.launchAtLogin.detail": {
+      "comment": "Onboarding launch at login step description.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start Vigie when you log in, so it is ready when an agent needs you."
+          }
+        }
+      }
+    },
+    "onboarding.launchAtLogin.toggle": {
+      "comment": "Onboarding launch at login switch label.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Launch Vigie at login"
+          }
+        }
+      }
+    },
+    "settings.setup.title": {
+      "comment": "Label of the Run setup again row in Settings \u203a General.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Setup"
+          }
+        }
+      }
+    },
+    "settings.setup.detail": {
+      "comment": "Description of the Run setup again row.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Go through the first-launch steps again."
+          }
+        }
+      }
+    },
+    "settings.setup.runAgain": {
+      "comment": "Button in Settings \u203a General that opens onboarding again.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Run setup again"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

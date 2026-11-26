@@ -1188,6 +1188,18 @@
           }
         }
       }
+    },
+    "config.onboarding.complete": {
+      "comment": "Settings label for the config key onboarding.complete (a local record).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Setup completed"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

@@ -60,6 +60,9 @@ public final class SettingsController {
     /// The app's updater (Story 6.3), for Settings › Updates › Check for Updates…. The App sets it; nil (tests, or
     /// before assembly) shows the button disabled.
     public var updater: (any UpdaterControlling)?
+    /// Opens the first-launch onboarding again (Settings › General › Run setup again, Story 17.1). The App sets it;
+    /// nil hides the row.
+    public var runSetupAgain: (@MainActor () -> Void)?
     /// Home card providers that are not modules (scripts with the `home` surface, Epic 12); listed after the
     /// modules in Settings › Home.
     @ObservationIgnored public var additionalHomeProviders: @MainActor () -> [HomeProviderDescriptor] = { [] }

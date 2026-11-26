@@ -52,7 +52,10 @@ struct SettingsPaneView: View {
         Form {
             switch pane.content {
             case .core(let sections):
-                if pane.id == "general" { LaunchAtLoginSection(controller: controller) }
+                if pane.id == "general" {
+                    LaunchAtLoginSection(controller: controller)
+                    RunSetupSection(controller: controller)
+                }
                 if pane.id == "sounds" { SoundsPaneContent(controller: controller) }
                 if pane.id == SettingsPaneCatalog.homePaneID { HomePaneContent(model: controller.home) }
                 ForEach(Array((pane.id == "sounds" ? [] : sections).enumerated()), id: \.offset) { _, section in
@@ -189,6 +192,28 @@ struct LaunchAtLoginSection: View {
                     } label: {
                         Text(SettingsText.resource("settings.login.openSettings"))
                     }
+                }
+            }
+        }
+    }
+}
+
+/// `Run setup again` (Story 17.1): opens the first-launch onboarding again.
+struct RunSetupSection: View {
+    let controller: SettingsController
+
+    var body: some View {
+        if let run = controller.runSetupAgain {
+            Section {
+                LabeledContent {
+                    Button {
+                        run()
+                    } label: {
+                        Text(SettingsText.resource("settings.setup.runAgain"))
+                    }
+                } label: {
+                    Text(SettingsText.resource("settings.setup.title"))
+                    Text(SettingsText.resource("settings.setup.detail"))
                 }
             }
         }
