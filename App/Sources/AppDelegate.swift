@@ -12,6 +12,7 @@ import ModuleKit
 import Notes
 import OSLog
 import Shelf
+import SwiftUI
 import TerminalAppTerminal
 import Time
 import VigieCore
@@ -45,6 +46,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var setupProblems: SetupProblemReporter?
     private var otherNotchApps: OtherNotchAppMonitor?
     private var settings: SettingsController?
+    private var onboarding: OnboardingController?
     private var appTopics: AppTopics?
     private var hostConfig: HostConfigBridge?
     private var privacyConfig: PrivacyConfigBridge?
@@ -359,6 +361,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         let general = { (key: String) in CoreSettings.path("general", key) }
         let displayPrompt = DisplayPromptRecord()
+        // First-launch onboarding (Story 17.1, AD-4): the steps that need agent adapters are composed here, from
+        // the agent module's own Settings › Agents view; other modules contribute steps through ModuleKit.
+        let onboarding = OnboardingController(
+            configStore: configStore, permissions: coordinator, themes: themeController, displayPrompt: displayPrompt,
+            agentsStep: { [weak registry] in
+                let id = AgentsSessionsModule.staticManifest.id
+                guard let registry, registry.module(id)?.settingsView() != nil else { return nil }
+                return .agents { registry.module(id)?.settingsView() ?? AnyView(EmptyView()) }
+            },
+            contributedSteps: { [weak registry] in registry?.runningModules.flatMap { $0.onboardingSteps() } ?? [] },
+            setLaunchAtLogin: { [weak settings] on in await settings?.setLaunchAtLogin(on) })
+        settings.runSetupAgain = { [weak onboarding] in onboarding?.present() }
+        self.onboarding = onboarding
         let host = NotchHost(
             themeController: themeController,
             registry: registry,
@@ -380,7 +395,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             virtualNotch: { VirtualNotchSettings(configStore: configStore) },
             displaySelection: { DisplaySelection(configStore: configStore) },
             hideInFullScreen: { configStore.value(general("hide_in_fullscreen"), as: Bool.self) ?? true },
-            displayPromptPending: { displayPrompt.isPending },
+            // The onboarding's display step asks the same question (A60): no prompt in the notch while it is pending.
+            displayPromptPending: { displayPrompt.isPending && !onboarding.isPending },
             onDisplayPromptAnswer: { [logger] answer in
                 Task { @MainActor in
                     do {
@@ -461,6 +477,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         logger.info("host ready")
 
         installCLI(cliInstaller)
+        // First launch only: the flag `[onboarding] complete` in `local.toml` keeps it from coming back.
+        onboarding.presentIfNeeded()
         simulateDropIfAsked(host)
     }
 
