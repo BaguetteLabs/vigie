@@ -48,6 +48,7 @@ final class MinimalModule: NotchModule {
         #expect(module.dropZones.isEmpty)
         #expect(module.leftWingItems().isEmpty)
         #expect(module.settingsView() == nil)
+        #expect(module.onboardingSteps().isEmpty)
         #expect(module.manifest.defaultEnabled)
         #expect(module.manifest.alertKinds.isEmpty)
     }

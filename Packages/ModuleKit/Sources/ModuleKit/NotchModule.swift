@@ -38,6 +38,10 @@ public protocol NotchModule: AnyObject, Observable {
     /// them (FR5). Asked only while the module runs. Default: nil.
     func settingsView() -> AnyView?
 
+    /// Steps this module adds to the first-launch onboarding (Story 17.1, AD-4), asked only while the module
+    /// runs. Steps that need agent adapters are composed by App assembly instead. Default: none.
+    func onboardingSteps() -> [OnboardingStep]
+
     func start(context: any ModuleContext) async throws
     func stop() async
 }
@@ -49,6 +53,7 @@ extension NotchModule {
     public var dropZones: [DropZone] { [] }
     public func leftWingItems() -> [LeftWingItem] { [] }
     public func settingsView() -> AnyView? { nil }
+    public func onboardingSteps() -> [OnboardingStep] { [] }
 }
 
 /// One item in the closed notch's shared left-wing lane (SPEC §5): pooled across modules, sorted by
