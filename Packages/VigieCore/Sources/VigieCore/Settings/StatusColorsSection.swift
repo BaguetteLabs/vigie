@@ -140,7 +140,9 @@ private struct StatusColorRow: View {
                 .labelsHidden()
                 Button {
                     Task {
-                        do { try await controller.resetCustomColor(for: role) } catch { self.error = Self.message(error) }
+                        do { try await controller.resetCustomColor(for: role) } catch {
+                            self.error = Self.message(error)
+                        }
                     }
                 } label: {
                     Text(SettingsText.resource("settings.statusColors.reset"))

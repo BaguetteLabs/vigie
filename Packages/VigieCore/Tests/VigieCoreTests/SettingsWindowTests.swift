@@ -40,7 +40,10 @@ import VigieUI
         // General holds the Privacy controls and the alert rules; Appearance holds the closed-notch settings.
         guard case .core(let general)? = h.controller.pane("general")?.content,
             case .core(let appearance)? = h.controller.pane("appearance")?.content
-        else { Issue.record("core panes expected"); return }
+        else {
+            Issue.record("core panes expected")
+            return
+        }
         let generalKeys = Set(general.flatMap(\.keys))
         #expect(generalKeys.contains(CoreSettings.path("privacy", "force")))
         #expect(generalKeys.contains(CoreSettings.path("notify", "cooldown")))

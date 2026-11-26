@@ -174,7 +174,8 @@ public struct ConfigSchema: Sendable {
             entries[path] = ConfigSchemaEntry(
                 path: path,
                 descriptor: SettingDescriptor(
-                    key: role.rawValue, label: CoreSettings.label(StatusColors.labelKey(role)), kind: .string(default: "")),
+                    key: role.rawValue, label: CoreSettings.label(StatusColors.labelKey(role)),
+                    kind: .string(default: "")),
                 moduleID: nil)
         }
     }
