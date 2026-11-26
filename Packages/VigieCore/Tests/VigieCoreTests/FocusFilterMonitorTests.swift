@@ -325,7 +325,7 @@ struct FocusFilterHarness {
             SettingsController.focusSettingsURL.absoluteString
                 == "x-apple.systempreferences:com.apple.Focus-Settings.extension")
 
-        let pane = try #require(h.controller.pane("notify"))
+        let pane = try #require(h.controller.pane("general"))
         try await render(h, pane)
 
         try await h.store.set(FocusFilterSetup.path, to: .bool(true))

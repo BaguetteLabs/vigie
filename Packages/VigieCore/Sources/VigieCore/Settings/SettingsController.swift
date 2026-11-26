@@ -45,6 +45,8 @@ public final class SettingsController {
     /// Privacy mode (Story 21.2): the window's views read `privacyActive` (reveal controls are unavailable while
     /// it is on). The App sets it before the window opens.
     public var privacy: CorePrivacyService?
+    /// The app's theme, for the contrast of custom status colors (Story 17.2). The App sets it; nil shows no ratio.
+    public var theme: ThemeController?
     /// Settings › Home state (Story 11.1).
     public let home: HomePaneModel
     /// Settings › General › Config folder (Story 16.1).
@@ -73,6 +75,8 @@ public final class SettingsController {
     @ObservationIgnored public let secretStore: KeychainSecretStore?
     @ObservationIgnored private let loginShellPath: (@Sendable () async -> String?)?
     @ObservationIgnored let services: SettingControlServices
+    /// True while macOS Reduce motion is on (tests replace it).
+    @ObservationIgnored var reduceMotion: () -> Bool = { NSWorkspace.shared.accessibilityDisplayShouldReduceMotion }
     @ObservationIgnored public private(set) var window: NSWindow?
     @ObservationIgnored private var windowObserver: SettingsWindowObserver?
     /// Opens System Settings deep links (tests record them).
@@ -116,7 +120,7 @@ public final class SettingsController {
         services = CoreSettingServices.make()
         loginItemStatus = loginItem.status
         for manifest in manifests { configStore.register(manifest: manifest) }
-        panes = SettingsPaneCatalog.corePanes() + manifests.map(SettingsPaneCatalog.modulePane)
+        panes = SettingsPaneCatalog.panes(manifests: manifests)
         extraHomeProviders = { [weak self] in self?.additionalHomeProviders() ?? [] }
         diagnostics = makeDiagnostics()
     }

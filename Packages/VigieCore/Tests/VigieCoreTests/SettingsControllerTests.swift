@@ -131,7 +131,9 @@ struct SettingsHarness {
         let ids = h.controller.panes.map(\.id)
         for id in SettingsPaneCatalog.corePaneIDs { #expect(ids.contains(id)) }
         for id in ["agents.sessions", "calendar.test", "custom.test"] { #expect(ids.contains(id)) }
-        #expect(Array(ids.prefix(SettingsPaneCatalog.corePaneIDs.count)) == SettingsPaneCatalog.corePaneIDs)
+        // Core panes lead (General … Home), module panes follow, then Sounds, Sync, Updates (Story 17.2).
+        #expect(Array(ids.prefix(4)) == ["general", "appearance", "display", "home"])
+        #expect(Array(ids.suffix(3)) == ["sounds", "sync", "updates"])
         // Every core key has a row in exactly one pane, except [appearance.colors] (free-form) and
         // `[home] cards`, which the Settings › Home card list edits (Story 11.1), and `[updates] channel`, which has
         // no row until the beta feed exists (A63, Story 6.3), `[config] folder` (Story 16.1) and `[sync] icloud` (16.2).
@@ -474,7 +476,7 @@ struct SettingsHarness {
         h.controller.privacy = CorePrivacyService()
         h.controller.open(pane: "general")
         let window = try #require(h.controller.window)
-        for pane in ["general", "custom.test", "calendar.test", "display", "activity", "home"] {
+        for pane in ["general", "custom.test", "calendar.test", "display", "appearance", "home"] {
             h.controller.selectedPaneID = pane
             try await Task.sleep(for: .milliseconds(300))
             let view = try #require(window.contentView)

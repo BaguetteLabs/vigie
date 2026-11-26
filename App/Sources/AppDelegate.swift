@@ -353,6 +353,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             }, secretStore: secretStore)
         settings.sounds.player = soundPlayer
         settings.privacy = privacy
+        settings.theme = themeController
         settings.updater = updater
         self.settings = settings
 

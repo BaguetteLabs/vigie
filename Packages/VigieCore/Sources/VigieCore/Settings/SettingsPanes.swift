@@ -19,8 +19,6 @@ public struct SettingsPane: Identifiable, Sendable {
         case core([SettingsSection])
         /// A module's pane: `enabled`, status, its descriptors, then its optional custom view.
         case module(ModuleManifest)
-        /// Settings › General › Activity log (A80).
-        case activity
     }
 
     /// Pane id as `openSettings(pane:)` takes it: a core pane id or a module id.
@@ -35,39 +33,51 @@ public struct SettingsPane: Identifiable, Sendable {
     }
 }
 
-/// The pane skeleton (UX-DR74 as amended 2026-11-07, EXPERIENCE "Settings") mapped onto the SPEC §11 tables.
+/// The pane skeleton (UX-DR74 as amended 2026-11-07, Story 17.2, EXPERIENCE "Settings") mapped onto the SPEC §11 tables.
+///
+/// The sidebar order is fixed: General, Appearance, Displays, Home, Agents, Usage, Shelf, Calendar, Time, Notes,
+/// Scripts, Sounds, Sync, Updates. The module panes sit between Home and Sounds, in `moduleOrder`; a module
+/// that is not listed there comes after the listed ones, in registry order.
 ///
 /// | Pane id      | Title        | Config tables / keys                                                    |
 /// |--------------|--------------|-------------------------------------------------------------------------|
-/// | `general`    | General      | `[general]` (minus `tab_order`), Launch at login, `[privacy]`, CLI status |
-/// | `activity`   | Activity Log | read-only activity log (A80; "Settings › General › Activity log")      |
-/// | `appearance` | Appearance   | `[appearance]` (+ Reduce motion warning next to Presence)               |
-/// | `closed`     | Notch        | `[closed]`                                                              |
+/// | `general`    | General      | `[general]` (minus `tab_order`), Launch at login, `[privacy]` (A89), `[notify]` alert rules, Focus, config folder, CLI, diagnostics, the activity log (A80) |
+/// | `appearance` | Appearance   | `[appearance]` (+ Reduce motion note next to Presence), custom status colors with their contrast (UX-DR13), `[closed]` |
 /// | `display`    | Displays     | `[display]`, `[virtual_notch]` (local)                                  |
 /// | `home`       | Home         | `[home] cards`, `[general] tab_order`                                   |
-/// | `notify`     | Alerts       | `[notify]`                                                              |
+/// | `<module id>`| module name  | `[modules."<id>"]` (`enabled` + the manifest's descriptors)             |
 /// | `sounds`     | Sounds       | `[sounds]`                                                              |
 /// | `sync`       | Sync         | `[sync] icloud` (local), drawn by `SyncSection` (Story 16.2)            |
 /// | `updates`    | Updates      | `[updates]`                                                             |
-/// | `<module id>`| module name  | `[modules."<id>"]` (`enabled` + the manifest's descriptors)             |
 ///
-/// Module panes (Agents, Usage, Shelf, Calendar, Time, Notes, Scripts…) follow in registry order.
-/// `[appearance.colors]` is free-form and has no generated rows yet. Aliases: `privacy` → `general`,
-/// `virtual_notch` / `displays` → `display`, `notch` → `closed`, `alerts` → `notify`.
+/// Aliases (older entry points keep working): `privacy`, `activity`, `notify`, `alerts` → `general`;
+/// `closed`, `notch` → `appearance`; `virtual_notch`, `displays` → `display`.
 public enum SettingsPaneCatalog {
     /// Settings › Home (Story 11.1): the Home card list, then `[general] tab_order`.
     public static let homePaneID = "home"
 
+    /// The core panes in sidebar order. Module panes are inserted after `home` (see `panes(manifests:)`).
     public static let corePaneIDs = [
-        "general", "activity", "appearance", "closed", "display", "home", "notify", "sounds", "sync", "updates",
+        "general", "appearance", "display", "home", "sounds", "sync", "updates",
+    ]
+
+    /// The core panes that come before the module panes.
+    static let leadingCorePaneIDs = ["general", "appearance", "display", "home"]
+
+    /// Module panes in sidebar order (Agents, Usage, Shelf, Calendar, Time, Notes, Scripts).
+    public static let moduleOrder = [
+        "agents.sessions", "agents.usage", "shelf", "calendar", "time", "notes", "integrations",
     ]
 
     public static let aliases: [String: String] = [
         "privacy": "general",
+        "activity": "general",
+        "notify": "general",
+        "alerts": "general",
         "virtual_notch": "display",
         "displays": "display",
-        "notch": "closed",
-        "alerts": "notify",
+        "closed": "appearance",
+        "notch": "appearance",
     ]
 
     static func keys(_ table: String, _ names: [String]) -> [ConfigKeyPath] {
@@ -89,21 +99,20 @@ public enum SettingsPaneCatalog {
                     SettingsSection(
                         title: SettingsText.resource("settings.section.privacy"),
                         keys: keys("privacy", ["auto", "force"])),
+                    SettingsSection(
+                        title: SettingsText.resource("settings.section.alerts"),
+                        keys: keys("notify", ["quiet_hours", "after_focus", "min_severity", "cooldown"])),
                 ])),
-            SettingsPane(
-                id: "activity", title: SettingsText.resource("settings.pane.activity"), icon: "list.bullet.rectangle",
-                content: .activity),
             SettingsPane(
                 id: "appearance", title: SettingsText.resource("settings.pane.appearance"), icon: "paintpalette",
                 content: .core([
                     SettingsSection(keys: keys("appearance", ["theme", "mode", "presence"])),
-                    SettingsSection(keys: keys("closed", ["notch_overlap", "notch_side_inset"])),
-                ])),
-            SettingsPane(
-                id: "closed", title: SettingsText.resource("settings.pane.closed"),
-                icon: "rectangle.topthird.inset.filled",
-                content: .core([
-                    SettingsSection(keys: keys("closed", ["max_side_width", "slots", "peek", "peek_duration"]))
+                    // The custom status colors are drawn by `StatusColorsSection` (Story 17.2), not generated rows.
+                    SettingsSection(
+                        title: SettingsText.resource("settings.section.closedNotch"),
+                        keys: keys(
+                            "closed",
+                            ["max_side_width", "slots", "peek", "peek_duration", "notch_overlap", "notch_side_inset"])),
                 ])),
             SettingsPane(
                 id: "display", title: SettingsText.resource("settings.pane.display"), icon: "display",
@@ -117,11 +126,6 @@ public enum SettingsPaneCatalog {
                 id: homePaneID, title: SettingsText.resource("settings.pane.home"), icon: "square.grid.3x2",
                 // `[home] cards` is edited by the Home card list (HomePaneContent), not a generated row.
                 content: .core([SettingsSection(keys: [CoreSettings.path("general", "tab_order")])])),
-            SettingsPane(
-                id: "notify", title: SettingsText.resource("settings.pane.notify"), icon: "bell.badge",
-                content: .core([
-                    SettingsSection(keys: keys("notify", ["quiet_hours", "after_focus", "min_severity", "cooldown"]))
-                ])),
             SettingsPane(
                 id: "sounds", title: SettingsText.resource("settings.pane.sounds"), icon: "speaker.wave.2",
                 content: .core([
@@ -146,6 +150,23 @@ public enum SettingsPaneCatalog {
                     SettingsSection(keys: keys("updates", ["auto_check", "check_interval", "auto_install", "prices"]))
                 ])),
         ]
+    }
+
+    /// The whole sidebar: General, Appearance, Displays, Home, the module panes in `moduleOrder`, then Sounds, Sync
+    /// and Updates (Story 17.2).
+    public static func panes(manifests: [ModuleManifest]) -> [SettingsPane] {
+        let all = corePanes()
+        func core(_ ids: [String]) -> [SettingsPane] {
+            ids.compactMap { id in all.first { $0.id == id } }
+        }
+        let rank = Dictionary(uniqueKeysWithValues: moduleOrder.enumerated().map { ($1, $0) })
+        let ordered = manifests.enumerated().sorted { lhs, rhs in
+            let l = rank[lhs.element.id.rawValue] ?? moduleOrder.count
+            let r = rank[rhs.element.id.rawValue] ?? moduleOrder.count
+            return l == r ? lhs.offset < rhs.offset : l < r
+        }.map(\.element)
+        let trailing = corePaneIDs.filter { !leadingCorePaneIDs.contains($0) }
+        return core(leadingCorePaneIDs) + ordered.map(modulePane) + core(trailing)
     }
 
     public static func modulePane(_ manifest: ModuleManifest) -> SettingsPane {

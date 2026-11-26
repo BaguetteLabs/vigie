@@ -1,6 +1,90 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "settings.section.alerts": {
+      "comment": "Section heading in Settings \u203a General for the alert rules ([notify]).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alerts"
+          }
+        }
+      }
+    },
+    "settings.section.closedNotch": {
+      "comment": "Section heading in Settings \u203a Appearance for the closed-notch settings ([closed]).",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Closed notch"
+          }
+        }
+      }
+    },
+    "settings.section.statusColors": {
+      "comment": "Section heading in Settings \u203a Appearance for custom status, pace and warning colors.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Status colors"
+          }
+        }
+      }
+    },
+    "settings.statusColors.reset": {
+      "comment": "Button that removes a custom status color.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset"
+          }
+        }
+      }
+    },
+    "settings.statusColors.contrast.text": {
+      "comment": "Contrast ratio of a custom color against the current look; passes the 4.5:1 text minimum.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contrast %@"
+          }
+        }
+      }
+    },
+    "settings.statusColors.contrast.nonText": {
+      "comment": "Contrast ratio below 4.5:1 but at least 3:1: fine for glyphs, low for text.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contrast %@, low for text"
+          }
+        }
+      }
+    },
+    "settings.statusColors.contrast.low": {
+      "comment": "Contrast ratio below 3:1; shown, never blocks the choice.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contrast %@, low"
+          }
+        }
+      }
+    },
     "settings.section.diagnostics": {
       "comment": "Settings › General section header: Copy diagnostics (Story 17.4).",
       "extractionState": "manual",
@@ -1196,7 +1280,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "macOS Reduce motion is on: Vigie stays still whatever this setting says."
+            "value": "macOS Reduce motion is on, so Vigie stays in Calm whatever you pick here."
           }
         }
       }

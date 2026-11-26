@@ -1092,6 +1092,102 @@
           }
         }
       }
+    },
+    "config.appearance.colors.status-idle": {
+      "comment": "Settings label for the custom color of status-idle.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Idle color"
+          }
+        }
+      }
+    },
+    "config.appearance.colors.status-working": {
+      "comment": "Settings label for the custom color of status-working.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Working color"
+          }
+        }
+      }
+    },
+    "config.appearance.colors.status-done": {
+      "comment": "Settings label for the custom color of status-done.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done color"
+          }
+        }
+      }
+    },
+    "config.appearance.colors.status-blocked": {
+      "comment": "Settings label for the custom color of status-blocked.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Blocked color"
+          }
+        }
+      }
+    },
+    "config.appearance.colors.status-failed": {
+      "comment": "Settings label for the custom color of status-failed.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Failed color"
+          }
+        }
+      }
+    },
+    "config.appearance.colors.pace-on": {
+      "comment": "Settings label for the custom color of pace-on.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Within pace color"
+          }
+        }
+      }
+    },
+    "config.appearance.colors.pace-ahead": {
+      "comment": "Settings label for the custom color of pace-ahead.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ahead of pace color"
+          }
+        }
+      }
+    },
+    "config.appearance.colors.quota-warning": {
+      "comment": "Settings label for the custom color of quota-warning.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quota warning color"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

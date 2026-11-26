@@ -1,5 +1,6 @@
 import Foundation
 import ModuleKit
+import VigieUI
 
 /// A resolved, typed setting value.
 public enum ConfigResolvedValue: Sendable, Equatable {
@@ -165,6 +166,16 @@ public struct ConfigSchema: Sendable {
         self.openTables = openTables
         for setting in core {
             entries[setting.path] = ConfigSchemaEntry(path: setting.path, descriptor: setting.descriptor, moduleID: nil)
+        }
+        // `[appearance.colors]` stays free-form, but the roles Settings edits (Story 17.2) are known strings so the
+        // window can write them through `ConfigStore.set` (`#RRGGBB`, validated by the theme resolver).
+        for role in StatusColors.roles {
+            let path = StatusColors.path(role)
+            entries[path] = ConfigSchemaEntry(
+                path: path,
+                descriptor: SettingDescriptor(
+                    key: role.rawValue, label: CoreSettings.label(StatusColors.labelKey(role)), kind: .string(default: "")),
+                moduleID: nil)
         }
     }
 

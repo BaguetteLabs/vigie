@@ -29,30 +29,14 @@ struct SettingsSidebar: View {
             get: { controller.selectedPaneID },
             set: { if let id = $0 { controller.selectedPaneID = id } })
         List(selection: selection) {
-            Section {
-                ForEach(controller.panes.filter { !$0.isModule }) { pane in
-                    Label {
-                        Text(pane.title)
-                    } icon: {
-                        Image(systemName: pane.icon)
-                    }
-                    .tag(pane.id)
+            // One list in the fixed order of Story 17.2 (General … Updates), core and module panes mixed.
+            ForEach(controller.panes) { pane in
+                Label {
+                    Text(pane.title)
+                } icon: {
+                    Image(systemName: pane.icon)
                 }
-            }
-            let modules = controller.panes.filter(\.isModule)
-            if !modules.isEmpty {
-                Section {
-                    ForEach(modules) { pane in
-                        Label {
-                            Text(pane.title)
-                        } icon: {
-                            Image(systemName: pane.icon)
-                        }
-                        .tag(pane.id)
-                    }
-                } header: {
-                    Text(SettingsText.resource("settings.sidebar.modules"))
-                }
+                .tag(pane.id)
             }
         }
         .listStyle(.sidebar)
@@ -79,9 +63,7 @@ struct SettingsPaneView: View {
                             } else {
                                 SettingRow(model)
                             }
-                            if model.id == "appearance.presence",
-                                NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
-                            {
+                            if model.id == "appearance.presence", controller.showsReduceMotionNote {
                                 Text(SettingsText.resource("settings.appearance.reduceMotion"))
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
@@ -91,26 +73,20 @@ struct SettingsPaneView: View {
                         if let title = section.title { Text(title) }
                     }
                 }
-                // Focus detection setup and the Shortcuts recipe (Story 3.10).
-                if pane.id == "notify" { FocusSettingsSection(controller: controller) }
+                if pane.id == "appearance" { StatusColorsSection(controller: controller) }
+                // Focus detection setup and the Shortcuts recipe (Story 3.10), with the alert rules in General.
+                if pane.id == "general" { FocusSettingsSection(controller: controller) }
                 if pane.id == "updates" { UpdatesActionSection(controller: controller) }
                 if pane.id == "sync" { SyncSection(model: controller.sync) }
                 if pane.id == "general" {
                     ConfigFolderSection(model: controller.configFolder)
                     CLISection(controller: controller)
                     DiagnosticsSection(model: controller.diagnostics)
-                    Section {
-                        Button {
-                            controller.selectedPaneID = "activity"
-                        } label: {
-                            Text(SettingsText.resource("settings.general.showActivity"))
-                        }
-                    }
+                    // The activity log (A80) lives in General (Story 17.2).
+                    ActivityPaneView(model: controller.activity)
                 }
             case .module(let manifest):
                 ModulePaneContent(controller: controller, manifest: manifest)
-            case .activity:
-                ActivityPaneView(model: controller.activity)
             }
         }
         .formStyle(.grouped)
