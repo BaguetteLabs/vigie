@@ -63,6 +63,8 @@ struct SettingsPaneView: View {
                         ForEach(section.keys.compactMap(controller.rowModel(for:))) { model in
                             if model.id == "privacy.auto" {
                                 PrivacyAutoRow(controller: controller, model: model)
+                            } else if model.id == "appearance.theme", controller.theme != nil {
+                                ThemePickerRow(controller: controller, model: model)
                             } else {
                                 SettingRow(model)
                             }
