@@ -29,6 +29,43 @@ public struct ThemeLibrary: Sendable, Equatable {
 
     public var defaultVariant: ThemeFile? { builtIns[Self.defaultVariantID] }
 
+    /// A theme the user can pick in Settings › Appearance.
+    public struct Choice: Sendable, Equatable, Identifiable {
+        public var id: String
+        public var name: String
+        public var isCustom: Bool
+
+        public init(id: String, name: String, isCustom: Bool) {
+            self.id = id
+            self.name = name
+            self.isCustom = isCustom
+        }
+    }
+
+    /// Built-in themes (default first), then custom themes, each group sorted by name.
+    public var choices: [Choice] {
+        func sorted(_ files: [String: ThemeFile], custom: Bool) -> [Choice] {
+            files.values
+                .map { Choice(id: $0.id, name: $0.name, isCustom: custom) }
+                .sorted { ($0.name, $0.id) < ($1.name, $1.id) }
+        }
+        let builtIn = sorted(builtIns, custom: false)
+        let defaults = builtIn.filter { $0.id == Self.defaultVariantID }
+        return defaults + builtIn.filter { $0.id != Self.defaultVariantID } + sorted(customs, custom: true)
+    }
+
+    /// This library with the custom themes found in `folder` (`<config folder>/themes/`) in place of any it had,
+    /// and their load problems added after the existing ones. Call it on a library without custom themes.
+    public func replacingCustomThemes(from folder: URL?) -> ThemeLibrary {
+        var copy = self
+        copy.customs = [:]
+        guard let folder else { return copy }
+        let loaded = ThemeLoader.loadCustom(from: folder)
+        for theme in loaded.themes { copy.customs[theme.id] = theme }
+        copy.problems = problems + loaded.problems
+        return copy
+    }
+
     /// Resolves a theme id (built-in or custom) for a look. Unknown ids fall back to the default theme.
     public func resolve(
         themeID: String,

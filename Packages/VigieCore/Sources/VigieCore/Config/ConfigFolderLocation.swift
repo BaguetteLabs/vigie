@@ -23,6 +23,9 @@ public final class ConfigFolderLocation: Sendable {
     /// `<config folder>/modules/` now (AD-18).
     public var scriptModulesFolderURL: URL { AppEnvironment.scriptModulesFolderURL(in: folder) }
 
+    /// `<config folder>/themes/` now: custom theme files (AD-14).
+    public var themesFolderURL: URL { AppEnvironment.themesFolderURL(in: folder) }
+
     /// `<config folder>/config.toml` now.
     public var configFileURL: URL { folder.appendingPathComponent(AppEnvironment.configFileName) }
 

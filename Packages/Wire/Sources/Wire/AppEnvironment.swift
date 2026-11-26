@@ -96,6 +96,11 @@ public struct AppEnvironment: Sendable {
     public static let configFolderRecordTable = "config"
     public static let configFolderRecordKey = "folder"
 
+    /// `<folder>/themes/`.
+    public static func themesFolderURL(in folder: URL) -> URL {
+        folder.appendingPathComponent(themesFolderName, isDirectory: true)
+    }
+
     /// `<folder>/modules/`.
     public static func scriptModulesFolderURL(in folder: URL) -> URL {
         folder.appendingPathComponent(scriptModulesFolderName, isDirectory: true)

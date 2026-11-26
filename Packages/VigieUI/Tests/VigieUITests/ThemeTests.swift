@@ -307,6 +307,47 @@ enum Fixtures {
                 .schemaTooNew(themeID: "later", file: "c.toml", found: 7, supported: 1),
             ])
     }
+
+    @Test func libraryLoadsCustomThemesFromAFolderAndListsThem() throws {
+        let folder = FileManager.default.temporaryDirectory.appending(path: "vigie-themes-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        try Data(
+            """
+            schema = 1
+            id = "mine"
+            name = "Aardvark"
+            extends = "twin-metal-tactical"
+            [looks.dark.colors]
+            ink-1 = "#010203"
+            """.utf8
+        ).write(to: folder.appending(path: "mine.toml"))
+        try Data("schema = 1\nid = \"twin-metal-tactical\"\n".utf8).write(to: folder.appending(path: "clash.toml"))
+        let library = Fixtures.library.replacingCustomThemes(from: folder)
+        #expect(library.choices.map(\.id) == ["chrome-hologram", "twin-metal-tactical", "mine"])
+        #expect(library.choices.map(\.isCustom) == [false, false, true])
+        #expect(library.problems == [.idClash(themeID: "twin-metal-tactical", file: "clash.toml")])
+        // It extends the shared base and a built-in skin, and overrides token values.
+        let resolved = library.resolve(themeID: "mine", look: .dark).theme
+        #expect(resolved.variantID == "mine")
+        #expect(resolved.themeColor(.ink1).hex == "#010203")
+        #expect(resolved.themeColor(.gold).hex == library.builtIns["twin-metal-tactical"]!.tokens(for: .dark).colors["gold"])
+        // A missing folder means no custom themes.
+        #expect(Fixtures.library.replacingCustomThemes(from: nil).customs.isEmpty)
+        #expect(Fixtures.library.replacingCustomThemes(from: folder.appending(path: "nope")).customs.isEmpty)
+    }
+
+    @Test func newerSchemaCustomThemeFallsBackToTheDefaultTheme() throws {
+        let folder = FileManager.default.temporaryDirectory.appending(path: "vigie-themes-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        try Data("schema = 9\nid = \"later\"\n".utf8).write(to: folder.appending(path: "later.toml"))
+        let library = Fixtures.library.replacingCustomThemes(from: folder)
+        #expect(library.customs.isEmpty)
+        #expect(library.problems == [.schemaTooNew(themeID: "later", file: "later.toml", found: 9, supported: 1)])
+        let resolution = library.resolve(themeID: "later", look: .dark)
+        #expect(resolution.theme.variantID == ThemeLibrary.defaultVariantID)
+    }
 }
 
 @MainActor @Suite struct ThemeControllerTests {
