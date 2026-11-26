@@ -54,6 +54,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var privacy: CorePrivacyService?
     private var updater: SparkleUpdater?
     private var updatesConfig: UpdatesConfigBridge?
+    private var appearanceConfig: AppearanceConfigBridge?
     private var isShuttingDown = false
     /// `vigie://install` links (Story 12.9, AD-20): created before launch finishes, since a launch by URL delivers
     /// the link before assembly ends; integrations drains it once started.
@@ -436,6 +437,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let privacyConfig = PrivacyConfigBridge(store: configStore, privacy: privacy, permissions: coordinator)
         privacyConfig.start()
         self.privacyConfig = privacyConfig
+        // `[appearance] theme` re-skins the app at launch and live (Story 18.1).
+        let appearanceConfig = AppearanceConfigBridge(store: configStore, themes: themeController)
+        appearanceConfig.start()
+        self.appearanceConfig = appearanceConfig
         // `[updates]` drives Sparkle, live (Story 6.3); a build without key or feed logs once and never checks.
         if let updater {
             let updatesConfig = UpdatesConfigBridge(
