@@ -443,8 +443,8 @@ struct SettingsHarness {
             }
         }
         let keys = [
-            "settings.window.title", "settings.sidebar.modules", "settings.section.privacy",
-            "settings.section.virtualNotch", "settings.section.cli", "settings.general.showActivity",
+            "settings.window.title", "settings.section.privacy",
+            "settings.section.virtualNotch", "settings.section.cli",
             "settings.appearance.reduceMotion", "settings.module.enabled", "settings.module.status",
             "settings.module.status.disabled", "settings.module.status.running", "settings.module.status.stopped",
             "settings.module.status.errored", "settings.module.status.needsPermission",

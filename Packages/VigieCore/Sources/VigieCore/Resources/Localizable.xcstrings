@@ -1453,18 +1453,6 @@
         }
       }
     },
-    "settings.general.showActivity": {
-      "comment": "Button in Settings › General that opens the Activity Log pane.",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Show Activity Log"
-          }
-        }
-      }
-    },
     "settings.updates.checkNow": {
       "comment": "Button in Settings › Updates that checks for a new version now.",
       "extractionState": "manual",
@@ -1645,18 +1633,6 @@
         }
       }
     },
-    "settings.pane.activity": {
-      "comment": "Settings pane title: the read-only activity log (General › Activity log).",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Activity Log"
-          }
-        }
-      }
-    },
     "settings.pane.appearance": {
       "comment": "Settings pane title.",
       "extractionState": "manual",
@@ -1665,18 +1641,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Appearance"
-          }
-        }
-      }
-    },
-    "settings.pane.closed": {
-      "comment": "Settings pane title: closed-notch settings ([closed]).",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Notch"
           }
         }
       }
@@ -1713,18 +1677,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Home"
-          }
-        }
-      }
-    },
-    "settings.pane.notify": {
-      "comment": "Settings pane title: alert rules ([notify]).",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Alerts"
           }
         }
       }
@@ -1929,18 +1881,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Virtual Notch"
-          }
-        }
-      }
-    },
-    "settings.sidebar.modules": {
-      "comment": "Sidebar section heading above the module panes in Settings.",
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Modules"
           }
         }
       }
